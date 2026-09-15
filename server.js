@@ -45,7 +45,20 @@ function body(req){return new Promise((resolve,reject)=>{let s='';req.on('data',
 function out(res,status,data){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(data));}
 function cookies(req){return Object.fromEntries((req.headers.cookie||'').split(';').filter(Boolean).map(x=>{const i=x.indexOf('=');return[x.slice(0,i).trim(),decodeURIComponent(x.slice(i+1).trim())]}));}
 function currentUser(req){const sid=cookies(req).fv_session;const id=sessions.get(sid);if(!id)return null;const d=db();return d.users[id]||null;}
-function need(req,res){const u=currentUser(req);if(!u){out(res,401,{error:'Authentification requise'});return null;}return u;}
+function ensureWelcomeState(u){
+  const emptyInventory=!(u.inventory||[]).length;
+  const emptyHistory=!(u.history||[]).length;
+  const freshEconomy=Number(u.coins||0)===0&&Number(u.gems||0)===0&&Number(u.xp||0)===0&&!u.lastDaily;
+  if(emptyInventory&&emptyHistory&&freshEconomy){
+    u.coins=1000;
+    u.gems=50;
+    u.albumClaims??={};
+    u.missionClaims??={};
+    return true;
+  }
+  return false;
+}
+function need(req,res){const u=currentUser(req);if(!u){out(res,401,{error:'Authentification requise'});return null;}const d=db();if(ensureWelcomeState(u)){d.users[u.id]=u;save(d);}return u;}
 function safe(u){return{id:u.id,name:u.name,email:u.email,createdAt:u.createdAt,coins:u.coins,gems:u.gems,xp:u.xp,lastDaily:u.lastDaily||null};}
 function session(res,id){const sid=crypto.randomBytes(32).toString('hex');sessions.set(sid,id);res.setHeader('Set-Cookie',`fv_session=${sid}; HttpOnly; SameSite=Lax; Path=/; Max-Age=2592000`);}
 function hashPassword(password,salt=crypto.randomBytes(16).toString('hex')){return `${salt}:${crypto.scryptSync(password,salt,64).toString('hex')}`;}
@@ -109,7 +122,7 @@ const server=http.createServer(async(req,res)=>{
       if(x.email!==email){x.email=email;d.users[x.id]=x;save(d);}session(res,x.id);return out(res,200,{user:safe(x)});
     }
     if(req.method==='POST'&&u.pathname==='/api/logout'){const sid=cookies(req).fv_session;sessions.delete(sid);res.setHeader('Set-Cookie','fv_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');return out(res,200,{ok:true});}
-    if(req.method==='GET'&&u.pathname==='/api/me'){const x=currentUser(req);return out(res,x?200:401,x?{user:safe(x)}:{error:'Non connecté'});}
+    if(req.method==='GET'&&u.pathname==='/api/me'){const x=currentUser(req);if(x){const d=db();if(ensureWelcomeState(x)){d.users[x.id]=x;save(d);}}return out(res,x?200:401,x?{user:safe(x)}:{error:'Non connecté'});}
     if(req.method==='GET'&&u.pathname==='/api/state'){
       const x=need(req,res);if(!x)return;
       return out(res,200,{user:safe(x),level:level(x.xp),players,inventory:x.inventory||[],history:x.history||[],missions:Object.fromEntries(Object.entries(MISSIONS).map(([id,m])=>[id,{target:m.target,coins:m.coins,xp:m.xp,completed:m.check(x),claimed:!!(x.missionClaims||{})[id]}]))});
