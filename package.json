@@ -1,8 +1,8 @@
 {
   "name": "sport-vault",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "private": true,
   "description": "SPORT VAULT prototype with server-side packs, economy, unique card instances, album progression, marketplace and trades",
-  "scripts": {"start": "node launcher.js"},
+  "scripts": {"start": "node server.js"},
   "engines": {"node": ">=18"}
 }
