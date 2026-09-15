@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "commonjs",
-  "scripts": {"start": "node server.js"},
+  "scripts": {"start": "node server2.js"},
   "engines": {"node": ">=18"},
   "dependencies": {"pg": "^8.16.3"}
 }
