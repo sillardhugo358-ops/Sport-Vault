@@ -5,32 +5,23 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mon Vault — FOOTVAULT</title>
 <meta name="description" content="Ton espace personnel FOOTVAULT : solde, progression et dernières cartes.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="vault.css">
 </head>
 <body>
 <div class="grain"></div>
 <header class="site-header">
-  <a class="brand" href="index.html"><span class="brand-mark">FV</span><span><strong>FOOTVAULT</strong><small>COLLECT THE GAME.</small></span></a>
+  <a class="brand" href="index.html"><span class="brand-mark">FV</span><span><strong>FOOTVAULT</strong><small>SPORT VAULT · FOOTBALL</small></span></a>
   <nav class="nav"><a href="index.html">Accueil</a><a href="collection.html">Collection</a><a href="album.html">Album</a><a href="packs.html">Packs</a><a class="active" href="vault.html">Mon Vault</a><a href="market.html">Market</a></nav>
-  <div class="header-actions"><a class="btn btn-outline" href="collection.html">Ma collection</a><button class="btn" id="logoutBtn">Déconnexion</button></div>
+  <div class="header-actions"><a class="btn" href="collection.html">Ma collection</a><button class="btn" id="logoutBtn">Déconnexion</button></div>
   <button class="menu-btn" aria-label="Menu" aria-expanded="false">☰</button>
 </header>
 
 <main class="page">
   <section class="vault-hero">
-    <div>
-      <p class="eyebrow">FOOTVAULT / MON VAULT</p>
-      <h1>BIENVENUE <span id="userName">—</span></h1>
-      <p class="lead">Ton centre de contrôle FOOTVAULT. Gère ta collection, ouvre des packs et fais progresser ton profil.</p>
-    </div>
-    <aside class="vault-level panel">
-      <span>NIVEAU</span>
-      <strong id="level">—</strong>
-      <small id="xp">— XP</small>
-    </aside>
+    <div><p class="eyebrow">FOOTVAULT / MON VAULT</p><h1>BIENVENUE <span id="userName">—</span></h1><p class="lead">Ton centre de contrôle FOOTVAULT. Gère ta collection, ouvre des packs et fais progresser ton profil.</p></div>
+    <aside class="vault-level panel"><span>NIVEAU</span><strong id="level">—</strong><small id="xp">— XP</small></aside>
   </section>
 
   <section class="vault-stat-grid">
@@ -41,106 +32,33 @@
   </section>
 
   <section class="section vault-columns">
-    <div class="panel">
-      <div class="section-head"><div><p class="eyebrow">ACTION</p><h2>CONTINUE TA COLLECTION.</h2></div></div>
-      <div class="vault-actions">
-        <a class="btn btn-gold btn-large" href="packs.html">Ouvrir un pack</a>
-        <a class="btn btn-large" href="collection.html">Voir ma collection</a>
-      </div>
-    </div>
-    <div class="panel daily-card">
-      <p class="eyebrow">BONUS QUOTIDIEN</p>
-      <h2>RÉCOMPENSE DU JOUR.</h2>
-      <p>Un bonus simple pour revenir chaque jour dans ton Vault.</p>
-      <button class="btn btn-gold" id="dailyBtn">Récupérer +150 FC · +25 XP</button>
-      <small id="dailyStatus">—</small>
-    </div>
+    <div class="panel"><div class="section-head"><div><p class="eyebrow">ACTION</p><h2>CONTINUE TA COLLECTION.</h2></div></div><div class="vault-actions"><a class="btn btn-gold btn-large" href="packs.html">Ouvrir un pack</a><a class="btn btn-large" href="collection.html">Voir ma collection</a></div></div>
+    <div class="panel daily-card"><p class="eyebrow">BONUS QUOTIDIEN</p><h2>RÉCOMPENSE DU JOUR.</h2><p>Un bonus simple pour revenir chaque jour dans ton Vault.</p><button class="btn btn-gold" id="dailyBtn">Récupérer +150 FC · +25 XP</button><small id="dailyStatus">—</small></div>
   </section>
 
-  <section class="section">
-    <div class="section-head"><div><p class="eyebrow">PROGRESSION</p><h2>MISSIONS.</h2></div><p>Des objectifs simples pour faire grandir ton Vault.</p></div>
-    <div id="missions" class="mission-grid"></div>
-  </section>
+  <section class="section"><div class="section-head"><div><p class="eyebrow">PROGRESSION</p><h2>MISSIONS.</h2></div><p>Des objectifs simples pour faire grandir ton Vault.</p></div><div id="missions" class="mission-grid"></div></section>
 
-  <section class="section">
-    <div class="section-head"><div><p class="eyebrow">DERNIÈRES CARTES</p><h2>TON VAULT, CARTE APRÈS CARTE.</h2></div><a class="btn" href="collection.html">Toute la collection</a></div>
-    <div id="latest" class="football-card-grid"></div>
-  </section>
+  <section class="section"><div class="section-head"><div><p class="eyebrow">DERNIÈRES CARTES</p><h2>TON VAULT, CARTE APRÈS CARTE.</h2></div><a class="btn" href="collection.html">Toute la collection</a></div><div id="latest" class="football-card-grid"></div></section>
 </main>
-
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script src="app.js"></script>
 <script>
-(() => {
-  const state = { data: null };
-  const $ = id => document.getElementById(id);
-  const esc = value => String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-  const fmt = value => Number(value || 0).toLocaleString('fr-FR');
-  const toast = message => { const box = $('toast'); box.textContent = message; box.classList.add('show'); setTimeout(() => box.classList.remove('show'), 2600); };
-
-  function cardMarkup(card) {
-    const initials = card.name.split(' ').map(x => x[0]).slice(0, 2).join('');
-    return `<article class="football-card rarity-${esc(card.rarity)}"><div class="football-card-frame"><div class="football-card-top"><span>FV 26</span><strong>${esc(card.position)}</strong></div><div class="football-avatar"><span>${esc(initials)}</span></div><div class="football-card-club">${esc(card.club)} · ${esc(card.nation)}</div><h2>${esc(card.name)}</h2><div class="football-card-bottom"><b>${esc(card.rarityLabel)}</b><span>${esc(card.serialLabel)}</span></div></div></article>`;
-  }
-
-  function render() {
-    const data = state.data;
-    $('userName').textContent = data.user.name.toUpperCase();
-    $('level').textContent = data.user.level;
-    $('xp').textContent = `${fmt(data.user.xp)} XP`;
-    $('coins').textContent = fmt(data.user.coins);
-    $('gems').textContent = fmt(data.user.gems);
-    $('cards').textContent = fmt(data.stats.cards);
-    $('completion').textContent = `${data.stats.completion}%`;
-
-    const daily = data.dailyReward;
-    $('dailyBtn').disabled = daily.claimed;
-    $('dailyBtn').textContent = daily.claimed ? 'RÉCOMPENSE DÉJÀ RÉCUPÉRÉE' : 'RÉCUPÉRER +150 FC · +25 XP';
-    $('dailyStatus').textContent = daily.claimed ? 'Reviens demain pour le prochain bonus.' : 'Disponible maintenant.';
-
-    $('missions').innerHTML = data.missions.map(m => `<article class="mission-card ${m.claimed ? 'claimed' : ''}"><div><p class="eyebrow">MISSION</p><h3>${esc(m.title)}</h3><p>${esc(m.description)}</p></div><div class="mission-progress"><strong>${m.progress}/${m.goal}</strong><div class="progress-track"><i style="width:${Math.min(100, Math.round((m.progress / m.goal) * 100))}%"></i></div></div><button class="btn ${m.complete && !m.claimed ? 'btn-gold' : ''}" data-claim="${esc(m.id)}" ${!m.complete || m.claimed ? 'disabled' : ''}>${m.claimed ? 'RÉCOMPENSE RÉCUPÉRÉE' : m.complete ? `RÉCUPÉRER +${fmt(m.rewardCoins)} FC` : 'EN COURS'}</button></article>`).join('');
-    $('latest').innerHTML = data.latest.length ? data.latest.map(cardMarkup).join('') : '<div class="placeholder">Aucune carte.</div>';
-  }
-
-  async function load() {
-    try {
-      const response = await fetch('/api/vault', { cache: 'no-store' });
-      if (!response.ok) { window.location.href = 'auth.html?next=vault.html'; return; }
-      state.data = await response.json();
-      render();
-    } catch { toast('Impossible de charger le Vault.'); }
-  }
-
-  $('dailyBtn').addEventListener('click', async () => {
-    $('dailyBtn').disabled = true;
-    try {
-      const response = await fetch('/api/daily-reward', { method: 'POST' });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Récompense indisponible.');
-      toast(`+${fmt(data.reward.coins)} FC · +${data.reward.xp} XP`);
-      await load();
-    } catch (error) { toast(error.message); render(); }
-  });
-
-  $('missions').addEventListener('click', async event => {
-    const button = event.target.closest('[data-claim]');
-    if (!button) return;
-    button.disabled = true;
-    try {
-      const response = await fetch(`/api/missions/${encodeURIComponent(button.dataset.claim)}/claim`, { method: 'POST' });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Récompense indisponible.');
-      toast(`Mission validée · +${fmt(data.mission.rewardCoins)} FC · +${data.mission.rewardXp} XP`);
-      await load();
-    } catch (error) { toast(error.message); render(); }
-  });
-
-  $('logoutBtn').addEventListener('click', async () => {
-    await fetch('/api/logout', { method: 'POST' }).catch(() => {});
-    window.location.href = 'index.html';
-  });
-
-  load();
+(()=>{
+ const $=id=>document.getElementById(id),fmt=v=>Number(v||0).toLocaleString('fr-FR'),esc=v=>String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+ const toast=m=>{const b=$('toast');b.textContent=m;b.classList.add('show');setTimeout(()=>b.classList.remove('show'),2600)};
+ let data=null;
+ function cardHtml(c){const initials=c.name.split(' ').map(x=>x[0]).slice(0,2).join('');return `<article class="football-card rarity-${esc(c.rarity)}"><div class="football-card-frame"><div class="football-card-top"><span>FV 26</span><strong>${esc(c.position)}</strong></div><div class="football-avatar"><span>${esc(initials)}</span></div><div class="football-card-club">${esc(c.club)} · ${esc(c.nation)}</div><h2>${esc(c.name)}</h2><div class="football-card-bottom"><b>${esc(c.rarityLabel)}</b><span>${esc(c.serialLabel)}</span></div></div></article>`}
+ function render(){
+  $('userName').textContent=data.user.name.toUpperCase();$('level').textContent=data.user.level;$('xp').textContent=`${fmt(data.user.xp)} XP`;$('coins').textContent=fmt(data.user.coins);$('gems').textContent=fmt(data.user.gems);$('cards').textContent=fmt(data.stats.cards);$('completion').textContent=`${data.stats.completion}%`;
+  $('dailyBtn').disabled=data.dailyReward.claimed;$('dailyBtn').textContent=data.dailyReward.claimed?'RÉCOMPENSE DÉJÀ RÉCUPÉRÉE':'RÉCUPÉRER +150 FC · +25 XP';$('dailyStatus').textContent=data.dailyReward.claimed?'Reviens demain pour le prochain bonus.':'Disponible maintenant.';
+  $('missions').innerHTML=data.missions.map(m=>`<article class="mission-card ${m.claimed?'claimed':''}"><div><p class="eyebrow">MISSION</p><h3>${esc(m.title)}</h3><p>${esc(m.description)}</p></div><div class="mission-progress"><strong>${m.progress}/${m.goal}</strong><div class="progress-track"><i style="width:${Math.min(100,Math.round(m.progress/m.goal*100))}%"></i></div></div><button class="btn ${m.complete&&!m.claimed?'btn-gold':''}" data-claim="${esc(m.id)}" ${!m.complete||m.claimed?'disabled':''}>${m.claimed?'RÉCOMPENSE RÉCUPÉRÉE':m.complete?`RÉCUPÉRER +${fmt(m.rewardCoins)} FC`:'EN COURS'}</button></article>`).join('');
+  $('latest').innerHTML=data.latest.length?data.latest.map(cardHtml).join(''):'<div class="placeholder">Aucune carte.</div>';
+ }
+ async function load(){try{const r=await fetch('/api/vault',{cache:'no-store'});if(!r.ok){location.href='auth.html?next=vault.html';return}data=await r.json();render()}catch{toast('Impossible de charger le Vault.')}}
+ $('dailyBtn').addEventListener('click',async()=>{try{const r=await fetch('/api/daily-reward',{method:'POST'}),d=await r.json();if(!r.ok)throw new Error(d.error||'Récompense indisponible.');toast(`+${fmt(d.reward.coins)} FC · +${d.reward.xp} XP`);await load()}catch(e){toast(e.message);await load()}});
+ $('missions').addEventListener('click',async e=>{const b=e.target.closest('[data-claim]');if(!b)return;b.disabled=true;try{const r=await fetch(`/api/missions/${encodeURIComponent(b.dataset.claim)}/claim`,{method:'POST'}),d=await r.json();if(!r.ok)throw new Error(d.error||'Récompense indisponible.');toast(`Mission validée · +${fmt(d.mission.rewardCoins)} FC · ${d.mission.rewardXp} XP`);await load()}catch(err){toast(err.message);await load()}});
+ $('logoutBtn').addEventListener('click',async()=>{await fetch('/api/logout',{method:'POST'}).catch(()=>{});location.href='index.html'});
+ load();
 })();
 </script>
 </body>
