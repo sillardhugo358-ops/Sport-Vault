@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Album — FOOTVAULT</title>
-<meta name="description" content="Album FOOTVAULT — complète les sets de clubs et débloque des récompenses.">
+<meta name="description" content="Album FOOTVAULT — complète les sets de clubs et suis ta progression.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css">
 </head>
@@ -11,36 +11,25 @@
 <header class="site-header"><a class="brand" href="index.html"><span class="brand-mark">FV</span><span><strong>FOOTVAULT</strong><small>SPORT VAULT · FOOTBALL</small></span></a>
 <nav class="nav"><a href="index.html">Accueil</a><a href="collection.html">Collection</a><a class="active" href="album.html">Album</a><a href="packs.html">Packs</a><a href="vault.html">Mon Vault</a><a href="market.html">Market</a></nav><div class="header-actions"><a class="btn btn-outline" data-auth-link href="auth.html">Connexion</a><a class="btn btn-gold" href="auth.html?mode=register">Créer un compte</a></div><button class="menu-btn" aria-label="Menu">☰</button></header>
 <main class="page">
-<section class="collection-hero"><div><p class="eyebrow">FOOTVAULT / ALBUM 2026</p><h1>COMPLÈTE <span>L’ALBUM.</span></h1><p class="lead">Chaque club est un set. Termine ses cartes pour récupérer une récompense, puis vise la complétion totale de la saison.</p></div><div class="collection-stat"><strong id="overall">—</strong><span>CARTES DE L’ALBUM</span></div></section>
-<section class="album-summary"><div><span>PROGRESSION</span><strong id="progressPct">—%</strong></div><div><span>SETS COMPLETS</span><strong id="setsComplete">—</strong></div><div><span>RÉCOMPENSE SAISON</span><strong>1 000 FC</strong></div></section>
+<section class="collection-hero"><div><p class="eyebrow">FOOTVAULT / ALBUM 2026</p><h1>COMPLÈTE <span>L’ALBUM.</span></h1><p class="lead">Chaque club est un set. Les cartes déjà obtenues sont cochées automatiquement depuis ta collection.</p></div><div class="collection-stat"><strong id="overall">—</strong><span>CARTES DE L’ALBUM</span></div></section>
+<section class="album-summary"><div><span>PROGRESSION</span><strong id="progressPct">—%</strong></div><div><span>SETS COMPLETS</span><strong id="setsComplete">—</strong></div><div><span>SAISON</span><strong>2026</strong></div></section>
 <section id="clubs" class="album-club-grid"><div class="placeholder">Chargement de l’album...</div></section>
 </main>
-<script src="app.js"></script>
-<script>
+<script src="app.js"></script><script>
 (() => {
-  const clubsEl=document.getElementById('clubs'), overall=document.getElementById('overall'), pct=document.getElementById('progressPct'), sets=document.getElementById('setsComplete');
-  const esc=v=>String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-  const cardMarkup=(c)=>`<div class="album-card ${c?'owned':'missing'}"><span>${c?esc(c.position):'?'}</span><strong>${c?esc(c.name):'CARTE MANQUANTE'}</strong><small>${c?esc(c.rarityLabel):'À COLLECTIONNER'}</small></div>`;
-  function render(data){
-    overall.textContent=`${data.overallOwned}/${data.overallTotal}`;
-    pct.textContent=`${data.overallTotal?Math.round(data.overallOwned/data.overallTotal*100):0}%`;
-    sets.textContent=`${data.album.clubs.filter(c=>c.complete).length}/${data.album.clubs.length}`;
-    clubsEl.innerHTML=data.album.clubs.map(club=>{
-      const missing=club.missing||[];
-      const complete=club.complete;
-      const cards=[...club.cardIds].map(id=>{
-        const owned=data.album.clubs.find(x=>x.id===club.id).missing.find(m=>m.id===id)?null:null; return owned;
-      });
-      return `<article class="album-club ${complete?'is-complete':''}">
-        <div class="album-club-head"><div><p class="eyebrow">SET / ${esc(club.tag)}</p><h2>${esc(club.name)}</h2></div><div class="album-count"><strong>${club.owned}/${club.total}</strong><span>${complete?'COMPLET':'EN PROGRESSION'}</span></div></div>
-        <div class="album-progress"><i style="width:${club.total?club.owned/club.total*100:0}%"></i></div>
-        <div class="album-reward"><span>RÉCOMPENSE</span><b>250 FC · 75 XP</b><button class="btn ${complete?'btn-gold':''}" data-claim="${esc(club.id)}" ${complete?'':'disabled'}>${complete?'RÉCUPÉRER':'SET INCOMPLET'}</button></div>
-        <div class="album-missing">${missing.length?missing.map(cardMarkup).join(''):'<div class="album-complete">SET COMPLET — récompense disponible.</div>'}</div>
-      </article>`;
-    }).join('');
-    clubsEl.querySelectorAll('[data-claim]').forEach(btn=>btn.addEventListener('click',async()=>{btn.disabled=true;try{const r=await fetch('/api/album/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clubId:btn.dataset.claim})});const d=await r.json();if(!r.ok)throw new Error(d.error||'Récompense indisponible.');alert(`+${d.reward.coins} FC · +${d.reward.xp} XP`);load();}catch(e){alert(e.message);btn.disabled=false;}}));
+  const clubs=[['aster-fc','Aster FC','AST'],['racing-nord','Racing Nord','RN'],['union-atlantique','Union Atlantique','UA'],['stade-horizon','Stade Horizon','SH']];
+  const clubsEl=document.getElementById('clubs'),overall=document.getElementById('overall'),pct=document.getElementById('progressPct'),sets=document.getElementById('setsComplete');
+  const esc=v=>String(v).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+  const cardBox=(card,owned)=>`<div class="album-card ${owned?'owned':'missing'}"><span>${owned?esc(card.position):'?'}</span><strong>${owned?esc(card.name):'CARTE MANQUANTE'}</strong><small>${owned?esc(card.rarityLabel):esc(card.name)}</small></div>`;
+  function render(catalog,ownedIds){
+    const byClub=new Map(clubs.map(([id,name,tag])=>[name,{id,name,tag,cards:[],owned:0}]));
+    catalog.forEach(card=>{if(byClub.has(card.club))byClub.get(card.club).cards.push(card)});
+    const views=[...byClub.values()].map(set=>{set.cards.sort((a,b)=>a.order-b.order);set.cards.forEach(c=>{if(ownedIds.has(c.id))set.owned++});return set});
+    const total=catalog.length, owned=views.reduce((s,v)=>s+v.owned,0), complete=views.filter(v=>v.cards.length&&v.owned===v.cards.length).length;
+    overall.textContent=`${owned}/${total}`; pct.textContent=`${total?Math.round(owned/total*100):0}%`; sets.textContent=`${complete}/${views.length}`;
+    clubsEl.innerHTML=views.map(set=>{const done=set.cards.length>0&&set.owned===set.cards.length;return `<article class="album-club ${done?'is-complete':''}"><div class="album-club-head"><div><p class="eyebrow">SET / ${esc(set.tag)}</p><h2>${esc(set.name)}</h2></div><div class="album-count"><strong>${set.owned}/${set.cards.length}</strong><span>${done?'COMPLET':'EN PROGRESSION'}</span></div></div><div class="album-progress"><i style="width:${set.cards.length?set.owned/set.cards.length*100:0}%"></i></div><div class="album-reward"><span>OBJECTIF DU SET</span><b>${done?'SET TERMINÉ':'COLLECTIONNER LES '+set.cards.length+' CARTES'}</b><span class="album-note">Récompenses de set à venir sur la prochaine couche de progression.</span></div><div class="album-missing">${set.cards.map(card=>cardBox(card,ownedIds.has(card.id))).join('')}</div></article>`}).join('');
   }
-  async function load(){try{const r=await fetch('/api/album',{cache:'no-store'});if(!r.ok){location.href='auth.html?next=album.html';return;}render(await r.json());}catch(e){clubsEl.innerHTML='<div class="placeholder">Impossible de charger l’album.</div>';}}
+  async function load(){try{const [catalogRes,collectionRes]=await Promise.all([fetch('/api/cards',{cache:'no-store'}),fetch('/api/collection',{cache:'no-store'})]);if(!collectionRes.ok){location.href='auth.html?next=album.html';return;}const catalog=(await catalogRes.json()).cards||[];const collection=(await collectionRes.json()).cards||[];render(catalog,new Set(collection.map(c=>c.cardId)));}catch{clubsEl.innerHTML='<div class="placeholder">Impossible de charger l’album.</div>';}}
   load();
 })();
 </script></body></html>
