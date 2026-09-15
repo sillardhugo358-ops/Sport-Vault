@@ -1,0 +1,33 @@
+/* FOOTVAULT — Mon Vault desktop pass */
+@media (min-width:761px){
+  .vault-page{max-width:1480px;padding:58px clamp(42px,5vw,84px) 110px}
+  .vault-head{margin-bottom:34px;align-items:center}
+  .vault-head h1{font-size:clamp(72px,7vw,104px);letter-spacing:-1.5px}
+  .vault-head p{font-size:13px;max-width:650px;margin-top:14px}
+  .profile-badge{min-width:230px;padding:19px 24px;background:linear-gradient(145deg,#121412,#090a0a);box-shadow:0 18px 45px rgba(0,0,0,.25)}
+  .profile-badge strong{font-size:35px}
+  .metrics{gap:14px;margin-bottom:32px}
+  .metric{padding:24px 25px;min-height:108px;transition:transform .2s ease,border-color .2s ease}
+  .metric:hover{transform:translateY(-3px);border-color:rgba(216,180,106,.28)}
+  .metric strong{font-size:42px}
+  .vault-main{grid-template-columns:minmax(0,1.55fr) minmax(330px,.72fr);gap:18px}
+  .panel{padding:28px;background:linear-gradient(145deg,#0d0f0f,#080909);box-shadow:0 20px 55px rgba(0,0,0,.16)}
+  .panel-head{margin-bottom:22px}
+  .panel-head h2{font-size:35px;letter-spacing:.2px}
+  .competition-list{grid-template-columns:1fr 1fr;gap:14px}
+  .competition-card{min-height:180px;padding:22px;transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease}
+  .competition-card:hover{transform:translateY(-4px);border-color:rgba(216,180,106,.55);box-shadow:0 18px 38px rgba(0,0,0,.28)}
+  .competition-card h3{font-size:34px}
+  .recent-grid{grid-template-columns:repeat(4,1fr);gap:12px}
+  .recent-card{height:235px;padding:12px;transition:transform .22s ease,border-color .22s ease}
+  .recent-card:hover{transform:translateY(-5px);border-color:rgba(216,180,106,.58)}
+  .recent-card .rart{height:145px}
+  .recent-card h3{font-size:19px}
+  .rarity-bars{gap:15px;padding-top:4px}
+  .rarity-row{grid-template-columns:88px 1fr 34px;font-size:10px}
+  .bar{height:6px}
+  .missions{gap:12px}
+  .mission{padding:15px 16px}
+  .mission strong{font-size:16px}
+  .daily-btn{min-width:205px}
+}
