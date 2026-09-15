@@ -9,6 +9,14 @@ const packFixFile = path.join(__dirname, 'pack-fix.js');
 const appJsFile = path.join(__dirname, 'app.js');
 const source = fs.readFileSync(filename, 'utf8');
 
+const originalExistsSync = fs.existsSync.bind(fs);
+const originalReadFileSync = fs.readFileSync.bind(fs);
+const originalWriteFileSync = fs.writeFileSync.bind(fs);
+const originalCreateReadStream = fs.createReadStream.bind(fs);
+const isDataFile = value => path.resolve(String(value)) === path.resolve(dataFile);
+const isPackPage = value => path.resolve(String(value)) === path.resolve(path.join(__dirname, 'packs.html'));
+const isHtmlPage = value => /\.html$/i.test(String(value));
+
 async function start() {
   let state = null;
   let persistQueue = Promise.resolve();
@@ -30,8 +38,8 @@ async function start() {
 
     const result = await pool.query('SELECT data FROM app_state WHERE id = 1');
     if (result.rows[0]?.data) state = result.rows[0].data;
-    else if (fs.existsSync(dataFile)) {
-      try { state = JSON.parse(fs.readFileSync(dataFile, 'utf8')); } catch { state = null; }
+    else if (originalExistsSync(dataFile)) {
+      try { state = JSON.parse(originalReadFileSync(dataFile, 'utf8')); } catch { state = null; }
     }
     state ??= { users: {}, market: [], trades: [], counters: {} };
 
@@ -44,17 +52,9 @@ async function start() {
       return persistQueue;
     };
 
-    const originalExistsSync = fs.existsSync;
-    const originalReadFileSync = fs.readFileSync;
-    const originalWriteFileSync = fs.writeFileSync;
-    const originalCreateReadStream = fs.createReadStream;
-    const isDataFile = value => path.resolve(String(value)) === path.resolve(dataFile);
-    const isPackPage = value => path.resolve(String(value)) === path.resolve(path.join(__dirname, 'packs.html'));
-    const isHtmlPage = value => /\.html$/i.test(String(value));
-
     fs.existsSync = function(value) {
       if (isDataFile(value)) return true;
-      return originalExistsSync.apply(this, arguments);
+      return originalExistsSync(value);
     };
     fs.readFileSync = function(value, options) {
       if (isDataFile(value)) {
@@ -62,7 +62,7 @@ async function start() {
         const text = JSON.stringify(state, null, 2);
         return encoding ? text : Buffer.from(text);
       }
-      return originalReadFileSync.apply(this, arguments);
+      return originalReadFileSync(value, options);
     };
     fs.writeFileSync = function(value, data, options) {
       if (isDataFile(value)) {
@@ -72,22 +72,7 @@ async function start() {
         } catch (err) { console.error('Invalid data.json write:', err.message); }
         return;
       }
-      return originalWriteFileSync.apply(this, arguments);
-    };
-    fs.createReadStream = function(value, options) {
-      if (isHtmlPage(value)) {
-        let html = originalReadFileSync(value, 'utf8');
-        if (isPackPage(value) && originalExistsSync(packFixFile)) {
-          const fix = originalReadFileSync(packFixFile, 'utf8');
-          html = html.replace('</body>', `<script>${fix}\n</script></body>`);
-        }
-        if (originalExistsSync(appJsFile) && !/app\.js/i.test(html)) {
-          const app = originalReadFileSync(appJsFile, 'utf8');
-          html = html.replace('</body>', `<script>${app}\n</script></body>`);
-        }
-        if (html !== originalReadFileSync(value, 'utf8')) return Readable.from([html]);
-      }
-      return originalCreateReadStream.apply(this, arguments);
+      return originalWriteFileSync(value, data, options);
     };
 
     await pool.query(
@@ -103,12 +88,31 @@ async function start() {
     process.once('SIGINT', shutdown);
   }
 
+  // Inject shared mobile navigation on every HTML page. Existing pages that already
+  // load app.js are left untouched; packs also keeps its existing pack-specific fix.
+  fs.createReadStream = function(value, options) {
+    if (isHtmlPage(value)) {
+      const originalHtml = originalReadFileSync(value, 'utf8');
+      let html = originalHtml;
+      if (isPackPage(value) && originalExistsSync(packFixFile)) {
+        const fix = originalReadFileSync(packFixFile, 'utf8');
+        html = html.replace('</body>', `<script>${fix}\n</script></body>`);
+      }
+      if (originalExistsSync(appJsFile) && !/app\.js/i.test(html)) {
+        const app = originalReadFileSync(appJsFile, 'utf8');
+        html = html.replace('</body>', `<script>${app}\n</script></body>`);
+      }
+      if (html !== originalHtml) return Readable.from([html]);
+    }
+    return originalCreateReadStream(value, options);
+  };
+
   let fixedSource = source.replace(
     '!/^[^\\\\s@]+@[^\\\\s@]+\\\\.[^\\\\s@]+$/.test(email)',
     '!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)'
   );
 
-  // Sessions use a signed user id so a normal server restart does not silently log collectors out.
+  // Signed sessions survive normal server restarts as long as the user data persists.
   const sessionSecret = process.env.SESSION_SECRET || 'sport-vault-prototype-session-secret';
   fixedSource = fixedSource.replace(
     "const sessions=new Map();",
