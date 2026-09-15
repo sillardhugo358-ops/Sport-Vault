@@ -57,6 +57,28 @@ function catalogRows() {
 }
 
 const CARD_CATALOG = catalogRows();
+const PACKS = {
+  starter: {
+    id: 'starter', name: 'STARTER PACK', price: 100, currency: 'coins', cards: 5,
+    badge: 'POUR COMMENCER', description: '5 cartes FOOTVAULT · 1 carte RARE ou mieux garantie', guarantee: 'rare'
+  },
+  pro: {
+    id: 'pro', name: 'PRO PACK', price: 250, currency: 'coins', cards: 8,
+    badge: 'LE PLUS POPULAIRE', description: '8 cartes FOOTVAULT · 1 carte EPIC ou mieux garantie', guarantee: 'epic'
+  },
+  legend: {
+    id: 'legend', name: 'LEGEND PACK', price: 500, currency: 'coins', cards: 5,
+    badge: 'HAUTE RARETÉ', description: '5 cartes FOOTVAULT · 1 carte LEGENDARY ou mieux garantie', guarantee: 'legendary'
+  }
+};
+
+const PACK_WEIGHTS = [
+  ['common', 72],
+  ['rare', 21],
+  ['epic', 5],
+  ['legendary', 1.8],
+  ['icon', 0.2]
+];
 
 function json(res, status, data) {
   res.writeHead(status, {
@@ -156,6 +178,57 @@ function buildInstance(card, ownerId, source = 'welcome') {
   };
 }
 
+function weightedRarity() {
+  const total = PACK_WEIGHTS.reduce((sum, [, weight]) => sum + weight, 0);
+  let roll = Math.random() * total;
+  for (const [rarity, weight] of PACK_WEIGHTS) {
+    roll -= weight;
+    if (roll <= 0) return rarity;
+  }
+  return 'common';
+}
+
+function rarityAtLeast(rarity, minimum) {
+  return RARITIES[rarity].order >= RARITIES[minimum].order;
+}
+
+function drawCard(available, minimum = null) {
+  let poolCards = minimum
+    ? available.filter(card => rarityAtLeast(card.rarity, minimum))
+    : available;
+  if (!poolCards.length) poolCards = available;
+  if (!poolCards.length) throw new Error('Catalogue vide');
+  const rarityTarget = minimum || weightedRarity();
+  if (!minimum) {
+    const ofRarity = poolCards.filter(card => card.rarity === rarityTarget);
+    if (ofRarity.length) return ofRarity[Math.floor(Math.random() * ofRarity.length)];
+    return poolCards[Math.floor(Math.random() * poolCards.length)];
+  }
+  return poolCards[Math.floor(Math.random() * poolCards.length)];
+}
+
+function drawPack(packId) {
+  const pack = PACKS[packId];
+  if (!pack) throw new Error('Pack introuvable');
+  const drawn = [];
+  const used = new Set();
+  const candidates = [...CARD_CATALOG];
+
+  const guaranteedIndex = Math.floor(Math.random() * pack.cards);
+  for (let i = 0; i < pack.cards; i += 1) {
+    let card = null;
+    const available = candidates.filter(item => !used.has(item.id));
+    if (i === guaranteedIndex) {
+      card = drawCard(available, pack.guarantee);
+    } else {
+      card = drawCard(available);
+    }
+    used.add(card.id);
+    drawn.push(card);
+  }
+  return drawn;
+}
+
 async function initDb() {
   if (!process.env.DATABASE_URL) return { mode: 'memory' };
   try {
@@ -226,9 +299,21 @@ async function getUserById(id) {
   return memory.users.get(id) || null;
 }
 
-async function createCardInstance(instance) {
+async function updateCoins(userId, delta) {
   if (pool) {
-    await pool.query(`INSERT INTO card_instances
+    const result = await pool.query('UPDATE users SET coins = coins + $1 WHERE id = $2 AND coins + $1 >= 0 RETURNING *', [delta, userId]);
+    return result.rows[0] || null;
+  }
+  const user = memory.users.get(userId);
+  if (!user || user.coins + delta < 0) return null;
+  user.coins += delta;
+  return user;
+}
+
+async function createCardInstance(instance, client = null) {
+  const db = client || pool;
+  if (db) {
+    await db.query(`INSERT INTO card_instances
       (instance_id,card_id,owner_id,season,name,position,club,nation,rarity,serial,max_supply,acquired_at,source,status)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`, [
       instance.instanceId, instance.cardId, instance.ownerId, instance.season, instance.name,
@@ -242,7 +327,7 @@ async function createCardInstance(instance) {
 
 async function getUserCards(ownerId) {
   if (pool) {
-    const result = await pool.query('SELECT * FROM card_instances WHERE owner_id=$1 AND status=\'owned\' ORDER BY acquired_at DESC', [ownerId]);
+    const result = await pool.query("SELECT * FROM card_instances WHERE owner_id=$1 AND status='owned' ORDER BY acquired_at DESC", [ownerId]);
     return result.rows.map(publicCard);
   }
   return [...memory.cards.values()].filter(card => card.ownerId === ownerId && card.status === 'owned').sort((a, b) => new Date(b.acquiredAt) - new Date(a.acquiredAt)).map(publicCard);
@@ -259,6 +344,60 @@ async function grantWelcomeCards(userId) {
     created.push(publicCard(instance));
   }
   return created;
+}
+
+async function openPackForUser(userId, packId) {
+  const pack = PACKS[packId];
+  if (!pack) return { error: 'Pack introuvable.', status: 404 };
+
+  if (pool) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const userResult = await client.query('SELECT * FROM users WHERE id=$1 FOR UPDATE', [userId]);
+      const user = userResult.rows[0];
+      if (!user) {
+        await client.query('ROLLBACK');
+        return { error: 'Utilisateur introuvable.', status: 404 };
+      }
+      if (Number(user.coins) < pack.price) {
+        await client.query('ROLLBACK');
+        return { error: 'FOOTCOINS insuffisants.', status: 400 };
+      }
+
+      const drawnCatalog = drawPack(packId);
+      await client.query('UPDATE users SET coins = coins - $1, xp = xp + $2 WHERE id=$3', [pack.price, pack.cards * 10, userId]);
+      const cards = [];
+      for (const catalogCard of drawnCatalog) {
+        const instance = buildInstance(catalogCard, userId, `pack:${pack.id}`);
+        await createCardInstance(instance, client);
+        cards.push(publicCard(instance));
+      }
+      await client.query('COMMIT');
+      const freshUser = await getUserById(userId);
+      return { user: safeUser(freshUser), cards, pack };
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => {});
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  const user = await getUserById(userId);
+  if (!user) return { error: 'Utilisateur introuvable.', status: 404 };
+  if (Number(user.coins) < pack.price) return { error: 'FOOTCOINS insuffisants.', status: 400 };
+
+  const drawnCatalog = drawPack(packId);
+  user.coins -= pack.price;
+  user.xp += pack.cards * 10;
+  const cards = [];
+  for (const catalogCard of drawnCatalog) {
+    const instance = buildInstance(catalogCard, userId, `pack:${pack.id}`);
+    await createCardInstance(instance);
+    cards.push(publicCard(instance));
+  }
+  return { user: safeUser(user), cards, pack };
 }
 
 async function createUser({ name, email, password }) {
@@ -330,7 +469,7 @@ function staticFile(req, res) {
     const url = new URL(req.url, 'http://local');
     try {
       if (req.method === 'GET' && url.pathname === '/api/health') {
-        return json(res, 200, { ok: true, storage: pool ? 'postgres' : 'memory', universe: 'FOOTVAULT', cards: CARD_CATALOG.length });
+        return json(res, 200, { ok: true, storage: pool ? 'postgres' : 'memory', universe: 'FOOTVAULT', cards: CARD_CATALOG.length, packs: Object.keys(PACKS) });
       }
 
       if (req.method === 'GET' && url.pathname === '/api/me') {
@@ -342,11 +481,25 @@ function staticFile(req, res) {
         return json(res, 200, { universe: 'FOOTVAULT', season: '2026', cards: CARD_CATALOG });
       }
 
+      if (req.method === 'GET' && url.pathname === '/api/packs') {
+        return json(res, 200, { universe: 'FOOTVAULT', season: '2026', packs: Object.values(PACKS) });
+      }
+
       if (req.method === 'GET' && url.pathname === '/api/collection') {
         const user = await currentUser(req);
         if (!user) return json(res, 401, { error: 'Non connecté' });
         const cards = await getUserCards(user.id);
         return json(res, 200, { user: safeUser(user), cards, count: cards.length });
+      }
+
+      if (req.method === 'POST' && url.pathname === '/api/packs/open') {
+        const user = await currentUser(req);
+        if (!user) return json(res, 401, { error: 'Non connecté' });
+        const body = await readBody(req);
+        const packId = String(body.packId || '').trim();
+        const result = await openPackForUser(user.id, packId);
+        if (result.error) return json(res, result.status || 400, { error: result.error });
+        return json(res, 200, result);
       }
 
       if (req.method === 'POST' && url.pathname === '/api/register') {
