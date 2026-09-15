@@ -1,9 +1,11 @@
 const fs = require('node:fs');
 const Module = require('node:module');
 const path = require('node:path');
+const { Readable } = require('node:stream');
 
 const filename = path.join(__dirname, 'server.js');
 const dataFile = path.join(__dirname, 'data.json');
+const packFixFile = path.join(__dirname, 'pack-fix.js');
 const source = fs.readFileSync(filename, 'utf8');
 
 async function start() {
@@ -26,32 +28,27 @@ async function start() {
     )`);
 
     const result = await pool.query('SELECT data FROM app_state WHERE id = 1');
-    if (result.rows[0]?.data) {
-      state = result.rows[0].data;
-    } else if (fs.existsSync(dataFile)) {
-      try {
-        state = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
-      } catch {
-        state = null;
-      }
+    if (result.rows[0]?.data) state = result.rows[0].data;
+    else if (fs.existsSync(dataFile)) {
+      try { state = JSON.parse(fs.readFileSync(dataFile, 'utf8')); } catch { state = null; }
     }
     state ??= { users: {}, market: [], trades: [], counters: {} };
 
     const persist = () => {
-      persistQueue = persistQueue.then(() =>
-        pool.query(
-          `INSERT INTO app_state (id, data, updated_at) VALUES (1, $1::jsonb, now())
-           ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = now()`,
-          [JSON.stringify(state)]
-        )
-      ).catch(err => console.error('Postgres persistence error:', err.message));
+      persistQueue = persistQueue.then(() => pool.query(
+        `INSERT INTO app_state (id, data, updated_at) VALUES (1, $1::jsonb, now())
+         ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = now()`,
+        [JSON.stringify(state)]
+      )).catch(err => console.error('Postgres persistence error:', err.message));
       return persistQueue;
     };
 
     const originalExistsSync = fs.existsSync;
     const originalReadFileSync = fs.readFileSync;
     const originalWriteFileSync = fs.writeFileSync;
+    const originalCreateReadStream = fs.createReadStream;
     const isDataFile = value => path.resolve(String(value)) === path.resolve(dataFile);
+    const isPackPage = value => path.resolve(String(value)) === path.resolve(path.join(__dirname, 'packs.html'));
 
     fs.existsSync = function(value) {
       if (isDataFile(value)) return true;
@@ -70,12 +67,19 @@ async function start() {
         try {
           state = JSON.parse(Buffer.isBuffer(data) ? data.toString('utf8') : String(data));
           persist();
-        } catch (err) {
-          console.error('Invalid data.json write:', err.message);
-        }
+        } catch (err) { console.error('Invalid data.json write:', err.message); }
         return;
       }
       return originalWriteFileSync.apply(this, arguments);
+    };
+    fs.createReadStream = function(value, options) {
+      if (isPackPage(value) && originalExistsSync(packFixFile)) {
+        const html = originalReadFileSync(value, 'utf8');
+        const fix = originalReadFileSync(packFixFile, 'utf8');
+        const injected = html.replace('</body>', `<script>${fix}\n</script></body>`);
+        return Readable.from([injected]);
+      }
+      return originalCreateReadStream.apply(this, arguments);
     };
 
     await pool.query(
@@ -91,7 +95,6 @@ async function start() {
     process.once('SIGINT', shutdown);
   }
 
-  // Keep the prototype's auth-validation compatibility patch.
   const fixedSource = source.replace(
     '!/^[^\\\\s@]+@[^\\\\s@]+\\\\.[^\\\\s@]+$/.test(email)',
     '!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)'
