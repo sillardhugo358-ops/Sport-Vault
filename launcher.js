@@ -75,24 +75,23 @@ async function start() {
       return originalWriteFileSync.apply(this, arguments);
     };
     fs.createReadStream = function(value, options) {
-      if (isPackPage(value) && originalExistsSync(packFixFile)) {
-        const html = originalReadFileSync(value, 'utf8');
-        const fix = originalReadFileSync(packFixFile, 'utf8');
-        const injected = html.replace('</body>', `<script>${fix}\n</script></body>`);
-        return Readable.from([injected]);
-      }
-      if (isHtmlPage(value) && originalExistsSync(appJsFile)) {
-        const html = originalReadFileSync(value, 'utf8');
-        if (/app\.js/i.test(html)) return originalCreateReadStream.apply(this, arguments);
-        const app = originalReadFileSync(appJsFile, 'utf8');
-        const injected = html.replace('</body>', `<script>${app}\n</script></body>`);
-        return Readable.from([injected]);
+      if (isHtmlPage(value)) {
+        let html = originalReadFileSync(value, 'utf8');
+        if (isPackPage(value) && originalExistsSync(packFixFile)) {
+          const fix = originalReadFileSync(packFixFile, 'utf8');
+          html = html.replace('</body>', `<script>${fix}\n</script></body>`);
+        }
+        if (originalExistsSync(appJsFile) && !/app\.js/i.test(html)) {
+          const app = originalReadFileSync(appJsFile, 'utf8');
+          html = html.replace('</body>', `<script>${app}\n</script></body>`);
+        }
+        if (html !== originalReadFileSync(value, 'utf8')) return Readable.from([html]);
       }
       return originalCreateReadStream.apply(this, arguments);
     };
 
     await pool.query(
-      `INSERT INTO app_state (id, data, updated_at) VALUES (1, $1::jsonb, now())
+      `INSERT INTO app_state (id, data) VALUES (1, $1::jsonb)
        ON CONFLICT (id) DO NOTHING`,
       [JSON.stringify(state)]
     );
