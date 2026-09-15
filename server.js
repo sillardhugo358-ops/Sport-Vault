@@ -138,10 +138,8 @@ function publicCard(card) {
 
 function buildInstance(card, ownerId, source = 'welcome') {
   const rarity = RARITIES[card.rarity];
-  const key = crypto.randomUUID();
-  const serial = Math.floor(Math.random() * rarity.supply) + 1;
   return {
-    instanceId: key,
+    instanceId: crypto.randomUUID(),
     cardId: card.id,
     ownerId,
     season: card.season,
@@ -150,7 +148,7 @@ function buildInstance(card, ownerId, source = 'welcome') {
     club: card.club,
     nation: card.nation,
     rarity: card.rarity,
-    serial,
+    serial: Math.floor(Math.random() * rarity.supply) + 1,
     maxSupply: rarity.supply,
     acquiredAt: new Date().toISOString(),
     source,
@@ -373,6 +371,7 @@ function staticFile(req, res) {
         const password = String(body.password || '');
         const user = await findUserByEmail(email);
         if (!user || !verifyPassword(password, user.password_hash)) return json(res, 401, { error: 'Email ou mot de passe incorrect.' });
+        await grantWelcomeCards(user.id);
         const token = await createSession(user.id);
         res.setHeader('Set-Cookie', sessionCookie(token));
         return json(res, 200, { user: safeUser(user) });
