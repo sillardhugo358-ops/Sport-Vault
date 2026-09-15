@@ -1,0 +1,13 @@
+const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process');
+const PUBLIC_PORT=Number(process.env.PORT||3000),LEGACY_PORT=PUBLIC_PORT===3000?3001:PUBLIC_PORT+1,ROOT=__dirname,DB=path.join(ROOT,'data.json');
+const child=spawn(process.execPath,['server.js'],{env:{...process.env,PORT:String(LEGACY_PORT)},stdio:'inherit'});
+child.on('exit',code=>{if(code!==0)process.exitCode=code||1});
+function readBody(req){return new Promise((resolve,reject)=>{let s='';req.on('data',c=>{s+=c;if(s.length>1e6){req.destroy();reject(new Error('payload too large'))}});req.on('end',()=>resolve(s));req.on('error',reject)})}
+function patchEmail(original){try{const d=JSON.parse(fs.readFileSync(DB,'utf8'));for(const u of Object.values(d.users||{})){if(u.email===original.replace(/\./g,'\\.')){u.email=original;fs.writeFileSync(DB,JSON.stringify(d,null,2));return true}}}catch{}return false}
+function proxy(req,res){const options={hostname:'127.0.0.1',port:LEGACY_PORT,path:req.url,method:req.method,headers:{...req.headers,host:`127.0.0.1:${LEGACY_PORT}`}};const p=http.request(options,r=>{let chunks=[];r.on('data',c=>chunks.push(c));r.on('end',()=>{const body=Buffer.concat(chunks);let out=body;
+if(req.method==='POST'&&req.url==='/api/register'&&r.statusCode>=200&&r.statusCode<300){try{const posted=JSON.parse(proxy._lastBody||'{}');const original=String(posted.email||'').trim().toLowerCase();if(original)patchEmail(original)}catch{}}
+res.writeHead(r.statusCode,r.headers);res.end(out)})});p.on('error',()=>{if(!res.headersSent)res.writeHead(502,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify({error:'Serveur temporairement indisponible.'}))});req.pipe(p)}
+const server=http.createServer(async(req,res)=>{if(req.method==='POST'&&req.url==='/api/register'){try{const raw=await readBody(req),b=JSON.parse(raw||'{}'),email=String(b.email||'').trim().toLowerCase();if(email){b.email=email.replace(/\./g,'\\.');proxy._lastBody=JSON.stringify(b);const fake=http.Readable.from([JSON.stringify(b)]);fake.method=req.method;fake.url=req.url;fake.headers={...req.headers,'content-length':Buffer.byteLength(JSON.stringify(b))};proxy(fake,res);return}}catch(e){res.writeHead(400,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify({error:'Données d’inscription invalides.'}));return}}
+proxy(req,res)});
+server.listen(PUBLIC_PORT,'0.0.0.0',()=>console.log(`SPORT VAULT proxy running on ${PUBLIC_PORT}, backend on ${LEGACY_PORT}`));
+process.on('SIGTERM',()=>child.kill('SIGTERM'));process.on('SIGINT',()=>child.kill('SIGINT'));
