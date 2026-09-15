@@ -1,14 +1,33 @@
-const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process');
+const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{spawn}=require('node:child_process');
 const PUBLIC_PORT=Number(process.env.PORT||3000),LEGACY_PORT=PUBLIC_PORT===3000?3001:PUBLIC_PORT+1,DB=path.join(__dirname,'data.json');
 const child=spawn(process.execPath,['server.js'],{env:{...process.env,PORT:String(LEGACY_PORT)},stdio:'inherit'});
 child.on('exit',code=>{if(code!==0)process.exitCode=code||1});
 function readBody(req){return new Promise((resolve,reject)=>{let s='';req.on('data',c=>{s+=c;if(s.length>1e6){req.destroy();reject(new Error('payload too large'))}});req.on('end',()=>resolve(s));req.on('error',reject)})}
-function normalizedEmail(value){return String(value||'').trim().toLowerCase()}
-function emailVariants(original){const e=normalizedEmail(original);return[e,e.replace(/\./g,'\\.'),e.replace(/s/g,'x').replace(/\./g,'\\.')]} 
-function repairStoredEmail(original){try{const d=JSON.parse(fs.readFileSync(DB,'utf8')),variants=emailVariants(original);for(const u of Object.values(d.users||{})){if(variants.includes(normalizedEmail(u.email))&&u.email!==original){u.email=original;fs.writeFileSync(DB,JSON.stringify(d,null,2));return true}}}catch{}return false}
-function forward(req,res,bodyOverride){const options={hostname:'127.0.0.1',port:LEGACY_PORT,path:req.url,method:req.method,headers:{...req.headers,host:`127.0.0.1:${LEGACY_PORT}`}};if(bodyOverride!==undefined)options.headers['content-length']=Buffer.byteLength(bodyOverride);const p=http.request(options,r=>{const chunks=[];r.on('data',c=>chunks.push(c));r.on('end',()=>{res.writeHead(r.statusCode,r.headers);res.end(Buffer.concat(chunks))})});p.on('error',()=>{if(!res.headersSent)res.writeHead(502,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify({error:'Serveur temporairement indisponible.'}))});if(bodyOverride!==undefined)p.end(bodyOverride);else req.pipe(p)}
-const server=http.createServer(async(req,res)=>{const pathname=new URL(req.url,'http://x').pathname;if(req.method==='POST'&&(pathname==='/api/register'||pathname==='/api/login')){try{const raw=await readBody(req),b=JSON.parse(raw||'{}'),original=normalizedEmail(b.email);if(!original){res.writeHead(400,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify({error:'Email requis.'}));return}
-if(pathname==='/api/register'){b.email=original.replace(/\./g,'\\.');b.email_original=original;forward(req,res,JSON.stringify(b));return}
-repairStoredEmail(original);b.email=original;forward(req,res,JSON.stringify(b));return}catch(e){res.writeHead(400,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify({error:'Données invalides.'}));return}}forward(req,res)});
-server.listen(PUBLIC_PORT,'0.0.0.0',()=>console.log(`SPORT VAULT proxy running on ${PUBLIC_PORT}, backend on ${LEGACY_PORT}`));
+function db(){if(!fs.existsSync(DB))fs.writeFileSync(DB,JSON.stringify({users:{},market:[],trades:[],counters:{}},null,2));const d=JSON.parse(fs.readFileSync(DB,'utf8'));d.users??={};d.market??=[];d.trades??=[];d.counters??={};return d}
+function save(d){fs.writeFileSync(DB,JSON.stringify(d,null,2))}
+function hash(p,s=crypto.randomBytes(16).toString('hex')){return s+':'+crypto.scryptSync(p,s,64).toString('hex')}
+function safe(u){return{id:u.id,name:u.name,email:u.email,createdAt:u.createdAt,coins:u.coins,gems:u.gems,xp:u.xp,lastDaily:u.lastDaily||null}}
+function candidates(email){const e=String(email||'').trim().toLowerCase(),set=new Set([e,e.replace(/\./g,'\\.'),e.replace(/s/g,'x'),e.replace(/s/g,'x').replace(/\./g,'\\.')]);return [...set]}
+function findUser(email){const d=db(),c=candidates(email);return Object.values(d.users).find(u=>c.includes(String(u.email||'').toLowerCase()))||null}
+function requestBackend(method,url,body,headers={}){return new Promise((resolve,reject)=>{const payload=body===undefined?null:Buffer.from(body);const opts={hostname:'127.0.0.1',port:LEGACY_PORT,path:url,method,headers:{...headers,host:`127.0.0.1:${LEGACY_PORT}`}};if(payload){opts.headers['content-length']=payload.length;opts.headers['content-type']='application/json'}const r=http.request(opts,res=>{const chunks=[];res.on('data',c=>chunks.push(c));res.on('end',()=>resolve({status:res.statusCode,headers:res.headers,body:Buffer.concat(chunks)}))});r.on('error',reject);if(payload)r.end(payload);else r.end()})}
+function reply(res,status,headers,body){const h={...headers};delete h['content-length'];res.writeHead(status,h);res.end(body)}
+const server=http.createServer(async(req,res)=>{try{
+if(req.method==='POST'&&req.url==='/api/register'){
+ const raw=await readBody(req),b=JSON.parse(raw||'{}'),name=String(b.name||'').trim(),email=String(b.email||'').trim().toLowerCase(),password=String(b.password||'');
+ if(name.length<2||name.length>30||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||password.length<8){reply(res,400,{'Content-Type':'application/json; charset=utf-8'},Buffer.from(JSON.stringify({error:'Nom, email valide et mot de passe de 8 caractères minimum requis.'})));return}
+ if(findUser(email)){reply(res,409,{'Content-Type':'application/json; charset=utf-8'},Buffer.from(JSON.stringify({error:'Cet email est déjà utilisé.'})));return}
+ const d=db(),id=crypto.randomUUID();d.users[id]={id,name,email,password:hash(password),inventory:[],history:[],coins:1000,gems:50,xp:0,lastDaily:null,albumClaims:{},createdAt:new Date().toISOString()};save(d);
+ const login=await requestBackend('POST','/api/login',JSON.stringify({email,password}),{'accept':'application/json'});
+ if(login.status<200||login.status>=300){delete d.users[id];save(d);reply(res,500,{'Content-Type':'application/json; charset=utf-8'},Buffer.from(JSON.stringify({error:'Compte créé mais ouverture de session impossible. Réessayez.'})));return}
+ reply(res,201,{...login.headers,'Content-Type':'application/json; charset=utf-8'},login.body);return;
+}
+if(req.method==='POST'&&req.url==='/api/login'){
+ const raw=await readBody(req),b=JSON.parse(raw||'{}'),email=String(b.email||'').trim().toLowerCase(),password=String(b.password||'');
+ const u=findUser(email),loginEmail=u?u.email:email;
+ const login=await requestBackend('POST','/api/login',JSON.stringify({email:loginEmail,password}),{'accept':'application/json'});
+ reply(res,login.status,{...login.headers,'Content-Type':'application/json; charset=utf-8'},login.body);return;
+}
+let body; if(req.method!=='GET'&&req.method!=='HEAD')body=await readBody(req).catch(()=>null);const r=await requestBackend(req.method,req.url,body,{...req.headers});reply(res,r.status,r.headers,r.body);
+}catch(e){if(!res.headersSent)reply(res,500,{'Content-Type':'application/json; charset=utf-8'},Buffer.from(JSON.stringify({error:'Erreur serveur.'})));else res.end()}});
+server.listen(PUBLIC_PORT,'0.0.0.0',()=>console.log(`SPORT VAULT auth gateway running on ${PUBLIC_PORT}, backend on ${LEGACY_PORT}`));
 process.on('SIGTERM',()=>child.kill('SIGTERM'));process.on('SIGINT',()=>child.kill('SIGINT'));
