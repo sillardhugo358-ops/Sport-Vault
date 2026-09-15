@@ -30,4 +30,5 @@
   .mission{padding:15px 16px}
   .mission strong{font-size:16px}
   .daily-btn{min-width:205px}
+  .mission .mini-progress i:not([style]){width:0!important}
 }
