@@ -44,7 +44,8 @@ function save(d){fs.writeFileSync(DB,JSON.stringify(d,null,2));}
 function body(req){return new Promise((resolve,reject)=>{let s='';req.on('data',c=>{s+=c;if(s.length>1e6){req.destroy();reject(new Error('payload too large'));}});req.on('end',()=>{try{resolve(JSON.parse(s||'{}'));}catch(e){reject(e);}});req.on('error',reject);});}
 function out(res,status,data){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(data));}
 function cookies(req){return Object.fromEntries((req.headers.cookie||'').split(';').filter(Boolean).map(x=>{const i=x.indexOf('=');return[x.slice(0,i).trim(),decodeURIComponent(x.slice(i+1).trim())]}));}
-function currentUser(req){const sid=cookies(req).fv_session;const id=sessions.get(sid);if(!id)return null;const d=db();return d.users[id]||null;}
+function sessionUserId(req){const sid=cookies(req).fv_session;return sessions.get(sid)||null;}
+function currentUser(req){const id=sessionUserId(req);if(!id)return null;const d=db();return d.users[id]||null;}
 function ensureWelcomeState(u){
   const emptyInventory=!(u.inventory||[]).length;
   const emptyHistory=!(u.history||[]).length;
@@ -58,7 +59,21 @@ function ensureWelcomeState(u){
   }
   return false;
 }
-function need(req,res){const u=currentUser(req);if(!u){out(res,401,{error:'Authentification requise'});return null;}const d=db();if(ensureWelcomeState(u)){d.users[u.id]=u;save(d);}return u;}
+// FIX bug "0 FOOTCOINS à l'inscription" : need() faisait DEUX lectures séparées de db()
+// (une via currentUser(), une autre juste après). Sur la persistance Postgres, ces deux
+// lectures pouvaient renvoyer des instantanés légèrement différents si une sauvegarde était
+// encore en file d'attente, et le save() de need() pouvait alors écraser les coins/gems
+// fraîchement attribués à l'inscription avec une version plus ancienne. On lit désormais
+// db() une seule fois, et currentUser(req) réutilise cette même lecture pour l'utilisateur.
+function need(req,res){
+  const id=sessionUserId(req);
+  if(!id){out(res,401,{error:'Authentification requise'});return null;}
+  const d=db();
+  const u=d.users[id];
+  if(!u){out(res,401,{error:'Authentification requise'});return null;}
+  if(ensureWelcomeState(u)){d.users[id]=u;save(d);}
+  return u;
+}
 function safe(u){return{id:u.id,name:u.name,email:u.email,createdAt:u.createdAt,coins:u.coins,gems:u.gems,xp:u.xp,lastDaily:u.lastDaily||null};}
 function session(res,id){const sid=crypto.randomBytes(32).toString('hex');sessions.set(sid,id);res.setHeader('Set-Cookie',`fv_session=${sid}; HttpOnly; SameSite=Lax; Path=/; Max-Age=2592000`);}
 function hashPassword(password,salt=crypto.randomBytes(16).toString('hex')){return `${salt}:${crypto.scryptSync(password,salt,64).toString('hex')}`;}
@@ -122,7 +137,14 @@ const server=http.createServer(async(req,res)=>{
       if(x.email!==email){x.email=email;d.users[x.id]=x;save(d);}session(res,x.id);return out(res,200,{user:safe(x)});
     }
     if(req.method==='POST'&&u.pathname==='/api/logout'){const sid=cookies(req).fv_session;sessions.delete(sid);res.setHeader('Set-Cookie','fv_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');return out(res,200,{ok:true});}
-    if(req.method==='GET'&&u.pathname==='/api/me'){const x=currentUser(req);if(x){const d=db();if(ensureWelcomeState(x)){d.users[x.id]=x;save(d);}}return out(res,x?200:401,x?{user:safe(x)}:{error:'Non connecté'});}
+    if(req.method==='GET'&&u.pathname==='/api/me'){
+      const id=sessionUserId(req);
+      if(!id)return out(res,401,{error:'Non connecté'});
+      const d=db(),x=d.users[id];
+      if(!x)return out(res,401,{error:'Non connecté'});
+      if(ensureWelcomeState(x)){d.users[id]=x;save(d);}
+      return out(res,200,{user:safe(x)});
+    }
     if(req.method==='GET'&&u.pathname==='/api/state'){
       const x=need(req,res);if(!x)return;
       return out(res,200,{user:safe(x),level:level(x.xp),players,inventory:x.inventory||[],history:x.history||[],missions:Object.fromEntries(Object.entries(MISSIONS).map(([id,m])=>[id,{target:m.target,coins:m.coins,xp:m.xp,completed:m.check(x),claimed:!!(x.missionClaims||{})[id]}]))});
