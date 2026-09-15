@@ -5,7 +5,7 @@
   "description": "SPORT VAULT prototype with persistent Postgres-backed state, server-side packs, economy, unique cards, album progression, marketplace and trades",
   "scripts": {
     "prestart": "node repair-db.js",
-    "start": "node launcher.js"
+    "start": "node repair-db.js && node launcher.js"
   },
   "engines": {"node": ">=18"},
   "dependencies": {"pg": "^8.16.3"}
