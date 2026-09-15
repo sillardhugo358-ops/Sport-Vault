@@ -8,6 +8,36 @@ function showToast(message){
   window.__toast = setTimeout(()=>toast.classList.remove('show'), 2200);
 }
 
+(function normalizeSiteHeader(){
+  const header = document.querySelector('.site-header');
+  if(!header) return;
+  const page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+  if(page === 'auth.html') return;
+  const items = [
+    ['Accueil','index.html',page === 'index.html'],
+    ['Collection','collection.html',page === 'collection.html'],
+    ['Album','album.html',page === 'album.html'],
+    ['Packs','packs.html',page === 'packs.html'],
+    ['À propos','index.html#about',page === 'about'],
+    ['Mon Vault','vault.html',page === 'vault.html'],
+    ['Market','market.html',page === 'market.html'],
+    ['Compte','auth.html',page === 'auth.html']
+  ];
+  const nav = items.map(([label,href,active])=>`<a${active?' class="active"':''} href="${href}">${label}</a>`).join('');
+  header.innerHTML = `
+    <a class="brand" href="index.html" aria-label="FOOTVAULT accueil">
+      <span class="brand-mark">FV</span>
+      <span><strong>FOOTVAULT</strong><small>COLLECT THE GAME.</small></span>
+    </a>
+    <nav class="nav" aria-label="Navigation principale">${nav}</nav>
+    <div class="header-actions">
+      <button class="icon-btn" aria-label="Rechercher">⌕</button>
+      <a class="btn btn-outline" href="auth.html?mode=login">Connexion</a>
+      <a class="btn btn-gold" href="auth.html?mode=register">Créer un compte</a>
+    </div>
+    <button class="menu-btn" aria-label="Ouvrir le menu">☰</button>`;
+})();
+
 (function initMobileMenu(){
   if(document.querySelector('.mobile-menu')) return;
   const header = document.querySelector('.site-header');
