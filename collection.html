@@ -4,8 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Collection — FOOTVAULT</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -16,95 +15,26 @@
   <nav class="nav"><a href="index.html">Accueil</a><a class="active" href="collection.html">Collection</a><a href="album.html">Album</a><a href="packs.html">Packs</a><a href="vault.html">Mon Vault</a><a href="market.html">Market</a></nav>
   <button class="menu-btn" aria-label="Menu">☰</button>
 </header>
-
 <main class="page">
   <section class="collection-hero">
-    <div>
-      <p class="eyebrow">FOOTVAULT / SAISON 2026</p>
-      <h1>TA <span>COLLECTION.</span></h1>
-      <p class="lead">Chaque carte est une instance unique. Ouvre une carte pour voir sa fiche, ses statistiques et sa valeur de Vault.</p>
-    </div>
+    <div><p class="eyebrow">FOOTVAULT / SAISON 2026</p><h1>TA <span>COLLECTION.</span></h1><p class="lead">Collectionne les cartes classiques et chasse les exemplaires ultra rares numérotés.</p></div>
     <div class="collection-stat"><strong id="collectionCount">—</strong><span>CARTES EN COLLECTION</span></div>
   </section>
-
   <section class="collection-toolbar">
-    <div class="filter-group">
-      <button class="filter active" data-filter="all">Toutes</button>
-      <button class="filter" data-filter="common">Common</button>
-      <button class="filter" data-filter="rare">Rare</button>
-      <button class="filter" data-filter="epic">Epic</button>
-      <button class="filter" data-filter="legendary">Legendary</button>
-      <button class="filter" data-filter="icon">Icon</button>
-    </div>
+    <div class="filter-group"><button class="filter active" data-filter="all">Toutes</button><button class="filter" data-filter="common">Common</button><button class="filter" data-filter="rare">Rare</button><button class="filter" data-filter="epic">Epic</button><button class="filter" data-filter="legendary">Legendary</button><button class="filter" data-filter="icon">Ultra Rare</button></div>
     <div class="collection-user" id="collectionUser">Connexion en cours…</div>
   </section>
-
   <section id="collectionGrid" class="football-card-grid" aria-live="polite"></section>
   <div id="collectionEmpty" class="placeholder" hidden>Aucune carte ne correspond à ce filtre.</div>
   <div id="collectionError" class="placeholder" hidden>Impossible de charger la collection.</div>
 </main>
-
 <script>
-const grid = document.getElementById('collectionGrid');
-const count = document.getElementById('collectionCount');
-const userBox = document.getElementById('collectionUser');
-const empty = document.getElementById('collectionEmpty');
-const errorBox = document.getElementById('collectionError');
-let cards = [];
-let activeFilter = 'all';
-
-function escapeHtml(value) {
-  return String(value).replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
-}
-
-function cardHtml(card) {
-  const initials = card.name.split(' ').map(part => part[0]).slice(0, 2).join('');
-  return `<a class="football-card rarity-${escapeHtml(card.rarity)} football-card-link" href="card.html?id=${encodeURIComponent(card.instanceId)}" aria-label="Voir la fiche de ${escapeHtml(card.name)}">
-    <article class="football-card">
-      <div class="football-card-frame">
-        <div class="football-card-top"><span>FV 26</span><strong>${escapeHtml(card.position)}</strong></div>
-        <div class="football-avatar"><span>${escapeHtml(initials)}</span></div>
-        <div class="football-card-club">${escapeHtml(card.club)} · ${escapeHtml(card.nation)}</div>
-        <h2>${escapeHtml(card.name)}</h2>
-        <div class="football-card-bottom"><b>${escapeHtml(card.rarityLabel)}</b><span>${escapeHtml(card.serialLabel)}</span></div>
-        <div class="football-card-open">VOIR LA FICHE ↗</div>
-      </div>
-    </article>
-  </a>`;
-}
-
-function render() {
-  const filtered = activeFilter === 'all' ? cards : cards.filter(card => card.rarity === activeFilter);
-  grid.innerHTML = filtered.map(cardHtml).join('');
-  empty.hidden = filtered.length !== 0;
-}
-
-document.querySelectorAll('.filter').forEach(button => {
-  button.addEventListener('click', () => {
-    document.querySelectorAll('.filter').forEach(item => item.classList.remove('active'));
-    button.classList.add('active');
-    activeFilter = button.dataset.filter;
-    render();
-  });
-});
-
-(async () => {
-  try {
-    const response = await fetch('/api/collection', { credentials: 'same-origin' });
-    const data = await response.json();
-    if (!response.ok) {
-      window.location.href = 'auth.html?next=collection.html';
-      return;
-    }
-    cards = data.cards || [];
-    count.textContent = String(cards.length).padStart(2, '0');
-    userBox.textContent = `${data.user.name} · ${data.user.coins} FOOTCOINS · ${data.user.gems} GEMS`;
-    render();
-  } catch {
-    errorBox.hidden = false;
-  }
-})();
-</script>
-<script src="app.js"></script>
-</body>
-</html>
+const grid=document.getElementById('collectionGrid'),count=document.getElementById('collectionCount'),userBox=document.getElementById('collectionUser'),empty=document.getElementById('collectionEmpty'),errorBox=document.getElementById('collectionError');
+let cards=[],activeFilter='all';
+function escapeHtml(value){return String(value).replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));}
+function cardHtml(card){const initials=card.name.split(' ').map(part=>part[0]).slice(0,2).join('');const edition=card.rarity==='icon'?card.serialLabel:'CLASSIC';return `<a class="football-card rarity-${escapeHtml(card.rarity)} football-card-link" href="card.html?id=${encodeURIComponent(card.instanceId)}" aria-label="Voir la fiche de ${escapeHtml(card.name)}"><div class="football-card-frame"><div class="football-card-top"><span>FV 26</span><strong>${escapeHtml(card.position)}</strong></div><div class="football-avatar"><span>${escapeHtml(initials)}</span></div><div class="football-card-club">${escapeHtml(card.club)} · ${escapeHtml(card.nation)}</div><h2>${escapeHtml(card.name)}</h2><div class="football-card-bottom"><b>${escapeHtml(card.rarityLabel)}</b><span>${escapeHtml(edition)}</span></div></div></a>`;}
+function render(){const filtered=activeFilter==='all'?cards:cards.filter(card=>card.rarity===activeFilter);grid.innerHTML=filtered.map(cardHtml).join('');empty.hidden=filtered.length!==0;}
+document.querySelectorAll('.filter').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('.filter').forEach(item=>item.classList.remove('active'));button.classList.add('active');activeFilter=button.dataset.filter;render();}));
+(async()=>{try{const response=await fetch('/api/collection',{credentials:'same-origin',cache:'no-store'});const data=await response.json();if(!response.ok){window.location.replace('auth.html?next=collection.html');return}cards=data.cards||[];count.textContent=String(cards.length).padStart(2,'0');userBox.textContent=`${data.user.name} · ${data.user.coins} FOOTCOINS · ${data.user.gems} GEMS`;render();}catch{errorBox.hidden=false;}})();
+</script><script src="app.js"></script>
+</body></html>
