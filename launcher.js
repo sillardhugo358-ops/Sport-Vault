@@ -7,6 +7,7 @@ const filename = path.join(__dirname, 'server.js');
 const dataFile = path.join(__dirname, 'data.json');
 const packFixFile = path.join(__dirname, 'pack-fix.js');
 const appJsFile = path.join(__dirname, 'app.js');
+const homePcCssFile = path.join(__dirname, 'home-pc.css');
 const source = fs.readFileSync(filename, 'utf8');
 
 const originalExistsSync = fs.existsSync.bind(fs);
@@ -15,6 +16,7 @@ const originalWriteFileSync = fs.writeFileSync.bind(fs);
 const originalCreateReadStream = fs.createReadStream.bind(fs);
 const isDataFile = value => path.resolve(String(value)) === path.resolve(dataFile);
 const isPackPage = value => path.resolve(String(value)) === path.resolve(path.join(__dirname, 'packs.html'));
+const isHomePage = value => path.resolve(String(value)) === path.resolve(path.join(__dirname, 'index.html'));
 const isHtmlPage = value => /\.html$/i.test(String(value));
 
 async function start() {
@@ -88,12 +90,16 @@ async function start() {
     process.once('SIGINT', shutdown);
   }
 
-  // Inject shared mobile navigation on every HTML page. Existing pages that already
-  // load app.js are left untouched; packs also keeps its existing pack-specific fix.
+  // Inject shared assets on pages that need them. Desktop homepage styling is
+  // isolated from the mobile pass so the two layouts can be tuned independently.
   fs.createReadStream = function(value, options) {
     if (isHtmlPage(value)) {
       const originalHtml = originalReadFileSync(value, 'utf8');
       let html = originalHtml;
+      if (isHomePage(value) && originalExistsSync(homePcCssFile)) {
+        const css = originalReadFileSync(homePcCssFile, 'utf8');
+        html = html.replace('</head>', `<style data-footvault-home-pc>${css}</style></head>`);
+      }
       if (isPackPage(value) && originalExistsSync(packFixFile)) {
         const fix = originalReadFileSync(packFixFile, 'utf8');
         html = html.replace('</body>', `<script>${fix}\n</script></body>`);
