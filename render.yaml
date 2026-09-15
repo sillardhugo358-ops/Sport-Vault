@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: sport-vault
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/me
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
