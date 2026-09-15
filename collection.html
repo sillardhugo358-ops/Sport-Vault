@@ -22,7 +22,7 @@
     <div>
       <p class="eyebrow">FOOTVAULT / SAISON 2026</p>
       <h1>TA <span>COLLECTION.</span></h1>
-      <p class="lead">Chaque carte est une instance unique. La rareté définit la disponibilité, le numéro définit ta copie.</p>
+      <p class="lead">Chaque carte est une instance unique. Ouvre une carte pour voir sa fiche, ses statistiques et sa valeur de Vault.</p>
     </div>
     <div class="collection-stat"><strong id="collectionCount">—</strong><span>CARTES EN COLLECTION</span></div>
   </section>
@@ -59,15 +59,18 @@ function escapeHtml(value) {
 
 function cardHtml(card) {
   const initials = card.name.split(' ').map(part => part[0]).slice(0, 2).join('');
-  return `<article class="football-card rarity-${escapeHtml(card.rarity)}">
-    <div class="football-card-frame">
-      <div class="football-card-top"><span>FV 26</span><strong>${escapeHtml(card.position)}</strong></div>
-      <div class="football-avatar"><span>${escapeHtml(initials)}</span></div>
-      <div class="football-card-club">${escapeHtml(card.club)} · ${escapeHtml(card.nation)}</div>
-      <h2>${escapeHtml(card.name)}</h2>
-      <div class="football-card-bottom"><b>${escapeHtml(card.rarityLabel)}</b><span>${escapeHtml(card.serialLabel)}</span></div>
-    </div>
-  </article>`;
+  return `<a class="football-card rarity-${escapeHtml(card.rarity)} football-card-link" href="card.html?id=${encodeURIComponent(card.instanceId)}" aria-label="Voir la fiche de ${escapeHtml(card.name)}">
+    <article class="football-card">
+      <div class="football-card-frame">
+        <div class="football-card-top"><span>FV 26</span><strong>${escapeHtml(card.position)}</strong></div>
+        <div class="football-avatar"><span>${escapeHtml(initials)}</span></div>
+        <div class="football-card-club">${escapeHtml(card.club)} · ${escapeHtml(card.nation)}</div>
+        <h2>${escapeHtml(card.name)}</h2>
+        <div class="football-card-bottom"><b>${escapeHtml(card.rarityLabel)}</b><span>${escapeHtml(card.serialLabel)}</span></div>
+        <div class="football-card-open">VOIR LA FICHE ↗</div>
+      </div>
+    </article>
+  </a>`;
 }
 
 function render() {
