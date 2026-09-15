@@ -3,13 +3,8 @@
     const opening = document.getElementById('opening');
     const inner = document.querySelector('.opening-inner');
     const stage = document.querySelector('.pack-stage');
-    const stagePack = document.getElementById('stagePack');
     const reveals = document.getElementById('reveals');
-    const openingTitle = document.getElementById('openingTitle');
-    const resultSummary = document.getElementById('resultSummary');
-    const revealAll = document.getElementById('revealAll');
-    const closeOpening = document.getElementById('closeOpening');
-    if (!opening || !inner || !stage || !stagePack || !reveals || !openingTitle || !resultSummary || !revealAll || !closeOpening) return;
+    if (!opening || !inner || !stage || !reveals) return;
 
     const style = document.createElement('style');
     style.textContent = `
@@ -56,7 +51,8 @@
     window.alert = (message) => showNotice(message);
 
     const prices = [100, 250, 500];
-    document.querySelectorAll('.pack-card').forEach((card, i) => {
+    const cards = document.querySelectorAll('.pack-card');
+    cards.forEach((card, i) => {
       if (i > 2 || card.querySelector('.pack-price')) return;
       const meta = card.querySelector('.pack-meta');
       if (!meta) return;
@@ -66,108 +62,17 @@
       meta.insertAdjacentElement('afterend', price);
     });
 
-    if (window.__svPackHandler) return;
-    window.__svPackHandler = true;
-
-    const get = id => document.getElementById(id);
-    const packState = { current: [] };
-
-    const safeUpdate = d => {
-      const inv = d?.inventory || [];
-      const owned = get('owned');
-      const ownedTop = get('ownedTop');
-      const unique = get('unique');
-      const coins = get('coins');
-      if (owned) owned.textContent = inv.length;
-      if (ownedTop) ownedTop.textContent = inv.length;
-      if (unique) unique.textContent = new Set(inv.map(c => c.playerId || c.player)).size;
-      if (coins) coins.textContent = d?.user?.coins ?? 0;
-    };
-
-    const revealCards = () => {
-      stagePack.style.display = 'none';
-      reveals.innerHTML = packState.current.map(x => {
-        const p = (window.__svPackPlayers || []).find(player => player.id === x.playerId) || {};
-        const rarity = x.rarity || 'common';
-        return `<div class="reveal-card"><div class="reveal-inner"><div class="face back">FV<br><small>REVEAL</small></div><div class="face front rarity-${rarity}"><div class="mini-player"></div><h3>${String(x.player || '').toUpperCase()}</h3><p>${String(x.club || '').toUpperCase()} · ${String(x.nation || '').toUpperCase()}</p><b>${p.o || '—'} OVR</b><small>${rarity.toUpperCase()} · ${x.serialLabel || '—'}</small></div></div></div>`;
-      }).join('');
-      reveals.querySelectorAll('.reveal-card').forEach(card => card.onclick = () => { card.classList.add('revealed'); checkAll(); });
-      revealAll.classList.remove('hidden');
-    };
-
-    const checkAll = () => {
-      const all = reveals.querySelectorAll('.reveal-card');
-      const shown = reveals.querySelectorAll('.reveal-card.revealed');
-      if (all.length && all.length === shown.length) {
-        resultSummary.textContent = `${all.length} cartes ajoutées à votre Vault.`;
-        revealAll.classList.add('hidden');
-        closeOpening.classList.remove('hidden');
-      }
-    };
-
-    const startPack = async button => {
-      const type = button.dataset.type || 'starter';
-      button.disabled = true;
-      try {
-        const r = await fetch('/api/open-pack', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({type})});
-        let d = {};
-        try { d = await r.json(); } catch {}
-        if (!r.ok) { showNotice(d.error || 'Impossible d’ouvrir le pack.'); return; }
-
-        packState.current = Array.isArray(d.cards) ? d.cards : [];
-        window.__svPackPlayers = Array.isArray(d.players) ? d.players : [];
-        safeUpdate(d);
-        opening.classList.add('active');
-        openingTitle.textContent = type === 'legend' ? 'LEGEND PACK' : type === 'pro' ? 'PRO PACK' : 'STARTER PACK';
-        reveals.innerHTML = '';
-        resultSummary.textContent = '';
-        revealAll.classList.add('hidden');
-        closeOpening.classList.add('hidden');
-        stagePack.style.display = 'grid';
-        stagePack.classList.remove('opening-anim');
-        stage.classList.add('playing');
-
-        requestAnimationFrame(() => {
-          void stagePack.offsetWidth;
-          stagePack.classList.add('opening-anim');
-        });
-        setTimeout(revealCards, 980);
-      } catch (e) {
-        showNotice(e?.message || 'Le serveur est momentanément indisponible.');
-      } finally {
-        button.disabled = false;
-      }
-    };
-
-    document.addEventListener('click', e => {
-      const button = e.target?.closest?.('.open-pack');
-      if (!button) return;
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-      startPack(button);
-    }, true);
-
-    revealAll.onclick = () => {
-      reveals.querySelectorAll('.reveal-card').forEach(c => c.classList.add('revealed'));
-      checkAll();
-    };
-    closeOpening.onclick = () => {
-      opening.classList.remove('active');
-      if (window.load) window.load();
-    };
-
     const observer = new MutationObserver(() => {
       const cards = reveals.querySelectorAll('.reveal-card');
-      const hiddenStage = getComputedStyle(stagePack).display === 'none';
+      const hiddenStage = getComputedStyle(document.getElementById('stagePack')).display === 'none';
       stage.classList.toggle('compact', hiddenStage);
       stage.classList.toggle('playing', !hiddenStage);
       reveals.classList.toggle('compact-five', cards.length <= 5);
       reveals.classList.toggle('compact-many', cards.length > 5);
     });
     observer.observe(reveals, { childList: true });
-    observer.observe(stagePack, { attributes: true, attributeFilter: ['style', 'class'] });
-    observer.observe(closeOpening, { attributes: true, attributeFilter: ['class'] });
+    observer.observe(document.getElementById('stagePack'), { attributes: true, attributeFilter: ['style', 'class'] });
+    observer.observe(document.getElementById('closeOpening'), { attributes: true, attributeFilter: ['class'] });
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply, { once: true });
