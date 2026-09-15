@@ -17,6 +17,27 @@ function showToast(message){
   const trigger = document.querySelector(".menu-btn");
   if(!header || !nav || !trigger) return;
 
+  const style = document.createElement("style");
+  style.textContent = `
+    @media (max-width:760px){
+      body.menu-open{overflow:hidden}
+      .mobile-menu{position:fixed;inset:72px 0 0;z-index:100;display:none}
+      .mobile-menu.open{display:block}
+      .mobile-menu-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(8px)}
+      .mobile-menu-panel{position:absolute;left:0;right:0;top:0;padding:8px 18px 20px;background:linear-gradient(180deg,rgba(10,11,11,.99),rgba(5,6,6,.98));border-bottom:1px solid rgba(216,180,106,.35);box-shadow:0 25px 80px rgba(0,0,0,.8)}
+      .mobile-menu-head{display:flex;align-items:center;justify-content:space-between;padding:14px 4px 12px;border-bottom:1px solid rgba(255,255,255,.08)}
+      .mobile-menu-kicker{display:block;color:var(--gold);font:700 9px var(--font-head);letter-spacing:3px;margin-bottom:3px}
+      .mobile-menu-head strong{font:800 25px var(--font-head);letter-spacing:1px}
+      .mobile-menu-close{width:42px;height:42px;border:1px solid rgba(216,180,106,.35);background:#0c0d0d;color:var(--text);font:400 28px var(--font-body);cursor:pointer}
+      .mobile-menu-links{padding-top:7px}
+      .mobile-menu-links a{display:flex;align-items:center;min-height:51px;padding:0 12px;color:#aaa;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.06);font:700 16px var(--font-head);letter-spacing:1.3px;text-transform:uppercase}
+      .mobile-menu-links a:hover,.mobile-menu-links a:active{color:var(--text);background:linear-gradient(90deg,rgba(216,180,106,.12),transparent)}
+      .mobile-menu-footer{padding:14px 12px 2px;color:#666;font:600 8px var(--font-head);letter-spacing:3px}
+      .menu-btn{position:relative;z-index:110;display:block;width:44px;height:44px;padding:0;border:1px solid rgba(216,180,106,.25);background:rgba(5,6,6,.45);color:var(--text);font-size:28px;line-height:1}
+    }
+  `;
+  document.head.appendChild(style);
+
   const drawer = document.createElement("div");
   drawer.className = "mobile-menu";
   drawer.setAttribute("aria-hidden", "true");
@@ -61,6 +82,7 @@ function showToast(message){
   drawer.querySelector("[data-menu-close]").addEventListener("click", close);
   links.querySelectorAll("a").forEach(link=>link.addEventListener("click", close));
   document.addEventListener("keydown", e=>{ if(e.key === "Escape") close(); });
+  window.addEventListener("resize", ()=>{ if(window.innerWidth > 760) close(); });
 })();
 
 document.querySelectorAll("[data-scroll]").forEach(btn=>{
