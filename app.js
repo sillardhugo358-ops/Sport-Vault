@@ -1,6 +1,7 @@
 const toast = document.querySelector(".toast");
 
 function showToast(message){
+  if(!toast) return;
   toast.textContent = message;
   toast.classList.add("show");
   clearTimeout(window.__toast);
@@ -16,13 +17,15 @@ document.querySelectorAll("[data-scroll]").forEach(btn=>{
 
 document.querySelectorAll("[data-pack]").forEach(btn=>{
   btn.addEventListener("click", ()=>{
-    showToast("Ouverture des packs — fonctionnalité V2 à venir.");
-    document.querySelector("#packs").scrollIntoView({behavior:"smooth"});
+    const target=document.querySelector("#packs");
+    if(target) target.scrollIntoView({behavior:"smooth"});
   });
 });
 
 document.querySelectorAll(".collection-card").forEach(card=>{
   card.addEventListener("click", ()=>{
+    const href=card.dataset.href;
+    if(href){location.href=href;return;}
     showToast(`${card.dataset.collection} — album bientôt disponible.`);
   });
 });
@@ -41,5 +44,3 @@ if(tilt && window.matchMedia("(pointer:fine)").matches){
 }
 
 document.querySelector(".icon-btn")?.addEventListener("click", ()=>showToast("Recherche — bientôt disponible."));
-document.querySelector(".btn-outline")?.addEventListener("click", ()=>showToast("Connexion — bientôt disponible."));
-document.querySelector(".btn-gold")?.addEventListener("click", ()=>showToast("Création de compte — bientôt disponible."));
