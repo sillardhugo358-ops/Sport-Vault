@@ -6,6 +6,7 @@ const { Readable } = require('node:stream');
 const filename = path.join(__dirname, 'server.js');
 const dataFile = path.join(__dirname, 'data.json');
 const packFixFile = path.join(__dirname, 'pack-fix.js');
+const appJsFile = path.join(__dirname, 'app.js');
 const source = fs.readFileSync(filename, 'utf8');
 
 async function start() {
@@ -49,6 +50,7 @@ async function start() {
     const originalCreateReadStream = fs.createReadStream;
     const isDataFile = value => path.resolve(String(value)) === path.resolve(dataFile);
     const isPackPage = value => path.resolve(String(value)) === path.resolve(path.join(__dirname, 'packs.html'));
+    const isHtmlPage = value => /\.html$/i.test(String(value));
 
     fs.existsSync = function(value) {
       if (isDataFile(value)) return true;
@@ -79,6 +81,13 @@ async function start() {
         const injected = html.replace('</body>', `<script>${fix}\n</script></body>`);
         return Readable.from([injected]);
       }
+      if (isHtmlPage(value) && originalExistsSync(appJsFile)) {
+        const html = originalReadFileSync(value, 'utf8');
+        if (/app\.js/i.test(html)) return originalCreateReadStream.apply(this, arguments);
+        const app = originalReadFileSync(appJsFile, 'utf8');
+        const injected = html.replace('</body>', `<script>${app}\n</script></body>`);
+        return Readable.from([injected]);
+      }
       return originalCreateReadStream.apply(this, arguments);
     };
 
@@ -95,9 +104,24 @@ async function start() {
     process.once('SIGINT', shutdown);
   }
 
-  const fixedSource = source.replace(
+  let fixedSource = source.replace(
     '!/^[^\\\\s@]+@[^\\\\s@]+\\\\.[^\\\\s@]+$/.test(email)',
     '!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)'
+  );
+
+  // Sessions use a signed user id so a normal server restart does not silently log collectors out.
+  const sessionSecret = process.env.SESSION_SECRET || 'sport-vault-prototype-session-secret';
+  fixedSource = fixedSource.replace(
+    "const sessions=new Map();",
+    `const sessions=new Map();\nconst SESSION_SECRET=${JSON.stringify(sessionSecret)};\nfunction makeSessionToken(id){const sig=crypto.createHmac('sha256',SESSION_SECRET).update(id).digest('hex');return id+'.'+sig;}\nfunction readSessionId(req){const raw=cookies(req).fv_session||'';const [id,sig]=raw.split('.');if(!id||!sig)return null;const expected=crypto.createHmac('sha256',SESSION_SECRET).update(id).digest('hex');try{return crypto.timingSafeEqual(Buffer.from(sig),Buffer.from(expected))?id:null;}catch{return null;}}`
+  );
+  fixedSource = fixedSource.replace(
+    "function currentUser(req){const sid=cookies(req).fv_session;const id=sessions.get(sid);if(!id)return null;const d=db();return d.users[id]||null;}",
+    "function currentUser(req){const sid=cookies(req).fv_session;const legacyId=sessions.get(sid);const id=legacyId||readSessionId(req);if(!id)return null;const d=db();return d.users[id]||null;}"
+  );
+  fixedSource = fixedSource.replace(
+    "function session(res,id){const sid=crypto.randomBytes(32).toString('hex');sessions.set(sid,id);res.setHeader('Set-Cookie',`fv_session=${sid}; HttpOnly; SameSite=Lax; Path=/; Max-Age=2592000`);}",
+    "function session(res,id){const sid=makeSessionToken(id);sessions.set(sid,id);res.setHeader('Set-Cookie',`fv_session=${sid}; HttpOnly; SameSite=Lax; Path=/; Max-Age=2592000`);}"
   );
 
   const app = new Module(filename, module);
