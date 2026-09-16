@@ -1,37 +1,27 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>FOOTVAULT — COLLECT THE GAME.</title>
-<meta name="description" content="FOOTVAULT — collection de cartes de football, rareté et progression.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="description" content="FOOTVAULT — le TCG football où tu collectionnes, ouvres des packs et construis ton Vault.">
+<meta name="theme-color" content="#070808"><link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="grain"></div>
-<header class="site-header">
-  <a class="brand" href="index.html"><span class="brand-mark">FV</span><span><strong>FOOTVAULT</strong><small>SPORT VAULT · FOOTBALL</small></span></a>
-  <nav class="nav"><a class="active" href="index.html">Accueil</a><a href="collection.html">Collection</a><a href="album.html">Album</a><a href="packs.html">Packs</a><a href="vault.html">Mon Vault</a><a href="market.html">Market</a></nav>
-  <div class="header-actions"><a class="btn btn-outline" data-auth-link href="auth.html">Connexion</a><a class="btn btn-gold" href="auth.html?mode=register">Créer un compte</a></div>
-  <button class="menu-btn" aria-label="Menu">☰</button>
+<div class="noise"></div><div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
+<header class="header">
+  <a class="brand" href="#home" aria-label="FOOTVAULT accueil"><span class="brand-icon">FV</span><span class="brand-copy"><b>FOOTVAULT</b><small>SPORT VAULT / FOOTBALL</small></span></a>
+  <nav class="nav" id="nav">
+    <a data-route="home" href="#home">Accueil</a><a data-route="collection" href="#collection">Collection</a><a data-route="album" href="#album">Album</a><a data-route="packs" href="#packs">Packs</a><a data-route="vault" href="#vault">Mon Vault</a><a data-route="market" href="#market">Market</a>
+  </nav>
+  <div class="header-user" id="headerUser"></div>
+  <button class="menu" id="menu" aria-label="Ouvrir le menu">☰</button>
 </header>
-<main class="page">
-  <section class="hero">
-    <div>
-      <p class="eyebrow">FOOTVAULT / SAISON 2026</p>
-      <h1>COLLECT THE <span>GAME.</span></h1>
-      <p class="lead">Le nouvel univers football de SPORT VAULT. Collectionne des cartes uniques, chasse les raretés et construis ton Vault pièce par pièce.</p>
-      <div class="hero-actions"><a class="btn btn-gold btn-large" href="auth.html?mode=register">Créer mon Vault</a><a class="btn btn-outline btn-large" href="collection.html">Voir les cartes</a></div>
-    </div>
-    <div class="hero-card"><article class="card"><div class="card-top"><span class="card-rating">97</span><span>FOOT<br>VAULT</span></div><div class="card-art"><div class="silhouette"></div></div><div class="card-name">FOOT<span>VAULT</span></div><div class="card-meta">FIRST EDITION · 2026</div><div class="card-stats"><div><b>99</b><small>RARITY</small></div><div><b>01</b><small>EDITION</small></div><div><b>FV</b><small>ORIGIN</small></div></div></article></div>
-  </section>
-  <section class="section"><div class="section-head"><div><p class="eyebrow">FOOTVAULT</p><h2>LE FOOTBALL.<br>EN MODE COLLECTION.</h2></div><p>Un seul univers pour commencer. Une base solide pour la suite.</p></div><div class="preview-grid"><article class="preview"><b>01</b><h3>CARTES</h3><p>24 cartes fictives · 5 niveaux de rareté</p></article><article class="preview"><b>02</b><h3>RARETÉ</h3><p>Common · Rare · Epic · Legendary · Icon</p></article><article class="preview"><b>03</b><h3>ÉDITIONS</h3><p>Chaque exemplaire possède son numéro</p></article><article class="preview"><b>04</b><h3>COLLECTION</h3><p>Ton inventaire personnel, persistant et évolutif</p></article></div></section>
-  <section class="section"><div class="feature-grid"><article class="feature"><p class="eyebrow">01 / COLLECT</p><h3>Chaque carte compte.</h3><p>Le catalogue définit les cartes. Ton inventaire contient des instances uniques avec leur propre numéro d'édition.</p></article><article class="feature"><p class="eyebrow">02 / BUILD</p><h3>Construis ton Vault.</h3><p>Le profil, l'économie et la collection partagent la même base serveur, prête pour les prochaines briques du jeu.</p></article><article class="feature"><p class="eyebrow">03 / OPEN</p><h3>Les packs arrivent ensuite.</h3><p>Une fois le système de cartes validé, les packs pourront tirer ces cartes côté serveur sans contourner les règles.</p></article></div></section>
-</main>
-<footer class="footer"><span>FOOTVAULT · SPORT VAULT · COLLECT THE GAME.</span><span>Nouvelle base technique · 2026</span></footer>
+<main id="app"></main>
+<footer class="footer"><span>FOOTVAULT / SPORT VAULT</span><span>COLLECT THE GAME. · SAISON 2026</span></footer>
+<div id="toast" class="toast" role="status"></div>
+<div id="modal" class="modal" aria-hidden="true"></div>
 <script src="app.js"></script>
-</body>
-</html>
+</body></html>
