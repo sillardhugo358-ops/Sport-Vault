@@ -71,7 +71,7 @@ async function destroySession(req,res){const token=cookies(req).fv_session;if(to
 async function createCardInstance(instance,client=null){const db=client||pool;if(db){await db.query(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,serial,max_supply,acquired_at,source,status) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,[instance.instanceId,instance.cardId,instance.ownerId,instance.season,instance.name,instance.position,instance.club,instance.nation,instance.rarity,instance.serial,instance.maxSupply,instance.acquiredAt,instance.source,instance.status]);}else memory.cards.set(instance.instanceId,instance);}
 async function getUserCards(ownerId){if(pool){const r=await pool.query("SELECT * FROM card_instances WHERE owner_id=$1 AND status='owned' ORDER BY acquired_at DESC",[ownerId]);return r.rows.map(publicCard);}return[...memory.cards.values()].filter(c=>c.ownerId===ownerId&&c.status==='owned').sort((a,b)=>new Date(b.acquiredAt)-new Date(a.acquiredAt)).map(publicCard);}
 function welcomeRarity(){const roll=Math.random()*100;return roll<5?'epic':roll<25?'rare':'common'}
-async function grantWelcomeCards(userId){const existing=await getUserCards(userId);if(existing.length>=3)return existing;const created=[],used=new Set();for(let i=0;i<3;i++){let rarity=welcomeRarity(),poolCards=CARD_CATALOG.filter(c=>c.rarity===rarity&&!used.has(c.id));if(!poolCards.length){rarity='common';poolCards=CARD_CATALOG.filter(c=>c.rarity==='common'&&!used.has(c.id))}const card=poolCards[Math.floor(Math.random()*poolCards.length)];used.add(card.id);const instance=buildInstance(card,userId,'welcome');await createCardInstance(instance);created.push(publicCard(instance));}return created;}
+async function grantWelcomeCards(userId,client=null){const existing=await getUserCards(userId);if(existing.length>=3)return existing;const created=[],used=new Set();for(let i=0;i<3;i++){let rarity=welcomeRarity(),poolCards=CARD_CATALOG.filter(c=>c.rarity===rarity&&!used.has(c.id));if(!poolCards.length){rarity='common';poolCards=CARD_CATALOG.filter(c=>c.rarity==='common'&&!used.has(c.id))}const card=poolCards[Math.floor(Math.random()*poolCards.length)];used.add(card.id);const instance=buildInstance(card,userId,'welcome');await createCardInstance(instance,client);created.push(publicCard(instance));}return created;}
 async function registrationAllowed(ip,client){if(client){await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',[ip]);const r=await client.query('SELECT last_created_at FROM registration_limits WHERE ip=$1',[ip]);return !r.rowCount||Date.now()-new Date(r.rows[0].last_created_at).getTime()>=72*3600_000}const last=memory.reg?.get(ip);return !last||Date.now()-last>=72*3600_000}
 async function markRegistration(ip,client){if(client)await client.query('INSERT INTO registration_limits(ip,last_created_at) VALUES($1,now()) ON CONFLICT(ip) DO UPDATE SET last_created_at=excluded.last_created_at',[ip]);else memory.reg.set(ip,Date.now())}
 function clientIp(req){return String(req.headers['x-forwarded-for']||'').split(',')[0].trim()||req.socket.remoteAddress||'unknown'}
@@ -102,8 +102,52 @@ function staticFile(req,res){let pathname=decodeURIComponent(new URL(req.url,'ht
  if(req.method==='GET'&&url.pathname==='/api/album'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});return json(res,200,await albumData(user.id));}
  if(req.method==='POST'&&url.pathname==='/api/album/claim'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});const body=await readBody(req),club=ALBUM_CLUBS.find(c=>c.id===String(body.clubId||''));if(!club)return json(res,404,{error:'Set introuvable.'});const data=await albumData(user.id),view=data.album.clubs.find(c=>c.id===club.id);if(!view||!view.complete)return json(res,400,{error:'Set incomplet.'});const claimId=`album:${club.id}`;if(await claimExists(user.id,claimId))return json(res,400,{error:'Récompense déjà récupérée.'});if(pool){const client=await pool.connect();try{await client.query('BEGIN');const inserted=await client.query('INSERT INTO reward_claims(user_id,claim_id) VALUES($1,$2) ON CONFLICT DO NOTHING RETURNING claim_id',[user.id,claimId]);if(!inserted.rowCount){await client.query('ROLLBACK');return json(res,400,{error:'Récompense déjà récupérée.'});}const updated=await applyReward(user.id,{coins:250,xp:75},client);await client.query('COMMIT');return json(res,200,{reward:{coins:250,xp:75},user:safeUser(updated)});}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}}await addClaim(user.id,claimId);const updated=await applyReward(user.id,{coins:250,xp:75});return json(res,200,{reward:{coins:250,xp:75},user:safeUser(updated)});}
  if(req.method==='POST'&&url.pathname==='/api/packs/open'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});const body=await readBody(req);const result=await openPackForUser(user.id,String(body.packId||''));return json(res,result.error?result.status||400:200,result);}
- if(req.method==='POST'&&url.pathname==='/api/register'){const ip=clientIp(req);const body=await readBody(req);const name=String(body.name||'').trim(),email=String(body.email||'').trim().toLowerCase(),password=String(body.password||'');if(name.length<2||name.length>30||!/^\S+@\S+\.\S+$/.test(email)||password.length<8)return json(res,400,{error:'Nom, email valide et mot de passe de 8 caractères minimum requis.'});if(pool){const client=await pool.connect();try{await client.query('BEGIN');if(!(await registrationAllowed(ip,client))){await client.query('ROLLBACK');return json(res,429,{error:'Création de compte limitée : une inscription est autorisée toutes les 72 heures depuis cette connexion.'});}if(await findUserByEmail(email)){await client.query('ROLLBACK');return json(res,409,{error:'Cet email est déjà utilisé.'});}const id=crypto.randomUUID(),passwordHash=hashPassword(password),now=new Date(),user={id,name,email,password_hash:passwordHash,coins:1000,gems:50,xp:0,createdAt:now.toISOString(),dailyClaimedAt:null};if(pool){await pool.query('INSERT INTO users(id,name,email,password_hash,coins,gems,xp,created_at) VALUES($1,$2,$3,$4,1000,50,0,$5)',[id,name,email,passwordHash,now]);}else memory.users.set(id,user);const realUser=await getUserById(id),welcomeCards=await grantWelcomeCards(id,client);await client.query('INSERT INTO registration_limits(ip,last_created_at) VALUES($1,now()) ON CONFLICT(ip) DO UPDATE SET last_created_at=excluded.last_created_at',[ip]);const token=crypto.randomBytes(32).toString('hex');await client.query('INSERT INTO sessions(token,user_id,expires_at) VALUES($1,$2,$3)',[token,id,expiryDate()]);await client.query('COMMIT');res.setHeader('Set-Cookie',sessionCookie(token));return json(res,201,{user:safeUser(realUser),welcomeCards});}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}}if(!(await registrationAllowed(ip)))return json(res,429,{error:'Création de compte limitée à une fois toutes les 72 heures.'});if(await findUserByEmail(email))return json(res,409,{error:'Cet email est déjà utilisé.'});const id=crypto.randomUUID(),
- if(req.method==='POST'&&url.pathname==='/api/login'){const body=await readBody(req),email=String(body.email||'').trim().toLowerCase(),password=String(body.password||''),user=await findUserByEmail(email);if(!user||!verifyPassword(password,user.password_hash))return json(res,401,{error:'Email ou mot de passe incorrect.'});await grantWelcomeCards(user.id);const token=await createSession(user.id);res.setHeader('Set-Cookie',sessionCookie(token));return json(res,200,{user:safeUser(user)});}
+ if(req.method==='POST'&&url.pathname==='/api/register'){
+  const ip=clientIp(req),body=await readBody(req),name=String(body.name||'').trim(),email=String(body.email||'').trim().toLowerCase(),password=String(body.password||'');
+  if(name.length<2||name.length>30||!/^\S+@\S+\.\S+$/.test(email)||password.length<8)return json(res,400,{error:'Nom, email valide et mot de passe de 8 caractères minimum requis.'});
+  if(pool){
+    const client=await pool.connect();
+    try{
+      await client.query('BEGIN');
+      if(!(await registrationAllowed(ip,client))){await client.query('ROLLBACK');return json(res,429,{error:'Création de compte limitée : une inscription est autorisée toutes les 72 heures depuis cette connexion.'});}
+      const exists=await client.query('SELECT 1 FROM users WHERE email=$1',[email]);
+      if(exists.rowCount){await client.query('ROLLBACK');return json(res,409,{error:'Cet email est déjà utilisé.'});}
+      const id=crypto.randomUUID(),passwordHash=hashPassword(password),now=new Date();
+      await client.query('INSERT INTO users(id,name,email,password_hash,coins,gems,xp,packs_opened,created_at) VALUES($1,$2,$3,$4,1000,50,0,0,$5)',[id,name,email,passwordHash,now]);
+      const welcomeCards=await grantWelcomeCards(id,client);
+      await client.query('INSERT INTO registration_limits(ip,last_created_at) VALUES($1,now()) ON CONFLICT(ip) DO UPDATE SET last_created_at=excluded.last_created_at',[ip]);
+      const realUser=(await client.query('SELECT * FROM users WHERE id=$1',[id])).rows[0];
+      const token=crypto.randomBytes(32).toString('hex');
+      await client.query('INSERT INTO sessions(token,user_id,expires_at) VALUES($1,$2,$3)',[token,id,expiryDate()]);
+      await client.query('COMMIT');
+      res.setHeader('Set-Cookie',sessionCookie(token));
+      return json(res,201,{user:safeUser(realUser),welcomeCards});
+    }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}
+  }
+  if(!(await registrationAllowed(ip)))return json(res,429,{error:'Création de compte limitée à une fois toutes les 72 heures.'});
+  if(await findUserByEmail(email))return json(res,409,{error:'Cet email est déjà utilisé.'});
+  const user={id:crypto.randomUUID(),name,email,password_hash:hashPassword(password),coins:1000,gems:50,xp:0,packs_opened:0,createdAt:new Date().toISOString()};
+  memory.users.set(user.id,user);
+  const welcomeCards=await grantWelcomeCards(user.id);
+  await markRegistration(ip);
+  const token=await createSession(user.id);
+  res.setHeader('Set-Cookie',sessionCookie(token));
+  return json(res,201,{user:safeUser(user),welcomeCards});
+ }
+ if(req.method==='POST'&&url.pathname==='/api/login'){
+  const ip=clientIp(req),body=await readBody(req),email=String(body.email||'').trim().toLowerCase(),password=String(body.password||''),status=await loginStatus(ip,email);
+  if(status.blocked)return json(res,429,{error:'Trop de tentatives incorrectes. Connexion temporairement bloquée pendant 15 minutes.'});
+  const user=await findUserByEmail(email);
+  if(!user||!verifyPassword(password,user.password_hash)){
+    await loginFailure(ip,email);
+    const left=Math.max(0,5-(status.attempts+1));
+    return json(res,401,{error:left?'Email ou mot de passe incorrect. Il reste '+left+' tentative(s).':'Trop de tentatives incorrectes. Connexion bloquée pendant 15 minutes.'});
+  }
+  await loginSuccess(ip,email);
+  const token=await createSession(user.id);
+  res.setHeader('Set-Cookie',sessionCookie(token));
+  return json(res,200,{user:safeUser(user)});
+ }
  if(req.method==='POST'&&url.pathname==='/api/logout'){await destroySession(req,res);return json(res,200,{ok:true});}
  return staticFile(req,res);
 }catch(error){console.error('SPORT VAULT request error:',error);return json(res,500,{error:'Erreur serveur.'});}});const shutdown=async()=>{if(pool)await pool.end().catch(()=>{});server.close(()=>process.exit(0));};process.once('SIGTERM',shutdown);process.once('SIGINT',shutdown);server.listen(PORT,'0.0.0.0',()=>console.log(`SPORT VAULT running on ${PORT}`));})();
