@@ -306,7 +306,7 @@ function staticFile(req,res){let pathname=decodeURIComponent(new URL(req.url,'ht
     const client=await pool.connect();
     try{
       await client.query('BEGIN');
-      if(!(await registrationAllowed(ip,client))){await client.query('ROLLBACK');return json(res,429,{error:'Création de compte limitée : une inscription est autorisée toutes les 72 heures depuis cette connexion.'});}
+      const adminEmails=String(process.env.ADMIN_EMAILS||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);if(!adminEmails.includes(email)&&!(await registrationAllowed(ip,client))){await client.query('ROLLBACK');return json(res,429,{error:'Création de compte limitée : une inscription est autorisée toutes les 72 heures depuis cette connexion.'});}
       const exists=await client.query('SELECT 1 FROM users WHERE email=$1',[email]);
       if(exists.rowCount){await client.query('ROLLBACK');return json(res,409,{error:'Cet email est déjà utilisé.'});}
       const id=crypto.randomUUID(),passwordHash=hashPassword(password),now=new Date();
