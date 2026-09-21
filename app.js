@@ -17,57 +17,80 @@ function cardMarkup(c,small=false){const limited=Boolean(c.isLimited),num=c.jers
 function cardLink(c){const search=[c.name,c.club,c.nation,c.position,c.rarityLabel].filter(Boolean).join(" ").toLowerCase();return `<a class="card-link" data-collection-card-search="${esc(search)}" href="#card?id=${encodeURIComponent(c.instanceId)}">${cardMarkup(c)}</a>`}
 function viewHero(kicker,title,sub,stat='',statLabel=''){return `<section class="view-hero"><div><p class="eyebrow">${esc(kicker)}</p><h1>${title}</h1>${sub?`<p class="lead">${esc(sub)}</p>`:''}</div>${stat?`<div class="hero-stat"><strong>${esc(stat)}</strong><span>${esc(statLabel)}</span></div>`:''}</section>`}
 function home(){return `
-<div class="vault-home">
-  <section class="vault-hero">
-    <div class="vault-hero-lights"></div>
-    <div class="vault-hero-copy">
-      <p class="vault-overline"><span></span> SPORT VAULT <span>·</span> SAISON 2026 <span></span></p>
+<div class="home-page">
+  <section class="home-hero">
+    <div class="home-hero-bg"></div>
+    <div class="home-hero-content">
+      <div class="home-kicker"><span></span> SPORT VAULT · SAISON 2026 <span></span></div>
       <h1>LE SPORT.<br><em>À COLLECTIONNER.</em></h1>
-      <p class="vault-hero-sub">Construis ton Vault, ouvre des packs, complète tes albums et vis ta passion du sport d’une nouvelle manière.</p>
-      <div class="vault-hero-actions">
-        <a class="btn btn-gold btn-large" href="#auth?mode=register">▶ &nbsp; CRÉER MON VAULT</a>
-        <a class="btn vault-outline-btn btn-large" href="#collection">▣ &nbsp; DÉCOUVRIR LA COLLECTION</a>
+      <p class="home-hero-lead">Construis ton Vault, ouvre des packs, complète tes albums et collectionne des cartes sportives pensées comme de véritables pièces de collection.</p>
+      <div class="actions home-actions">
+        <a class="btn btn-gold btn-large" href="#auth?mode=register">CRÉER MON VAULT <span>→</span></a>
+        <a class="btn btn-outline btn-large" href="#collection">EXPLORER LA COLLECTION</a>
       </div>
-      <div class="vault-hero-tags"><span>CARTES</span><i></i><span>PACKS</span><i></i><span>COMPÉTITIONS</span><i></i><span>UNE SEULE PASSION</span></div>
+      <div class="home-trust"><span>24 CARTES</span><i></i><span>5 RARETÉS</span><i></i><span>SAISON 2026</span></div>
     </div>
-    <div class="vault-stage">
-      <div class="vault-stage-halo"></div>
-      <div class="vault-pedestal"></div>
-      <div class="vault-card vault-card-left"><div class="fake-card-top"><span>SPORT VAULT</span><b>94</b></div><div class="fake-player">SV</div><div class="fake-card-name">ELITE<br><small>RARE</small></div></div>
-      <div class="vault-card vault-card-main">
-        <div class="fake-card-frame">
-          <div class="fake-card-top"><span>SPORT VAULT</span><b>96</b></div>
-          <div class="fake-player"><img src="sport-vault-logo.svg" alt=""></div>
-          <div class="fake-card-name">THE VAULT<br><small>LEGENDARY · 1/10</small></div>
-        </div>
+    <div class="home-emblem-stage">
+      <div class="home-emblem-glow"></div>
+      <div class="home-emblem-ring"></div>
+      <img src="sport-vault-logo.svg" class="home-emblem" alt="Sport Vault">
+      <div class="home-emblem-label"><strong>SPORT VAULT</strong><span>COLLECT · PLAY · BELONG</span></div>
+    </div>
+  </section>
+
+  <section class="home-stats">
+    <div><strong>24</strong><span>CARTES DISPONIBLES</span></div>
+    <div><strong>05</strong><span>NIVEAUX DE RARETÉ</span></div>
+    <div><strong>03</strong><span>PACKS À OUVRIR</span></div>
+    <div><strong>∞</strong><span>COLLECTION À CONSTRUIRE</span></div>
+  </section>
+
+  <section class="home-section home-experience">
+    <div class="home-section-heading">
+      <div><p class="eyebrow">L'EXPÉRIENCE SPORT VAULT</p><h2>PLUS QU'UNE<br><span>COLLECTION.</span></h2></div>
+      <p>Chaque carte obtenue fait partie d'un parcours : collection, rareté, progression et marché.</p>
+    </div>
+    <div class="home-feature-grid">
+      <article class="home-feature home-feature-large"><div class="feature-number">01</div><div class="feature-icon">◆</div><h3>COLLECTIONNE</h3><p>Réunis les cartes de la saison et cherche les raretés qui feront la différence dans ton Vault.</p><a href="#collection">VOIR LES CARTES <span>→</span></a></article>
+      <article class="home-feature"><div class="feature-number">02</div><div class="feature-icon">✦</div><h3>OUVRE DES PACKS</h3><p>Trois formats de packs, des garanties de rareté et une révélation carte par carte.</p><a href="#packs">DÉCOUVRIR LES PACKS <span>→</span></a></article>
+      <article class="home-feature"><div class="feature-number">03</div><div class="feature-icon">◈</div><h3>FAIS ÉVOLUER TON VAULT</h3><p>Gagne des FOOTCOINS, de l'XP, complète des missions et avance dans les albums.</p><a href="#vault">VOIR MON VAULT <span>→</span></a></article>
+    </div>
+  </section>
+
+  <section class="home-section home-showcase">
+    <div class="home-showcase-copy">
+      <p class="eyebrow">LA CARTE AU CENTRE DU JEU</p>
+      <h2>UNE IDENTITÉ<br><span>PREMIUM.</span></h2>
+      <p>Des cartes conçues autour de la rareté, du profil du joueur et de leur place dans la collection. Les exemplaires uniques et les futures cartes LIMITED pourront porter leur propre numéro.</p>
+      <div class="home-checks"><span>✓ RARETÉ</span><span>✓ OVR</span><span>✓ SAISON</span><span>✓ COLLECTION</span></div>
+      <a class="btn btn-gold" href="#collection">EXPLORER LES CARTES →</a>
+    </div>
+    <div class="home-card-stack">
+      <div class="showcase-card showcase-back"></div>
+      <div class="showcase-card showcase-main"><div class="showcase-card-top"><span>SPORT VAULT</span><b>96</b></div><div class="showcase-ball">⚽</div><div class="showcase-card-bottom"><span>ICON</span><strong>THE VAULT</strong><small>2026 · 001</small></div></div>
+    </div>
+  </section>
+
+  <section class="home-section home-competition">
+    <div class="home-section-heading">
+      <div><p class="eyebrow">ALBUMS</p><h2>LES COMPÉTITIONS<br><span>DU VAULT.</span></h2></div>
+      <a class="btn btn-outline" href="#album">VOIR L'ALBUM →</a>
+    </div>
+    <div class="home-competition-grid">
+      <a class="home-competition-main" href="#album?competition=ligue-1">
+        <div><span class="competition-status available">DISPONIBLE</span><p class="eyebrow">FRANCE · 2026</p><h3>LIGUE 1</h3><p>La première collection officielle du Vault est disponible.</p></div>
+        <strong>L1</strong><span class="home-arrow">→</span>
+      </a>
+      <div class="home-coming">
+        <div class="coming-head"><span>À VENIR</span><strong>07</strong></div>
+        <div class="coming-list"><span>Premier League</span><span>Serie A</span><span>Bundesliga</span><span>La Liga</span><span>Ligue des Champions</span><span>Coupe du Monde</span><span>Ligue des Nations</span></div>
       </div>
-      <div class="vault-card vault-card-right"><div class="fake-card-top"><span>SPORT VAULT</span><b>91</b></div><div class="fake-player">SV</div><div class="fake-card-name">ICON<br><small>ULTRA RARE</small></div></div>
-      <div class="vault-stage-brand"><img src="sport-vault-logo.svg" alt=""><strong>SPORT VAULT</strong><span>COLLECT · PLAY · BELONG</span></div>
     </div>
   </section>
 
-  <section class="vault-metrics">
-    <div><b>24</b><span>▱</span><small>CARTES DISPO.</small></div>
-    <div><b>5</b><span>◇</span><small>RARETÉS</small></div>
-    <div><b>3</b><span>▣</span><small>PACKS</small></div>
-    <div><b>6</b><span>♜</span><small>COMPÉTITIONS</small></div>
-    <div><b>∞</b><span>♧</span><small>COMMUNAUTÉ</small></div>
-  </section>
-
-  <section class="vault-experience">
-    <div class="vault-section-title"><span></span><h2>L’EXPÉRIENCE SPORT VAULT</h2><span></span></div>
-    <div class="vault-experience-grid">
-      <a href="#collection"><span class="experience-icon">▱</span><strong>COLLECTIONNE</strong><p>Des cartes et des raretés à réunir dans ton Vault.</p></a>
-      <a href="#packs"><span class="experience-icon">◇</span><strong>OUVRE</strong><p>Des packs uniques, des tirages et des surprises.</p></a>
-      <a href="#album"><span class="experience-icon">♜</span><strong>COMPÉTITIONNE</strong><p>Complète les albums et avance dans les saisons.</p></a>
-      <a href="#market"><span class="experience-icon">⇄</span><strong>ÉCHANGE</strong><p>Fais vivre ta collection sur le Market.</p></a>
-      <a href="#auth?mode=register"><span class="experience-icon">♧</span><strong>REJOINS</strong><p>Construis ton propre Vault et ton identité.</p></a>
-    </div>
-  </section>
-
-  <section class="vault-bottom">
-    <div><p class="eyebrow">TA COLLECTION COMMENCE ICI</p><h2>CONSTRUIS<br><span>TON VAULT.</span></h2><p>Crée ton compte et commence avec tes ressources de bienvenue.</p></div>
-    <a class="btn btn-gold btn-large" href="#auth?mode=register">CRÉER MON COMPTE →</a>
+  <section class="home-final-cta">
+    <div><p class="eyebrow">TON VAULT COMMENCE ICI</p><h2>PRÊT À<br><span>COLLECTIONNER ?</span></h2><p>Crée ton compte et reçois immédiatement tes ressources de départ.</p></div>
+    <a class="btn btn-gold btn-large" href="#auth?mode=register">CRÉER MON COMPTE <span>→</span></a>
   </section>
 </div>`}
 async function loadCatalog(){if(state.catalog.length)return;state.catalog=(await api('/api/cards')).cards||[]}
