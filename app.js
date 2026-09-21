@@ -117,7 +117,27 @@ async function admin(){
    <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>CARTE</th><th>RARETÉ</th><th>TYPE</th><th>EXEMPLAIRES</th><th>JOUEURS</th><th>ACTION</th></tr></thead><tbody id="adminCardsBody">${cardsData.map(c=>`<tr class="admin-card-row" data-card-search="${esc([c.name,c.club,c.nation,c.id,c.position].join(' ').toLowerCase())}" data-card-rarity="${esc(c.rarity||'')}" data-card-position="${esc(c.position||'')}" data-card-club="${esc(c.club||'')}"><td><strong>${esc(c.name)}</strong><small>${esc(c.position)} · ${esc(c.club)} · ${esc(c.nation)}</small></td><td><span class="admin-status">${esc(c.rarityLabel||c.rarity)}</span></td><td><strong>STANDARD</strong></td><td>${c.totalInstances}</td><td>${c.owners}</td><td><button class="btn btn-gold" data-manage-catalog-card="${esc(c.id)}">GÉRER</button></td></tr>`).join('')||'<tr><td colspan="6"><span class="catalog-empty-state">Aucune carte ne correspond aux filtres.</span></td></tr>'}</tbody></table></div>
   </section>
  </div> </div> <div class="admin-tab-panel" data-admin-panel="auctions">
-  <section class="section admin-section-first"><div class="section-head"><div><p class="eyebrow">ENCHÈRES</p><h2>SURVEILLANCE.</h2></div><p>100 dernières enchères enregistrées.</p></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>CARTE</th><th>STATUT</th><th>VENDEUR</th><th>OFFRE</th><th>NB OFFRES</th><th>FIN</th></tr></thead><tbody>${auctions.map(x=>`<tr><td><strong>${esc(x.card_name)}</strong><small>${esc(x.rarity)} · ${x.is_limited?`${Number(x.serial)}/${Number(x.max_supply)}`:'STANDARD'}</small></td><td><span class="admin-status">${esc(x.status)}</span></td><td>${esc(x.seller_name)}</td><td>${money(x.current_bid)} FC</td><td>${x.bid_count}</td><td>${new Date(x.ends_at).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})}</td></tr>`).join('')}</tbody></table></div></section>
+  <section class="section admin-section-first admin-auction-panel">
+   <div class="section-head"><div><p class="eyebrow">ENCHÈRES</p><h2>SURVEILLANCE.</h2></div><p>Les 100 dernières enchères enregistrées.</p></div>
+   <div class="admin-auction-grid">\${auctions.map(x=>{
+    const status=String(x.status||'').toLowerCase();
+    const statusClass=status==='active'?'active':status==='completed'?'completed':status==='cancelled'?'cancelled':'';
+    const endDate=new Date(x.ends_at);
+    const endLabel=Number.isNaN(endDate.getTime())?'—':endDate.toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'});
+    const bidder=x.bidder_name||'Aucun enchérisseur';
+    const offer=Number(x.current_bid||0);
+    return \`<article class="admin-auction-card">
+      <div class="admin-auction-card-head"><div><p class="eyebrow">CARTE</p><h3>\${esc(x.card_name)}</h3><small>\${esc(x.rarity)} · \${x.is_limited?\`\${Number(x.serial)}/\${Number(x.max_supply)}\`:'STANDARD'}</small></div><span class="admin-auction-status \${statusClass}">\${esc(x.status)}</span></div>
+      <div class="admin-auction-price"><span>OFFRE ACTUELLE</span><strong>\${money(offer)} FC</strong></div>
+      <div class="admin-auction-info">
+       <div><span>VENDEUR</span><strong>\${esc(x.seller_name||'—')}</strong></div>
+       <div><span>ENCHÉRISSEUR</span><strong>\${esc(bidder)}</strong></div>
+       <div><span>OFFRES</span><strong>\${x.bid_count||0}</strong></div>
+       <div><span>FIN</span><strong>\${endLabel}</strong></div>
+      </div>
+    </article>\`;
+   }).join('')||'<div class="empty">Aucune enchère enregistrée.</div>'}</div>
+  </section>
  </div>
  <div class="admin-tab-panel" data-admin-panel="logs">
   <section class="section admin-section-first"><div class="section-head"><div><p class="eyebrow">JOURNAL ADMIN</p><h2>ACTIONS.</h2></div><p>100 dernières actions administratives.</p></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>DATE</th><th>ADMIN</th><th>CIBLE</th><th>ACTION</th><th>DÉTAILS</th></tr></thead><tbody>${logs.map(x=>`<tr><td>${new Date(x.created_at).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})}</td><td>${esc(x.admin_name)}</td><td>${esc(x.target_name||'—')}</td><td><span class="admin-status">${esc(x.action)}</span></td><td><small class="admin-log-details">${esc(adminLogDetails(x.details))}</small></td></tr>`).join('')||'<tr><td colspan="5">Aucune action enregistrée.</td></tr>'}</tbody></table></div></section>
