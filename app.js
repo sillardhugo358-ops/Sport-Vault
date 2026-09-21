@@ -1,5 +1,5 @@
 const FV=(()=>{
-const state={user:null,cards:[],catalog:[],packs:[],progress:null,album:null,auctions:[],auctionHistory:[],adminUsers:[],filter:'all',authMode:'login'};
+const state={user:null,cards:[],catalog:[],packs:[],progress:null,album:null,auctions:[],auctionHistory:[],adminUsers:[],adminCompetitions:[],adminClubs:[],filter:'all',authMode:'login'};
 const $=s=>document.querySelector(s); const app=()=>$('#app');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=v=>Number(v||0).toLocaleString('fr-FR');
@@ -108,15 +108,15 @@ async function showCollectionEditor(collection,selected){
  });
 }
 async function admin(){
- const [o,u,a,l,col]=await Promise.all([api('/api/admin/overview'),api('/api/admin/users'),api('/api/admin/auctions'),api('/api/admin/logs'),api('/api/admin/collections')]);
+ const [o,u,a,l,col,com]=await Promise.all([api('/api/admin/overview'),api('/api/admin/users'),api('/api/admin/auctions'),api('/api/admin/logs'),api('/api/admin/collections'),api('/api/admin/competitions')]);
  state.user=o.admin;
  const s=o.overview.stats;
- const users=u.users||[],auctions=a.auctions||[],logs=l.logs||[],collections=col.collections||[];state.adminUsers=users;state.adminCollections=collections;const cardsData=(await api('/api/admin/cards')).cards||[];state.adminCards=cardsData;
+ const users=u.users||[],auctions=a.auctions||[],logs=l.logs||[],collections=col.collections||[],competitions=com.competitions||[],clubs=com.clubs||[];state.adminUsers=users;state.adminCollections=collections;state.adminCompetitions=competitions;state.adminClubs=clubs;const cardsData=(await api('/api/admin/cards')).cards||[];state.adminCards=cardsData;
  return `<div class="page"><section class="view-hero"><div><p class="eyebrow">FOOTVAULT / ADMIN</p><h1>CENTRE DE <span>CONTRÔLE.</span></h1><p class="lead">Supervision de la plateforme, des comptes, de l'économie et des enchères.</p></div><div class="hero-stat"><strong>ADMIN</strong><span>ACCÈS PRIVILÉGIÉ</span></div></section>
  <nav class="admin-tabs" aria-label="Sections administration">
   <button class="admin-tab active" data-admin-tab="dashboard">TABLEAU DE BORD</button>
   <button class="admin-tab" data-admin-tab="players">JOUEURS</button>
-  <button class="admin-tab" data-admin-tab="collections">COLLECTIONS</button>
+  <button class="admin-tab" data-admin-tab="collections">COLLECTIONS</button><button class="admin-tab" data-admin-tab="competitions">COMPÉTITIONS</button>
   <button class="admin-tab" data-admin-tab="cards">CARTES</button>
   <button class="admin-tab" data-admin-tab="auctions">ENCHÈRES</button>
   <button class="admin-tab" data-admin-tab="logs">JOURNAL</button>
@@ -134,7 +134,7 @@ async function admin(){
    <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>COLLECTION</th><th>TAG</th><th>CARTES</th><th>ACTIONS</th></tr></thead><tbody>${collections.map(c=>'<tr><td><strong>'+esc(c.name)+'</strong><small>'+esc(c.id)+'</small></td><td>'+esc(c.tag)+'</td><td>'+c.cardCount+'</td><td><button class="btn" data-edit-collection="'+esc(c.id)+'">GÉRER</button> '+(state.user?.role==='creator'?'<button class="btn btn-danger" data-delete-collection="'+esc(c.id)+'">SUPPRIMER</button>':'')+'</td></tr>').join('')||'<tr><td colspan="4">Aucune collection.</td></tr>'}</tbody></table></div>
   </section>
  </div>
- <div class="admin-tab-panel" data-admin-panel="cards">
+ `<div class='admin-tab-panel' data-admin-panel='competitions'><section class='section admin-section-first'><div class='section-head'><div><p class='eyebrow'>ALBUM / SAISONS</p><h2>COMPÉTITIONS <span>DISPONIBLES.</span></h2></div>${state.user?.role==='creator'?'<button class="btn btn-gold" data-new-competition>+ NOUVELLE COMPÉTITION</button>':''}</div><div class='admin-table-wrap'><table class='admin-table'><thead><tr><th>COMPÉTITION</th><th>STATUT</th><th>CLUBS</th><th>ACTIONS</th></tr></thead><tbody>${competitions.map(c=>'<tr><td><strong>'+esc(c.name)+'</strong><small>'+esc(c.tag)+' · '+esc(c.country||'')+'</small></td><td><span class="admin-status">'+(c.status==='available'?'DISPONIBLE':'À VENIR')+'</span></td><td>'+c.clubCount+'</td><td><button class="btn btn-gold" data-edit-competition="'+esc(c.id)+'">GÉRER</button> '+(state.user?.role==='creator'?'<button class="btn btn-danger" data-delete-competition="'+esc(c.id)+'">SUPPRIMER</button>':'')+'</td></tr>').join('')||'<tr><td colspan="4">Aucune compétition.</td></tr>'}</tbody></table></div></section><section class='section'><div class='section-head'><div><p class='eyebrow'>CATALOGUE DES CLUBS</p><h2>CLUBS <span>GÉRÉS.</span></h2></div>${state.user?.role==='creator'?'<button class="btn btn-gold" data-new-club>+ NOUVEAU CLUB</button>':''}</div><div class='admin-table-wrap'><table class='admin-table'><thead><tr><th>CLUB</th><th>TAG</th><th>PAYS</th><th>ACTIONS</th></tr></thead><tbody>${clubs.map(c=>'<tr><td><strong>'+esc(c.name)+'</strong><small>'+esc(c.id)+'</small></td><td>'+esc(c.tag)+'</td><td>'+esc(c.country||'')+'</td><td>'+(state.user?.role==='creator'?'<button class="btn" data-edit-club="'+esc(c.id)+'">GÉRER</button> <button class="btn btn-danger" data-delete-club="'+esc(c.id)+'">SUPPRIMER</button>':'')+'</td></tr>').join('')||'<tr><td colspan="4">Aucun club.</td></tr>'}</tbody></table></div></section></div>`; <div class="admin-tab-panel" data-admin-panel="cards">
   <section class="section admin-section-first"><div class="section-head"><div><p class="eyebrow">CATALOGUE</p><h2>GESTION DES CARTES.</h2></div><p>Catalogue STANDARD actuel et quantité en circulation.</p></div>
    <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>CARTE</th><th>RARETÉ</th><th>TYPE</th><th>EXEMPLAIRES</th><th>JOUEURS</th></tr></thead><tbody>${cardsData.map(c=>`<tr><td><strong>${esc(c.name)}</strong><small>${esc(c.position)} · ${esc(c.club)} · ${esc(c.nation)}</small></td><td><span class="admin-status">${esc(c.rarityLabel||c.rarity)}</span></td><td><strong>STANDARD</strong></td><td>${c.totalInstances}</td><td>${c.owners}</td><td><button class="btn btn-gold" data-manage-catalog-card="${esc(c.id)}">GÉRER</button></td></tr>`).join('')}</tbody></table></div>
   </section>
