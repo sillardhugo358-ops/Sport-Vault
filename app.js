@@ -37,7 +37,7 @@ async function market(){
  }catch(e){throw e}
  const now=Date.now();
  const fmtEnd=iso=>{const sec=Math.max(0,Math.floor((new Date(iso).getTime()-Date.now())/1000));if(sec<60)return sec+'s';const min=Math.floor(sec/60);if(min<60)return min+' min';const h=Math.floor(min/60),r=min%60;return h+'h'+(r?' '+r+'min':'')};
- const auctionCard=x=>{const c=x.card||{};const mine=state.user&&x.sellerId===state.user.id;const min=x.currentBidderId?Math.ceil(x.currentBid*1.10):x.startingBid;return `<article class="auction-card"><div class="auction-card-visual">${cardMarkup(c)}<span class="auction-live">LIVE</span></div><div class="auction-copy"><div class="auction-top"><span class="eyebrow">${esc(c.rarityLabel||c.rarity)} · ${esc(c.club)}</span><strong>${fmtEnd(x.endsAt)}</strong></div><h3>${esc(c.name)}</h3><p>${esc(c.position)} · ${esc(c.nation)} · ${esc(c.serialLabel||'ÉDITION')}</p><div class="auction-price"><span>ENCHÈRE ACTUELLE</span><b>${money(x.currentBid)} FC</b></div><div class="auction-meta"><span>${x.currentBidderName?'Dernière offre : '+esc(x.currentBidderName):'Aucune enchère'}</span><span>Min. ${money(min)} FC</span></div><div class="auction-actions">${mine?`<button class="btn" disabled>MA CARTE</button>`:`<button class="btn btn-gold" data-bid="${esc(x.id)}" data-min="${min}">ENCHÉRIR</button>`}</div></div></article>`};
+ const auctionCard=x=>{const c=x.card||{};const mine=state.user&&x.sellerId===state.user.id;const hasBid=!!x.currentBidderId;const min=hasBid?Math.ceil(x.currentBid*1.10):x.startingBid;const sellerAction=mine?(hasBid?`<button class="btn" disabled>ENCHÈRE EN COURS</button>`:`<button class="btn btn-danger" data-cancel-auction="${esc(x.id)}">ANNULER L’ENCHÈRE</button>`):`<button class="btn btn-gold" data-bid="${esc(x.id)}" data-min="${min}">ENCHÉRIR</button>`;return `<article class="auction-card"><div class="auction-card-visual">${cardMarkup(c)}<span class="auction-live">LIVE</span></div><div class="auction-copy"><div class="auction-top"><span class="eyebrow">${esc(c.rarityLabel||c.rarity)} · ${esc(c.club)}</span><strong>${fmtEnd(x.endsAt)}</strong></div><h3>${esc(c.name)}</h3><p>${esc(c.position)} · ${esc(c.nation)} · ${esc(c.serialLabel||'ÉDITION')}</p><div class="auction-price"><span>ENCHÈRE ACTUELLE</span><b>${money(x.currentBid)} FC</b></div><div class="auction-meta"><span>${x.currentBidderName?'Dernière offre : '+esc(x.currentBidderName):'Aucune enchère'}</span><span>Min. ${money(min)} FC</span></div><div class="auction-actions">${sellerAction}</div></div></article>`};
  const mineCards=state.cards.filter(c=>c.source!=='welcome');
  return `<div class="page">${viewHero('FOOTVAULT / AUCTIONS','LES <span>ENCHÈRES.</span>','Achète et vends tes cartes aux enchères. Aucune commission, et les cartes de bienvenue restent verrouillées.',state.auctions.length,'ENCHÈRES ACTIVES')}
  <div class="auction-toolbar"><div><button class="filter active" data-auction-tab="live">Enchères actives</button><button class="filter" data-auction-tab="sell">Mes cartes</button><button class="filter" data-auction-tab="history">Historique</button></div><input id="auctionSearch" class="auction-search" placeholder="Rechercher une carte, un club..." /></div>
@@ -69,6 +69,11 @@ async function bidAuction(id,min){
  if(amount===null)return;
  try{const d=await api('/api/auctions/bid',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({auctionId:id,amount:Number(amount)})});toast(`Enchère de ${money(d.auction.currentBid)} FC enregistrée`);render()}catch(e){toast(e.message)}
 }
+async function cancelAuction(id){
+ const ok=await auctionDialog({title:'ANNULER L’ENCHÈRE ?',subtitle:'La carte sera immédiatement remise dans ta collection. Cette action est possible uniquement tant qu’aucune offre n’a été placée.',label:'Confirmation',type:'text',value:'',confirm:'ANNULER L’ENCHÈRE'});
+ if(ok===null)return;
+ try{await api('/api/auctions/cancel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({auctionId:id})});toast('Enchère annulée · carte récupérée.');render()}catch(e){toast(e.message)}
+}
 async function createAuction(cardId){
  const start=await auctionDialog({title:'CRÉER UNE ENCHÈRE',subtitle:'Définis le montant de départ. Ta carte sera bloquée pendant l’enchère.',label:'Mise de départ en FOOTCOINS',value:100});
  if(start===null)return;
@@ -84,7 +89,7 @@ function bind(){
  document.querySelectorAll('[data-mission]').forEach(b=>b.onclick=()=>mission(b.dataset.mission));
  document.querySelectorAll('[data-album]').forEach(b=>b.onclick=()=>claimAlbum(b.dataset.album));
  document.querySelectorAll('[data-bid]').forEach(b=>b.onclick=()=>bidAuction(b.dataset.bid,Number(b.dataset.min)));
- document.querySelectorAll('[data-sell-card]').forEach(b=>b.onclick=()=>createAuction(b.dataset.sellCard));
+ document.querySelectorAll('[data-sell-card]').forEach(b=>b.onclick=()=>createAuction(b.dataset.sellCard));\n document.querySelectorAll('[data-cancel-auction]').forEach(b=>b.onclick=()=>cancelAuction(b.dataset.cancelAuction));
  document.querySelectorAll('[data-auction-tab]').forEach(b=>b.onclick=async()=>{
    document.querySelectorAll('[data-auction-tab]').forEach(x=>x.classList.remove('active'));b.classList.add('active');
    const tab=b.dataset.auctionTab;
