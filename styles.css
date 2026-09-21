@@ -81,3 +81,28 @@
 .admin-user-link{display:block;width:100%;padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer}.admin-user-link:hover strong{color:var(--gold2)}.admin-user-modal{max-width:900px;max-height:85vh;overflow:auto}.admin-user-modal h2{font:900 42px var(--head);margin:0}.admin-user-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0}.admin-user-summary>div{border:1px solid var(--line);padding:14px}.admin-user-summary span,.admin-mini-list span{display:block;color:var(--muted);font-size:8px;letter-spacing:1px}.admin-user-summary strong{display:block;margin-top:7px;font:900 22px var(--head);color:var(--gold2)}.admin-user-section{margin-top:22px}.admin-mini-list{border:1px solid var(--line)}.admin-mini-list>div{display:flex;justify-content:space-between;gap:15px;padding:11px 13px;border-bottom:1px solid var(--line)}.admin-mini-list>div:last-child{border-bottom:0}.admin-mini-list strong{font-size:10px}.admin-mini-list span{font-size:8px;text-align:right}@media(max-width:700px){.admin-user-summary{grid-template-columns:repeat(2,1fr)}.admin-mini-list>div{display:block}.admin-mini-list span{margin-top:4px;text-align:left}}
 .admin-moderation{border:1px solid var(--line);padding:14px;margin:18px 0;display:flex;align-items:center;justify-content:space-between;gap:15px}.admin-action-buttons{display:flex;gap:8px;flex-wrap:wrap}.admin-action-buttons .btn{font-size:9px;padding:10px 12px}@media(max-width:700px){.admin-moderation{display:block}.admin-action-buttons{margin-top:12px}}
 .admin-resource-form,.admin-card-grant{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.admin-resource-form input,.admin-resource-form select,.admin-card-grant select{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:10px;font:700 10px var(--body);min-width:120px}.mini-action{margin-left:8px;border:1px solid var(--line);background:none;color:var(--muted);font-size:8px;padding:3px 6px;cursor:pointer}.mini-action:hover{color:var(--red)}.admin-user-modal .admin-status strong{color:var(--text)}.admin-role.creator{color:var(--gold2);border-color:var(--gold2);font-weight:900}
+.admin-amount-control{display:flex;align-items:center;gap:0}
+.admin-amount-control input{width:110px!important;text-align:center}
+.amount-step{width:42px;height:40px;border:1px solid var(--line);background:#111312;color:var(--gold2);font:900 20px var(--head);cursor:pointer}
+.amount-step:hover{border-color:var(--gold)}
+.admin-log-details{white-space:normal!important;line-height:1.5}
+@media(max-width:700px){
+ .admin-table-wrap{border:0;overflow:visible}
+ .admin-table{min-width:0;display:block}
+ .admin-table thead{display:none}
+ .admin-table tbody,.admin-table tr,.admin-table td{display:block;width:100%}
+ .admin-table tr{border:1px solid var(--line);background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.01));padding:12px;margin-bottom:10px}
+ .admin-table td{border:0!important;padding:5px 0;white-space:normal!important;text-align:left}
+ .admin-table td:before{display:block;color:var(--muted);font-size:7px;font-weight:800;letter-spacing:1.2px;margin-bottom:2px}
+ .admin-table tbody tr td:nth-child(1):before{content:'JOUEUR / CARTE / DATE'}
+ .admin-table tbody tr td:nth-child(2):before{content:'RÔLE / STATUT / ADMIN'}
+ .admin-table tbody tr td:nth-child(3):before{content:'RESSOURCE / VENDEUR / CIBLE'}
+ .admin-table tbody tr td:nth-child(4):before{content:'CARTES / OFFRE / ACTION'}
+ .admin-table tbody tr td:nth-child(5):before{content:'VENTES / NB OFFRES / DÉTAILS'}
+ .admin-table tbody tr td:nth-child(6):before{content:'OFFRES / FIN'}
+ .admin-table td small{white-space:normal!important;word-break:break-word}
+ .admin-resource-form{display:grid;grid-template-columns:1fr;gap:8px}
+ .admin-amount-control{width:100%}
+ .admin-amount-control input{flex:1;width:auto!important}
+ .admin-resource-form select,.admin-resource-form .btn,.admin-resource-form>input{width:100%;min-width:0}
+}
