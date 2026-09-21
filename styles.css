@@ -106,3 +106,16 @@
  .admin-amount-control input{flex:1;width:auto!important}
  .admin-resource-form select,.admin-resource-form .btn,.admin-resource-form>input{width:100%;min-width:0}
 }
+
+.admin-tabs{position:sticky;top:76px;z-index:20;display:flex;gap:4px;margin:18px 0 0;padding:6px;border:1px solid var(--line);background:rgba(9,11,10,.94);backdrop-filter:blur(14px);overflow-x:auto}
+.admin-tab{flex:1;min-width:145px;border:1px solid transparent;background:transparent;color:var(--muted);padding:13px 15px;font:800 9px var(--body);letter-spacing:1.2px;cursor:pointer;white-space:nowrap}
+.admin-tab:hover{color:var(--text)}
+.admin-tab.active{background:linear-gradient(135deg,rgba(216,181,107,.20),rgba(216,181,107,.06));border-color:rgba(216,181,107,.45);color:var(--gold2)}
+.admin-tab-panel{display:none}
+.admin-tab-panel.active{display:block}
+.admin-section-first{padding-top:42px}
+@media(max-width:760px){
+ .admin-tabs{top:68px;margin-top:12px;padding:5px}
+ .admin-tab{min-width:125px;padding:12px 10px;font-size:8px}
+ .admin-section-first{padding-top:34px}
+}
