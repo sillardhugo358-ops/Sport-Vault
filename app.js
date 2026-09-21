@@ -56,7 +56,7 @@ async function showAdminUser(id){
  }catch(e){toast(e.message)}
 }
 async function showCatalogCardEditor(card){const collections=state.adminCollections||[];const selected=collections.filter(c=>(c.cardIds||[]).includes(card.id)).map(c=>c.id);const options=collections.map(c=>'<label class="collection-card-option"><input type="checkbox" value="'+esc(c.id)+'" '+(selected.includes(c.id)?'checked':'')+'><span><strong>'+esc(c.name)+'</strong><small>'+esc(c.tag)+' · '+c.cardCount+' cartes</small></span></label>').join('');setModal('<div class="modal-box admin-user-modal"><button class="modal-close" data-close>×</button><p class="eyebrow">CRÉATEUR / CARTE</p><h2>'+esc(card.name)+'</h2><p class="collection-id-note">'+esc(card.position)+' · '+esc(card.club)+' · '+esc(card.nation)+'</p><p class="eyebrow">COLLECTIONS ASSOCIÉES</p><div class="collection-card-picker card-collection-picker">'+options+'</div><div class="auction-dialog-actions" style="margin-top:20px"><button class="btn btn-ghost" data-close>ANNULER</button><button class="btn btn-gold" data-save-catalog-card>ENREGISTRER</button></div></div>');document.querySelector('[data-save-catalog-card]')?.addEventListener('click',async()=>{const collectionIds=[...document.querySelectorAll('.card-collection-picker input:checked')].map(x=>x.value);try{await api('/api/admin/collections',{method:'POST',body:JSON.stringify({action:'set_card_collections',id:card.id,collectionIds})});closeModal();toast('Carte mise à jour.');render()}catch(e){toast(e.message)}})}
-function showCollectionEditor(collection,selected){
+async function showCollectionEditor(collection,selected){
  const creator=state.user?.role==='creator';if(!creator)return;
  await loadCatalog();
  const c=collection||{id:'',name:'',tag:'',description:''};
