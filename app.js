@@ -59,7 +59,7 @@ function cardStatDefinitions(position=''){return String(position).toUpperCase()=
 async function showCatalogCardEditor(card){
  const rarityOptions=['common','rare','epic','legendary','icon'].map(r=>'<option value="'+r+'" '+(card.rarity===r?'selected':'')+'>'+esc(r.toUpperCase())+'</option>').join('');
  const positions=['GK','RB','LB','CB','RWB','LWB','DM','CM','AM','RW','LW','ST'];
- const clubs=[...new Set((state.adminCards||[]).map(c=>c.club).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
+ const clubs=(state.adminClubs||[]).map(c=>c.name).filter(Boolean).sort((a,b)=>a.localeCompare(b,'fr'));
  const positionOptions=positions.map(p=>'<option value="'+p+'" '+(card.position===p?'selected':'')+'>'+p+'</option>').join('');
  const clubOptions=clubs.map(c=>'<option value="'+esc(c)+'" '+(card.club===c?'selected':'')+'>'+esc(c)+'</option>').join('');
  const statFields=cardStatDefinitions(card.position).map(([label,key])=>[label,'catalog'+key.charAt(0).toUpperCase()+key.slice(1),key]);
