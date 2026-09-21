@@ -59,11 +59,12 @@ async function admin(){
  const [o,u,a,l]=await Promise.all([api('/api/admin/overview'),api('/api/admin/users'),api('/api/admin/auctions'),api('/api/admin/logs')]);
  state.user=o.admin;
  const s=o.overview.stats;
- const users=u.users||[],auctions=a.auctions||[],logs=l.logs||[];state.adminUsers=users;
+ const users=u.users||[],auctions=a.auctions||[],logs=l.logs||[];state.adminUsers=users;const cardsData=(await api('/api/admin/cards')).cards||[];state.adminCards=cardsData;
  return `<div class="page"><section class="view-hero"><div><p class="eyebrow">FOOTVAULT / ADMIN</p><h1>CENTRE DE <span>CONTRÔLE.</span></h1><p class="lead">Supervision de la plateforme, des comptes, de l'économie et des enchères.</p></div><div class="hero-stat"><strong>ADMIN</strong><span>ACCÈS PRIVILÉGIÉ</span></div></section>
  <nav class="admin-tabs" aria-label="Sections administration">
   <button class="admin-tab active" data-admin-tab="dashboard">TABLEAU DE BORD</button>
-  <button class="admin-tab" data-admin-tab="players">JOUEURS</button>
+  <button class="admin-tab" data-admin-tab="players">JOUEURS / COLLECTIONS</button>
+  <button class="admin-tab" data-admin-tab="cards">CARTES</button>
   <button class="admin-tab" data-admin-tab="auctions">ENCHÈRES</button>
   <button class="admin-tab" data-admin-tab="logs">JOURNAL</button>
  </nav>
@@ -75,7 +76,14 @@ async function admin(){
  <div class="admin-tab-panel" data-admin-panel="players">
   <section class="section admin-section-first"><div class="section-head"><div><p class="eyebrow">COMPTES</p><h2>JOUEURS.</h2></div><input id="adminUserSearch" class="auction-search" placeholder="Rechercher un nom ou un email..." /></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>JOUEUR</th><th>RÔLE</th><th>FC DISPONIBLES</th><th>CARTES</th><th>VENTES</th><th>OFFRES</th></tr></thead><tbody id="adminUsersBody">${users.map(x=>adminUserRow(x)).join('')}</tbody></table></div></section>
  </div>
- <div class="admin-tab-panel" data-admin-panel="auctions">
+ <div class="admin-tab-panel" data-admin-panel="cards">
+  <section class="section admin-section-first"><div class="section-head"><div><p class="eyebrow">CATALOGUE</p><h2>GESTION DES CARTES.</h2></div><p>Catalogue STANDARD actuel et quantité en circulation.</p></div>
+   <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>CARTE</th><th>RARETÉ</th><th>TYPE</th><th>EXEMPLAIRES</th><th>JOUEURS</th></tr></thead><tbody>${cardsData.map(c=>`<tr><td><strong>${esc(c.name)}</strong><small>${esc(c.position)} · ${esc(c.club)} · ${esc(c.nation)}</small></td><td><span class="admin-status">${esc(c.rarityLabel||c.rarity)}</span></td><td><strong>STANDARD</strong></td><td>${c.totalInstances}</td><td>${c.owners}</td></tr>`).join('')}</tbody></table></div>
+  </section>
+  <section class="section"><div class="section-head"><div><p class="eyebrow">ACTIONS</p><h2>GESTION DES COLLECTIONS.</h2></div><p>Ouvre un joueur pour ajouter, retirer ou transférer ses cartes.</p></div>
+   <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>JOUEUR</th><th>CARTES</th><th>VENTES</th><th>OFFRES</th><th>ACTION</th></tr></thead><tbody>${users.map(x=>`<tr><td><strong>${esc(x.name)}</strong><small>${esc(x.email)}</small></td><td>${x.cardCount}</td><td>${x.activeSales}</td><td>${x.activeBids}</td><td><button class="btn" data-admin-user="${esc(x.id)}">GÉRER</button></td></tr>`).join('')}</tbody></table></div>
+  </section>
+ </div> <div class="admin-tab-panel" data-admin-panel="auctions">
   <section class="section admin-section-first"><div class="section-head"><div><p class="eyebrow">ENCHÈRES</p><h2>SURVEILLANCE.</h2></div><p>100 dernières enchères enregistrées.</p></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>CARTE</th><th>STATUT</th><th>VENDEUR</th><th>OFFRE</th><th>NB OFFRES</th><th>FIN</th></tr></thead><tbody>${auctions.map(x=>`<tr><td><strong>${esc(x.card_name)}</strong><small>${esc(x.rarity)} · ${x.is_limited?`${Number(x.serial)}/${Number(x.max_supply)}`:'STANDARD'}</small></td><td><span class="admin-status">${esc(x.status)}</span></td><td>${esc(x.seller_name)}</td><td>${money(x.current_bid)} FC</td><td>${x.bid_count}</td><td>${new Date(x.ends_at).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})}</td></tr>`).join('')}</tbody></table></div></section>
  </div>
  <div class="admin-tab-panel" data-admin-panel="logs">
