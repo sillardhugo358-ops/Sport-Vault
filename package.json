@@ -1,9 +1,9 @@
 {
   "name": "sport-vault",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "commonjs",
-  "scripts": {"start": "node server.js"},
+  "scripts": {"start": "node -r ./security-bootstrap.js server.js"},
   "engines": {"node": ">=18"},
   "dependencies": {"pg": "^8.16.3"}
 }
