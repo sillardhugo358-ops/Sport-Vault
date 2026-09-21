@@ -24,3 +24,15 @@
 .sell-card p{font-size:9px;color:var(--muted);margin:5px 0 14px}
 @media(max-width:950px){.auction-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){.auction-toolbar{align-items:stretch;flex-direction:column}.auction-search{width:100%}.auction-grid{grid-template-columns:1fr}.sell-card{align-items:flex-start}.sell-card .tcg-card{width:110px}}
+
+.auction-modal-box{width:min(560px,100%);padding:32px}
+.auction-modal-box h2{font:900 clamp(42px,8vw,68px)/.88 var(--head);margin:0;text-transform:uppercase;letter-spacing:-1px}
+.auction-dialog-subtitle{color:var(--muted);font-size:12px;line-height:1.6;margin:15px 0 0;max-width:470px}
+.auction-dialog-form{margin-top:26px}
+.auction-field{display:block}
+.auction-field>span{display:block;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;margin-bottom:8px}
+.auction-field input,.auction-field select{width:100%;height:54px;border:1px solid rgba(216,181,107,.28);background:#070908;color:var(--text);padding:0 15px;font:800 20px var(--head);outline:none;border-radius:0}
+.auction-field input:focus,.auction-field select:focus{border-color:var(--gold)}
+.auction-field select{font:800 14px var(--body);cursor:pointer}
+.auction-dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:22px}
+@media(max-width:680px){.auction-modal-box{padding:24px 18px}.auction-dialog-actions{display:grid;grid-template-columns:1fr 1fr}.auction-dialog-actions .btn{width:100%}}
