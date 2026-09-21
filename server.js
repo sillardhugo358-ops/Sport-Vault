@@ -135,15 +135,17 @@ async function settleExpiredAuctions(){
   await client.query('COMMIT');
  }catch(e){await client.query('ROLLBACK').catch(()=>{});console.error('Auction settlement error:',e.message)}finally{client.release();}
 }
-async function auctionData(){
+async function auctionData(viewerId=null){
  await settleExpiredAuctions();
  const r=await pool.query(`SELECT a.*,c.card_id,c.name,c.position,c.club,c.nation,c.rarity,c.season,c.serial,c.max_supply,c.source,
-   u.name AS seller_name,ub.name AS bidder_name
+   u.name AS seller_name,ub.name AS bidder_name,
+   (SELECT count(*) FROM auction_bids ab WHERE ab.auction_id=a.id) AS bid_count,
+   (SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY aa.current_bid) FROM auctions aa JOIN card_instances cc ON cc.instance_id=aa.card_instance_id WHERE aa.status='completed' AND cc.card_id=c.card_id) AS reference_median
    FROM auctions a JOIN card_instances c ON c.instance_id=a.card_instance_id
    JOIN users u ON u.id=a.seller_id
    LEFT JOIN users ub ON ub.id=a.current_bidder_id
    WHERE a.status='active' AND a.ends_at>now() ORDER BY a.ends_at ASC`);
- return r.rows.map(x=>({...auctionPublic(x),sellerName:x.seller_name,currentBidderName:x.bidder_name||null,card:publicCard(x)}));
+ return r.rows.map(x=>({...auctionPublic(x),sellerName:x.seller_name,currentBidderName:x.bidder_name||null,bidCount:Number(x.bid_count||0),referencePrice:x.reference_median===null?null:Math.round(Number(x.reference_median)),isCurrentUserBidder:!!viewerId&&x.current_bidder_id===viewerId,card:publicCard(x)}));
 }
 async function auctionHistory(userId){
  await settleExpiredAuctions();
@@ -241,7 +243,7 @@ function staticFile(req,res){let pathname=decodeURIComponent(new URL(req.url,'ht
 
 (async()=>{const db=await initDb();console.log(`SPORT VAULT startup: storage=${db.mode}`);const server=http.createServer(async(req,res)=>{const url=new URL(req.url,'http://local');try{
  if(req.method==='GET'&&url.pathname==='/api/health')return json(res,200,{ok:true,storage:pool?'postgres':'memory',universe:'FOOTVAULT',cards:CARD_CATALOG.length,packs:Object.keys(PACKS)});
- if(req.method==='GET'&&url.pathname==='/api/auctions'){const user=await currentUser(req);const auctions=await auctionData();return json(res,200,{auctions,user:user?safeUser(user):null});}
+ if(req.method==='GET'&&url.pathname==='/api/auctions'){const user=await currentUser(req);const auctions=await auctionData(user?.id||null);return json(res,200,{auctions,user:user?safeUser(user):null});}
  if(req.method==='GET'&&url.pathname==='/api/auctions/history'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});return json(res,200,{auctions:await auctionHistory(user.id)});}
  if(req.method==='GET'&&url.pathname==='/api/auctions/:id'){return json(res,404,{error:'Not found'});}
  if(req.method==='GET'&&url.pathname==='/api/auctions'){return json(res,200,{auctions:await auctionData()});}
