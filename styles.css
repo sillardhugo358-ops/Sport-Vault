@@ -36,3 +36,4 @@
 .auction-field select{font:800 14px var(--body);cursor:pointer}
 .auction-dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:22px}
 @media(max-width:680px){.auction-modal-box{padding:24px 18px}.auction-dialog-actions{display:grid;grid-template-columns:1fr 1fr}.auction-dialog-actions .btn{width:100%}}
+\n.btn-danger{background:rgba(160,65,65,.12);border-color:rgba(215,124,124,.42);color:#e7a0a0}.btn-danger:hover{background:rgba(160,65,65,.22);border-color:rgba(215,124,124,.7);box-shadow:0 8px 30px rgba(160,65,65,.12)}\n
