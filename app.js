@@ -90,7 +90,8 @@ function bind(){
  document.querySelectorAll('[data-mission]').forEach(b=>b.onclick=()=>mission(b.dataset.mission));
  document.querySelectorAll('[data-album]').forEach(b=>b.onclick=()=>claimAlbum(b.dataset.album));
  document.querySelectorAll('[data-bid]').forEach(b=>b.onclick=()=>bidAuction(b.dataset.bid,Number(b.dataset.min)));
- document.querySelectorAll('[data-sell-card]').forEach(b=>b.onclick=()=>createAuction(b.dataset.sellCard));\n document.querySelectorAll('[data-cancel-auction]').forEach(b=>b.onclick=()=>cancelAuction(b.dataset.cancelAuction));
+ document.querySelectorAll('[data-sell-card]').forEach(b=>b.onclick=()=>createAuction(b.dataset.sellCard));
+ document.querySelectorAll('[data-cancel-auction]').forEach(b=>b.onclick=()=>cancelAuction(b.dataset.cancelAuction));
  document.querySelectorAll('[data-auction-tab]').forEach(b=>b.onclick=async()=>{
    document.querySelectorAll('[data-auction-tab]').forEach(x=>x.classList.remove('active'));b.classList.add('active');
    const tab=b.dataset.auctionTab;
