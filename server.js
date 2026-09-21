@@ -179,16 +179,28 @@ async function adminSetCompetition(adminId,action,body){
  }
  if(action==='delete'){const rr=await pool.query('DELETE FROM competitions WHERE id=$1 RETURNING id',[id]);if(!rr.rowCount)return{error:'Compétition introuvable.',status:404};await adminLog(adminId,null,'competition_delete',{id});return{ok:true};}
  if(action==='season_create'||action==='season_update'){
-  const seasonId=String(body.seasonId||id||'').trim(),competitionId=String(body.competitionId||'').trim(),season=String(body.season||'').trim(),label=String(body.label||season).trim(),seasonStatus=String(body.seasonStatus||'upcoming').trim(),seasonDescription=String(body.seasonDescription||'').trim().slice(0,500);
-  if(!/^[a-z0-9-]{2,80}$/.test(seasonId)||!competitionId||!/^[0-9]{4}(?:-[0-9]{4})?$/.test(season)||!label||!['available','upcoming'].includes(seasonStatus))return{error:'Informations de saison invalides.',status:400};
+  const seasonId=String(body.seasonId||id||'').trim(),competitionId=String(body.competitionId||'').trim(),season=String(body.season||'').trim(),label=season,seasonStatus=String(body.seasonStatus||'upcoming').trim(),seasonDescription=String(body.seasonDescription||'').trim().slice(0,500);
+  if(!/^[a-z0-9-]{2,80}$/.test(seasonId)||!competitionId||!/^[0-9]{4}(?:-[0-9]{4})?$/.test(season)||!['available','upcoming'].includes(seasonStatus))return{error:'Informations de saison invalides.',status:400};
   if(!(await pool.query('SELECT 1 FROM competitions WHERE id=$1',[competitionId])).rowCount)return{error:'Compétition introuvable.',status:404};
   if(action==='season_create'){
    if((await pool.query('SELECT 1 FROM competition_seasons WHERE id=$1 OR (competition_id=$2 AND season=$3)',[seasonId,competitionId,season])).rowCount)return{error:'Cette édition existe déjà.',status:409};
    const max=(await pool.query('SELECT COALESCE(MAX(sort_order),-1)+1 n FROM competition_seasons WHERE competition_id=$1',[competitionId])).rows[0].n;
    await pool.query('INSERT INTO competition_seasons(id,competition_id,season,label,status,description,sort_order) VALUES($1,$2,$3,$4,$5,$6,$7)',[seasonId,competitionId,season,label,seasonStatus,seasonDescription,Number(max)]);
   }else{
-   const rr=await pool.query('UPDATE competition_seasons SET season=$1,label=$2,status=$3,description=$4,updated_at=now() WHERE id=$5 RETURNING id',[season,label,seasonStatus,seasonDescription,seasonId]);
-   if(!rr.rowCount)return{error:'Saison introuvable.',status:404};
+   const previous=(await pool.query('SELECT season FROM competition_seasons WHERE id=$1 AND competition_id=$2',[seasonId,competitionId])).rows[0];
+   if(!previous)return{error:'Saison introuvable.',status:404};
+   if((await pool.query('SELECT 1 FROM competition_seasons WHERE competition_id=$1 AND season=$2 AND id<>$3',[competitionId,season,seasonId])).rowCount)return{error:'Cette saison existe déjà dans la compétition.',status:409};
+   const clubIds=(await pool.query('SELECT club_id FROM season_clubs WHERE season_id=$1',[seasonId])).rows.map(x=>x.club_id);
+   const client=await pool.connect();
+   try{
+    await client.query('BEGIN');
+    await client.query('UPDATE competition_seasons SET season=$1,label=$1,status=$2,description=$3,updated_at=now() WHERE id=$4',[season,seasonStatus,seasonDescription,seasonId]);
+    if(previous.season!==season && clubIds.length){
+      await client.query('UPDATE catalog_cards SET season=$1,updated_at=now() WHERE season=$2 AND club IN (SELECT name FROM clubs WHERE id=ANY($3::varchar[]))',[season,previous.season,clubIds]);
+      await client.query('UPDATE card_instances SET season=$1 WHERE season=$2 AND club IN (SELECT name FROM clubs WHERE id=ANY($3::varchar[]))',[season,previous.season,clubIds]);
+    }
+    await client.query('COMMIT');
+   }catch(e){await client.query('ROLLBACK');throw e}finally{client.release()}
   }
   await adminLog(adminId,null,'competition_season_'+(action==='season_create'?'create':'update'),{seasonId,competitionId,season});return{ok:true};
  }
