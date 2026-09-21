@@ -144,6 +144,7 @@ async function adminOverview(){
  const recent=await pool.query("SELECT id,name,email,role,coins,reserved_coins,gems,xp,created_at FROM users ORDER BY created_at DESC LIMIT 10");
  return {stats:{users:u.rows[0].n,cards:c.rows[0].n,activeAuctions:a.rows[0].n,completedAuctions:completed.rows[0].n,packsOpened:packs.rows[0].n,totalCoins:Number(coins.rows[0].n),reservedCoins:Number(coins.rows[0].reserved),totalGems:Number(gems.rows[0].n)},rarity:rarity.rows,recentUsers:recent.rows.map(safeUser)};
 }
+async function adminCards(){const r=await pool.query('SELECT card_id,count(*)::int AS total_instances,count(DISTINCT owner_id)::int AS owners FROM card_instances GROUP BY card_id');const stats=new Map(r.rows.map(x=>[x.card_id,x]));return CARD_CATALOG.map(c=>({...c,totalInstances:Number(stats.get(c.id)?.total_instances||0),owners:Number(stats.get(c.id)?.owners||0)}));}
 async function adminUsers(search=''){
  const q=String(search||'').trim().toLowerCase();
  const r=await pool.query(`SELECT u.id,u.name,u.email,u.role,u.coins,u.reserved_coins,u.gems,u.xp,u.created_at,
@@ -331,6 +332,7 @@ function staticFile(req,res){let pathname=decodeURIComponent(new URL(req.url,'ht
  if(req.method==='POST'&&url.pathname==='/api/auctions/bid'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});const body=await readBody(req);const result=await placeAuctionBid(user.id,String(body.auctionId||''),body.amount);return json(res,result.error?result.status||400:200,result);}
  if(req.method==='POST'&&url.pathname==='/api/auctions/cancel'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});const body=await readBody(req);const result=await cancelAuction(user.id,String(body.auctionId||''));return json(res,result.error?result.status||400:200,result);}
  if(req.method==='GET'&&url.pathname.startsWith('/api/auctions/')&&url.pathname.endsWith('/bids')){const id=url.pathname.split('/')[3];return json(res,200,{bids:await auctionBidHistory(id)});}
+ if(req.method==='GET'&&url.pathname==='/api/admin/cards'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès admin requis.'});return json(res,200,{cards:await adminCards()});}
  if(req.method==='GET'&&url.pathname==='/api/admin/overview'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès administrateur requis.'});return json(res,200,{admin:safeUser(admin),overview:await adminOverview()});}
  if(req.method==='GET'&&url.pathname==='/api/admin/users'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès administrateur requis.'});return json(res,200,{users:await adminUsers(url.searchParams.get('q')||'')});}
  if(req.method==='GET'&&url.pathname.startsWith('/api/admin/users/')){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès administrateur requis.'});const id=url.pathname.split('/').pop();const detail=await adminUserDetail(id);return json(res,detail.error?detail.status||404:200,detail.error?detail:{user:detail});} 
