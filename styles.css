@@ -63,7 +63,7 @@
 .bid-row{display:flex;justify-content:space-between;gap:12px;padding:14px 2px;border-bottom:1px solid var(--line);font-size:11px}
 .bid-row strong{font-weight:800}.bid-row span{font-weight:900;color:var(--gold2)}
 
-.admin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.admin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .admin-stat{border:1px solid var(--line);background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.01));padding:22px}
 .admin-stat span{display:block;color:var(--muted);font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase}
 .admin-stat strong{display:block;margin-top:7px;color:var(--gold2);font:900 34px var(--head)}
@@ -76,6 +76,6 @@
 .admin-role.admin{color:var(--gold2);border-color:rgba(216,181,107,.45)}
 .admin-status{color:var(--muted)}
 .admin-rarity-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-@media(max-width:800px){.admin-grid{grid-template-columns:repeat(2,1fr)}.admin-rarity-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:1000px){.admin-grid{grid-template-columns:repeat(2,1fr)}.admin-rarity-grid{grid-template-columns:repeat(2,1fr)}}
 
 .admin-user-link{display:block;width:100%;padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer}.admin-user-link:hover strong{color:var(--gold2)}.admin-user-modal{max-width:900px;max-height:85vh;overflow:auto}.admin-user-modal h2{font:900 42px var(--head);margin:0}.admin-user-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0}.admin-user-summary>div{border:1px solid var(--line);padding:14px}.admin-user-summary span,.admin-mini-list span{display:block;color:var(--muted);font-size:8px;letter-spacing:1px}.admin-user-summary strong{display:block;margin-top:7px;font:900 22px var(--head);color:var(--gold2)}.admin-user-section{margin-top:22px}.admin-mini-list{border:1px solid var(--line)}.admin-mini-list>div{display:flex;justify-content:space-between;gap:15px;padding:11px 13px;border-bottom:1px solid var(--line)}.admin-mini-list>div:last-child{border-bottom:0}.admin-mini-list strong{font-size:10px}.admin-mini-list span{font-size:8px;text-align:right}@media(max-width:700px){.admin-user-summary{grid-template-columns:repeat(2,1fr)}.admin-mini-list>div{display:block}.admin-mini-list span{margin-top:4px;text-align:left}}
