@@ -199,3 +199,28 @@
 .rarity-common .tcg-inner{border-color:rgba(255,255,255,.16)}.rarity-rare .tcg-inner{border-color:rgba(91,151,255,.42)}.rarity-epic .tcg-inner{border-color:rgba(173,86,255,.52);box-shadow:inset 0 0 25px rgba(173,86,255,.06)}.rarity-legendary .tcg-inner{border-color:rgba(216,181,107,.58);box-shadow:inset 0 0 30px rgba(216,181,107,.09)}.rarity-icon .tcg-inner{border-color:rgba(255,226,143,.8);box-shadow:inset 0 0 38px rgba(216,181,107,.14)}
 @media(max-width:600px){.tcg-inner{padding:12px 11px 10px}.card-rating b{font-size:22px}.card-top{font-size:7px}.card-top strong{font-size:12px}.tcg-card h3{font-size:17px}.card-bottom{font-size:6px}}
 #catalogJerseyNumber{appearance:textfield}
+
+
+/* ADMIN AUCTIONS — surveillance compacte */
+.admin-auction-panel{padding-bottom:28px}
+.admin-auction-panel .section-head{margin-bottom:22px}
+.admin-auction-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.admin-auction-card{border:1px solid rgba(255,255,255,.09);background:linear-gradient(145deg,rgba(20,23,21,.92),rgba(8,10,9,.96));padding:18px;min-width:0;transition:.2s;border-radius:9px}
+.admin-auction-card:hover{border-color:rgba(216,181,107,.35);transform:translateY(-2px)}
+.admin-auction-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.admin-auction-card-head .eyebrow{margin-bottom:5px;font-size:8px}
+.admin-auction-card h3{margin:0;font:900 25px/.95 var(--head);text-transform:uppercase;letter-spacing:.2px}
+.admin-auction-card-head small{display:block;margin-top:6px;color:var(--muted);font-size:8px;letter-spacing:.5px}
+.admin-auction-status{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;padding:6px 8px;border:1px solid rgba(255,255,255,.12);font-size:7px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border-radius:999px}
+.admin-auction-status.active{color:#b9dfba;border-color:rgba(120,190,125,.35);background:rgba(80,150,85,.08)}
+.admin-auction-status.completed{color:var(--gold2);border-color:rgba(216,181,107,.35);background:rgba(216,181,107,.06)}
+.admin-auction-status.cancelled{color:#e4a0a0;border-color:rgba(210,110,110,.3);background:rgba(160,60,60,.06)}
+.admin-auction-price{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:18px 0 15px;padding:13px 0;border-block:1px solid rgba(255,255,255,.07)}
+.admin-auction-price span{font-size:7px;letter-spacing:1.3px;color:var(--muted)}
+.admin-auction-price strong{font:900 25px var(--head);color:var(--gold2);white-space:nowrap}
+.admin-auction-info{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.admin-auction-info div{min-width:0;padding:9px 10px;border:1px solid rgba(255,255,255,.055);background:rgba(255,255,255,.018)}
+.admin-auction-info span{display:block;color:var(--muted);font-size:7px;letter-spacing:1.1px;margin-bottom:4px}
+.admin-auction-info strong{display:block;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:1050px){.admin-auction-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.admin-auction-grid{grid-template-columns:1fr}.admin-auction-card{padding:16px}.admin-auction-card h3{font-size:23px}.admin-auction-status{font-size:6px}.admin-auction-info{grid-template-columns:1fr 1fr}}
