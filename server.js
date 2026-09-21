@@ -187,6 +187,7 @@ async function createAuction(userId,cardInstanceId,startingBid,duration){
  }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release();}
 }
 async function placeAuctionBid(userId,auctionId,amount){
+ await settleExpiredAuctions();
  const bid=Math.floor(Number(amount));
  if(!Number.isSafeInteger(bid)||bid<1)return{error:'Enchère invalide.',status:400};
  const client=await pool.connect();
