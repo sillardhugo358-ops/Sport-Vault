@@ -67,12 +67,20 @@ function applySecurityHeaders(req, res) {
   };
 
   originalSetHeader('X-Content-Type-Options', 'nosniff');
+  originalSetHeader('Content-Security-Policy', "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self';");
+  originalSetHeader('Cross-Origin-Resource-Policy', 'same-origin');
+  originalSetHeader('Origin-Agent-Cluster', '?1');
+  originalSetHeader('X-Permitted-Cross-Domain-Policies', 'none');
   originalSetHeader('X-Frame-Options', 'DENY');
   originalSetHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   originalSetHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   originalSetHeader('Cross-Origin-Opener-Policy', 'same-origin');
   if (secure) originalSetHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   originalSetHeader('Server', 'FOOTVAULT');
+}
+
+function originalApiHeaders(res) {
+  try { res.setHeader('Cache-Control', 'no-store'); } catch {}
 }
 
 function reject(res, status, message, retryAfter) {
@@ -92,7 +100,12 @@ http.createServer = function patchedCreateServer(requestListener) {
     const path = new URL(req.url || '/', 'http://local').pathname;
     const ip = clientIp(req);
 
+    if (['TRACE', 'TRACK', 'CONNECT'].includes(req.method)) {
+      return reject(res, 405, 'Méthode HTTP non autorisée.');
+    }
+
     if (path.startsWith('/api/')) {
+      originalApiHeaders(res);
       if (!consume(`api:${ip}`, MAX_API_PER_MINUTE)) {
         return reject(res, 429, 'Trop de requêtes. Réessaie dans un instant.', 60);
       }
