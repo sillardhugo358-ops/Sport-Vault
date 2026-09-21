@@ -160,22 +160,76 @@ function cardStatDefinitions(position=''){return String(position).toUpperCase()=
 async function showCatalogCardEditor(card){
  const rarityOptions=['common','rare','epic','legendary','icon'].map(r=>'<option value="'+r+'" '+(card.rarity===r?'selected':'')+'>'+esc(r.toUpperCase())+'</option>').join('');
  const positions=['GK','RB','LB','CB','RWB','LWB','DM','CM','AM','RW','LW','ST'];
- const clubs=(state.adminClubs||[]).map(c=>c.name).filter(Boolean).sort((a,b)=>a.localeCompare(b,'fr'));
+ const competitions=(state.adminCompetitions||[]).filter(c=>c.status==='available').sort((a,b)=>String(a.name).localeCompare(String(b.name),'fr'));
+ const clubsById=new Map((state.adminClubs||[]).map(c=>[String(c.id),c]));
+ const findCurrentContext=()=>{
+  for(const comp of competitions){
+   for(const season of (comp.seasons||[])){
+    if(String(season.season)===String(card.season)&&season.clubIds?.some(id=>String(clubsById.get(String(id))?.name||'')===String(card.club)))return{competitionId:comp.id,seasonId:season.id};
+   }
+  }
+  return null;
+ };
+ const currentContext=findCurrentContext();
+ const currentCompetitionId=currentContext?.competitionId||competitions[0]?.id||'';
+ const currentCompetition=competitions.find(c=>String(c.id)===String(currentCompetitionId));
+ const initialClubId=(()=>{
+  const candidates=currentCompetition?.seasons?.filter(s=>s.status==='available'&&String(s.season)===String(card.season)).flatMap(s=>s.clubIds||[])||[];
+  return candidates.find(id=>String(clubsById.get(String(id))?.name||'')===String(card.club))||'';
+ })();
+ const initialSeasonId=currentContext?.seasonId||'';
  const positionOptions=positions.map(p=>'<option value="'+p+'" '+(card.position===p?'selected':'')+'>'+p+'</option>').join('');
- const clubOptions=clubs.map(c=>'<option value="'+esc(c)+'" '+(card.club===c?'selected':'')+'>'+esc(c)+'</option>').join('');
  const statFields=cardStatDefinitions(card.position).map(([label,key])=>[label,'catalog'+key.charAt(0).toUpperCase()+key.slice(1),key]);
  const statHtml=statFields.map(([label,id,key])=>'<div class="catalog-stat-editor"><div class="catalog-stat-head"><label for="'+id+'">'+label+'</label><output id="'+id+'Out">'+Number(card[key]||72)+'</output></div><div class="catalog-stat-control"><button type="button" class="stat-step" data-stat-step="-1" data-stat="'+id+'">−</button><input id="'+id+'" type="range" min="1" max="99" value="'+Number(card[key]||72)+'" data-stat-range="'+id+'"><button type="button" class="stat-step" data-stat-step="1" data-stat="'+id+'">+</button></div></div>').join('');
- setModal('<div class="modal-box admin-user-modal catalog-card-editor"><button class="modal-close" data-close>×</button><div class="catalog-editor-head"><div><p class="eyebrow">CRÉATEUR / ÉDITION DE CARTE</p><h2>'+esc(card.name)+'</h2><p class="catalog-editor-id">'+esc(card.id)+' · '+esc(card.club)+'</p></div><div class="catalog-ovr-badge"><span>OVR</span><strong id="catalogOvrPreview">'+Number(card.ovr||72)+'</strong></div></div><div class="catalog-editor-section"><div class="catalog-editor-section-head"><p class="eyebrow">IDENTITÉ</p><span>Informations du joueur</span></div><div class="admin-card-edit-grid"><label>Nom<input id="catalogName" value="'+esc(card.name)+'"></label><label>Poste<select id="catalogPosition">'+positionOptions+'</select></label><label>N° de maillot<input id="catalogJerseyNumber" type="number" min="1" max="99" value="'+(card.jerseyNumber??'')+'" placeholder="Ex. 10"></label><label>Club<select id="catalogClub">'+clubOptions+'</select></label><label>Nation<input id="catalogNation" value="'+esc(card.nation)+'"></label><label>Saison<input id="catalogSeason" value="'+esc(card.season)+'"></label><label>Rareté<select id="catalogRarity">'+rarityOptions+'</select></label></div></div><div class="catalog-editor-section"><div class="catalog-editor-section-head"><p class="eyebrow">ATTRIBUTS</p><span>Réglez les 6 statistiques du joueur</span></div><div class="catalog-stats-grid">'+statHtml+'</div><div class="catalog-ovr-editor"><div><span class="catalog-ovr-label">OVR GLOBAL</span><small>Évaluation générale de la carte</small></div><div class="catalog-ovr-control"><button type="button" class="stat-step" data-ovr-step="-1">−</button><input id="catalogOvr" type="range" min="1" max="99" value="'+Number(card.ovr||72)+'"><button type="button" class="stat-step" data-ovr-step="1">+</button><output id="catalogOvrValue">'+Number(card.ovr||72)+'</output></div></div></div><div class="catalog-editor-section"><div class="catalog-editor-section-head"><p class="eyebrow">ÉDITION</p><span>Distribution de la carte</span></div><div class="admin-card-edit-grid"><label>Type<select id="catalogDistribution"><option value="STANDARD" '+(!card.isLimited?'selected':'')+'>STANDARD — illimitée</option><option value="LIMITED" '+(card.isLimited?'selected':'')+'>LIMITED — numérotée</option></select></label><label id="catalogMaxSupplyWrap">Quantité maximale<input id="catalogMaxSupply" type="number" min="1" value="'+(card.maxSupply??'')+'"></label></div></div><div class="catalog-editor-section"><div class="catalog-editor-section-head"><p class="eyebrow">CLUB</p><span>La carte sera automatiquement ajoutée à la collection du club choisi</span></div><div class="catalog-club-note"><strong id="catalogClubPreview">'+esc(card.club)+'</strong><small>Collection associée automatiquement à l’enregistrement</small></div></div><div class="auction-dialog-actions catalog-editor-actions"><button class="btn btn-ghost" data-close>ANNULER</button><button class="btn btn-gold" data-save-catalog-card>ENREGISTRER</button></div></div>');
+ const competitionOptions=competitions.map(c=>'<option value="'+esc(c.id)+'" '+(String(c.id)===String(currentCompetitionId)?'selected':'')+'>'+esc(c.name)+' · '+esc(c.tag)+'</option>').join('');
+ setModal('<div class="modal-box admin-user-modal catalog-card-editor"><button class="modal-close" data-close>×</button><div class="catalog-editor-head"><div><p class="eyebrow">CRÉATEUR / ÉDITION DE CARTE</p><h2>'+esc(card.name)+'</h2><p class="catalog-editor-id">'+esc(card.id)+' · '+esc(card.club)+'</p></div><div class="catalog-ovr-badge"><span>OVR</span><strong id="catalogOvrPreview">'+Number(card.ovr||72)+'</strong></div></div><div class="catalog-editor-section"><div class="catalog-editor-section-head"><p class="eyebrow">IDENTITÉ</p><span>Informations du joueur</span></div><div class="admin-card-edit-grid"><label>Nom<input id="catalogName" value="'+esc(card.name)+'"></label><label>Poste<select id="catalogPosition">'+positionOptions+'</select></label><label>N° de maillot<input id="catalogJerseyNumber" type="number" min="1" max="99" value="'+(card.jerseyNumber??'')+'" placeholder="Ex. 10"></label><label>Compétition<select id="catalogCompetition">'+(competitionOptions||'<option value="">Aucune compétition disponible</option>')+'</select></label><label>Club<select id="catalogClub" '+(currentCompetition?'':'disabled')+'></select></label><label>Saison<select id="catalogSeason" '+(initialClubId?'':'disabled')+'></select></label><label>Nation<input id="catalogNation" value="'+esc(card.nation)+'"></label><label>Rareté<select id="catalogRarity">'+rarityOptions+'</select></label></div><p class="catalog-context-help" id="catalogSeasonHelp">Choisis une compétition, puis un club : seules les saisons dans lesquelles ce club apparaît seront proposées.</p></div><div class="catalog-editor-section"><div class="catalog-editor-section-head"><p class="eyebrow">ATTRIBUTS</p><span>Réglez les 6 statistiques du joueur</span></div><div class="catalog-stats-grid">'+statHtml+'</div><div class="catalog-ovr-editor"><div><span class="catalog-ovr-label">OVR GLOBAL</span><small>Évaluation générale de la carte</small></div><div class="catalog-ovr-control"><button type="button" class="stat-step" data-ovr-step="-1">−</button><input id="catalogOvr" type="range" min="1" max="99" value="'+Number(card.ovr||72)+'"><button type="button" class="stat-step" data-ovr-step="1">+</button><output id="catalogOvrValue">'+Number(card.ovr||72)+'</output></div></div></div><div class="catalog-editor-section"><div class="catalog-editor-section-head"><p class="eyebrow">ÉDITION</p><span>Distribution de la carte</span></div><div class="admin-card-edit-grid"><label>Type<select id="catalogDistribution"><option value="STANDARD" '+(!card.isLimited?'selected':'')+'>STANDARD — illimitée</option><option value="LIMITED" '+(card.isLimited?'selected':'')+'>LIMITED — numérotée</option></select></label><label id="catalogMaxSupplyWrap">Quantité maximale<input id="catalogMaxSupply" type="number" min="1" value="'+(card.maxSupply??'')+'"></label></div></div><div class="auction-dialog-actions catalog-editor-actions"><button class="btn btn-ghost" data-close>ANNULER</button><button class="btn btn-gold" data-save-catalog-card>ENREGISTRER</button></div></div>');
+
  const syncStat=id=>{const range=$('#'+id),out=$('#'+id+'Out');if(!range)return;const v=Math.max(1,Math.min(99,Number(range.value)||1));range.value=v;if(out)out.textContent=v;};
- statFields.forEach(([,id])=>{const range=$('#'+id);range?.addEventListener('input',()=>syncStat(id));});
+ statFields.forEach(([,id])=>$('#'+id)?.addEventListener('input',()=>syncStat(id)));
  document.querySelectorAll('[data-stat-step]').forEach(btn=>btn.addEventListener('click',()=>{const id=btn.dataset.stat,range=$('#'+id);if(range){range.value=Math.max(1,Math.min(99,Number(range.value||1)+Number(btn.dataset.statStep)));syncStat(id)}}));
- const ovr=$('#catalogOvr'),ovrPreview=$('#catalogOvrPreview'),ovrValue=$('#catalogOvrValue');const syncOvr=()=>{const v=Math.max(1,Math.min(99,Number(ovr?.value)||1));if(ovr){ovr.value=v};if(ovrPreview)ovrPreview.textContent=v;if(ovrValue)ovrValue.textContent=v;};ovr?.addEventListener('input',syncOvr);document.querySelectorAll('[data-ovr-step]').forEach(btn=>btn.addEventListener('click',()=>{if(ovr){ovr.value=Math.max(1,Math.min(99,Number(ovr.value||1)+Number(btn.dataset.ovrStep)));syncOvr()}}));syncOvr();
- const clubSelect=$('#catalogClub'),clubPreview=$('#catalogClubPreview'),positionSelect=$('#catalogPosition');clubSelect?.addEventListener('change',()=>{if(clubPreview)clubPreview.textContent=clubSelect.value});positionSelect?.addEventListener('change',()=>{const defs=cardStatDefinitions(positionSelect.value);defs.forEach(([label,key])=>{const id='catalog'+key.charAt(0).toUpperCase()+key.slice(1),el=$('#'+id),labelEl=el?.closest('.catalog-stat-editor')?.querySelector('.catalog-stat-head label');if(labelEl)labelEl.textContent=label;});});
+
+ const ovr=$('#catalogOvr'),ovrPreview=$('#catalogOvrPreview'),ovrValue=$('#catalogOvrValue');
+ const syncOvr=()=>{const v=Math.max(1,Math.min(99,Number(ovr?.value)||1));if(ovr)ovr.value=v;if(ovrPreview)ovrPreview.textContent=v;if(ovrValue)ovrValue.textContent=v;};
+ ovr?.addEventListener('input',syncOvr);
+ document.querySelectorAll('[data-ovr-step]').forEach(btn=>btn.addEventListener('click',()=>{if(ovr){ovr.value=Math.max(1,Math.min(99,Number(ovr.value||1)+Number(btn.dataset.ovrStep)));syncOvr()}}));
+ syncOvr();
+
+ const competitionSelect=$('#catalogCompetition'),clubSelect=$('#catalogClub'),seasonSelect=$('#catalogSeason'),seasonHelp=$('#catalogSeasonHelp');
+ const clubIdsForCompetition=competitionId=>{
+  const comp=competitions.find(c=>String(c.id)===String(competitionId));
+  return [...new Set((comp?.seasons||[]).filter(s=>s.status==='available').flatMap(s=>s.clubIds||[]).map(String))];
+ };
+ const renderSeasons=({competitionId,clubId,selectedSeasonId=''})=>{
+  const comp=competitions.find(c=>String(c.id)===String(competitionId));
+  const seasons=(comp?.seasons||[]).filter(s=>s.status==='available'&&(s.clubIds||[]).some(id=>String(id)===String(clubId)));
+  seasonSelect.innerHTML='<option value="">Choisir une saison</option>'+seasons.map(s=>'<option value="'+esc(s.id)+'" '+(String(s.id)===String(selectedSeasonId)?'selected':'')+'>'+esc(s.label||('Saison '+s.season))+' · '+esc(s.season)+'</option>').join('');
+  seasonSelect.disabled=!seasons.length;
+  if(seasonHelp)seasonHelp.textContent=seasons.length?'Saisons disponibles pour ce club dans la compétition sélectionnée.':'Aucune saison disponible pour ce club dans cette compétition.';
+ };
+ const renderClubs=({competitionId,selectedClubId=''})=>{
+  const ids=clubIdsForCompetition(competitionId);
+  clubSelect.innerHTML='<option value="">Choisir un club</option>'+ids.map(id=>{const club=clubsById.get(String(id));return club?'<option value="'+esc(club.id)+'" '+(String(club.id)===String(selectedClubId)?'selected':'')+'>'+esc(club.name)+' · '+esc(club.tag)+'</option>':''}).join('');
+  clubSelect.disabled=!ids.length;
+  renderSeasons({competitionId,clubId:ids.some(id=>String(id)===String(selectedClubId))?selectedClubId:''});
+ };
+ competitionSelect?.addEventListener('change',()=>renderClubs({competitionId:competitionSelect.value}));
+ clubSelect?.addEventListener('change',()=>renderSeasons({competitionId:competitionSelect.value,clubId:clubSelect.value}));
+ renderClubs({competitionId:currentCompetitionId,selectedClubId:initialClubId});
+ if(initialSeasonId)renderSeasons({competitionId:currentCompetitionId,clubId:initialClubId,selectedSeasonId:initialSeasonId});
+
  const limitedToggle=()=>{const limited=$('#catalogDistribution')?.value==='LIMITED';if($('#catalogMaxSupplyWrap'))$('#catalogMaxSupplyWrap').style.display=limited?'flex':'none';};
  $('#catalogDistribution')?.addEventListener('change',limitedToggle);limitedToggle();
+
  document.querySelector('[data-save-catalog-card]')?.addEventListener('click',async()=>{
   const isLimited=$('#catalogDistribution').value==='LIMITED';
-  const body={id:card.id,name:$('#catalogName').value,position:$('#catalogPosition').value,jerseyNumber:$('#catalogJerseyNumber').value,ovr:Number($('#catalogOvr').value),pace:Number($('#catalogPace').value),shooting:Number($('#catalogShooting').value),passing:Number($('#catalogPassing').value),dribbling:Number($('#catalogDribbling').value),defending:Number($('#catalogDefending').value),physical:Number($('#catalogPhysical').value),rarity:$('#catalogRarity').value,club:$('#catalogClub').value,nation:$('#catalogNation').value,season:$('#catalogSeason').value,isLimited,maxSupply:isLimited?$('#catalogMaxSupply').value:null};
+  const competitionId=$('#catalogCompetition').value;
+  const seasonId=$('#catalogSeason').value;
+  const clubId=$('#catalogClub').value;
+  const club=clubsById.get(String(clubId));
+  const selectedCompetition=competitions.find(c=>String(c.id)===String(competitionId));
+  const selectedSeason=(selectedCompetition?.seasons||[]).find(s=>String(s.id)===String(seasonId));
+  if(!competitionId||!clubId||!seasonId||!club||!selectedSeason)return toast('Choisis une compétition, un club et une saison valides.');
+  const body={id:card.id,name:$('#catalogName').value,position:$('#catalogPosition').value,jerseyNumber:$('#catalogJerseyNumber').value,ovr:Number($('#catalogOvr').value),pace:Number($('#catalogPace').value),shooting:Number($('#catalogShooting').value),passing:Number($('#catalogPassing').value),dribbling:Number($('#catalogDribbling').value),defending:Number($('#catalogDefending').value),physical:Number($('#catalogPhysical').value),rarity:$('#catalogRarity').value,club:club.name,nation:$('#catalogNation').value,season:selectedSeason.season,competitionId,seasonId,isLimited,maxSupply:isLimited?$('#catalogMaxSupply').value:null};
   try{await api('/api/admin/cards',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});closeModal();toast('Carte entièrement mise à jour.');render()}catch(e){toast(e.message)}
  });
 }
