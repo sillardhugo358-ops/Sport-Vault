@@ -218,7 +218,7 @@ async function showSeasonEditor(season,competitionId){
   <div class="admin-card-grant collection-meta-form">
    <input id="seasonId" placeholder="ID technique (ex. ligue-1-2027)" value="${esc(s.id)}" ${season?'readonly':''}>
    <input id="seasonYear" placeholder="Année / saison" value="${esc(s.season||'')}">
-   <input id="seasonLabel" placeholder="Libellé" value="${esc(s.label||')}">
+   <input id="seasonLabel" placeholder="Libellé" value="${esc(s.label||'')}">
    <select id="seasonStatus"><option value="available" ${s.status==='available'?'selected':''}>DISPONIBLE</option><option value="upcoming" ${s.status==='upcoming'?'selected':''}>À VENIR</option></select>
    <input id="seasonDescription" placeholder="Description" value="${esc(s.description||'')}">
   </div>
