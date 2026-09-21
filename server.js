@@ -93,6 +93,8 @@ async function getUserById(id){if(pool){const r=await pool.query('SELECT * FROM 
 async function adminLog(adminId,targetUserId,action,details={}){await pool.query('INSERT INTO admin_logs(admin_id,target_user_id,action,details) VALUES($1,$2,$3,$4::jsonb)',[adminId,targetUserId,action,JSON.stringify(details)]);}
 function roleLevel(role){return role==='creator'?3:role==='admin'?2:1}
 function canManage(actor,target){return roleLevel(actor.role)>roleLevel(target.role)}
+function isAdmin(user){return !!user&&(user.role==='admin'||user.role==='creator')}
+async function requireAdmin(req){const user=await currentUser(req);return isAdmin(user)?user:null}
 async function adminSetAccountStatus(adminId,userId,action){
  const admin=await getUserById(adminId),u=(await pool.query('SELECT id,role,account_status,blocked_until FROM users WHERE id=$1',[userId])).rows[0];
  if(!u)return{error:'Utilisateur introuvable.',status:404};
