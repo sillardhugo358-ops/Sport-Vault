@@ -136,7 +136,7 @@ async function adminUsers(search=''){
  return r.rows.map(x=>({...safeUser(x),cardCount:x.card_count,activeSales:x.active_sales,activeBids:x.active_bids}));
 }
 async function adminUserDetail(userId){
- const u=(await pool.query('SELECT id,name,email,role,coins,reserved_coins,gems,xp,packs_opened,created_at FROM users WHERE id=$1',[userId])).rows[0];
+ const u=(await pool.query('SELECT id,name,email,role,account_status,blocked_until,coins,reserved_coins,gems,xp,packs_opened,created_at FROM users WHERE id=$1',[userId])).rows[0];
  if(!u)return{error:'Utilisateur introuvable.',status:404};
  const cards=(await pool.query("SELECT instance_id,card_id,name,club,nation,rarity,serial,max_supply,source,status,acquired_at FROM card_instances WHERE owner_id=$1 ORDER BY acquired_at DESC",[userId])).rows;
  const sales=(await pool.query("SELECT a.id,a.status,a.starting_bid,a.current_bid,a.starts_at,a.ends_at,a.completed_at,c.name AS card_name,c.rarity,c.serial FROM auctions a JOIN card_instances c ON c.instance_id=a.card_instance_id WHERE a.seller_id=$1 ORDER BY a.created_at DESC LIMIT 30",[userId])).rows;
