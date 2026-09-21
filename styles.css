@@ -309,3 +309,14 @@
 @media(max-width:600px){.collection-progress-title{display:block}.collection-progress-title>strong{display:block;margin-top:8px}.collection-rarity-grid{grid-template-columns:repeat(2,1fr)}.collection-rarity-mini:last-child{grid-column:1/-1}}
 
 .album-season-progress{border:1px solid rgba(216,181,107,.28);background:linear-gradient(145deg,rgba(216,181,107,.08),rgba(255,255,255,.01));padding:22px;margin:0 0 28px;display:grid;grid-template-columns:1fr auto;gap:8px 20px;align-items:end}.album-season-progress h2{font:900 34px var(--head);margin:0}.album-season-progress>strong{font:900 28px var(--head);color:var(--gold2)}.album-season-track{grid-column:1/-1;height:7px;background:#191b19;margin-top:7px}.album-season-track i{display:block;height:100%;background:linear-gradient(90deg,#9a702c,var(--gold2))}@media(max-width:600px){.album-season-progress{padding:17px}.album-season-progress h2{font-size:27px}}
+
+
+/* CARD EDITOR — cascades compétition / club / saison */
+.catalog-context-help{grid-column:1/-1;margin:-2px 0 0;color:var(--muted);font-size:9px;line-height:1.5;letter-spacing:.15px}
+.catalog-card-editor select:disabled{opacity:.42;cursor:not-allowed}
+.catalog-card-editor select{min-width:0}
+.modal-box{scrollbar-width:thin;scrollbar-color:rgba(216,181,107,.62) rgba(255,255,255,.025)}
+.modal-box::-webkit-scrollbar{width:8px}
+.modal-box::-webkit-scrollbar-track{background:rgba(255,255,255,.025);border-left:1px solid rgba(255,255,255,.035)}
+.modal-box::-webkit-scrollbar-thumb{background:linear-gradient(180deg,rgba(241,213,142,.82),rgba(139,101,34,.72));border-radius:999px;border:2px solid #090b0a}
+.modal-box::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#f1d58e,#b78d3c)}
