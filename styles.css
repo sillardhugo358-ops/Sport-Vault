@@ -224,3 +224,31 @@
 .admin-auction-info strong{display:block;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:1050px){.admin-auction-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.admin-auction-grid{grid-template-columns:1fr}.admin-auction-card{padding:16px}.admin-auction-card h3{font-size:23px}.admin-auction-status{font-size:6px}.admin-auction-info{grid-template-columns:1fr 1fr}}
+
+
+/* COLLECTION — vue structurée */
+.collection-overview{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 22px}
+.collection-overview>div{border:1px solid var(--line);background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.012));padding:18px 20px}
+.collection-overview span,.collection-overview small{display:block;color:var(--muted);font-size:7px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase}
+.collection-overview strong{display:block;margin:5px 0 1px;font:900 28px var(--head);color:var(--gold2)}
+.collection-toolbar{align-items:center;position:sticky;top:76px;z-index:10;background:rgba(8,10,9,.94);backdrop-filter:blur(12px);border:1px solid var(--line);padding:8px 10px}
+.collection-user{font-size:8px;color:var(--muted);white-space:nowrap}
+.collection-rarity-section{margin:30px 0 42px}
+.collection-rarity-head{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.collection-rarity-head .eyebrow{margin-bottom:4px}
+.collection-rarity-head h2{margin:0;font:900 30px/.9 var(--head);letter-spacing:.5px}
+.collection-rarity-head>strong{font-size:8px;color:var(--muted);letter-spacing:1px;white-space:nowrap}
+.collection-card-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.collection-card-grid .tcg-card{border-radius:10px;padding:5px;box-shadow:0 10px 22px rgba(0,0,0,.28)}
+.collection-card-grid .tcg-card:hover{transform:translateY(-4px);box-shadow:0 17px 28px rgba(0,0,0,.38)}
+.collection-card-grid .tcg-inner{padding:8px}
+.collection-card-grid .card-top{font-size:6px}
+.collection-card-grid .card-top strong{font-size:9px}
+.collection-card-grid .card-rating{transform:scale(.82);transform-origin:top left}
+.collection-card-grid .card-number strong{font-size:42px}
+.collection-card-grid .card-club{font-size:6px}
+.collection-card-grid .tcg-inner h3{font-size:16px;margin:4px 0 6px}
+.collection-card-grid .card-bottom{font-size:6px;padding-top:6px}
+@media(max-width:1200px){.collection-card-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media(max-width:950px){.collection-card-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:700px){.collection-overview{grid-template-columns:repeat(3,1fr);gap:6px}.collection-overview>div{padding:12px 10px}.collection-overview strong{font-size:22px}.collection-toolbar{top:68px;display:block}.collection-toolbar .filters{overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px}.collection-user{display:block;margin-top:7px}.collection-card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.collection-rarity-section{margin:24px 0 32px}.collection-rarity-head h2{font-size:25px}}
