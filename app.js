@@ -55,18 +55,27 @@ function auctionSearchFilter(){
  const q=input.value.trim().toLowerCase();
  document.querySelectorAll('.auction-card').forEach(card=>card.style.display=!q||card.textContent.toLowerCase().includes(q)?'':'none');
 }
+function auctionDialog({title,subtitle='',label='Valeur',value='',type='number',options=null,confirm='CONFIRMER'}){
+ return new Promise(resolve=>{
+  setModal(`<div class="modal-box auction-modal-box"><button class="modal-close" data-close>×</button><p class="eyebrow">FOOTVAULT / ENCHÈRES</p><h2>${esc(title)}</h2>${subtitle?`<p class="auction-dialog-subtitle">${esc(subtitle)}</p>`:''}<div class="auction-dialog-form">${options?`<label class="auction-field"><span>${esc(label)}</span><select id="auctionDialogValue">${options.map(o=>`<option value="${esc(o.value)}" ${String(o.value)===String(value)?'selected':''}>${esc(o.label)}</option>`).join('')}</select></label>`:`<label class="auction-field"><span>${esc(label)}</span><input id="auctionDialogValue" type="${type}" value="${esc(value)}" min="1" inputmode="numeric" autocomplete="off"></label>`}<div class="auction-dialog-actions"><button class="btn btn-ghost" id="auctionDialogCancel">ANNULER</button><button class="btn btn-gold" id="auctionDialogConfirm">${esc(confirm)}</button></div></div></div>`);
+  const input=$('#auctionDialogValue');const finish=(v)=>{closeModal();resolve(v)};
+  $('#auctionDialogCancel').onclick=()=>finish(null);
+  $('#auctionDialogConfirm').onclick=()=>{if(!options && (!input.value||Number(input.value)<1)){input.focus();return}finish(input.value)};
+  if(input&&!options){input.focus();input.select();input.onkeydown=e=>{if(e.key==='Enter')$('#auctionDialogConfirm').click();if(e.key==='Escape')$('#auctionDialogCancel').click()}}
+ });
+}
 async function bidAuction(id,min){
- const amount=prompt(`Mise minimum : ${money(min)} FC\\nEntre ton montant d’enchère :`,String(min));
+ const amount=await auctionDialog({title:'PLACER UNE ENCHÈRE',subtitle:`Minimum actuel : ${money(min)} FC. Une nouvelle offre doit respecter le minimum affiché.`,label:'Ton offre en FOOTCOINS',value:min});
  if(amount===null)return;
  try{const d=await api('/api/auctions/bid',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({auctionId:id,amount:Number(amount)})});toast(`Enchère de ${money(d.auction.currentBid)} FC enregistrée`);render()}catch(e){toast(e.message)}
 }
 async function createAuction(cardId){
- const start=prompt('Mise de départ en FOOTCOINS :','100');if(start===null)return;
- const options=['10','30','60','180','360','720','1440'];
- const labels=['10 min','30 min','1 h','3 h','6 h','12 h','24 h'];
- const pick=prompt('Durée :\\n'+labels.map((x,i)=>(i+1)+'. '+x).join('\\n'),'2');if(pick===null)return;
- const idx=Number(pick)-1;if(!options[idx]){toast('Durée invalide.');return}
- try{await api('/api/auctions/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cardInstanceId:cardId,startingBid:Number(start),duration:Number(options[idx])})});toast('Enchère créée.');render()}catch(e){toast(e.message)}
+ const start=await auctionDialog({title:'CRÉER UNE ENCHÈRE',subtitle:'Définis le montant de départ. Ta carte sera bloquée pendant l’enchère.',label:'Mise de départ en FOOTCOINS',value:100});
+ if(start===null)return;
+ const durations=[['10','10 minutes'],['30','30 minutes'],['60','1 heure'],['180','3 heures'],['360','6 heures'],['720','12 heures'],['1440','24 heures']];
+ const duration=await auctionDialog({title:'DURÉE DE L’ENCHÈRE',subtitle:'Choisis combien de temps ton annonce restera active.',label:'Durée',value:'30',options:durations.map(([value,label])=>({value,label}))});
+ if(duration===null)return;
+ try{await api('/api/auctions/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cardInstanceId:cardId,startingBid:Number(start),duration:Number(duration)})});toast('Enchère créée.');render()}catch(e){toast(e.message)}
 }
 function bind(){
  document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{state.filter=b.dataset.filter;render()});
