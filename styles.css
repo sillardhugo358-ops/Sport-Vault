@@ -49,3 +49,16 @@
  .mobile-account-guest{display:grid;grid-template-columns:1fr 1fr;gap:8px}
  .mobile-account-guest .btn{width:auto}
 }
+
+.auction-status{display:inline-flex;align-items:center;margin:10px 0 2px;padding:7px 9px;border:1px solid var(--line);font-size:8px;font-weight:800;letter-spacing:1px}
+.status-leading{color:#b9dfba;border-color:rgba(120,190,125,.35);background:rgba(80,150,85,.08)}
+.status-outbid{color:#e4a0a0;border-color:rgba(210,110,110,.35);background:rgba(160,60,60,.08)}
+.status-seller{color:var(--gold2);border-color:rgba(216,181,107,.35)}
+.auction-time{font-variant-numeric:tabular-nums}
+.auction-reference{display:flex;align-items:baseline;gap:7px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:8px;letter-spacing:1px;color:var(--muted)}
+.auction-reference strong{color:var(--gold2);font-size:13px}
+.auction-reference small{margin-left:auto;font-size:7px;color:#6d706b;letter-spacing:.3px}
+.auction-link{appearance:none;border:0;background:none;color:var(--gold2);font:800 8px var(--body);letter-spacing:.6px;cursor:pointer;padding:0;text-decoration:underline}
+.bid-history{margin-top:20px;max-height:55vh;overflow:auto;border-top:1px solid var(--line)}
+.bid-row{display:flex;justify-content:space-between;gap:12px;padding:14px 2px;border-bottom:1px solid var(--line);font-size:11px}
+.bid-row strong{font-weight:800}.bid-row span{font-weight:900;color:var(--gold2)}
