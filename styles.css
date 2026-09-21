@@ -37,3 +37,15 @@
 .auction-dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:22px}
 @media(max-width:680px){.auction-modal-box{padding:24px 18px}.auction-dialog-actions{display:grid;grid-template-columns:1fr 1fr}.auction-dialog-actions .btn{width:100%}}
 \n.btn-danger{background:rgba(160,65,65,.12);border-color:rgba(215,124,124,.42);color:#e7a0a0}.btn-danger:hover{background:rgba(160,65,65,.22);border-color:rgba(215,124,124,.7);box-shadow:0 8px 30px rgba(160,65,65,.12)}\n
+.mobile-account{display:none}
+@media(max-width:760px){
+ .mobile-account{display:block;border-top:1px solid var(--line);margin-top:8px;padding:16px 13px 8px}
+ .mobile-account-balance{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+ .mobile-account-balance strong{font:900 30px var(--head);color:var(--gold2)}
+ .mobile-account-balance span{font-size:8px;letter-spacing:1.5px;color:var(--muted);font-weight:800}
+ .mobile-account-balance small{width:100%;font-size:9px;color:var(--muted)}
+ .mobile-account-name{font-size:10px;color:var(--text);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+ .mobile-account .btn{width:100%}
+ .mobile-account-guest{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+ .mobile-account-guest .btn{width:auto}
+}
