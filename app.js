@@ -26,8 +26,6 @@ async function vault(){try{const d=await api('/api/progression');state.user=d.us
 async function logout(){
  if(logout.busy)return; logout.busy=true;
  try{
-  const ok=window.confirm('Se déconnecter de FOOTVAULT ?');
-  if(!ok)return;
   const r=await fetch('/api/logout',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Accept':'application/json'}});
   if(!r.ok)throw new Error('La déconnexion a échoué.');
   state.user=null;state.cards=[];state.auctions=[];state.auctionHistory=[];
