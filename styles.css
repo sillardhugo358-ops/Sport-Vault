@@ -62,3 +62,18 @@
 .bid-history{margin-top:20px;max-height:55vh;overflow:auto;border-top:1px solid var(--line)}
 .bid-row{display:flex;justify-content:space-between;gap:12px;padding:14px 2px;border-bottom:1px solid var(--line);font-size:11px}
 .bid-row strong{font-weight:800}.bid-row span{font-weight:900;color:var(--gold2)}
+
+.admin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.admin-stat{border:1px solid var(--line);background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.01));padding:22px}
+.admin-stat span{display:block;color:var(--muted);font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase}
+.admin-stat strong{display:block;margin-top:7px;color:var(--gold2);font:900 34px var(--head)}
+.admin-table-wrap{overflow:auto;border:1px solid var(--line)}
+.admin-table{width:100%;border-collapse:collapse;min-width:760px}
+.admin-table th,.admin-table td{padding:13px 14px;border-bottom:1px solid var(--line);text-align:left;font-size:10px;white-space:nowrap}
+.admin-table th{color:var(--muted);font-size:8px;letter-spacing:1.2px}
+.admin-table td strong{display:block;font-size:11px}.admin-table td small{display:block;margin-top:3px;color:var(--muted);font-size:8px}
+.admin-role,.admin-status{display:inline-block;padding:5px 7px;border:1px solid var(--line);font-size:8px;letter-spacing:.8px;text-transform:uppercase}
+.admin-role.admin{color:var(--gold2);border-color:rgba(216,181,107,.45)}
+.admin-status{color:var(--muted)}
+.admin-rarity-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+@media(max-width:800px){.admin-grid{grid-template-columns:repeat(2,1fr)}.admin-rarity-grid{grid-template-columns:repeat(2,1fr)}}
