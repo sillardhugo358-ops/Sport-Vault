@@ -268,3 +268,5 @@
 
 .auction-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 12px}.auction-summary>div{border:1px solid var(--line);background:rgba(255,255,255,.02);padding:12px 15px}.auction-summary span{display:block;color:var(--muted);font-size:7px;letter-spacing:1.2px}.auction-summary strong{display:block;margin-top:4px;font:900 22px var(--head);color:var(--gold2)}.collection-overview{grid-template-columns:repeat(4,1fr)}
 @media(max-width:700px){.auction-summary{grid-template-columns:repeat(3,1fr)}.auction-summary>div{padding:10px 8px}.auction-summary strong{font-size:18px}.collection-overview{grid-template-columns:repeat(2,1fr)}}
+
+.collection-rarity-section.search-empty{display:none}
