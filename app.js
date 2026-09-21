@@ -57,10 +57,11 @@ function auctionSearchFilter(){
 }
 function auctionDialog({title,subtitle='',label='Valeur',value='',type='number',options=null,confirm='CONFIRMER'}){
  return new Promise(resolve=>{
-  setModal(`<div class="modal-box auction-modal-box"><button class="modal-close" data-close>×</button><p class="eyebrow">FOOTVAULT / ENCHÈRES</p><h2>${esc(title)}</h2>${subtitle?`<p class="auction-dialog-subtitle">${esc(subtitle)}</p>`:''}<div class="auction-dialog-form">${options?`<label class="auction-field"><span>${esc(label)}</span><select id="auctionDialogValue">${options.map(o=>`<option value="${esc(o.value)}" ${String(o.value)===String(value)?'selected':''}>${esc(o.label)}</option>`).join('')}</select></label>`:`<label class="auction-field"><span>${esc(label)}</span><input id="auctionDialogValue" type="${type}" value="${esc(value)}" min="1" inputmode="numeric" autocomplete="off"></label>`}<div class="auction-dialog-actions"><button class="btn btn-ghost" id="auctionDialogCancel">ANNULER</button><button class="btn btn-gold" id="auctionDialogConfirm">${esc(confirm)}</button></div></div></div>`);
+  const isConfirm=type==='confirm';
+  setModal(`<div class="modal-box auction-modal-box"><button class="modal-close" data-close>×</button><p class="eyebrow">FOOTVAULT / ENCHÈRES</p><h2>${esc(title)}</h2>${subtitle?`<p class="auction-dialog-subtitle">${esc(subtitle)}</p>`:''}${isConfirm?'':`<div class="auction-dialog-form">${options?`<label class="auction-field"><span>${esc(label)}</span><select id="auctionDialogValue">${options.map(o=>`<option value="${esc(o.value)}" ${String(o.value)===String(value)?'selected':''}>${esc(o.label)}</option>`).join('')}</select></label>`:`<label class="auction-field"><span>${esc(label)}</span><input id="auctionDialogValue" type="${type}" value="${esc(value)}" min="1" inputmode="numeric" autocomplete="off"></label>`}</div>`}<div class="auction-dialog-actions"><button class="btn btn-ghost" id="auctionDialogCancel">ANNULER</button><button class="btn btn-gold" id="auctionDialogConfirm">${esc(confirm)}</button></div></div>`);
   const input=$('#auctionDialogValue');const finish=(v)=>{closeModal();resolve(v)};
   $('#auctionDialogCancel').onclick=()=>finish(null);
-  $('#auctionDialogConfirm').onclick=()=>{if(!options && (!input.value||Number(input.value)<1)){input.focus();return}finish(input.value)};
+  $('#auctionDialogConfirm').onclick=()=>{if(!isConfirm&&!options&&(!input.value||Number(input.value)<1)){input.focus();return}finish(isConfirm?true:input.value)};
   if(input&&!options){input.focus();input.select();input.onkeydown=e=>{if(e.key==='Enter')$('#auctionDialogConfirm').click();if(e.key==='Escape')$('#auctionDialogCancel').click()}}
  });
 }
@@ -70,7 +71,7 @@ async function bidAuction(id,min){
  try{const d=await api('/api/auctions/bid',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({auctionId:id,amount:Number(amount)})});toast(`Enchère de ${money(d.auction.currentBid)} FC enregistrée`);render()}catch(e){toast(e.message)}
 }
 async function cancelAuction(id){
- const ok=await auctionDialog({title:'ANNULER L’ENCHÈRE ?',subtitle:'La carte sera immédiatement remise dans ta collection. Cette action est possible uniquement tant qu’aucune offre n’a été placée.',label:'Confirmation',type:'text',value:'',confirm:'ANNULER L’ENCHÈRE'});
+ const ok=await auctionDialog({title:'ANNULER L’ENCHÈRE ?',subtitle:'La carte sera immédiatement remise dans ta collection. Cette action est possible uniquement tant qu’aucune offre n’a été placée.',label:'Confirmation',type:'confirm',confirm:'ANNULER L’ENCHÈRE'});
  if(ok===null)return;
  try{await api('/api/auctions/cancel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({auctionId:id})});toast('Enchère annulée · carte récupérée.');render()}catch(e){toast(e.message)}
 }
