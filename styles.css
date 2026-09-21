@@ -168,3 +168,19 @@
  .admin-table{min-width:680px}
  .admin-table td{padding:12px 10px}
 }
+
+/* CATALOGUE CARDS — recherche & filtres */
+.catalog-filter-bar{margin:18px 0 16px;padding:14px;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:linear-gradient(145deg,rgba(216,181,107,.045),rgba(255,255,255,.012))}
+.catalog-search-box{display:flex;align-items:center;gap:10px;min-height:46px;padding:0 12px;border:1px solid rgba(255,255,255,.12);background:#0b0d0c;border-radius:7px}
+.catalog-search-box>span{font-size:23px;color:var(--gold2);line-height:1}
+.catalog-search-box input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font:600 12px var(--body)}
+.catalog-search-box input::placeholder{color:#6f736e}
+.catalog-filter-clear{display:none;border:0;background:transparent;color:var(--muted);font-size:24px;cursor:pointer;padding:0 4px}
+.catalog-search-box:focus-within{border-color:rgba(216,181,107,.55);box-shadow:0 0 0 2px rgba(216,181,107,.06)}
+.catalog-filter-selects{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:10px}
+.catalog-filter-selects select{min-height:42px;padding:0 11px;background:#0b0d0c;color:var(--text);border:1px solid rgba(255,255,255,.1);border-radius:6px;font:700 10px var(--body);letter-spacing:.5px;outline:0}
+.catalog-filter-selects select:focus{border-color:rgba(216,181,107,.5)}
+.catalog-filter-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;color:var(--muted);font-size:9px;letter-spacing:1px}
+.catalog-filter-footer .btn{min-height:34px;padding:8px 12px}
+.catalog-empty-state{display:block;text-align:center;padding:28px;color:var(--muted)}
+@media(max-width:700px){.catalog-filter-selects{grid-template-columns:1fr}.catalog-filter-bar{padding:11px}.catalog-filter-footer{margin-top:9px}.catalog-search-box{min-height:48px}.catalog-filter-selects select{min-height:44px}}
