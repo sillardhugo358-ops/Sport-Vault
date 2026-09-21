@@ -270,3 +270,6 @@
 @media(max-width:700px){.auction-summary{grid-template-columns:repeat(3,1fr)}.auction-summary>div{padding:10px 8px}.auction-summary strong{font-size:18px}.collection-overview{grid-template-columns:repeat(2,1fr)}}
 
 .collection-rarity-section.search-empty{display:none}
+
+/* COMPETITION SEASONS */
+.admin-season-list{display:grid;gap:8px;margin-top:12px;max-height:280px;overflow:auto;padding-right:2px}.admin-season-row{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--line);background:rgba(255,255,255,.02);padding:12px 14px}.admin-season-row strong{display:block;font-size:10px}.admin-season-row small{display:block;margin-top:4px;color:var(--muted);font-size:8px;letter-spacing:.4px}.admin-season-row>div:last-child{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.admin-season-row .btn{padding:8px 10px;font-size:7px}@media(max-width:700px){.admin-season-row{align-items:flex-start;flex-direction:column}.admin-season-row>div:last-child{width:100%;justify-content:flex-start}.admin-season-row .btn{flex:1}}
