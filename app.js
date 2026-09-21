@@ -207,7 +207,7 @@ function bind(){
  document.querySelectorAll('[data-pack]').forEach(b=>b.onclick=()=>openPack(b.dataset.pack));
  const dailyBtn=$('#daily');if(dailyBtn)dailyBtn.onclick=daily;
  document.querySelectorAll('[data-mission]').forEach(b=>b.onclick=()=>mission(b.dataset.mission));
- document.querySelectorAll('[data-album]').forEach(b=>b.onclick=()=>claimAlbum(b.dataset.album));
+ document.querySelectorAll('[data-album-season]').forEach(b=>b.onclick=()=>claimAlbum(b.dataset.albumSeason,b.dataset.albumClub));
  document.querySelectorAll('[data-bid]').forEach(b=>b.onclick=()=>bidAuction(b.dataset.bid,Number(b.dataset.min)));
  document.querySelectorAll('[data-sell-card]').forEach(b=>b.onclick=()=>createAuction(b.dataset.sellCard));
  document.querySelectorAll('[data-cancel-auction]').forEach(b=>b.onclick=()=>cancelAuction(b.dataset.cancelAuction));startAuctionTimer();document.querySelectorAll('[data-bids]').forEach(b=>b.onclick=()=>showBidHistory(b.dataset.bids));
