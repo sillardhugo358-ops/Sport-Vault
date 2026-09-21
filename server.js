@@ -115,6 +115,14 @@ async function adminUsers(search=''){
  FROM users u WHERE ($1='' OR lower(u.name) LIKE '%'||$1||'%' OR lower(u.email) LIKE '%'||$1||'%') ORDER BY u.created_at DESC LIMIT 100`,[q]);
  return r.rows.map(x=>({...safeUser(x),cardCount:x.card_count,activeSales:x.active_sales,activeBids:x.active_bids}));
 }
+async function adminUserDetail(userId){
+ const u=(await pool.query('SELECT id,name,email,role,coins,reserved_coins,gems,xp,packs_opened,created_at FROM users WHERE id=$1',[userId])).rows[0];
+ if(!u)return{error:'Utilisateur introuvable.',status:404};
+ const cards=(await pool.query("SELECT instance_id,card_id,name,club,nation,rarity,serial,max_supply,source,status,acquired_at FROM card_instances WHERE owner_id=$1 ORDER BY acquired_at DESC",[userId])).rows;
+ const sales=(await pool.query("SELECT a.id,a.status,a.starting_bid,a.current_bid,a.starts_at,a.ends_at,a.completed_at,c.name AS card_name,c.rarity,c.serial FROM auctions a JOIN card_instances c ON c.instance_id=a.card_instance_id WHERE a.seller_id=$1 ORDER BY a.created_at DESC LIMIT 30",[userId])).rows;
+ const bids=(await pool.query("SELECT b.auction_id,b.amount,b.created_at,c.name AS card_name,a.status FROM auction_bids b JOIN auctions a ON a.id=b.auction_id JOIN card_instances c ON c.instance_id=a.card_instance_id WHERE b.bidder_id=$1 ORDER BY b.created_at DESC LIMIT 30",[userId])).rows;
+ return {...safeUser(u),packsOpened:Number(u.packs_opened||0),createdAt:u.created_at,cards,sales,bids};
+}
 async function adminAuctions(){
  const r=await pool.query(`SELECT a.id,a.status,a.starting_bid,a.current_bid,a.starts_at,a.ends_at,a.created_at,a.completed_at,
  c.name AS card_name,c.rarity,c.serial,c.max_supply,u.name AS seller_name,ub.name AS bidder_name,
@@ -287,6 +295,7 @@ function staticFile(req,res){let pathname=decodeURIComponent(new URL(req.url,'ht
  if(req.method==='GET'&&url.pathname.startsWith('/api/auctions/')&&url.pathname.endsWith('/bids')){const id=url.pathname.split('/')[3];return json(res,200,{bids:await auctionBidHistory(id)});}
  if(req.method==='GET'&&url.pathname==='/api/admin/overview'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès administrateur requis.'});return json(res,200,{admin:safeUser(admin),overview:await adminOverview()});}
  if(req.method==='GET'&&url.pathname==='/api/admin/users'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès administrateur requis.'});return json(res,200,{users:await adminUsers(url.searchParams.get('q')||'')});}
+ if(req.method==='GET'&&url.pathname.startsWith('/api/admin/users/')){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès administrateur requis.'});const id=url.pathname.split('/').pop();const detail=await adminUserDetail(id);return json(res,detail.error?detail.status||404:200,detail.error?detail:{user:detail});}
  if(req.method==='GET'&&url.pathname==='/api/admin/auctions'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès administrateur requis.'});return json(res,200,{auctions:await adminAuctions()});}
  if(req.method==='GET'&&url.pathname==='/api/me'){const user=await currentUser(req);return json(res,user?200:401,user?{user:safeUser(user)}:{error:'Non connecté'});}
  if(req.method==='GET'&&url.pathname==='/api/cards')return json(res,200,{universe:'FOOTVAULT',season:'2026',cards:CARD_CATALOG});
