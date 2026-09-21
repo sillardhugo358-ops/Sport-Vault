@@ -252,3 +252,11 @@
 @media(max-width:1200px){.collection-card-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 @media(max-width:950px){.collection-card-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:700px){.collection-overview{grid-template-columns:repeat(3,1fr);gap:6px}.collection-overview>div{padding:12px 10px}.collection-overview strong{font-size:22px}.collection-toolbar{top:68px;display:block}.collection-toolbar .filters{overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px}.collection-user{display:block;margin-top:7px}.collection-card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.collection-rarity-section{margin:24px 0 32px}.collection-rarity-head h2{font-size:25px}}
+
+
+/* PACK REVEAL — contrôles */
+.pack-reveal-modal .reveal-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+.pack-reveal-modal .reveal-result{font-size:10px;color:var(--muted);margin-right:auto}
+.pack-reveal-modal [data-skip-reveal]{font-size:8px;letter-spacing:1px}
+.pack-reveal-modal [data-skip-reveal].reveal-skip-done{opacity:.55;cursor:default}
+@media(max-width:800px){.pack-reveal-modal .reveal-controls{align-items:stretch}.pack-reveal-modal .reveal-result{width:100%;margin:0}.pack-reveal-modal .reveal-controls .btn{flex:1}}
