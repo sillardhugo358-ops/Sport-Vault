@@ -245,6 +245,7 @@ async function adminCreateCatalogCard(adminId,body){
  if(!/^[a-z0-9-]{2,32}$/.test(id))return{error:'ID de carte invalide.',status:400};
  const existing=(await pool.query('SELECT id,is_active FROM catalog_cards WHERE id=$1',[id])).rows[0];
  if(existing?.is_active)return{error:'Cet ID de carte existe déjà.',status:409};
+ if(isLimited&&(!Number.isInteger(maxSupply)||maxSupply<1))return{error:'Une carte LIMITED doit avoir une quantité maximale.',status:400};
  const client=await pool.connect();
  let maxOrder=0;
  try{
@@ -283,6 +284,9 @@ async function adminUpdateCatalogCard(adminId,cardId,body){
  if(!RARITIES[rarity])return{error:'Rareté invalide.',status:400};
  if(!Number.isInteger(ovr)||ovr<1||ovr>99)return{error:'OVR doit être un entier entre 1 et 99.',status:400};if(Object.values(stats).some(v=>!Number.isInteger(v)||v<1||v>99))return{error:'Chaque statistique doit être un entier entre 1 et 99.',status:400};
  if(isLimited&&(!Number.isInteger(maxSupply)||maxSupply<1))return{error:'Une carte LIMITED doit avoir une quantité maximale.',status:400};
+ const circulation=Number((await pool.query('SELECT count(*)::int AS n FROM card_instances WHERE card_id=$1',[cardId])).rows[0].n);
+ if(circulation>0&&Boolean(c.isLimited)!==isLimited)return{error:'Le type STANDARD/LIMITED ne peut plus être changé après la mise en circulation d’exemplaires.',status:409};
+ if(isLimited&&circulation>Number(maxSupply))return{error:`La quantité maximale ne peut pas être inférieure aux ${circulation} exemplaire(s) déjà en circulation.`,status:409};
  const client=await pool.connect();try{await client.query('BEGIN');await client.query('UPDATE catalog_cards SET season=$2,name=$3,position=$4,jersey_number=$5,club=$6,nation=$7,rarity=$8,ovr=$9,pace=$10,shooting=$11,passing=$12,dribbling=$13,defending=$14,physical=$15,distribution_type=$16,is_limited=$17,max_supply=$18,updated_at=now() WHERE id=$1',[cardId,season,name,position,jerseyNumber,club,nation,rarity,ovr,stats.pace,stats.shooting,stats.passing,stats.dribbling,stats.defending,stats.physical,isLimited?'LIMITED':'STANDARD',isLimited,maxSupply]);await client.query('UPDATE card_instances SET season=$2,name=$3,position=$4,jersey_number=$5,club=$6,nation=$7,rarity=$8,ovr=$9,pace=$10,shooting=$11,passing=$12,dribbling=$13,defending=$14,physical=$15,is_limited=$16,max_supply=$17 WHERE card_id=$1',[cardId,season,name,position,jerseyNumber,club,nation,rarity,ovr,stats.pace,stats.shooting,stats.passing,stats.dribbling,stats.defending,stats.physical,isLimited,maxSupply]);await client.query('DELETE FROM card_collection_cards WHERE card_id=$1',[cardId]);await client.query('INSERT INTO card_collection_cards(collection_id,card_id,position) SELECT id,$1,COALESCE((SELECT MAX(position)+1 FROM card_collection_cards x WHERE x.collection_id=card_collections.id),0) FROM card_collections WHERE LOWER(name)=LOWER($2) ON CONFLICT DO NOTHING',[cardId,club]);await client.query('COMMIT');}catch(e){await client.query('ROLLBACK');throw e}finally{client.release();}
  Object.assign(c,{season,name,position,jerseyNumber,club,nation,rarity,rarityLabel:RARITIES[rarity].label,distributionType:isLimited?'LIMITED':'STANDARD',isLimited,maxSupply,ovr,...stats});
  await adminLog(adminId,null,'catalog_card_update',{cardId,name,position,jerseyNumber,club,nation,rarity,ovr,competitionId,seasonId,distributionType:isLimited?'LIMITED':'STANDARD',maxSupply,...stats});
