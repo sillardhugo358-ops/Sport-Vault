@@ -69,6 +69,7 @@ await pool.query('ALTER TABLE catalog_cards ADD COLUMN IF NOT EXISTS distributio
 await pool.query('ALTER TABLE catalog_cards ADD COLUMN IF NOT EXISTS is_limited boolean NOT NULL DEFAULT false');
 await pool.query('ALTER TABLE catalog_cards ADD COLUMN IF NOT EXISTS max_supply integer');
 await pool.query('ALTER TABLE catalog_cards ADD COLUMN IF NOT EXISTS card_order integer NOT NULL DEFAULT 0');
+await pool.query('ALTER TABLE catalog_cards ADD COLUMN IF NOT EXISTS is_active boolean NOT NULL DEFAULT true');
 await pool.query('ALTER TABLE catalog_cards ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now()');
 for(const c of CARD_CATALOG) await pool.query('INSERT INTO catalog_cards(id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$9,$9,$9,$9,$9,$9,$10,$11,$12,$13) ON CONFLICT(id) DO NOTHING',[c.id,c.season,c.name,c.position,c.jerseyNumber??null,c.club,c.nation,c.rarity,c.ovr,c.distributionType,Boolean(c.isLimited),c.maxSupply,c.order]);
 const catalogRows=(await pool.query('SELECT id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order,is_active FROM catalog_cards WHERE is_active=true ORDER BY card_order,id')).rows;
