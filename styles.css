@@ -20,14 +20,36 @@
 .auction-action-row{display:grid;grid-template-columns:1.2fr 1fr;gap:8px;width:100%}
 .auction-action-row .btn{width:100%}
 @media(max-width:680px){.auction-action-row{grid-template-columns:1fr}}
-.auction-sell{margin-top:20px}
-.sell-card{display:flex;gap:15px;align-items:center;border:1px solid var(--line);background:var(--panel);padding:14px}
-.sell-card .tcg-card{width:130px;flex:none}
-.sell-card h3{font:900 25px var(--head);margin:0;text-transform:uppercase}
-.sell-card p{font-size:9px;color:var(--muted);margin:5px 0 14px}
-@media(max-width:950px){.auction-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:680px){.auction-toolbar{align-items:stretch;flex-direction:column}.auction-search{width:100%}.auction-grid{grid-template-columns:1fr}.sell-card{align-items:flex-start}.sell-card .tcg-card{width:110px}}
-
+.auction-sell{margin-top:28px}
+.sell-market-head{display:flex;justify-content:space-between;gap:28px;align-items:flex-end;margin-bottom:18px;padding:24px;border:1px solid var(--line);background:linear-gradient(145deg,rgba(216,181,107,.07),rgba(10,12,11,.88))}
+.sell-market-head h2{font:900 clamp(36px,5vw,58px)/.9 var(--head);margin:4px 0 10px;text-transform:uppercase;letter-spacing:-1px}
+.sell-market-head h2 span{color:var(--gold2)}
+.sell-market-head p:not(.eyebrow){max-width:680px;margin:0;color:var(--muted);font-size:11px;line-height:1.6}
+.sell-duration-note{min-width:270px;padding-left:22px;border-left:1px solid var(--line);display:grid;gap:7px}
+.sell-duration-note span,.sell-card-kicker,.sell-card-specs small{font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);font-weight:800}
+.sell-duration-note strong{font-size:12px;line-height:1.5;color:var(--gold2)}
+.sell-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.sell-card{display:grid;grid-template-columns:155px minmax(0,1fr);gap:18px;align-items:stretch;border:1px solid var(--line);background:linear-gradient(145deg,#111412,#090a09);padding:14px;min-width:0;transition:.2s;border-radius:2px}
+.sell-card:hover{border-color:rgba(216,181,107,.42);transform:translateY(-2px)}
+.sell-card-visual{display:flex;align-items:center;justify-content:center;min-width:0;padding:4px;background:radial-gradient(circle at 50% 35%,rgba(216,181,107,.10),transparent 65%)}
+.sell-card-visual .tcg-card{width:100%;max-width:145px}
+.sell-card-body{display:flex;flex-direction:column;min-width:0}
+.sell-card-heading{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border-bottom:1px solid var(--line);padding:3px 0 12px}
+.sell-card-heading h3{font:900 25px/.95 var(--head);margin:5px 0 0;text-transform:uppercase;overflow-wrap:anywhere}
+.sell-card-ovr{font-size:8px;letter-spacing:1px;color:var(--muted);white-space:nowrap}
+.sell-card-ovr b{display:block;font:900 25px var(--head);color:var(--gold2);text-align:right;margin-top:3px}
+.sell-card-specs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:13px 0;border-bottom:1px solid var(--line)}
+.sell-card-specs span{display:grid;gap:4px;min-width:0}
+.sell-card-specs b{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sell-card-footer{margin-top:auto;padding-top:14px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.sell-card-footer p{margin:0;display:grid;gap:4px;font-size:9px}
+.sell-card-footer p strong{color:var(--text);font-size:10px}
+.sell-card-footer p span{color:var(--muted)}
+.sell-card-footer .btn{white-space:nowrap}
+.auction-action-row{display:grid;grid-template-columns:1.2fr 1fr;gap:8px;width:100%}
+.auction-action-row .btn{width:100%}
+@media(max-width:1050px){.sell-card-grid{grid-template-columns:1fr}.sell-card{grid-template-columns:150px minmax(0,1fr)}}
+@media(max-width:680px){.auction-toolbar{align-items:stretch;flex-direction:column}.auction-search{width:100%}.auction-grid{grid-template-columns:1fr}.sell-market-head{display:grid;align-items:start;padding:18px}.sell-duration-note{border-left:0;border-top:1px solid var(--line);padding:14px 0 0;min-width:0}.sell-card{grid-template-columns:105px minmax(0,1fr);gap:12px;padding:10px}.sell-card-visual .tcg-card{max-width:105px}.sell-card-heading h3{font-size:20px}.sell-card-specs{gap:5px}.sell-card-specs b{font-size:9px}.sell-card-footer{display:grid;gap:10px}.sell-card-footer .btn{width:100%}}
 .auction-modal-box{width:min(560px,100%);padding:32px}
 .auction-modal-box h2{font:900 clamp(42px,8vw,68px)/.88 var(--head);margin:0;text-transform:uppercase;letter-spacing:-1px}
 .auction-dialog-subtitle{color:var(--muted);font-size:12px;line-height:1.6;margin:15px 0 0;max-width:470px}
