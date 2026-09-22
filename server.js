@@ -97,6 +97,13 @@ await pool.query(`CREATE TABLE IF NOT EXISTS auction_bids(
  amount integer NOT NULL CHECK(amount>0),
  created_at timestamptz NOT NULL DEFAULT now()
 )`);
+await pool.query(`CREATE TABLE IF NOT EXISTS auction_withdrawals(
+ auction_id uuid NOT NULL REFERENCES auctions(id) ON DELETE CASCADE,
+ bidder_id uuid NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+ withdrawn_at timestamptz NOT NULL DEFAULT now(),
+ PRIMARY KEY(auction_id,bidder_id)
+)`);
+await pool.query('CREATE INDEX IF NOT EXISTS auction_withdrawals_bidder_idx ON auction_withdrawals(bidder_id)');
 await pool.query('CREATE INDEX IF NOT EXISTS auction_bids_auction_idx ON auction_bids(auction_id,created_at DESC)');
 await pool.query(`CREATE TABLE IF NOT EXISTS admin_logs(id bigserial PRIMARY KEY,admin_id uuid NOT NULL REFERENCES users(id) ON DELETE RESTRICT,target_user_id uuid REFERENCES users(id) ON DELETE SET NULL,action varchar(60) NOT NULL,details jsonb NOT NULL DEFAULT '{}'::jsonb,created_at timestamptz NOT NULL DEFAULT now())`);await pool.query('CREATE INDEX IF NOT EXISTS admin_logs_created_idx ON admin_logs(created_at DESC)');await pool.query(`CREATE TABLE IF NOT EXISTS security_events(id bigserial PRIMARY KEY,user_id uuid REFERENCES users(id) ON DELETE SET NULL,ip varchar(255),event varchar(80) NOT NULL,details jsonb NOT NULL DEFAULT '{}'::jsonb,created_at timestamptz NOT NULL DEFAULT now())`);await pool.query('CREATE INDEX IF NOT EXISTS security_events_created_idx ON security_events(created_at DESC)');await pool.query('CREATE INDEX IF NOT EXISTS security_events_user_idx ON security_events(user_id,created_at DESC)');await pool.query('CREATE INDEX IF NOT EXISTS sessions_expiry_idx ON sessions(expires_at)');await pool.query(`CREATE TABLE IF NOT EXISTS registration_limits(ip varchar(255) PRIMARY KEY,last_created_at timestamptz NOT NULL)`);await pool.query(`CREATE TABLE IF NOT EXISTS login_limits(ip varchar(255) NOT NULL,email varchar(320) NOT NULL,failed_attempts integer NOT NULL DEFAULT 0,blocked_until timestamptz,updated_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(ip,email))`);return{mode:'postgres'};}catch(error){console.error('SPORT VAULT database unavailable:',error.message);if(pool)await pool.end().catch(()=>{});pool=null;if(process.env.NODE_ENV==='production')throw error;return{mode:'memory',error:error.message};}}
 async function findUserByEmail(email){if(pool){const r=await pool.query('SELECT * FROM users WHERE email=$1',[email]);return r.rows[0]||null;}for(const u of memory.users.values())if(u.email===email)return u;return null;}
@@ -366,12 +373,56 @@ async function auctionData(viewerId=null){
  const r=await pool.query(`SELECT a.*,c.card_id,c.name,c.position,c.club,c.nation,c.rarity,c.season,c.is_limited,c.serial,c.max_supply,c.source,
    u.name AS seller_name,ub.name AS bidder_name,
    (SELECT count(*) FROM auction_bids ab WHERE ab.auction_id=a.id) AS bid_count,
-   (SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY aa.current_bid) FROM auctions aa JOIN card_instances cc ON cc.instance_id=aa.card_instance_id WHERE aa.status='completed' AND cc.card_id=c.card_id) AS reference_median
+   (SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY aa.current_bid) FROM auctions aa JOIN card_instances cc ON cc.instance_id=aa.card_instance_id WHERE aa.status='completed' AND cc.card_id=c.card_id) AS reference_median,
+   (SELECT count(*) FROM auction_bids bx WHERE bx.auction_id=a.id AND bx.bidder_id=$1) > 0 AS user_participates,
+   (SELECT count(*) FROM auction_withdrawals wx WHERE wx.auction_id=a.id AND wx.bidder_id=$1) > 0 AS user_withdrawn
    FROM auctions a JOIN card_instances c ON c.instance_id=a.card_instance_id
    JOIN users u ON u.id=a.seller_id
    LEFT JOIN users ub ON ub.id=a.current_bidder_id
    WHERE a.status='active' AND a.ends_at>now() ORDER BY a.ends_at ASC`);
- return r.rows.map(x=>({...auctionPublic(x),sellerName:x.seller_name,currentBidderName:x.bidder_name||null,bidCount:Number(x.bid_count||0),referencePrice:x.reference_median===null?null:Math.round(Number(x.reference_median)),isCurrentUserBidder:!!viewerId&&x.current_bidder_id===viewerId,card:publicCard(x)}));
+ return r.rows.map(x=>({...auctionPublic(x),sellerName:x.seller_name,currentBidderName:x.bidder_name||null,bidCount:Number(x.bid_count||0),referencePrice:x.reference_median===null?null:Math.round(Number(x.reference_median)),isCurrentUserBidder:!!viewerId&&x.current_bidder_id===viewerId,isCurrentUserParticipant:!!viewerId&&!!x.user_participates,isCurrentUserWithdrawn:!!viewerId&&!!x.user_withdrawn,card:publicCard(x)}));
+}
+async function withdrawAuctionParticipation(userId,auctionId){
+ const client=await pool.connect();
+ try{
+  await client.query('BEGIN');
+  const a=(await client.query('SELECT * FROM auctions WHERE id=$1 FOR UPDATE',[auctionId])).rows[0];
+  if(!a){await client.query('ROLLBACK');return{error:'Enchère introuvable.',status:404};}
+  if(a.status!=='active'||new Date(a.ends_at)<=new Date()){await client.query('ROLLBACK');return{error:'Cette enchère est terminée.',status:400};}
+  if(a.seller_id===userId){await client.query('ROLLBACK');return{error:'Le vendeur ne peut pas se retirer de sa propre enchère.',status:400};}
+  const participated=(await client.query('SELECT 1 FROM auction_bids WHERE auction_id=$1 AND bidder_id=$2 LIMIT 1',[auctionId,userId])).rowCount>0;
+  if(!participated){await client.query('ROLLBACK');return{error:'Tu ne participes pas à cette enchère.',status:400};}
+  const already=(await client.query('SELECT 1 FROM auction_withdrawals WHERE auction_id=$1 AND bidder_id=$2',[auctionId,userId])).rowCount>0;
+  if(already){await client.query('ROLLBACK');return{error:'Tu as déjà quitté cette enchère.',status:400};}
+  await client.query('INSERT INTO auction_withdrawals(auction_id,bidder_id) VALUES($1,$2)',[auctionId,userId]);
+  let restoredBid=null;
+  if(a.current_bidder_id===userId){
+    const currentAmount=Number(a.current_bid);
+    await client.query('UPDATE users SET reserved_coins=GREATEST(0,reserved_coins-$1) WHERE id=$2',[currentAmount,userId]);
+    const candidates=(await client.query(`SELECT b.bidder_id, MAX(b.amount) FILTER (WHERE b.created_at = latest.latest_at) AS amount
+      FROM auction_bids b
+      JOIN (SELECT bidder_id,MAX(created_at) AS latest_at FROM auction_bids WHERE auction_id=$1 GROUP BY bidder_id) latest
+        ON latest.bidder_id=b.bidder_id AND latest.latest_at=b.created_at
+      WHERE b.auction_id=$1 AND b.bidder_id<>$2
+        AND NOT EXISTS (SELECT 1 FROM auction_withdrawals w WHERE w.auction_id=b.auction_id AND w.bidder_id=b.bidder_id)
+      GROUP BY b.bidder_id,latest.latest_at
+      ORDER BY latest.latest_at DESC`,[auctionId,userId])).rows;
+    for(const candidate of candidates){
+      const bidder=(await client.query('SELECT id,coins,reserved_coins FROM users WHERE id=$1 FOR UPDATE',[candidate.bidder_id])).rows[0];
+      const amount=Number(candidate.amount||0);
+      if(bidder&&Number(bidder.coins)-Number(bidder.reserved_coins)>=amount&&amount>=Number(a.starting_bid)){restoredBid={bidderId:bidder.id,amount};break;}
+    }
+    if(restoredBid){
+      await client.query('UPDATE users SET reserved_coins=reserved_coins+$1 WHERE id=$2',[restoredBid.amount,restoredBid.bidderId]);
+      await client.query('UPDATE auctions SET current_bid=$1,current_bidder_id=$2 WHERE id=$3',[restoredBid.amount,restoredBid.bidderId,auctionId]);
+    }else{
+      await client.query('UPDATE auctions SET current_bid=starting_bid,current_bidder_id=NULL WHERE id=$1',[auctionId]);
+    }
+  }
+  await securityEvent(userId,null,'auction_withdraw',{auctionId,currentBidderChanged: a.current_bidder_id===userId,restoredBid:restoredBid?.amount||null});
+  await client.query('COMMIT');
+  return{ok:true,auction:{id:auctionId,currentBid:restoredBid?.amount||Number(a.starting_bid),currentBidderId:restoredBid?.bidderId||null}};
+ }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release();}
 }
 async function auctionHistory(userId){
  await settleExpiredAuctions();
@@ -403,7 +454,7 @@ async function createAuction(userId,cardInstanceId,startingBid,duration){
   if(card.tradeable===false||card.source==='welcome'){await client.query('ROLLBACK');return{error:'Cette carte ne peut pas être mise aux enchères.',status:400};}
   const existing=(await client.query("SELECT 1 FROM auctions WHERE card_instance_id=$1 AND status='active'",[cardInstanceId])).rowCount;
   if(existing){await client.query('ROLLBACK');return{error:'Cette carte est déjà aux enchères.',status:400};}
-  const activeCount=Number((await client.query("SELECT count(DISTINCT auction_id) AS n FROM auction_bids b JOIN auctions a ON a.id=b.auction_id WHERE b.bidder_id=$1 AND a.status='active' AND a.ends_at>now()",[userId])).rows[0].n);
+  const activeCount=Number((await client.query("SELECT count(DISTINCT b.auction_id) AS n FROM auction_bids b JOIN auctions a ON a.id=b.auction_id WHERE b.bidder_id=$1 AND a.status='active' AND a.ends_at>now() AND NOT EXISTS (SELECT 1 FROM auction_withdrawals w WHERE w.auction_id=a.id AND w.bidder_id=$1)",[userId])).rows[0].n);
   if(activeCount>=10){await client.query('ROLLBACK');return{error:'Limite atteinte : 10 enchères actives maximum.',status:400};}
   const id=crypto.randomUUID(),ends=new Date(Date.now()+auctionDurationMs(mins));
   await client.query("UPDATE card_instances SET status='auction' WHERE instance_id=$1",[cardInstanceId]);
@@ -423,6 +474,8 @@ async function placeAuctionBid(userId,auctionId,amount){
   if(!a){await client.query('ROLLBACK');return{error:'Enchère introuvable.',status:404};}
   if(a.status!=='active'||new Date(a.ends_at)<=new Date()){await client.query('ROLLBACK');return{error:'Cette enchère est terminée.',status:400};}
   if(a.seller_id===userId){await client.query('ROLLBACK');return{error:'Tu ne peux pas enchérir sur ta propre carte.',status:400};}
+  const withdrawn=(await client.query('SELECT 1 FROM auction_withdrawals WHERE auction_id=$1 AND bidder_id=$2',[auctionId,userId])).rowCount>0;
+  if(withdrawn){await client.query('ROLLBACK');return{error:'Tu as quitté cette enchère et ne peux plus y participer.',status:400};}
   const min=a.current_bidder_id?auctionMinBid(a.current_bid):Number(a.starting_bid);
   if(bid<min){await client.query('ROLLBACK');return{error:'Mise minimum : '+min+' FC.',status:400};}
   const now=Date.now(),end=new Date(a.ends_at).getTime();
@@ -476,7 +529,7 @@ function staticFile(req,res){let pathname=decodeURIComponent(new URL(req.url,'ht
  if(req.method==='GET'&&url.pathname==='/api/auctions'){return json(res,200,{auctions:await auctionData()});}
  if(req.method==='POST'&&url.pathname==='/api/auctions/create'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});const body=await readBody(req);const result=await createAuction(user.id,String(body.cardInstanceId||''),body.startingBid,body.duration);return json(res,result.error?result.status||400:201,result);}
  if(req.method==='POST'&&url.pathname==='/api/auctions/bid'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});const body=await readBody(req);const result=await placeAuctionBid(user.id,String(body.auctionId||''),body.amount);return json(res,result.error?result.status||400:200,result);}
- if(req.method==='POST'&&url.pathname==='/api/auctions/cancel'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});const body=await readBody(req);const result=await cancelAuction(user.id,String(body.auctionId||''));return json(res,result.error?result.status||400:200,result);}
+ if(req.method==='POST'&&url.pathname==='/api/auctions/cancel'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});const body=await readBody(req);const result=await cancelAuction(user.id,String(body.auctionId||''));return json(res,result.error?result.status||400:200,result);} if(req.method==='POST'&&url.pathname==='/api/auctions/withdraw'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});const body=await readBody(req);const result=await withdrawAuctionParticipation(user.id,String(body.auctionId||''));return json(res,result.error?result.status||400:200,result);}
  if(req.method==='GET'&&url.pathname.startsWith('/api/auctions/')&&url.pathname.endsWith('/bids')){const id=url.pathname.split('/')[3];return json(res,200,{bids:await auctionBidHistory(id)});}
  if(req.method==='GET'&&url.pathname==='/api/admin/cards'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès admin requis.'});return json(res,200,{cards:await adminCards()});}
  if(req.method==='POST'&&url.pathname==='/api/admin/cards'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès admin requis.'});const body=await readBody(req);const result=await adminUpdateCatalogCard(admin.id,String(body.id||''),body);return json(res,result.error?result.status||400:200,result);} if(req.method==='POST'&&url.pathname==='/api/admin/cards/create'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès admin requis.'});const body=await readBody(req);const result=await adminCreateCatalogCard(admin.id,body);return json(res,result.error?result.status||400:201,result);} if(req.method==='POST'&&url.pathname==='/api/admin/cards/delete'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès admin requis.'});const body=await readBody(req);const result=await adminDeleteCatalogCard(admin.id,String(body.cardId||''));return json(res,result.error?result.status||400:200,result);}
