@@ -17,6 +17,9 @@
 .auction-price b{font:900 24px var(--head);color:var(--gold2)}
 .auction-actions{margin-top:14px;display:flex}
 .auction-actions .btn{width:100%}
+.auction-action-row{display:grid;grid-template-columns:1.2fr 1fr;gap:8px;width:100%}
+.auction-action-row .btn{width:100%}
+@media(max-width:680px){.auction-action-row{grid-template-columns:1fr}}
 .auction-sell{margin-top:20px}
 .sell-card{display:flex;gap:15px;align-items:center;border:1px solid var(--line);background:var(--panel);padding:14px}
 .sell-card .tcg-card{width:130px;flex:none}
