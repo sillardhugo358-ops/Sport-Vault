@@ -277,7 +277,7 @@ async function showCompetitionEditor(comp){
  });
  document.querySelector('[data-new-season]')?.addEventListener('click',e=>{e.preventDefault();showSeasonEditor(null,c.id)});
  document.querySelectorAll('[data-edit-season]').forEach(x=>x.addEventListener('click',e=>{e.preventDefault();const selected=(c.seasons||[]).find(v=>String(v.id)===String(x.dataset.editSeason));if(selected)showSeasonEditor(selected,c.id);else toast('Saison introuvable.')}));
- document.querySelectorAll('[data-delete-season]').forEach(x=>x.addEventListener('click',async e=>{e.preventDefault();if(!confirm('Supprimer cette saison ?'))return;try{await api('/api/admin/competitions',{method:'POST',body:JSON.stringify({action:'season_delete',seasonId:x.dataset.deleteSeason})});rememberAdminView('competitions');closeModal();toast('Saison supprimée.');render()}catch(err){toast(err.message)}}));
+ document.querySelectorAll('[data-delete-season]').forEach(x=>x.addEventListener('click',async e=>{e.preventDefault();const ok=await auctionDialog({title:'SUPPRIMER CETTE SAISON ?',subtitle:'Cette action supprimera cette saison de la compétition. Vérifie que tu souhaites bien continuer.',type:'confirm',confirm:'SUPPRIMER'});if(ok===null)return;try{await api('/api/admin/competitions',{method:'POST',body:JSON.stringify({action:'season_delete',seasonId:x.dataset.deleteSeason})});rememberAdminView('competitions');closeModal();toast('Saison supprimée.');render()}catch(err){toast(err.message)}}));
 }
 async function showSeasonEditor(season,competitionId){
  if(state.user?.role!=='creator')return;
