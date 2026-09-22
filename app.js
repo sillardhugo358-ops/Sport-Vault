@@ -95,7 +95,7 @@ function home(){return `
 </div>`}
 async function loadCatalog(){if(state.catalog.length)return;state.catalog=(await api('/api/cards')).cards||[]}
 async function collection(){
- try{const d=await api("/api/collection");state.user=d.user;state.cards=d.cards||[]}catch(e){if(e.status===401){app().innerHTML=authView("login","collection");return}throw e}
+ try{const d=await api("/api/collection");state.user=d.user;state.cards=d.cards||[]}catch(e){if(e.status===401)return authView("login","collection");throw e}
  const filters=["all","common","rare","epic","legendary","icon"],labels={icon:"ULTRA RARE",legendary:"LEGENDARY",epic:"EPIC",rare:"RARE",common:"COMMON"},q=state.collectionSearch.trim().toLowerCase();
  const grouped=new Map();state.cards.forEach(c=>{const key=c.cardId||c.id||c.instanceId;const existing=grouped.get(key);if(existing){existing.quantity+=1}else grouped.set(key,{...c,quantity:1})});const uniqueCards=[...grouped.values()];
  const base=uniqueCards.filter(c=>(state.filter==="all"||c.rarity===state.filter)&&(!q||[c.name,c.club,c.nation,c.position,c.rarityLabel].some(v=>String(v||"").toLowerCase().includes(q))));
