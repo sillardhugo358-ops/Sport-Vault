@@ -238,9 +238,10 @@ async function adminCreateCatalogCard(adminId,body){
  const existing=(await pool.query('SELECT id,is_active FROM catalog_cards WHERE id=$1',[id])).rows[0];
  if(existing?.is_active)return{error:'Cet ID de carte existe déjà.',status:409};
  const client=await pool.connect();
+ let maxOrder=0;
  try{
   await client.query('BEGIN');
-  const maxOrder=Number((await client.query('SELECT COALESCE(MAX(card_order),-1)+1 AS n FROM catalog_cards')).rows[0].n);
+  maxOrder=Number((await client.query('SELECT COALESCE(MAX(card_order),-1)+1 AS n FROM catalog_cards')).rows[0].n);
   if(existing) await client.query('UPDATE catalog_cards SET is_active=true,season=$2,name=$3,position=$4,jersey_number=$5,club=$6,nation=$7,rarity=$8,ovr=$9,pace=$10,shooting=$11,passing=$12,dribbling=$13,defending=$14,physical=$15,distribution_type=$16,is_limited=$17,max_supply=$18,card_order=$19,updated_at=now() WHERE id=$1',[id,season,name,position,jerseyNumber,club,nation,rarity,ovr,stats.pace,stats.shooting,stats.passing,stats.dribbling,stats.defending,stats.physical,isLimited?'LIMITED':'STANDARD',isLimited,maxSupply,maxOrder]);
   else await client.query('INSERT INTO catalog_cards(id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order,is_active) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)',[id,season,name,position,jerseyNumber,club,nation,rarity,ovr,stats.pace,stats.shooting,stats.passing,stats.dribbling,stats.defending,stats.physical,isLimited?'LIMITED':'STANDARD',isLimited,maxSupply,maxOrder,true]);
   await client.query('DELETE FROM card_collection_cards WHERE card_id=$1',[id]);
