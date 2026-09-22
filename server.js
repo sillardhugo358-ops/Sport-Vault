@@ -496,7 +496,7 @@ async function placeAuctionBid(userId,auctionId,amount){
   if(end-now<=30_000)ends=new Date(end+60_000);
   await client.query('UPDATE auctions SET current_bid=$1,current_bidder_id=$2,ends_at=$3 WHERE id=$4',[bid,userId,ends,auctionId]);
   await securityEvent(userId,null,'auction_bid',{auctionId:a.id,amount:bid},client);await client.query('COMMIT');
-  return{ok:true,auction:{id:a.id,currentBid:bid,currentBidderId:userId,endsAt:ends.toISOString(),bidCount:Number((await pool.query('SELECT count(*) AS n FROM auction_bids WHERE auction_id=$1',[a.id])).rows[0].n)}}};
+  return{ok:true,auction:{id:a.id,currentBid:bid,currentBidderId:userId,endsAt:ends.toISOString(),bidCount:Number((await pool.query('SELECT count(*) AS n FROM auction_bids WHERE auction_id=$1',[a.id])).rows[0].n)}};
  }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release();}
 }
 async function cancelAuction(userId,auctionId){
