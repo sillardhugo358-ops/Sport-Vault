@@ -379,7 +379,7 @@ async function auctionData(viewerId=null){
    FROM auctions a JOIN card_instances c ON c.instance_id=a.card_instance_id
    JOIN users u ON u.id=a.seller_id
    LEFT JOIN users ub ON ub.id=a.current_bidder_id
-   WHERE a.status='active' AND a.ends_at>now() ORDER BY a.ends_at ASC`);
+   WHERE a.status='active' AND a.ends_at>now() ORDER BY a.ends_at ASC`,[viewerId]);
  return r.rows.map(x=>({...auctionPublic(x),sellerName:x.seller_name,currentBidderName:x.bidder_name||null,bidCount:Number(x.bid_count||0),referencePrice:x.reference_median===null?null:Math.round(Number(x.reference_median)),isCurrentUserBidder:!!viewerId&&x.current_bidder_id===viewerId,isCurrentUserParticipant:!!viewerId&&!!x.user_participates,isCurrentUserWithdrawn:!!viewerId&&!!x.user_withdrawn,card:publicCard(x)}));
 }
 async function withdrawAuctionParticipation(userId,auctionId){
