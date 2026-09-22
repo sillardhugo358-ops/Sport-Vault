@@ -494,7 +494,7 @@ async function placeAuctionBid(userId,auctionId,amount){
   await client.query('INSERT INTO auction_bids(auction_id,bidder_id,amount) VALUES($1,$2,$3)',[auctionId,userId,bid]);
   let ends=new Date(a.ends_at);
   if(end-now<=30_000)ends=new Date(end+60_000);
-  await client.query('UPDATE auctions SET current_bid=$1,current_bidder_id=$2,ends_at=$3 WHERE id=$4',[bid,userId,ends]);
+  await client.query('UPDATE auctions SET current_bid=$1,current_bidder_id=$2,ends_at=$3 WHERE id=$4',[bid,userId,ends,auctionId]);
   await securityEvent(userId,null,'auction_bid',{auctionId:a.id,amount:bid});await client.query('COMMIT');
   return{auction:{id:a.id,currentBid:bid,currentBidderId:userId,endsAt:ends.toISOString()}};
  }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release();}
