@@ -206,7 +206,7 @@ async function adminSetCompetition(adminId,action,body){
    const clubIds=(await pool.query('SELECT club_id FROM season_clubs WHERE season_id=$1',[seasonId])).rows.map(x=>x.club_id);const client=await pool.connect();
    try{await client.query('BEGIN');await client.query('UPDATE competition_seasons SET season=$1,label=$1,status=$2,description=$3,updated_at=now() WHERE id=$4',[season,seasonStatus,seasonDescription,seasonId]);if(previous.season!==season&&clubIds.length){await client.query('UPDATE catalog_cards SET season=$1,updated_at=now() WHERE season=$2 AND club IN (SELECT name FROM clubs WHERE id=ANY($3::varchar[]))',[season,previous.season,clubIds]);await client.query('UPDATE card_instances SET season=$1 WHERE season=$2 AND club IN (SELECT name FROM clubs WHERE id=ANY($3::varchar[]))',[season,previous.season,clubIds]);}await client.query('COMMIT');}catch(e){await client.query('ROLLBACK');throw e}finally{client.release();}
   }
-  await adminLog(adminId,null,'competition_season_'+(action==='season_create'?'create':'update'),{seasonId:finalSeasonId,competitionId,season});return{ok:true};
+  await adminLog(adminId,null,'competition_season_'+(action==='season_create'?'create':'update'),{seasonId:finalSeasonId,competitionId,season});return{ok:true,seasonId:finalSeasonId};
  }
  if(action==='season_delete'){
   const rr=await pool.query('DELETE FROM competition_seasons WHERE id=$1 RETURNING id',[String(body.seasonId||id||'')]);if(!rr.rowCount)return{error:'Saison introuvable.',status:404};await adminLog(adminId,null,'competition_season_delete',{seasonId:String(body.seasonId||id||'')});return{ok:true};
