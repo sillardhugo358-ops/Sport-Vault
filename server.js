@@ -273,12 +273,12 @@ async function adminDeleteCatalogCard(adminId,cardId,confirm=false){
   await client.query('BEGIN');
   const locked=(await client.query('SELECT id FROM catalog_cards WHERE id=$1 AND is_active=true FOR UPDATE',[cardId])).rows[0];
   if(!locked){await client.query('ROLLBACK');return{error:'Carte introuvable.',status:404};}
-  const liveAuctions=(await client.query(`SELECT id,current_bid,current_bidder_id FROM auctions WHERE card_instance_id IN (SELECT instance_id FROM card_instances WHERE card_id=$1) AND status='active' FOR UPDATE`,[cardId])).rows;
-  for(const auction of liveAuctions){
-   if(auction.current_bidder_id)await client.query('UPDATE users SET reserved_coins=GREATEST(0,reserved_coins-$1) WHERE id=$2',[Number(auction.current_bid||0),auction.current_bidder_id]);
+  const cardAuctions=(await client.query(`SELECT id,current_bid,current_bidder_id,status FROM auctions WHERE card_instance_id IN (SELECT instance_id FROM card_instances WHERE card_id=$1) FOR UPDATE`,[cardId])).rows;
+  for(const auction of cardAuctions){
+   if(auction.status==='active'&&auction.current_bidder_id)await client.query('UPDATE users SET reserved_coins=GREATEST(0,reserved_coins-$1) WHERE id=$2',[Number(auction.current_bid||0),auction.current_bidder_id]);
    await client.query('DELETE FROM auctions WHERE id=$1',[auction.id]);
   }
-  deletedAuctions=liveAuctions.length;
+  deletedAuctions=cardAuctions.length;
   const deleted=(await client.query('DELETE FROM card_instances WHERE card_id=$1 RETURNING instance_id',[cardId])).rowCount;
   await client.query('DELETE FROM card_collection_cards WHERE card_id=$1',[cardId]);
   await client.query('UPDATE catalog_cards SET is_active=false,updated_at=now() WHERE id=$1',[cardId]);
