@@ -398,7 +398,7 @@ async function showBidHistory(id){try{const d=await api('/api/auctions/'+encodeU
 }
 function siteConfirmDialog({title,subtitle='',confirm='CONFIRMER'}){
  return new Promise(resolve=>{
-  setModal(`<div class="modal-box auction-modal-box"><button class="modal-close" data-close>×</button><p class="eyebrow">FOOTVAULT / CONFIRMATION</p><h2>${esc(title)}</h2>${subtitle?`<p class="auction-dialog-subtitle">${esc(subtitle)}</p>`:''}<div class="auction-dialog-actions"><button class="btn btn-ghost" id="siteConfirmCancel">ANNULER</button><button class="btn btn-gold" id="siteConfirmOk">${esc(confirm)}</button></div></div>`);
+  const safeTitle=esc(title).replace(/\\s\\?/g,'&nbsp;?');setModal(`<div class="modal-box auction-modal-box"><button class="modal-close" data-close>×</button><p class="eyebrow">FOOTVAULT / CONFIRMATION</p><h2>${safeTitle}</h2>${subtitle?`<p class="auction-dialog-subtitle">${esc(subtitle)}</p>`:''}<div class="auction-dialog-actions"><button class="btn btn-ghost" id="siteConfirmCancel">ANNULER</button><button class="btn btn-gold" id="siteConfirmOk">${esc(confirm)}</button></div></div>`);
   const finish=v=>{closeModal();resolve(v)};
   $('#siteConfirmCancel').onclick=()=>finish(null);
   $('#siteConfirmOk').onclick=()=>finish(true);
