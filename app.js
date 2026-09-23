@@ -305,7 +305,34 @@ async function showSeasonEditor(season,competitionId){
   }catch(e){toast(e.message)}
  });
 }
-async function showClubEditor(club){if(state.user?.role!=='creator')return;const c=club||{id:'',name:'',tag:'',country:''};setModal('<div class="modal-box admin-user-modal"><button class="modal-close" data-close>×</button><p class="eyebrow">CRÉATEUR / CLUB</p><h2>'+ (club?'MODIFIER':'CRÉER') +' LE CLUB</h2><div class="admin-card-grant collection-meta-form"><input id="clubId" placeholder="ID technique" value="'+esc(c.id)+'" '+(club?'readonly':'')+'><input id="clubName" placeholder="Nom du club" value="'+esc(c.name)+'"><input id="clubTag" placeholder="TAG" value="'+esc(c.tag)+'"><input id="clubCountry" placeholder="Pays" value="'+esc(c.country||'')+'"></div><div class="auction-dialog-actions"><button class="btn btn-ghost" data-close>ANNULER</button><button class="btn btn-gold" data-save-club>ENREGISTRER</button></div></div>');document.querySelector('[data-save-club]').onclick=async()=>{const id=$('#clubId').value.trim(),name=$('#clubName').value.trim(),tag=$('#clubTag').value.trim(),country=$('#clubCountry').value.trim();if(!id||!name||!tag)return toast('ID, nom et tag obligatoires.');try{await api('/api/admin/competitions',{method:'POST',body:JSON.stringify({action:club?'club_update':'club_create',id,clubId:id,clubName:name,clubTag:tag,clubCountry:country,name,tag,country})});rememberAdminView('competitions');closeModal();toast('Club enregistré.');render()}catch(e){toast(e.message)}}}
+async function showClubEditor(club){
+ if(state.user?.role!=='creator')return;
+ const c=club||{id:'',name:'',competitionIds:[]};
+ const competitions=(state.adminCompetitions||[]).filter(x=>x.status==='available');
+ const currentCompetitionIds=club?.competitionIds||[];
+ const competitionOptions=competitions.map(comp=>`<label class="collection-card-option"><input type="checkbox" value="${esc(comp.id)}" ${currentCompetitionIds.includes(comp.id)?'checked':''}><span><strong>${esc(comp.name)}</strong><small>${esc(comp.country||'')}</small></span></label>`).join('')||'<div class="empty">Aucune compétition disponible.</div>';
+ setModal(`<div class="modal-box admin-user-modal">
+  <button class="modal-close" data-close>×</button>
+  <p class="eyebrow">CRÉATEUR / CLUB</p>
+  <h2>${club?'MODIFIER':'CRÉER'} LE CLUB</h2>
+  <p class="lead" style="font-size:12px">Sélectionne les compétitions dans lesquelles ce club est disponible. Un club peut appartenir à plusieurs compétitions.</p>
+  <div class="admin-card-grant collection-meta-form"><input id="clubName" placeholder="Nom du club" value="${esc(c.name)}"></div>
+  <p class="eyebrow" style="margin-top:20px">COMPÉTITIONS DISPONIBLES</p>
+  <div class="collection-card-picker" id="clubCompetitionPicker">${competitionOptions}</div>
+  <p class="catalog-context-help" style="margin-top:12px">L'identifiant technique et le tag sont générés automatiquement et restent internes au système.</p>
+  <div class="auction-dialog-actions"><button class="btn btn-ghost" data-close>ANNULER</button><button class="btn btn-gold" data-save-club>ENREGISTRER</button></div>
+ </div>`);
+ document.querySelector('[data-save-club]').onclick=async()=>{
+  const name=$('#clubName').value.trim();
+  const competitionIds=[...document.querySelectorAll('#clubCompetitionPicker input:checked')].map(x=>x.value);
+  if(!name)return toast('Le nom du club est obligatoire.');
+  if(!competitionIds.length)return toast('Sélectionne au moins une compétition.');
+  try{
+   await api('/api/admin/competitions',{method:'POST',body:JSON.stringify({action:club?'club_update':'club_create',id:club?.id||'',clubId:club?.id||'',clubName:name,clubTag:'',clubCountry:'',name,tag:'',country:'',competitionIds})});
+   rememberAdminView('competitions');closeModal();toast('Club enregistré.');render();
+  }catch(e){toast(e.message)}
+ };
+}
 async function admin(){
  const adminReturn=state.adminReturn||null; state.adminReturn=null;
  const [o,u,a,l,com]=await Promise.all([api('/api/admin/overview'),api('/api/admin/users'),api('/api/admin/auctions'),api('/api/admin/logs'),api('/api/admin/competitions')]);
