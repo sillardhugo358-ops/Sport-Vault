@@ -344,8 +344,29 @@ async function admin(){
  const users=u.users||[],auctions=a.auctions||[],logs=l.logs||[],competitions=com.competitions||[],clubs=com.clubs||[];state.adminUsers=users;state.adminCompetitions=competitions;state.adminClubs=clubs;const cardsData=(await api('/api/admin/cards')).cards||[];state.adminCards=cardsData;
  const adminAuctionRow=x=>{
   const status=String(x.status||"").toLowerCase(),statusClass=status==="active"?"active":status==="completed"?"completed":status==="cancelled"?"cancelled":"";
-  const endDate=new Date(x.ends_at),endLabel=Number.isNaN(endDate.getTime())?"—":endDate.toLocaleString("fr-FR",{dateStyle:"short",timeStyle:"short"}),bidder=x.bidder_name||"Aucun enchérisseur",offer=Number(x.current_bid||0);
-  return `<article class="admin-auction-card"><div class="admin-auction-card-head"><div><p class="eyebrow">CARTE</p><h3>${esc(x.card_name)}</h3><small>${esc(x.rarity)} · ${x.is_limited?`${Number(x.serial)}/${Number(x.max_supply)}`:"STANDARD"}</small></div><span class="admin-auction-status ${statusClass}">${esc(x.status)}</span></div><div class="admin-auction-price"><span>OFFRE ACTUELLE</span><strong>${money(offer)} FC</strong></div><div class="admin-auction-info"><div><span>VENDEUR</span><strong>${esc(x.seller_name||"—")}</strong></div><div><span>ENCHÉRISSEUR</span><strong>${esc(bidder)}</strong></div><div><span>OFFRES</span><strong>${x.bid_count||0}</strong></div><div><span>FIN</span><strong>${endLabel}</strong></div></div></article>`;
+  const statusLabel={active:"EN COURS",completed:"TERMINÉE",cancelled:"ANNULÉE"}[status]||String(x.status||"").toUpperCase();
+  const endDate=new Date(x.ends_at),createdDate=new Date(x.created_at);
+  const endLabel=Number.isNaN(endDate.getTime())?"—":endDate.toLocaleString("fr-FR",{dateStyle:"short",timeStyle:"short"});
+  const createdLabel=Number.isNaN(createdDate.getTime())?"—":createdDate.toLocaleString("fr-FR",{dateStyle:"short",timeStyle:"short"});
+  const bidder=x.bidder_name||"Aucun";
+  const offer=Number(x.current_bid||0),start=Number(x.starting_bid||0);
+  const limited=x.is_limited;
+  return `<article class="admin-auction-card">
+   <div class="admin-auction-card-visual">
+    <div class="admin-auction-mini-card"><div class="admin-auction-mini-rating">${esc(x.rarity||"")}</div><strong>${esc(x.card_name||"Carte")}</strong><span>${limited?`${Number(x.serial||0)}/${Number(x.max_supply||0)}`:"STANDARD"}</span></div>
+    <span class="admin-auction-status ${statusClass}">${statusLabel}</span>
+   </div>
+   <div class="admin-auction-card-body">
+    <div class="admin-auction-card-title"><div><p class="eyebrow">ENCHÈRE</p><h3>${esc(x.card_name||"Carte")}</h3></div><strong class="admin-auction-price-big">${money(offer)} <small>FC</small></strong></div>
+    <div class="admin-auction-facts">
+     <div><span>VENDEUR</span><strong>${esc(x.seller_name||"—")}</strong></div>
+     <div><span>MEILLEURE OFFRE</span><strong>${esc(bidder)}</strong></div>
+     <div><span>OFFRES</span><strong>${x.bid_count||0}</strong></div>
+     <div><span>MISE DE DÉPART</span><strong>${money(start)} FC</strong></div>
+    </div>
+    <div class="admin-auction-card-foot"><span>CRÉÉE ${createdLabel}</span><span>${status==="active"?"FIN":"FINIE"} · ${endLabel}</span></div>
+   </div>
+  </article>`;
  };
  return `<div class="page"><section class="view-hero"><div><p class="eyebrow">FOOTVAULT / ADMIN</p><h1>CENTRE DE <span>CONTRÔLE.</span></h1><p class="lead">Supervision de la plateforme, des comptes, de l'économie et des enchères.</p></div><div class="hero-stat"><strong>ADMIN</strong><span>ACCÈS PRIVILÉGIÉ</span></div></section>
  <nav class="admin-tabs" aria-label="Sections administration">
@@ -380,8 +401,15 @@ async function admin(){
   </section>
  </div> </div> <div class="admin-tab-panel" data-admin-panel="auctions">
   <section class="section admin-section-first admin-auction-panel">
-   <div class="section-head"><div><p class="eyebrow">ENCHÈRES</p><h2>SURVEILLANCE.</h2></div><p>Les 100 dernières enchères enregistrées.</p></div>
-   <div class="admin-auction-grid">${auctions.map(adminAuctionRow).join("")||"<div class=\"empty\">Aucune enchère enregistrée.</div>"}</div>
+   <div class="admin-auction-dashboard-head">
+    <div><p class="eyebrow">CENTRE DE SURVEILLANCE</p><h2>ENCHÈRES.</h2><p>Historique des 100 dernières enchères enregistrées.</p></div>
+    <div class="admin-auction-summary">
+     <span><b>${auctions.filter(x=>x.status==="active").length}</b> EN COURS</span>
+     <span><b>${auctions.filter(x=>x.status==="completed").length}</b> TERMINÉES</span>
+     <span><b>${auctions.filter(x=>x.status==="cancelled").length}</b> ANNULÉES</span>
+    </div>
+   </div>
+   <div class="admin-auction-grid">${auctions.map(adminAuctionRow).join("")||'<div class="admin-auction-empty"><strong>AUCUNE ENCHÈRE</strong><span>Les activités du marché apparaîtront ici dès qu’une enchère sera créée.</span></div>'}</div>
   </section>
  </div>
  <div class="admin-tab-panel" data-admin-panel="logs">
