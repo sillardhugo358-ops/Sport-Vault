@@ -282,12 +282,14 @@ async function showCompetitionEditor(comp){
 async function showSeasonEditor(season,competitionId){
  if(state.user?.role!=='creator')return;
  const s=season||{id:'',season:'2026',label:'Saison 2026',status:'upcoming',description:'',clubIds:[]};
- const clubOptions=state.adminClubs.map(x=>`<label class="collection-card-option"><input type="checkbox" value="${esc(x.id)}" ${(s.clubIds||[]).includes(x.id)?'checked':''}><span><strong>${esc(x.name)}</strong><small>${esc(x.tag)} · ${esc(x.country||'')}</small></span></label>`).join('')||'<div class="empty">Aucun club disponible.</div>';
+ const comp=(state.adminCompetitions||[]).find(x=>String(x.id)===String(competitionId));
+ const allowedIds=new Set(comp?.clubIds||[]);
+ const clubs=(state.adminClubs||[]).filter(x=>allowedIds.has(String(x.id)));
+ const clubOptions=clubs.map(x=>`<label class="collection-card-option"><input type="checkbox" value="${esc(x.id)}" ${(s.clubIds||[]).includes(x.id)?'checked':''}><span><strong>${esc(x.name)}</strong><small>${esc(x.country||'')}</small></span></label>`).join('')||'<div class="empty">Aucun club n’est encore lié à cette compétition.</div>';
  setModal(`<div class="modal-box admin-user-modal">
   <button class="modal-close" data-close>×</button><p class="eyebrow">CRÉATEUR / SAISON</p><h2>${season?'MODIFIER':'CRÉER'} L’ÉDITION</h2>
-  <p class="lead">Cette édition appartient à une seule compétition. Les clubs sélectionnés ci-dessous constituent son championnat.</p>
+  <p class="lead">Les clubs proposés sont uniquement ceux qui sont liés à cette compétition.</p>
   <div class="admin-card-grant collection-meta-form">
-   <input id="seasonId" placeholder="ID technique (ex. ligue-1-2027)" value="${esc(s.id)}" ${season?'readonly':''}>
    <input id="seasonYear" placeholder="Nom de la saison (ex. 2025-2026)" value="${esc(s.season||'')}">
    <select id="seasonStatus"><option value="available" ${s.status==='available'?'selected':''}>DISPONIBLE</option><option value="upcoming" ${s.status==='upcoming'?'selected':''}>À VENIR</option></select>
    <input id="seasonDescription" placeholder="Description" value="${esc(s.description||'')}">
@@ -296,11 +298,12 @@ async function showSeasonEditor(season,competitionId){
   <div class="auction-dialog-actions"><button class="btn btn-ghost" data-close>ANNULER</button><button class="btn btn-gold" data-save-season>ENREGISTRER</button></div>
  </div>`);
  document.querySelector('[data-save-season]')?.addEventListener('click',async()=>{
-  const id=$('#seasonId').value.trim(),year=$('#seasonYear').value.trim(),label=year,status=$('#seasonStatus').value,description=$('#seasonDescription').value.trim(),clubIds=[...document.querySelectorAll('.collection-card-picker input:checked')].map(x=>x.value);
-  if(!id||!year)return toast('ID et nom de saison obligatoires.');
+  const year=$('#seasonYear').value.trim(),status=$('#seasonStatus').value,description=$('#seasonDescription').value.trim(),clubIds=[...document.querySelectorAll('.collection-card-picker input:checked')].map(x=>x.value);
+  if(!year)return toast('Le nom de la saison est obligatoire.');
   try{
-   await api('/api/admin/competitions',{method:'POST',body:JSON.stringify({action:season?'season_update':'season_create',seasonId:id,competitionId,season:year,label,seasonStatus:status,seasonDescription:description})});
-   await api('/api/admin/competitions',{method:'POST',body:JSON.stringify({action:'season_set_clubs',seasonId:id,clubIds})});
+   const result=await api('/api/admin/competitions',{method:'POST',body:JSON.stringify({action:season?'season_update':'season_create',seasonId:season?.id||'',competitionId,season:year,label:year,seasonStatus:status,seasonDescription:description})});
+   const savedId=season?.id||result.seasonId;
+   await api('/api/admin/competitions',{method:'POST',body:JSON.stringify({action:'season_set_clubs',seasonId:savedId,clubIds})});
    rememberAdminView('competitions');closeModal();toast('Saison enregistrée.');render();
   }catch(e){toast(e.message)}
  });
