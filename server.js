@@ -262,16 +262,31 @@ async function adminCreateCatalogCard(adminId,body){
  await adminLog(adminId,null,'catalog_card_create',{cardId:id,name,position,club,nation,rarity,ovr,competitionId,seasonId});
  return{ok:true,card:created};
 }
-async function adminDeleteCatalogCard(adminId,cardId){
+async function adminDeleteCatalogCard(adminId,cardId,confirm=false){
  const admin=await getUserById(adminId);if(!admin||admin.role!=='creator')return{error:'Seul le Créateur peut supprimer une carte du catalogue.',status:403};
  const card=CARD_CATALOG.find(x=>x.id===cardId);if(!card)return{error:'Carte introuvable.',status:404};
- const count=Number((await pool.query('SELECT count(*)::int AS n FROM card_instances WHERE card_id=$1',[cardId])).rows[0].n);
- if(count>0)return{error:'Cette carte possède encore '+count+' exemplaire(s) en circulation. Transfère ou retire-les avant de supprimer la carte.',status:409};
- const client=await pool.connect();
- try{await client.query('BEGIN');await client.query('DELETE FROM card_collection_cards WHERE card_id=$1',[cardId]);await client.query('UPDATE catalog_cards SET is_active=false,updated_at=now() WHERE id=$1',[cardId]);await client.query('COMMIT');}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release();}
- const pos=CARD_CATALOG.findIndex(x=>x.id===cardId);if(pos>=0)CARD_CATALOG.splice(pos,1);
- await adminLog(adminId,null,'catalog_card_delete',{cardId,name:card.name,club:card.club});
- return{ok:true};
+ const preview=(await pool.query(`SELECT count(*)::int AS total,count(*) FILTER (WHERE status='owned')::int AS owned,count(*) FILTER (WHERE status='auction')::int AS auction FROM card_instances WHERE card_id=$1`,[cardId])).rows[0];
+ const total=Number(preview.total||0),owned=Number(preview.owned||0),auction=Number(preview.auction||0);
+ if(!confirm)return{preview:true,cardId,name:card.name,owned,total,auction};
+ const client=await pool.connect();let deletedAuctions=0;
+ try{
+  await client.query('BEGIN');
+  const locked=(await client.query('SELECT id FROM catalog_cards WHERE id=$1 AND is_active=true FOR UPDATE',[cardId])).rows[0];
+  if(!locked){await client.query('ROLLBACK');return{error:'Carte introuvable.',status:404};}
+  const liveAuctions=(await client.query(`SELECT id,current_bid,current_bidder_id FROM auctions WHERE card_instance_id IN (SELECT instance_id FROM card_instances WHERE card_id=$1) AND status='active' FOR UPDATE`,[cardId])).rows;
+  for(const auction of liveAuctions){
+   if(auction.current_bidder_id)await client.query('UPDATE users SET reserved_coins=GREATEST(0,reserved_coins-$1) WHERE id=$2',[Number(auction.current_bid||0),auction.current_bidder_id]);
+   await client.query('DELETE FROM auctions WHERE id=$1',[auction.id]);
+  }
+  deletedAuctions=liveAuctions.length;
+  const deleted=(await client.query('DELETE FROM card_instances WHERE card_id=$1 RETURNING instance_id',[cardId])).rowCount;
+  await client.query('DELETE FROM card_collection_cards WHERE card_id=$1',[cardId]);
+  await client.query('UPDATE catalog_cards SET is_active=false,updated_at=now() WHERE id=$1',[cardId]);
+  await client.query('COMMIT');
+  const pos=CARD_CATALOG.findIndex(x=>x.id===cardId);if(pos>=0)CARD_CATALOG.splice(pos,1);
+  await adminLog(adminId,null,'catalog_card_delete',{cardId,name:card.name,club:card.club,deletedInstances:deleted,deletedAuctions});
+  return{ok:true,deletedInstances:deleted,deletedAuctions};
+ }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release();}
 }
 async function adminUpdateCatalogCard(adminId,cardId,body){
  const admin=await getUserById(adminId);if(!admin||admin.role!=='creator')return{error:'Seul le Créateur peut modifier le catalogue.',status:403};
@@ -536,7 +551,7 @@ function staticFile(req,res){let pathname=decodeURIComponent(new URL(req.url,'ht
  if(req.method==='POST'&&url.pathname==='/api/auctions/cancel'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});const body=await readBody(req);const result=await cancelAuction(user.id,String(body.auctionId||''));return json(res,result.error?result.status||400:200,result);} if(req.method==='POST'&&url.pathname==='/api/auctions/withdraw'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});const body=await readBody(req);const result=await withdrawAuctionParticipation(user.id,String(body.auctionId||''));return json(res,result.error?result.status||400:200,result);}
  if(req.method==='GET'&&url.pathname.startsWith('/api/auctions/')&&url.pathname.endsWith('/bids')){const id=url.pathname.split('/')[3];return json(res,200,{bids:await auctionBidHistory(id)});}
  if(req.method==='GET'&&url.pathname==='/api/admin/cards'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès admin requis.'});return json(res,200,{cards:await adminCards()});}
- if(req.method==='POST'&&url.pathname==='/api/admin/cards'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès admin requis.'});const body=await readBody(req);const result=await adminUpdateCatalogCard(admin.id,String(body.id||''),body);return json(res,result.error?result.status||400:200,result);} if(req.method==='POST'&&url.pathname==='/api/admin/cards/create'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès admin requis.'});const body=await readBody(req);const result=await adminCreateCatalogCard(admin.id,body);return json(res,result.error?result.status||400:201,result);} if(req.method==='POST'&&url.pathname==='/api/admin/cards/delete'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès admin requis.'});const body=await readBody(req);const result=await adminDeleteCatalogCard(admin.id,String(body.cardId||''));return json(res,result.error?result.status||400:200,result);}
+ if(req.method==='POST'&&url.pathname==='/api/admin/cards'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès admin requis.'});const body=await readBody(req);const result=await adminUpdateCatalogCard(admin.id,String(body.id||''),body);return json(res,result.error?result.status||400:200,result);} if(req.method==='POST'&&url.pathname==='/api/admin/cards/create'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès admin requis.'});const body=await readBody(req);const result=await adminCreateCatalogCard(admin.id,body);return json(res,result.error?result.status||400:201,result);} if(req.method==='POST'&&url.pathname==='/api/admin/cards/delete'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès admin requis.'});const body=await readBody(req);const result=await adminDeleteCatalogCard(admin.id,String(body.cardId||''),Boolean(body.confirm));return json(res,result.error?result.status||400:200,result);}
  if(req.method==='GET'&&url.pathname==='/api/admin/overview'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès administrateur requis.'});return json(res,200,{admin:safeUser(admin),overview:await adminOverview()});}
  if(req.method==='GET'&&url.pathname==='/api/admin/collections'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès administrateur requis.'});return json(res,200,{collections:await adminCollections()});} if(req.method==='GET'&&url.pathname==='/api/admin/competitions'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès administrateur requis.'});return json(res,200,await adminCompetitions());} if(req.method==='POST'&&url.pathname==='/api/admin/competitions'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès administrateur requis.'});const body=await readBody(req);const result=await adminSetCompetition(admin.id,String(body.action||''),body);return json(res,result.error?result.status||400:200,result);}
  if(req.method==='POST'&&url.pathname==='/api/admin/collections'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès administrateur requis.'});const body=await readBody(req);const result=await adminSetCollection(admin.id,String(body.action||''),body);return json(res,result.error?result.status||400:200,result);}
