@@ -451,7 +451,7 @@ function parisWeekKey(date=new Date()){
 function parisOffsetMinutes(date=new Date()){
   const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Europe/Paris',timeZoneName:'longOffset',hour:'2-digit'}).formatToParts(new Date(date));
   const raw=parts.find(p=>p.type==='timeZoneName')?.value||'GMT+01:00';
-  const m=raw.match(/GMT([+-])(\\d{2}):?(\\d{2})?/);
+  const m=raw.match(/GMT([+-])(\d{2}):?(\d{2})?/);
   if(!m)return 60;
   const minutes=Number(m[2])*60+Number(m[3]||0);
   return m[1]==='-'?-minutes:minutes;
