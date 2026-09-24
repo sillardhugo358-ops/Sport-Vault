@@ -460,3 +460,48 @@
 .vault-mission.mission-completed{opacity:.72}
 .mission-completed-badge{display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:8px 12px;border:1px solid rgba(255,255,255,.12);border-radius:999px;font-size:10px;font-weight:800;letter-spacing:1px;color:var(--muted)}
 .mission-completed-section{border-top:1px solid rgba(255,255,255,.06)}
+
+
+/* MOBILE MENU FIX — solid drawer above page content */
+@media (max-width:760px){
+  .nav{
+    position:fixed !important;
+    top:68px !important;
+    left:12px !important;
+    right:12px !important;
+    z-index:1000 !important;
+    display:none;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    max-height:calc(100vh - 80px);
+    overflow-y:auto;
+    overflow-x:hidden;
+    padding:8px !important;
+    background:#090b0a !important;
+    background-color:#090b0a !important;
+    opacity:1 !important;
+    isolation:isolate;
+    -webkit-backdrop-filter:none !important;
+    backdrop-filter:none !important;
+    box-shadow:0 22px 50px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.03);
+  }
+  .nav.open{display:flex !important;}
+  .nav::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:-1;
+    background:#090b0a;
+    opacity:1;
+    pointer-events:none;
+    border-radius:inherit;
+  }
+  .nav a,
+  .nav .mobile-account{
+    position:relative;
+    z-index:1;
+    background:#090b0a;
+  }
+  .nav a{flex:none;}
+  .mobile-account{background:#090b0a !important;}
+}
