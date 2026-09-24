@@ -370,7 +370,7 @@ async function admin(){
  };
  return `<div class="page"><section class="view-hero"><div><p class="eyebrow">FOOTVAULT / ADMIN</p><h1>CENTRE DE <span>CONTRÔLE.</span></h1><p class="lead">Supervision de la plateforme, des comptes, de l'économie et des enchères.</p></div><div class="hero-stat"><strong>ADMIN</strong><span>ACCÈS PRIVILÉGIÉ</span></div></section>
  <nav class="admin-tabs" aria-label="Sections administration">
-  <button class="admin-tab ${adminReturn?.tab==="cards"?"":"active"}" data-admin-tab="dashboard">TABLEAU DE BORD</button>
+  <button class="admin-tab ${!adminReturn||adminReturn?.tab==="dashboard"?"active":""}" data-admin-tab="dashboard">TABLEAU DE BORD</button>
   <button class="admin-tab" data-admin-tab="players">JOUEURS</button>
 <button class="admin-tab ${adminReturn?.tab==="competitions"?"active":""}" data-admin-tab="competitions">COMPÉTITIONS</button>
   <button class="admin-tab ${adminReturn?.tab==="cards"?"active":""}" data-admin-tab="cards">CARTES</button>
