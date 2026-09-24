@@ -70,6 +70,16 @@ async function run(){
         [id,c.season,c.name,c.position,c.jersey_number,c.club,c.nation,c.rarity,c.ovr,c.pace,c.shooting,c.passing,c.dribbling,c.defending,c.physical,c.distribution_type,c.is_limited,c.max_supply,c.card_order,true]);
       synced++;
     }
+    // Keep already-owned instances synchronized with the authoritative catalog.
+    const instanceSync=await client.query(`
+      UPDATE card_instances ci
+      SET season=cc.season,name=cc.name,position=cc.position,jersey_number=cc.jersey_number,
+          club=cc.club,nation=cc.nation,rarity=cc.rarity,ovr=cc.ovr,pace=cc.pace,
+          shooting=cc.shooting,passing=cc.passing,dribbling=cc.dribbling,defending=cc.defending,physical=cc.physical
+      FROM catalog_cards cc
+      WHERE ci.card_id=cc.id AND cc.is_active=true
+    `);
+    console.log('[FOOTVAULT] '+Number(instanceSync.rowCount)+' instances existantes resynchronisées depuis le catalogue.');
     await client.query('COMMIT');
     console.log(`[FOOTVAULT] Ligue 1 2026-2027 import: ${synced} cartes synchronisées avec nationalités et postes codés.`);
   }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}
