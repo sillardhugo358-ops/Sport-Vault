@@ -672,7 +672,25 @@ function staticFile(req,res){let pathname=decodeURIComponent(new URL(req.url,'ht
  if(req.method==='GET'&&url.pathname==='/api/admin/packs'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès admin requis.'});return json(res,200,await adminPacks());}
  if(req.method==='POST'&&url.pathname==='/api/admin/packs'){const admin=await requireAdmin(req);if(!admin)return json(res,403,{error:'Accès admin requis.'});const body=await readBody(req);const result=await adminSetPack(admin.id,String(body.action||''),body);return json(res,result.error?result.status||400:200,result);}
  if(req.method==='GET'&&url.pathname==='/api/collection'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});const cards=await getUserCards(user.id);return json(res,200,{user:safeUser(user),cards,count:cards.length});}
- if(req.method==='GET'&&url.pathname==='/api/progression'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});const cards=await getUserCards(user.id);const level=Math.floor(Number(user.xp)/100)+1,currentXp=Number(user.xp)%100;const missions=await Promise.all(MISSIONS.map(async m=>{const progress=Math.min(missionProgress(m,cards,user),m.target);return{id:m.id,title:m.title,description:m.description,target:m.target,progress,reward:m.reward,completed:progress>=m.target,claimed:await claimExists(user.id,m.id)};}));const dailyClaimed=!!(user.daily_claimed_at&&utcDayKey(user.daily_claimed_at)===utcDayKey(new Date()));return json(res,200,{user:safeUser(user),level,currentXp,xpToNext:100,cardCount:cards.length,daily:{claimed:dailyClaimed,reward:{coins:150,xp:25}},missions});}
+ if(req.method==='GET'&&url.pathname==='/api/progression'){
+  const user=await currentUser(req);
+  if(!user)return json(res,401,{error:'Non connecté'});
+  const cards=await getUserCards(user.id);
+  const level=Math.floor(Number(user.xp)/100)+1,currentXp=Number(user.xp)%100;
+  const claimedIds=new Set();
+  for(const m of MISSIONS)if(await claimExists(user.id,m.id))claimedIds.add(m.id);
+  const active=[],completed=[];
+  for(const m of MISSIONS){
+    const claimed=claimedIds.has(m.id);
+    const unlocked=!m.prerequisite||claimedIds.has(m.prerequisite);
+    const progress=Math.min(missionProgress(m,cards,user),m.target);
+    const item={id:m.id,order:m.order,title:m.title,description:m.description,target:m.target,progress,reward:m.reward,completed:progress>=m.target,claimed,unlocked};
+    if(claimed)completed.push(item);
+    else if(unlocked)active.push(item);
+  }
+  const dailyClaimed=!!(user.daily_claimed_at&&utcDayKey(user.daily_claimed_at)===utcDayKey(new Date()));
+  return json(res,200,{user:safeUser(user),level,currentXp,xpToNext:100,cardCount:cards.length,daily:{claimed:dailyClaimed,reward:{coins:150,xp:25}},missions:active,completedMissions:completed});
+ }
  if(req.method==='POST'&&url.pathname==='/api/rewards/daily'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});const result=await claimDaily(user.id);return json(res,result.error?result.status||400:200,result.error?result:{ok:true,...result});}
  if(req.method==='POST'&&url.pathname==='/api/missions/claim'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});const body=await readBody(req);const result=await claimMission(user.id,String(body.missionId||''));return json(res,result.error?result.status||400:200,result.error?result:{ok:true,...result});}
  if(req.method==='GET'&&url.pathname==='/api/album'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});return json(res,200,await albumData(user.id));}
