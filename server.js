@@ -203,7 +203,7 @@ await pool.query('ALTER TABLE pack_definitions ADD COLUMN IF NOT EXISTS conditio
 
 const pc=(await pool.query('SELECT count(*)::int n FROM pack_definitions')).rows[0].n;if(Number(pc)===0){await pool.query('INSERT INTO pack_pools(id,name,type,config) VALUES($1,$2,$3,$4)', ['pool-standard','POOL STANDARD 2026-2027','all',JSON.stringify({weights:PACK_WEIGHTS})]);let pi=0;for(const p of Object.values(PACKS)){const conditions=p.id==='starter'?{rarities:['common'],limitedOnly:false,standardOnly:true}:p.id==='pro'?{rarities:['common','rare'],limitedOnly:false,standardOnly:true}:{rarities:['common','rare','epic'],limitedOnly:false,standardOnly:true};await pool.query('INSERT INTO pack_definitions(id,name,price,currency,cards,badge,description,guarantee,guarantee_count,pool_id,conditions,active,sort_order) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,true,$12)',[p.id,p.name,p.price,p.currency,p.cards,p.badge,p.description,p.guarantee,1,'pool-standard',JSON.stringify(conditions),pi++]);}}
 await pool.query('CREATE TABLE IF NOT EXISTS app_migrations(id varchar(120) PRIMARY KEY,applied_at timestamptz NOT NULL DEFAULT now())');
- const cardCatalogResetId='reset-card-catalog-footmercato-2026-09-25';
+ const cardCatalogResetId='reset-card-catalog-footmercato-2026-09-25-v2';
  const cardCatalogReset=(await pool.query('SELECT 1 FROM app_migrations WHERE id=$1',[cardCatalogResetId])).rowCount>0;
  if(!cardCatalogReset){
   const client=await pool.connect();
@@ -215,12 +215,15 @@ await pool.query('CREATE TABLE IF NOT EXISTS app_migrations(id varchar(120) PRIM
    await client.query('DELETE FROM card_instances');
    await client.query('DELETE FROM card_collection_cards');
    await client.query('DELETE FROM catalog_cards');
-   for(const c of CARD_CATALOG){
+   const freshCards=loadFootMercatoCatalog();
+   if(freshCards.length!==478)throw new Error('Catalogue Foot Mercato invalide pendant le reset: '+freshCards.length+' cartes.');
+   for(const c of freshCards){
     await client.query(`INSERT INTO catalog_cards(id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order,is_active) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,true)`,[c.id,c.season,c.name,c.position,c.jerseyNumber??null,c.club,c.nation,c.rarity,c.ovr,c.pace,c.shooting,c.passing,c.dribbling,c.defending,c.physical,c.distributionType,Boolean(c.isLimited),c.maxSupply,c.order]);
    }
    await client.query('INSERT INTO app_migrations(id) VALUES($1)',[cardCatalogResetId]);
    await client.query('COMMIT');
-   console.log('[FOOTVAULT] RESET catalogue: anciennes cartes, instances et enchères supprimées; '+CARD_CATALOG.length+' cartes Foot Mercato importées.');
+   CARD_CATALOG=freshCards;
+   console.log('[FOOTVAULT] RESET catalogue v2: anciennes cartes, instances et enchères supprimées; '+freshCards.length+' cartes Foot Mercato importées.');
   }catch(error){await client.query('ROLLBACK').catch(()=>{});throw error;}finally{client.release();}
  }
 const packReset=(await pool.query("SELECT 1 FROM app_migrations WHERE id='reset-packs-2026-09-24'")).rowCount>0;
