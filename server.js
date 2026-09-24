@@ -8,7 +8,7 @@ const ROOT = __dirname;
 const SESSION_DAYS = 2/24;
 
 let pool = null;
-const memory = { users: new Map(), sessions: new Map(), cards: new Map(), claims: new Map(), reg: new Map(), login: new Map() };
+const memory = { users: new Map(), sessions: new Map(), cards: new Map(), claims: new Map(), activity: [], reg: new Map(), login: new Map() };
 
 const RARITIES = {
   common: { label: 'COMMON', order: 1 },
@@ -53,6 +53,18 @@ const MISSIONS=[
   {id:'open-10',order:10,title:'OUVREUR EXPÉRIMENTÉ',description:'Ouvre 10 packs au total.',target:10,type:'packs',prerequisite:'legend-1',reward:{coins:900,xp:300}},
   {id:'collect-40',order:11,title:'GRAND COLLECTIONNEUR',description:'Possède au moins 40 cartes.',target:40,type:'cards',prerequisite:'open-10',reward:{coins:1000,xp:350}},
   {id:'icon-1',order:12,title:'AU SOMMET DU VAULT',description:'Obtiens une carte ICON.',target:1,type:'iconPlus',prerequisite:'collect-40',reward:{coins:1500,xp:500}}
+];
+const DAILY_TASKS=[
+  {id:'open-1',title:'OUVERTURE DU JOUR',description:'Ouvre au moins 1 pack aujourd’hui.',target:1,type:'packsOpened',reward:{coins:100,xp:25}},
+  {id:'cards-5',title:'RÉCOLTE QUOTIDIENNE',description:'Obtiens au moins 5 cartes aujourd’hui.',target:5,type:'cardsObtained',reward:{coins:150,xp:35}},
+  {id:'rare-1',title:'ÉCLAT QUOTIDIEN',description:'Obtiens au moins 1 carte RARE ou supérieure aujourd’hui.',target:1,type:'rarePlusObtained',reward:{coins:200,xp:50}},
+  {id:'clubs-2',title:'TOUR DES CLUBS',description:'Obtiens des cartes provenant d’au moins 2 clubs différents aujourd’hui.',target:2,type:'distinctClubsObtained',reward:{coins:250,xp:60}}
+];
+const WEEKLY_TASKS=[
+  {id:'open-5',title:'OUVREUR DE LA SEMAINE',description:'Ouvre au moins 5 packs cette semaine.',target:5,type:'packsOpened',reward:{coins:400,xp:100}},
+  {id:'cards-15',title:'COLLECTE HEBDOMADAIRE',description:'Obtiens au moins 15 cartes cette semaine.',target:15,type:'cardsObtained',reward:{coins:500,xp:125}},
+  {id:'rare-3',title:'CHASSE AUX RARETÉS',description:'Obtiens au moins 3 cartes RARE ou supérieures cette semaine.',target:3,type:'rarePlusObtained',reward:{coins:650,xp:150}},
+  {id:'clubs-4',title:'EXPLORATION DU TERRAIN',description:'Obtiens des cartes provenant d’au moins 4 clubs différents cette semaine.',target:4,type:'distinctClubsObtained',reward:{coins:750,xp:175}}
 ];
 const ALBUM_CLUBS=[['aster-fc','Aster FC','AST'],['racing-nord','Racing Nord','RN'],['union-atlantique','Union Atlantique','UA'],['stade-horizon','Stade Horizon','SH']].map(([id,name,tag])=>({id,name,tag}));
 
@@ -422,7 +434,31 @@ async function loginSuccess(ip,email){if(pool)await pool.query('DELETE FROM logi
 async function applyReward(userId,reward,client=null){const db=client||pool;if(db){const r=await db.query('UPDATE users SET coins=coins+$1,xp=xp+$2 WHERE id=$3 RETURNING *',[reward.coins||0,reward.xp||0,userId]);return r.rows[0]||null;}const user=memory.users.get(userId);if(!user)return null;user.coins+=reward.coins||0;user.xp+=reward.xp||0;return user;}
 async function claimExists(userId,claimId){if(pool){const r=await pool.query('SELECT 1 FROM reward_claims WHERE user_id=$1 AND claim_id=$2',[userId,claimId]);return r.rowCount>0;}return memory.claims.has(`${userId}:${claimId}`);}
 async function addClaim(userId,claimId,client=null){const db=client||pool;if(db){await db.query('INSERT INTO reward_claims(user_id,claim_id) VALUES($1,$2) ON CONFLICT DO NOTHING',[userId,claimId]);}else memory.claims.set(`${userId}:${claimId}`,true);}
-function utcDayKey(date){return new Date(date).toISOString().slice(0,10);}
+function parisDateParts(date=new Date()){
+  const parts=new Intl.DateTimeFormat('fr-FR',{timeZone:'Europe/Paris',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(date));
+  const out={};for(const p of parts)if(p.type!=='literal')out[p.type]=p.value;
+  return{year:Number(out.year),month:Number(out.month),day:Number(out.day)};
+}
+function parisDayKey(date=new Date()){
+  const p=parisDateParts(date);
+  return `${p.year}-${String(p.month).padStart(2,'0')}-${String(p.day).padStart(2,'0')}`;
+}
+function parisWeekKey(date=new Date()){
+  const p=parisDateParts(date),d=new Date(Date.UTC(p.year,p.month-1,p.day)),day=d.getUTCDay(),diff=day===0?-6:1-day;
+  d.setUTCDate(d.getUTCDate()+diff);
+  return d.toISOString().slice(0,10);
+}
+function periodInfo(kind,date=new Date()){
+  const key=kind==='weekly'?parisWeekKey(date):parisDayKey(date);
+  const start=new Date(`${key}T00:00:00+01:00`);
+  // Use Europe/Paris local calendar arithmetic so DST changes do not shift the reset boundary.
+  const nextLocal=new Date(Date.UTC(start.getUTCFullYear(),start.getUTCMonth(),start.getUTCDate()+(kind==='weekly'?7:1),0,0,0));
+  const nextParts={year:nextLocal.getUTCFullYear(),month:nextLocal.getUTCMonth()+1,day:nextLocal.getUTCDate()};
+  const nextKey=`${nextParts.year}-${String(nextParts.month).padStart(2,'0')}-${String(nextParts.day).padStart(2,'0')}`;
+  const end=new Date(`${nextKey}T00:00:00+01:00`);
+  return{key,start,end};
+}
+
 function missionProgress(mission,cards,user){
   if(mission.type==='cards')return cards.length;
   if(mission.type==='packs')return Number(user?.packs_opened||0);
@@ -437,7 +473,58 @@ async function missionUnlocked(userId,mission){
   if(!mission.prerequisite)return true;
   return claimExists(userId,mission.prerequisite);
 }
-async function claimDaily(userId){const reward={coins:150,xp:25};if(pool){const client=await pool.connect();try{await client.query('BEGIN');const r=await client.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[userId]);const user=r.rows[0];if(!user){await client.query('ROLLBACK');return{error:'Utilisateur introuvable.',status:404};}if(user.daily_claimed_at&&utcDayKey(user.daily_claimed_at)===utcDayKey(new Date())){await client.query('ROLLBACK');return{error:'Récompense quotidienne déjà récupérée.',status:400,user:safeUser(user)};}const updated=await applyReward(userId,reward,client);await client.query('UPDATE users SET daily_claimed_at=now() WHERE id=$1',[userId]);await securityEvent(userId,null,'daily_reward_claim',{coins:reward.coins,xp:reward.xp},client);await client.query('COMMIT');return{reward,user:safeUser(updated)};}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}}const user=memory.users.get(userId);if(!user)return{error:'Utilisateur introuvable.',status:404};if(user.dailyClaimedAt&&utcDayKey(user.dailyClaimedAt)===utcDayKey(new Date()))return{error:'Récompense quotidienne déjà récupérée.',status:400,user:safeUser(user)};user.coins+=reward.coins;user.xp+=reward.xp;user.dailyClaimedAt=new Date().toISOString();return{reward,user:safeUser(user)};}
+async function periodActivity(userId,kind,date=new Date()){
+  const period=periodInfo(kind,date);
+  if(pool){
+    const cards=(await pool.query(
+      "SELECT * FROM card_instances WHERE owner_id=$1 AND status='owned' AND source<>'welcome' AND acquired_at >= $2 AND acquired_at < $3 ORDER BY acquired_at DESC",
+      [userId,period.start,period.end]
+    )).rows.map(publicCard);
+    const events=(await pool.query(
+      "SELECT event,created_at FROM security_events WHERE user_id=$1 AND event IN ('pack_open','pool_draw') AND created_at >= $2 AND created_at < $3 ORDER BY created_at DESC",
+      [userId,period.start,period.end]
+    )).rows;
+    return{...period,cards,packOpens:events.length};
+  }
+  const cards=[...memory.cards.values()].filter(c=>c.ownerId===userId&&c.status==='owned'&&c.source!=='welcome'&&new Date(c.acquiredAt)>=period.start&&new Date(c.acquiredAt)<period.end).map(publicCard);
+  const packOpens=memory.activity.filter(e=>e.userId===userId&&(e.event==='pack_open'||e.event==='pool_draw')&&new Date(e.at)>=period.start&&new Date(e.at)<period.end).length;
+  return{...period,cards,packOpens};
+}
+function taskProgress(task,activity){
+  if(task.type==='packsOpened')return activity.packOpens;
+  if(task.type==='cardsObtained')return activity.cards.length;
+  if(task.type==='rarePlusObtained')return activity.cards.filter(c=>Number(RARITIES[c.rarity]?.order||0)>=2).length;
+  if(task.type==='distinctClubsObtained')return new Set(activity.cards.map(c=>c.club).filter(Boolean)).size;
+  return 0;
+}
+function taskClaimId(kind,periodKey,taskId){return `${kind}:${periodKey}:${taskId}`;}
+async function claimTask(userId,kind,taskId){
+  const tasks=kind==='weekly'?WEEKLY_TASKS:DAILY_TASKS;
+  const task=tasks.find(t=>t.id===taskId);
+  if(!task)return{error:'Tâche introuvable.',status:404};
+  const activity=await periodActivity(userId,kind);
+  const progress=Math.min(taskProgress(task,activity),task.target);
+  if(progress<task.target)return{error:'Tâche non terminée.',status:400,progress,target:task.target};
+  const claimId=taskClaimId(kind,activity.key,task.id);
+  if(await claimExists(userId,claimId))return{error:'Tâche déjà récupérée pour cette période.',status:400};
+  if(pool){
+    const client=await pool.connect();
+    try{
+      await client.query('BEGIN');
+      const inserted=await client.query('INSERT INTO reward_claims(user_id,claim_id) VALUES($1,$2) ON CONFLICT DO NOTHING RETURNING claim_id',[userId,claimId]);
+      if(!inserted.rowCount){await client.query('ROLLBACK');return{error:'Tâche déjà récupérée pour cette période.',status:400};}
+      const user=await applyReward(userId,task.reward,client);
+      await securityEvent(userId,null,kind==='weekly'?'weekly_task_claim':'daily_task_claim',{taskId:task.id,period:activity.key,coins:task.reward.coins,xp:task.reward.xp},client);
+      await client.query('COMMIT');
+      return{task,reward:task.reward,user:safeUser(user),period:activity.key};
+    }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}
+    finally{client.release();}
+  }
+  memory.claims.set(`${userId}:${claimId}`,true);
+  const user=await applyReward(userId,task.reward);
+  return{task,reward:task.reward,user:safeUser(user),period:activity.key};
+}
+async function claimDaily(userId){const reward={coins:150,xp:25};if(pool){const client=await pool.connect();try{await client.query('BEGIN');const r=await client.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[userId]);const user=r.rows[0];if(!user){await client.query('ROLLBACK');return{error:'Utilisateur introuvable.',status:404};}if(user.daily_claimed_at&&parisDayKey(user.daily_claimed_at)===parisDayKey(new Date())){await client.query('ROLLBACK');return{error:'Récompense quotidienne déjà récupérée.',status:400,user:safeUser(user)};}const updated=await applyReward(userId,reward,client);await client.query('UPDATE users SET daily_claimed_at=now() WHERE id=$1',[userId]);await securityEvent(userId,null,'daily_reward_claim',{coins:reward.coins,xp:reward.xp},client);await client.query('COMMIT');return{reward,user:safeUser(updated)};}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}}const user=memory.users.get(userId);if(!user)return{error:'Utilisateur introuvable.',status:404};if(user.dailyClaimedAt&&utcDayKey(user.dailyClaimedAt)===utcDayKey(new Date()))return{error:'Récompense quotidienne déjà récupérée.',status:400,user:safeUser(user)};user.coins+=reward.coins;user.xp+=reward.xp;user.dailyClaimedAt=new Date().toISOString();return{reward,user:safeUser(user)};}
 async function claimMission(userId,missionId){
   const mission=MISSIONS.find(m=>m.id===missionId);
   if(!mission)return{error:'Mission introuvable.',status:404};
@@ -447,7 +534,7 @@ async function claimMission(userId,missionId){
   const progress=Math.min(missionProgress(mission,cards,missionUser),mission.target);
   if(progress<mission.target)return{error:'Mission non terminée.',status:400,progress,target:mission.target};
   if(await claimExists(userId,mission.id))return{error:'Mission déjà récupérée.',status:400};if(pool){const client=await pool.connect();try{await client.query('BEGIN');const inserted=await client.query('INSERT INTO reward_claims(user_id,claim_id) VALUES($1,$2) ON CONFLICT DO NOTHING RETURNING claim_id',[userId,mission.id]);if(!inserted.rowCount){await client.query('ROLLBACK');return{error:'Mission déjà récupérée.',status:400};}const user=await applyReward(userId,mission.reward,client);await securityEvent(userId,null,'mission_reward_claim',{missionId:mission.id,coins:mission.reward.coins,xp:mission.reward.xp});await client.query('COMMIT');return{mission,reward:mission.reward,user:safeUser(user)};}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}}await addClaim(userId,mission.id);const user=await applyReward(userId,mission.reward);return{mission,reward:mission.reward,user:safeUser(user)};}
-async function openPackForUser(userId,packId){const pack=await getPackDefinition(packId);if(!pack)return{error:'Pack introuvable.',status:404};if(pool){const client=await pool.connect();try{await client.query('BEGIN');const r=await client.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[userId]);const user=r.rows[0];if(!user){await client.query('ROLLBACK');return{error:'Utilisateur introuvable.',status:404};}if(Number(user.coins)-Number(user.reserved_coins||0)<pack.price){await client.query('ROLLBACK');return{error:'FOOTCOINS disponibles insuffisants : une partie de tes FC est réservée par une enchère.',status:400};}const drawn=await drawDynamicPack(pack);await client.query('UPDATE users SET coins=coins-$1,xp=xp+$2,packs_opened=packs_opened+1 WHERE id=$3',[pack.price,pack.cards*10,userId]);const cards=[];for(const c of drawn){const instance=await buildInstance(c,userId,`pack:${pack.id}`,client);await createCardInstance(instance,client);cards.push(publicCard(instance));}await securityEvent(userId,null,'pack_open',{packId:pack.id,price:pack.price,cards:cards.length},client);const updatedUser=(await client.query('SELECT * FROM users WHERE id=$1',[userId])).rows[0];await client.query('COMMIT');return{user:safeUser(updatedUser),cards,pack};}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}}const user=await getUserById(userId);if(!user)return{error:'Utilisateur introuvable.',status:404};if(Number(user.coins)-Number(user.reserved_coins||0)<pack.price)return{error:'FOOTCOINS disponibles insuffisants : une partie de tes FC est réservée par une enchère.',status:400};const drawn=drawPack(packId);user.coins-=pack.price;user.xp+=pack.cards*10;const cards=[];for(const c of drawn){const instance=await buildInstance(c,userId,`pack:${pack.id}`,null);await createCardInstance(instance);cards.push(publicCard(instance));}return{user:safeUser(user),cards,pack};}
+async function openPackForUser(userId,packId){const pack=await getPackDefinition(packId);if(!pack)return{error:'Pack introuvable.',status:404};if(pool){const client=await pool.connect();try{await client.query('BEGIN');const r=await client.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[userId]);const user=r.rows[0];if(!user){await client.query('ROLLBACK');return{error:'Utilisateur introuvable.',status:404};}if(Number(user.coins)-Number(user.reserved_coins||0)<pack.price){await client.query('ROLLBACK');return{error:'FOOTCOINS disponibles insuffisants : une partie de tes FC est réservée par une enchère.',status:400};}const drawn=await drawDynamicPack(pack);await client.query('UPDATE users SET coins=coins-$1,xp=xp+$2,packs_opened=packs_opened+1 WHERE id=$3',[pack.price,pack.cards*10,userId]);const cards=[];for(const c of drawn){const instance=await buildInstance(c,userId,`pack:${pack.id}`,client);await createCardInstance(instance,client);cards.push(publicCard(instance));}await securityEvent(userId,null,'pack_open',{packId:pack.id,price:pack.price,cards:cards.length},client);const updatedUser=(await client.query('SELECT * FROM users WHERE id=$1',[userId])).rows[0];await client.query('COMMIT');return{user:safeUser(updatedUser),cards,pack};}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}}const user=await getUserById(userId);if(!user)return{error:'Utilisateur introuvable.',status:404};if(Number(user.coins)-Number(user.reserved_coins||0)<pack.price)return{error:'FOOTCOINS disponibles insuffisants : une partie de tes FC est réservée par une enchère.',status:400};const drawn=drawPack(packId);user.coins-=pack.price;user.xp+=pack.cards*10;const cards=[];for(const c of drawn){const instance=await buildInstance(c,userId,`pack:${pack.id}`,null);await createCardInstance(instance);cards.push(publicCard(instance));}memory.activity.push({userId,event:'pack_open',at:new Date().toISOString()});return{user:safeUser(user),cards,pack};}
 async function openPoolForUser(userId,poolId){
  const pr=await pool.query('SELECT id,name,type,config,price,cards,badge,description,active FROM pack_pools WHERE id=$1 AND active=true',[poolId]);const poolDef=pr.rows[0];if(!poolDef)return{error:'Tirage introuvable.',status:404};
  const pack={id:'pool:'+poolDef.id,name:poolDef.name,price:Number(poolDef.price),cards:Number(poolDef.cards),guarantee:'common',guarantee_count:0,pool_id:poolDef.id,conditions:{}};
@@ -688,8 +775,17 @@ function staticFile(req,res){let pathname=decodeURIComponent(new URL(req.url,'ht
     if(claimed)completed.push(item);
     else if(unlocked)active.push(item);
   }
-  const dailyClaimed=!!(user.daily_claimed_at&&utcDayKey(user.daily_claimed_at)===utcDayKey(new Date()));
-  return json(res,200,{user:safeUser(user),level,currentXp,xpToNext:100,cardCount:cards.length,daily:{claimed:dailyClaimed,reward:{coins:150,xp:25}},missions:active,completedMissions:completed});
+  const dailyClaimed=!!(user.daily_claimed_at&&parisDayKey(user.daily_claimed_at)===parisDayKey(new Date()));
+  const [dailyActivity,weeklyActivity]=await Promise.all([periodActivity(user.id,'daily'),periodActivity(user.id,'weekly')]);
+  const dailyTasks=await Promise.all(DAILY_TASKS.map(async t=>{const progress=Math.min(taskProgress(t,dailyActivity),t.target),claimed=await claimExists(user.id,taskClaimId('daily',dailyActivity.key,t.id));return{...t,progress,completed:progress>=t.target,claimed,period:dailyActivity.key};}));
+  const weeklyTasks=await Promise.all(WEEKLY_TASKS.map(async t=>{const progress=Math.min(taskProgress(t,weeklyActivity),t.target),claimed=await claimExists(user.id,taskClaimId('weekly',weeklyActivity.key,t.id));return{...t,progress,completed:progress>=t.target,claimed,period:weeklyActivity.key};}));
+  return json(res,200,{user:safeUser(user),level,currentXp,xpToNext:100,cardCount:cards.length,daily:{claimed:dailyClaimed,reward:{coins:150,xp:25}},dailyTasks,weeklyTasks,missions:active,completedMissions:completed});
+ }
+ if(req.method==='POST'&&url.pathname==='/api/tasks/claim'){
+  const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});
+  const body=await readBody(req),kind=String(body.kind||'daily')==='weekly'?'weekly':'daily';
+  const result=await claimTask(user.id,kind,String(body.taskId||''));
+  return json(res,result.error?result.status||400:200,result.error?result:{ok:true,...result});
  }
  if(req.method==='POST'&&url.pathname==='/api/rewards/daily'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});const result=await claimDaily(user.id);return json(res,result.error?result.status||400:200,result.error?result:{ok:true,...result});}
  if(req.method==='POST'&&url.pathname==='/api/missions/claim'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});const body=await readBody(req);const result=await claimMission(user.id,String(body.missionId||''));return json(res,result.error?result.status||400:200,result.error?result:{ok:true,...result});}
