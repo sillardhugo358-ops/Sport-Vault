@@ -505,3 +505,121 @@
   .nav a{flex:none;}
   .mobile-account{background:#090b0a !important;}
 }
+
+
+/* MOBILE RESPONSIVE HARMONIZATION — Collection / Album / Admin */
+@media (max-width:760px){
+  .page{width:100%;max-width:none;padding:24px 12px 58px}
+  .view-hero{padding:18px 0 28px;gap:14px}
+  .view-hero h1{font-size:clamp(48px,15vw,68px);letter-spacing:-1.5px}
+  .view-hero .lead{font-size:11px;line-height:1.55;margin:14px 0 0}
+  .hero-stat{margin-top:14px}
+  .hero-stat strong{font-size:42px}
+  .hero-stat span{font-size:8px}
+
+  /* COLLECTION */
+  .collection-overview{grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px}
+  .collection-overview>div{padding:13px 11px;min-width:0}
+  .collection-overview strong{font-size:25px}
+  .collection-overview span,.collection-overview small{font-size:6px;letter-spacing:1px}
+  .collection-progress-panel{padding:16px;margin:12px 0 18px}
+  .collection-progress-title{display:block;margin-bottom:13px}
+  .collection-progress-title h2{font-size:27px}
+  .collection-progress-title>strong{display:block;margin-top:7px;font-size:12px}
+  .collection-rarity-grid{grid-template-columns:1fr 1fr;gap:7px}
+  .collection-rarity-mini{padding:11px 9px}
+  .collection-rarity-mini b{font-size:20px}
+  .collection-rarity-mini:last-child{grid-column:1/-1}
+  .collection-toolbar{position:static;padding:9px;margin-bottom:18px}
+  .collection-toolbar .filters{width:100%;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+  .collection-toolbar .filters::-webkit-scrollbar{display:none}
+  .collection-toolbar .filter{flex:none;padding:8px 10px}
+  .collection-tools{width:100%;display:grid;grid-template-columns:1fr;gap:7px}
+  .collection-search,.collection-sort{width:100%;min-width:0;height:42px}
+  .collection-rarity-section{margin:20px 0 30px}
+  .collection-rarity-head{align-items:center;margin-bottom:10px;padding-bottom:8px}
+  .collection-rarity-head h2{font-size:24px}
+  .collection-rarity-head>strong{font-size:7px}
+  .collection-card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .collection-card-grid .tcg-inner{padding:7px}
+  .collection-card-grid .avatar{height:100px}
+  .collection-card-grid .tcg-inner h3{font-size:15px}
+  .collection-card-grid .card-number strong{font-size:34px}
+  .collection-card-item{padding-bottom:25px}
+  .collection-quantity{left:5px;right:5px;bottom:0;font-size:6px;min-height:21px;padding:4px 5px}
+
+  /* ALBUM */
+  .album-back{margin:0 0 14px}
+  .album-back .btn{width:100%;min-height:42px}
+  .album-competitions-grid,.album-clubs-grid{grid-template-columns:1fr;gap:10px;margin-top:16px}
+  .competition-album-card{min-height:0;padding:17px}
+  .competition-album-top strong{font-size:24px}
+  .competition-album-emblem{width:58px;height:58px;margin:20px 0 15px;font-size:20px}
+  .competition-album-card h2{font-size:29px}
+  .competition-album-card p:not(.eyebrow){font-size:10px}
+  .competition-album-footer{margin-top:17px;padding-top:11px}
+  .album-summary{grid-template-columns:1fr;gap:7px;margin-bottom:16px}
+  .summary{padding:14px}
+  .summary strong{font-size:27px}
+  .album-season-progress{grid-template-columns:1fr auto;padding:15px;margin-bottom:16px}
+  .album-season-progress h2{font-size:25px}
+  .album-season-progress>strong{font-size:23px}
+  .album-club-card{padding:14px}
+  .album-club-head h2{font-size:23px}
+  .album-club-meta{font-size:7px}
+  .album-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+  .mini-card{min-height:64px;padding:6px}
+  .mini-card strong{font-size:11px}
+  .album-club-card>.btn{min-height:40px}
+
+  /* ADMIN */
+  .admin-tabs{position:sticky;top:68px;z-index:45;margin:8px 0 0;padding:5px;gap:5px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;background:#090b0a!important;backdrop-filter:none!important}
+  .admin-tabs::-webkit-scrollbar{display:none}
+  .admin-tab{flex:0 0 auto;min-width:112px;padding:11px 12px;white-space:nowrap;font-size:8px}
+  .admin-tab-panel .section{padding:20px 0 26px;margin-top:0;border-radius:8px}
+  .admin-tab-panel .section-head{padding:0 2px 10px;margin-bottom:12px}
+  .admin-tab-panel .section-head h2{font-size:32px}
+  .admin-tab-panel .section-head>p{font-size:9px;line-height:1.5}
+  .admin-grid{grid-template-columns:1fr 1fr!important;gap:7px}
+  .admin-stat{padding:13px 10px!important;min-width:0}
+  .admin-stat strong{font-size:25px}
+  .admin-stat span{font-size:6px;line-height:1.3}
+  .admin-table-wrap{width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .admin-table{min-width:620px}
+  .admin-table th{font-size:7px;padding:9px 8px}
+  .admin-table td{padding:11px 8px;font-size:9px}
+  .admin-table .btn{min-height:34px;padding:8px 9px;font-size:7px}
+  .catalog-filter-bar{padding:11px!important}
+  .catalog-filter-selects{grid-template-columns:1fr!important}
+  .catalog-search-box input{min-width:0!important}
+  .catalog-filter-footer{display:flex;justify-content:space-between;gap:8px;align-items:center}
+  .catalog-filter-footer .btn{min-height:38px}
+  .catalog-editor-grid{grid-template-columns:1fr!important}
+  .catalog-card-editor{padding:13px!important}
+  .catalog-ovr-editor{padding:13px}
+
+  /* ADMIN AUCTIONS */
+  .admin-auction-panel{padding:20px 0 30px}
+  .admin-auction-dashboard-head{margin-bottom:15px;padding-bottom:12px}
+  .admin-auction-dashboard-head h2{font-size:42px}
+  .admin-auction-summary{display:grid;grid-template-columns:repeat(2,1fr);width:100%}
+  .admin-auction-summary span{padding:8px 9px;font-size:6px}
+  .admin-auction-grid{grid-template-columns:1fr}
+  .admin-auction-card{grid-template-columns:82px minmax(0,1fr)}
+  .admin-auction-card-visual{padding:8px}
+  .admin-auction-mini-card{width:62px}
+  .admin-auction-card-body{padding:12px}
+  .admin-auction-card-title h3{font-size:18px}
+  .admin-auction-price-big{font-size:21px}
+  .admin-auction-facts{grid-template-columns:1fr 1fr}
+
+  /* Keep card-detail/mobile panels visually consistent with the rest of the app */
+  .detail-layout{grid-template-columns:1fr;gap:20px}
+  .detail-card{max-width:300px;margin:0 auto;position:static}
+  .detail-copy h2{font-size:42px}
+  .facts{grid-template-columns:1fr 1fr;margin:16px 0}
+  .fact{padding:13px}
+  .panel{padding:16px}
+  .stat-row{grid-template-columns:72px minmax(0,1fr) 30px;gap:7px;margin:9px 0}
+  .value{padding:16px}
+}
