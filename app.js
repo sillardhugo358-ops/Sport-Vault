@@ -401,9 +401,9 @@ async function admin(){
   </section>
  </div> <div class="admin-tab-panel ${adminReturn?.tab==="packs"?"active":""}" data-admin-panel="packs">
   <section class="section admin-section-first"><div class="section-head"><div><p class="eyebrow">ÉCONOMIE / OUVERTURES</p><h2>GESTION DES PACKS.</h2></div><button class="btn btn-gold" data-new-pack>+ NOUVEAU PACK</button></div>
-   <p class="lead" style="font-size:12px">Crée et contrôle les packs disponibles dans le jeu. Chaque pack utilise un pool de cartes.</p>
-   <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>PACK</th><th>PRIX</th><th>CARTES</th><th>POOL</th><th>GARANTIE</th><th>STATUT</th><th>ACTIONS</th></tr></thead><tbody>
-   ${packsData.map(p=>`<tr><td><strong>${esc(p.name)}</strong><small>${esc(p.badge||'')}</small></td><td>${money(p.price)} FC</td><td>${p.cards}</td><td><small>${esc(p.pool_name||'—')}</small></td><td><span class="admin-status">${esc(String(p.guarantee||'common').toUpperCase())} × ${p.guarantee_count}</span></td><td><span class="admin-status">${p.active?'ACTIF':'INACTIF'}</span></td><td><button class="btn btn-gold" data-edit-pack="${esc(p.id)}">GÉRER</button> <button class="btn btn-danger" data-delete-pack="${esc(p.id)}">SUPPRIMER</button></td></tr>`).join('')||'<tr><td colspan="7">Aucun pack.</td></tr>'}</tbody></table></div>
+   <p class="lead" style="font-size:12px">Crée et contrôle les packs disponibles dans le jeu. Chaque pack applique ses propres conditions de tirage au catalogue. Les pools sont indépendants.</p>
+   <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>PACK</th><th>PRIX</th><th>CARTES</th><th>CONDITIONS</th><th>GARANTIE</th><th>STATUT</th><th>ACTIONS</th></tr></thead><tbody>
+   ${packsData.map(p=>`<tr><td><strong>${esc(p.name)}</strong><small>${esc(p.badge||'')}</small></td><td>${money(p.price)} FC</td><td>${p.cards}</td><td><small>${esc((p.conditions?.rarities||[]).join(', ').toUpperCase()||'Toutes selon catalogue')}</small></td><td><span class="admin-status">${esc(String(p.guarantee||'common').toUpperCase())} × ${p.guarantee_count}</span></td><td><span class="admin-status">${p.active?'ACTIF':'INACTIF'}</span></td><td><button class="btn btn-gold" data-edit-pack="${esc(p.id)}">GÉRER</button> <button class="btn btn-danger" data-delete-pack="${esc(p.id)}">SUPPRIMER</button></td></tr>`).join('')||'<tr><td colspan="7">Aucun pack.</td></tr>'}</tbody></table></div>
   </section>
   <section class="section"><div class="section-head"><div><p class="eyebrow">RÉSERVES DE CARTES</p><h2>POOLS.</h2></div><button class="btn btn-gold" data-new-pool>+ NOUVEAU POOL</button></div>
    <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>POOL</th><th>TYPE</th><th>CONFIGURATION</th><th>ACTIONS</th></tr></thead><tbody>
@@ -610,7 +610,71 @@ function showPoolEditor(pool=null){
   }catch(e){toast(e.message)}
  };
 }
-function showPackEditor(pack=null){const p=pack||{id:'',name:'',price:100,cards:5,badge:'',description:'',guarantee:'rare',guarantee_count:1,pool_id:state.adminPools?.[0]?.id||'',active:true};setModal(`<div class="modal-box admin-user-modal"><button class="modal-close" data-close>×</button><p class="eyebrow">ADMIN / PACK</p><h2>${pack?'MODIFIER':'CRÉER'} UN PACK</h2><div class="admin-card-grant collection-meta-form"><input id="packName" placeholder="Nom du pack" value="${esc(p.name||'')}"><input id="packPrice" type="number" min="0" value="${Number(p.price||0)}" placeholder="Prix FC"><input id="packCards" type="number" min="1" max="20" value="${Number(p.cards||1)}" placeholder="Nombre de cartes"><input id="packBadge" placeholder="Badge" value="${esc(p.badge||'')}"><input id="packDescription" placeholder="Description" value="${esc(p.description||'')}"><select id="packPool">${(state.adminPools||[]).map(x=>'<option value="'+esc(x.id)+'" '+(x.id===p.pool_id?'selected':'')+'>'+esc(x.name)+'</option>').join('')}</select><select id="packGuarantee"><option value="common">Common+</option><option value="rare">Rare+</option><option value="epic">Epic+</option><option value="legendary">Legendary+</option><option value="icon">Icon</option></select><input id="packGuaranteeCount" type="number" min="0" value="${Number(p.guarantee_count||0)}" placeholder="Nombre garanti"><label class="collection-id-note"><input id="packActive" type="checkbox" ${p.active!==false?'checked':''}> Pack disponible</label></div><div class="auction-dialog-actions"><button class="btn btn-ghost" data-close>ANNULER</button><button class="btn btn-gold" data-save-pack>ENREGISTRER</button></div></div>`);$('#packGuarantee').value=p.guarantee||'common';document.querySelector('[data-save-pack]').onclick=async()=>{try{await api('/api/admin/packs',{method:'POST',body:JSON.stringify({action:pack?'pack_update':'pack_create',id:p.id,name:$('#packName').value.trim(),price:Number($('#packPrice').value),cards:Number($('#packCards').value),badge:$('#packBadge').value.trim(),description:$('#packDescription').value.trim(),poolId:$('#packPool').value,guarantee:$('#packGuarantee').value,guaranteeCount:Number($('#packGuaranteeCount').value),active:$('#packActive').checked})});rememberAdminView('packs');closeModal();toast('Pack enregistré.');render();}catch(e){toast(e.message)}};}
+function showPackEditor(pack=null){
+ const p=pack||{id:'',name:'',price:100,cards:5,badge:'',description:'',guarantee:'rare',guarantee_count:1,conditions:{},active:true};
+ const cfg=p.conditions||{};
+ const arr=v=>Array.isArray(v)?v.map(String):[];
+ const selected={rarities:new Set(arr(cfg.rarities)),clubs:new Set(arr(cfg.clubs)),seasons:new Set(arr(cfg.seasons)),nations:new Set(arr(cfg.nations)),positions:new Set(arr(cfg.positions))};
+ const cards=state.adminCards||[];
+ const seasons=[...new Set(cards.map(c=>String(c.season||'')).filter(Boolean))].sort((a,b)=>b.localeCompare(a,'fr',{numeric:true}));
+ const clubs=[...new Set(cards.map(c=>String(c.club||'')).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
+ const nations=[...new Set(cards.map(c=>String(c.nation||'')).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
+ const positions=[...new Set(cards.map(c=>String(c.position||'')).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
+ const multi=(id,values,set)=>'<div class="pack-condition-checks" id="'+id+'">'+values.map(v=>'<label><input type="checkbox" value="'+esc(v)+'" '+(set.has(v)?'checked':'')+'> '+esc(v.toUpperCase())+'</label>').join('')+'</div>';
+ setModal(`<div class="modal-box admin-user-modal">
+  <button class="modal-close" data-close>×</button>
+  <p class="eyebrow">ADMIN / PACK</p>
+  <h2>${pack?'MODIFIER':'CRÉER'} UN PACK</h2>
+  <div class="admin-card-grant collection-meta-form">
+   <input id="packName" placeholder="Nom du pack" value="${esc(p.name||'')}">
+   <input id="packPrice" type="number" min="0" value="${Number(p.price||0)}" placeholder="Prix FC">
+   <input id="packCards" type="number" min="1" max="20" value="${Number(p.cards||1)}" placeholder="Nombre de cartes">
+   <input id="packBadge" placeholder="Badge" value="${esc(p.badge||'')}">
+   <input id="packDescription" placeholder="Description" value="${esc(p.description||'')}">
+  </div>
+  <div class="pack-conditions-editor">
+   <p class="eyebrow">CONDITIONS DU PACK</p>
+   <p class="collection-id-note">Le pack tire directement dans le catalogue selon ces conditions. Il n'utilise aucun pool.</p>
+   <div class="pack-condition-group"><span>RARETÉS</span>${multi('packRarities',['common','rare','epic','legendary','icon'],selected.rarities)}</div>
+   <div class="pack-condition-group"><span>POSTES</span>${multi('packPositions',positions,selected.positions)}</div>
+   <div class="pack-condition-group"><span>CLUBS</span>${multi('packClubs',clubs,selected.clubs)}</div>
+   <div class="pack-condition-group"><span>NATIONALITÉS</span>${multi('packNations',nations,selected.nations)}</div>
+   <div class="pack-condition-group"><span>SAISONS</span>${multi('packSeasons',seasons,selected.seasons)}</div>
+   <div class="pack-condition-row">
+    <label>OVR MINIMUM<input id="packMinOvr" type="number" min="0" max="100" value="${cfg.minOvr??''}" placeholder="Aucun"></label>
+    <label>OVR MAXIMUM<input id="packMaxOvr" type="number" min="0" max="100" value="${cfg.maxOvr??''}" placeholder="Aucun"></label>
+   </div>
+   <div class="pack-condition-toggles">
+    <label><input id="packLimitedOnly" type="checkbox" ${cfg.limitedOnly?'checked':''}> LIMITED uniquement</label>
+    <label><input id="packStandardOnly" type="checkbox" ${cfg.standardOnly?'checked':''}> STANDARD uniquement</label>
+   </div>
+  </div>
+  <div class="admin-card-grant collection-meta-form" style="margin-top:15px">
+   <select id="packGuarantee"><option value="common">Common+</option><option value="rare">Rare+</option><option value="epic">Epic+</option><option value="legendary">Legendary+</option><option value="icon">Icon</option></select>
+   <input id="packGuaranteeCount" type="number" min="0" value="${Number(p.guarantee_count||0)}" placeholder="Nombre garanti">
+   <label class="collection-id-note"><input id="packActive" type="checkbox" ${p.active!==false?'checked':''}> Pack disponible</label>
+  </div>
+  <div class="auction-dialog-actions"><button class="btn btn-ghost" data-close>ANNULER</button><button class="btn btn-gold" data-save-pack>ENREGISTRER</button></div>
+ </div>`);
+ $('#packGuarantee').value=p.guarantee||'common';
+ document.querySelector('[data-save-pack]').onclick=async()=>{
+  const getChecked=id=>[...document.querySelectorAll('#'+id+' input:checked')].map(x=>x.value);
+  const conditions={
+   rarities:getChecked('packRarities'),positions:getChecked('packPositions'),clubs:getChecked('packClubs'),
+   nations:getChecked('packNations'),seasons:getChecked('packSeasons'),
+   minOvr:$('#packMinOvr').value===''?null:Number($('#packMinOvr').value),
+   maxOvr:$('#packMaxOvr').value===''?null:Number($('#packMaxOvr').value),
+   limitedOnly:$('#packLimitedOnly').checked,standardOnly:$('#packStandardOnly').checked
+  };
+  if(!$('#packName').value.trim())return toast('Le nom du pack est obligatoire.');
+  if(conditions.limitedOnly&&conditions.standardOnly)return toast('Un pack ne peut pas être LIMITED et STANDARD uniquement.');
+  if(conditions.minOvr!=null&&conditions.maxOvr!=null&&conditions.minOvr>conditions.maxOvr)return toast('L’OVR minimum ne peut pas dépasser l’OVR maximum.');
+  try{
+   await api('/api/admin/packs',{method:'POST',body:JSON.stringify({action:pack?'pack_update':'pack_create',id:p.id,name:$('#packName').value.trim(),price:Number($('#packPrice').value),cards:Number($('#packCards').value),badge:$('#packBadge').value.trim(),description:$('#packDescription').value.trim(),conditions,guarantee:$('#packGuarantee').value,guaranteeCount:Number($('#packGuaranteeCount').value),active:$('#packActive').checked})});
+   rememberAdminView('packs');closeModal();toast('Pack enregistré.');render();
+  }catch(e){toast(e.message)}
+ };
+}
 function bind(){
  document.querySelectorAll('[data-admin-user]').forEach(x=>x.onclick=()=>showAdminUser(x.dataset.adminUser)); 
  document.querySelectorAll('[data-admin-action]').forEach(x=>x.onclick=async()=>{const action=x.dataset.adminAction,id=document.querySelector('[data-admin-user-current]')?.dataset.adminUserCurrent;if(!id)return;try{await api('/api/admin/users/'+encodeURIComponent(id)+'/action',{method:'POST',body:JSON.stringify({action})});toast(action==='ban'?'Compte banni.':action==='block'?'Compte bloqué 24 h.':'Compte réactivé.');showAdminUser(id)}catch(e){toast(e.message)}});document.querySelectorAll('[data-admin-role]').forEach(x=>x.onclick=async()=>{const id=document.querySelector('[data-admin-user-current]')?.dataset.adminUserCurrent;try{await api('/api/admin/users/'+encodeURIComponent(id)+'/role',{method:'POST',body:JSON.stringify({role:x.dataset.adminRole})});toast('Rôle modifié.');showAdminUser(id)}catch(e){toast(e.message)}});document.querySelectorAll('[data-resource-step]').forEach(x=>x.onclick=()=>{const input=$('#adminAmount');const current=Number(input?.value)||0;if(input)input.value=String(current+Number(x.dataset.resourceStep));});document.querySelectorAll('[data-admin-resource]').forEach(x=>x.onclick=async()=>{const id=document.querySelector('[data-admin-user-current]')?.dataset.adminUserCurrent,amount=Number($('#adminAmount')?.value),reason=$('#adminReason')?.value;if(!reason||!Number.isInteger(amount)||amount===0)return toast('Montant et motif obligatoires.');try{await api('/api/admin/users/'+encodeURIComponent(id)+'/resources',{method:'POST',body:JSON.stringify({resource:$('#adminResource').value,amount,reason})});toast('Ressource modifiée.');showAdminUser(id)}catch(e){toast(e.message)}});document.querySelectorAll('[data-remove-card]').forEach(x=>x.onclick=async()=>{const id=document.querySelector('[data-admin-user-current]')?.dataset.adminUserCurrent;try{await api('/api/admin/cards/remove',{method:'POST',body:JSON.stringify({instanceId:x.dataset.removeCard})});toast('Carte retirée.');showAdminUser(id)}catch(e){toast(e.message)}});document.querySelectorAll('[data-grant-card]').forEach(x=>x.onclick=async()=>{const id=document.querySelector('[data-admin-user-current]')?.dataset.adminUserCurrent;try{await api('/api/admin/cards/grant',{method:'POST',body:JSON.stringify({userId:id,cardId:$('#adminCardSelect').value})});toast('Carte ajoutée.');showAdminUser(id)}catch(e){toast(e.message)}});document.querySelectorAll('[data-transfer-card]').forEach(x=>x.onclick=async()=>{const id=$('#adminTransferTarget')?.value,instanceId=$('#adminTransferCard')?.value;if(!id||!instanceId)return toast('Choisis une carte et un destinataire.');try{await api('/api/admin/cards/transfer',{method:'POST',body:JSON.stringify({instanceId,toUserId:id})});toast('Carte transférée.');showAdminUser(document.querySelector('[data-admin-user-current]')?.dataset.adminUserCurrent)}catch(e){toast(e.message)}});
