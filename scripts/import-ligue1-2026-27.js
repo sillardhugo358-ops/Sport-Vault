@@ -4,16 +4,10 @@ const zlib=require('node:zlib');
 const {Pool}=require('pg');
 
 const ROOT=path.join(__dirname,'..');
-const parts=[
-  path.join(ROOT,'data','ligue1-2026-2027.part1.b64'),
-  path.join(ROOT,'data','ligue1-2026-2027.part2.v2.b64'),
-  path.join(ROOT,'data','ligue1-2026-2027.part3.v2.b64'),
-  path.join(ROOT,'data','ligue1-2026-2027.part4.v2.b64'),
-  path.join(ROOT,'data','ligue1-2026-2027.part5.v2.b64')
-];
+const catalogPath=path.join(ROOT,'data','ligue1-2026-2027.v3.b64');
 
 function loadCards(){
-  const encoded=parts.map(p=>fs.readFileSync(p,'utf8').trim()).join('');
+  const encoded=fs.readFileSync(catalogPath,'utf8').trim();
   return JSON.parse(zlib.inflateSync(Buffer.from(encoded,'base64')).toString('utf8'));
 }
 
@@ -58,7 +52,13 @@ async function run(){
     const {competitionId,seasonId}=await ensureCompetition(client);
     await ensureClubs(client,competitionId,seasonId,cards);
     await client.query("UPDATE catalog_cards SET is_active=false,updated_at=now() WHERE id LIKE 'fv-%'");
+    let synced=0;
     for(const c of cards){
+      const existing=(await client.query(
+        "SELECT id FROM catalog_cards WHERE season=$1 AND club=$2 AND name=$3 AND jersey_number=$4 ORDER BY updated_at DESC NULLS LAST LIMIT 1",
+        [c.season,c.club,c.name,c.jersey_number]
+      )).rows[0];
+      const id=existing?.id||c.id;
       await client.query(`INSERT INTO catalog_cards
         (id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order,is_active)
         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
@@ -68,10 +68,11 @@ async function run(){
           shooting=excluded.shooting,passing=excluded.passing,dribbling=excluded.dribbling,defending=excluded.defending,
           physical=excluded.physical,distribution_type=excluded.distribution_type,is_limited=excluded.is_limited,
           max_supply=excluded.max_supply,card_order=excluded.card_order,is_active=true,updated_at=now()`,
-        [c.id,c.season,c.name,c.position,c.jersey_number,c.club,c.nation,c.rarity,c.ovr,c.pace,c.shooting,c.passing,c.dribbling,c.defending,c.physical,c.distribution_type,c.is_limited,c.max_supply,c.card_order,true]);
+        [id,c.season,c.name,c.position,c.jersey_number,c.club,c.nation,c.rarity,c.ovr,c.pace,c.shooting,c.passing,c.dribbling,c.defending,c.physical,c.distribution_type,c.is_limited,c.max_supply,c.card_order,true]);
+      synced++;
     }
     await client.query('COMMIT');
-    console.log('[FOOTVAULT] Ligue 1 2026-2027 import: 350 cartes synchronisées.');
+    console.log(`[FOOTVAULT] Ligue 1 2026-2027 import: ${synced} cartes synchronisées avec nationalités et postes codés.`);
   }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}
   finally{client.release();await db.end();}
 }
