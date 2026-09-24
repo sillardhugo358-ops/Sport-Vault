@@ -521,7 +521,24 @@ function showPoolEditor(pool=null){
     <option value="manual">Sélection manuelle</option>
    </select>
   </div>
-  <div id="poolConfigArea" style="margin-top:15px"></div>
+  <style>
+  .pool-manual-picker{margin-top:4px}
+  .pool-manual-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:10px}
+  .pool-manual-head strong{font-size:12px;color:var(--text)}
+  .pool-card-search{display:flex;align-items:center;gap:10px;background:#0b0d0d;border:1px solid var(--line);border-radius:8px;padding:0 14px;height:48px;margin-bottom:10px}
+  .pool-card-search span{color:var(--gold2);font-size:22px}
+  .pool-card-search input{width:100%;border:0!important;outline:0;background:transparent!important;color:var(--text);font:600 13px var(--body);padding:0!important}
+  .pool-card-results{display:grid;gap:6px;max-height:360px;overflow:auto;padding-right:3px}
+  .pool-card-option{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#0b0d0d;border:1px solid var(--line);border-radius:7px;cursor:pointer;transition:.15s}
+  .pool-card-option:hover,.pool-card-option.is-selected{border-color:rgba(212,175,55,.55);background:rgba(212,175,55,.06)}
+  .pool-card-option input{accent-color:var(--gold2);flex:0 0 auto}
+  .pool-card-option-main{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+  .pool-card-option-main strong{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pool-card-option-main small{color:var(--muted);font-size:10px}
+  .pool-card-option-meta{display:flex;align-items:center;gap:9px;flex:0 0 auto}
+  .pool-card-option-meta b{font-size:9px;letter-spacing:1px;color:var(--gold2)}
+  .pool-card-option-meta em{font-style:normal;font-size:10px;color:var(--muted)}
+  </style><div id="poolConfigArea" style="margin-top:15px"></div>
   <div class="auction-dialog-actions"><button class="btn btn-ghost" data-close>ANNULER</button><button class="btn btn-gold" data-save-pool>ENREGISTRER</button></div>
  </div>`);
  const type=$('#poolType');
