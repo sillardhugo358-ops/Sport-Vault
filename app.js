@@ -399,7 +399,7 @@ async function admin(){
    </div>
    <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>CARTE</th><th>RARETÉ</th><th>TYPE</th><th>EXEMPLAIRES</th><th>JOUEURS</th><th>ACTION</th></tr></thead><tbody id="adminCardsBody">${cardsData.map(c=>`<tr class="admin-card-row" data-card-search="${esc([c.name,c.club,c.nation,c.id,c.position].join(' ').toLowerCase())}" data-card-rarity="${esc(c.rarity||'')}" data-card-position="${esc(c.position||'')}" data-card-club="${esc(c.club||'')}"><td><strong>${esc(c.name)}</strong><small>${esc(c.position)} · ${esc(c.club)} · ${esc(c.nation)}</small></td><td><span class="admin-status">${esc(c.rarityLabel||c.rarity)}</span></td><td><strong>${c.isLimited?'LIMITED':'STANDARD'}</strong>${c.isLimited?'<small>'+Number(c.totalInstances||0)+' / '+Number(c.maxSupply||0)+'</small>':''}</td><td>${c.isLimited?Number(c.totalInstances||0)+' / '+Number(c.maxSupply||0):c.totalInstances}</td><td>${c.owners}</td><td><button class="btn btn-gold" data-manage-catalog-card="${esc(c.id)}">GÉRER</button> <button class="btn btn-danger" data-delete-catalog-card="${esc(c.id)}">SUPPRIMER</button></td></tr>`).join('')||'<tr><td colspan="6"><span class="catalog-empty-state">Aucune carte ne correspond aux filtres.</span></td></tr>'}</tbody></table></div>
   </section>
- </div> </div> <div class="admin-tab-panel" data-admin-panel="auctions">
+ </div> <div class="admin-tab-panel" data-admin-panel="auctions">
   <section class="section admin-section-first admin-auction-panel">
    <div class="admin-auction-dashboard-head">
     <div><p class="eyebrow">CENTRE DE SURVEILLANCE</p><h2>ENCHÈRES.</h2><p>Historique des 100 dernières enchères enregistrées.</p></div>
