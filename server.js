@@ -91,7 +91,7 @@ function catalogCardsForPackConditions(cards,conditions={}){
  const rarities=values(conditions.rarities),clubs=values(conditions.clubs),seasons=values(conditions.seasons),nations=values(conditions.nations),positions=values(conditions.positions);
  if(rarities.length)out=out.filter(c=>rarities.includes(String(c.rarity)));
  if(clubs.length)out=out.filter(c=>clubs.includes(String(c.club)));
- if(seasons.length)out=out.filter(c=>seasons.includes(String(c.season)));
+ if(seasons.length)out=out.filter(c=>{const season=String(c.season);return seasons.includes(season)||(season==='2026-2027'&&seasons.includes('2026'))||(season==='2026'&&seasons.includes('2026-2027'));});
  if(nations.length)out=out.filter(c=>nations.includes(String(c.nation)));
  if(positions.length)out=out.filter(c=>positions.includes(String(c.position)));
  if(conditions.limitedOnly===true)out=out.filter(c=>c.isLimited===true);
@@ -122,7 +122,7 @@ async function configuredPackCards(pack){
 }
 async function drawDynamicPack(pack){
  const source=await configuredPackCards(pack);
- if(!source.length)throw new Error('Aucune carte ne correspond aux conditions de ce pack.');
+ if(!source.length){console.error(`[FOOTVAULT] Pack ${pack.id}: aucune carte après application des conditions`,JSON.stringify(pack.conditions||{}));throw new Error('Aucune carte ne correspond aux conditions de ce pack.');}
  const used=new Set(),drawn=[],guaranteed=Math.min(Number(pack.guarantee_count||0),Number(pack.cards||0));
  for(let i=0;i<Number(pack.cards||0);i++){
   let available=source.filter(c=>!used.has(c.id));
