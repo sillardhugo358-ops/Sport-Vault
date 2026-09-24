@@ -239,6 +239,58 @@ if(!packReset){
  }
  await pool.query("INSERT INTO app_migrations(id) VALUES('reset-packs-2026-09-24')");
 }
+
+const historicalCatalogMigrationId='import-ligue1-historical-2010-2025-v3';
+if(!(await pool.query('SELECT 1 FROM app_migrations WHERE id=$1',[historicalCatalogMigrationId])).rowCount){
+ const historicalClient=await pool.connect();
+ try{
+  await historicalClient.query('BEGIN');
+  const parts=[];
+  for(let i=1;i<=8;i++)parts.push(fs.readFileSync(path.join(ROOT,'data','ligue1-historical-2010-2025.br.part'+String(i).padStart(2,'0')+'.b64'),'utf8').trim());
+  const historicalPayload=JSON.parse(zlib.brotliDecompressSync(Buffer.from(parts.join(''),'base64')).toString('utf8'));
+  const dicts=historicalPayload.dicts||[];
+  const seasons=historicalPayload.seasons||{};
+  const val=(dictIndex,index)=>dicts[dictIndex]?.[Number(index)]??'';
+  const slug=(value)=>String(value||'club').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,42)||'club';
+  let imported=0;
+  const allClubs=new Map();
+  for(const season of Object.keys(seasons).sort()){
+   const seasonId='ligue-1-'+season;
+   await historicalClient.query("INSERT INTO competition_seasons(id,competition_id,season,label,status,sort_order) VALUES($1,'ligue-1',$2,$3,'available',$4) ON CONFLICT(id) DO UPDATE SET label=excluded.label,status='available',sort_order=excluded.sort_order",[
+    seasonId,season,'Ligue 1 '+season,Number(season.slice(0,4))-2010
+   ]);
+   for(const row of (seasons[season]||[])){
+    const club=String(val(0,row[0])||'').trim(), name=String(val(1,row[2])||'').trim(), position=String(val(2,row[3])||'').trim()||'ST', nation=String(val(3,row[4])||'').trim(), rarity=String(val(4,row[5])||'common').trim().toLowerCase()||'common';
+    if(!club||!name)continue;
+    const jersey=row[1]==null||row[1]===''?null:Number(row[1]);
+    const nums=row.slice(6,13).map(x=>Number(x));
+    const ovr=Number.isFinite(nums[0])?nums[0]:72;
+    const stats=nums.slice(1).map(x=>Number.isFinite(x)?x:ovr);
+    const clubId='ligue-1-club-'+slug(club);
+    allClubs.set(clubId,club);
+    const id='fv-h-'+season+'-'+String(imported+1).padStart(5,'0');
+    await historicalClient.query('INSERT INTO clubs(id,name,tag,country,sort_order) VALUES($1,$2,$3,$4,$5) ON CONFLICT(name) DO UPDATE SET tag=excluded.tag',[
+      clubId,club,club.replace(/[^A-Za-z0-9]/g,'').slice(0,3).toUpperCase()||'L1','France',allClubs.size
+    ]);
+    const actualClubId=String((await historicalClient.query('SELECT id FROM clubs WHERE name=$1',[club])).rows[0].id);
+    await historicalClient.query('INSERT INTO season_clubs(season_id,club_id,position) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[seasonId,actualClubId,allClubs.size]);
+    await historicalClient.query('INSERT INTO competition_clubs(competition_id,club_id,position) VALUES(\'ligue-1\',$1,$2) ON CONFLICT DO NOTHING',[actualClubId,allClubs.size]);
+    await historicalClient.query(`INSERT INTO catalog_cards(id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order,is_active)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,'STANDARD',false,NULL,$16,true)
+      ON CONFLICT(id) DO UPDATE SET season=excluded.season,name=excluded.name,position=excluded.position,jersey_number=excluded.jersey_number,club=excluded.club,nation=excluded.nation,rarity=excluded.rarity,ovr=excluded.ovr,pace=excluded.pace,shooting=excluded.shooting,passing=excluded.passing,dribbling=excluded.dribbling,defending=excluded.defending,physical=excluded.physical,is_active=true,updated_at=now()`,[
+      id,season,name,position,Number.isFinite(jersey)?jersey:null,club,nation,rarity,ovr,...stats,Number(row[13]||imported)
+    ]);
+    imported++;
+   }
+  }
+  if(imported!==6465)throw new Error('Historique Ligue 1 incomplet: '+imported+' cartes au lieu de 6465.');
+  await historicalClient.query('INSERT INTO app_migrations(id) VALUES($1)',[historicalCatalogMigrationId]);
+  await historicalClient.query('COMMIT');
+  const rows=(await pool.query('SELECT id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order,is_active FROM catalog_cards WHERE is_active=true ORDER BY card_order,id')).rows;
+  CARD_CATALOG=rows.map(c=>({...c,rarityLabel:RARITIES[c.rarity]?.label||c.rarity,distributionType:c.distribution_type,isLimited:Boolean(c.is_limited),maxSupply:c.max_supply==null?null:Number(c.max_supply),ovr:Number(c.ovr),pace:Number(c.pace),shooting:Number(c.shooting),passing:Number(c.passing),dribbling:Number(c.dribbling),defending:Number(c.defending),physical:Number(c.physical),order:Number(c.card_order),jerseyNumber:c.jersey_number==null?null:Number(c.jersey_number),isActive:Boolean(c.is_active)}));
+  console.log('[FOOTVAULT] Historique Ligue 1 importé: '+imported+' cartes sur 16 saisons (2010-2011 à 2025-2026).');
+ }catch(error){await historicalClient.query('ROLLBACK').catch(()=>{});throw error;}finally{historicalClient.release();}
+}
 await pool.query(`CREATE TABLE IF NOT EXISTS registration_limits(ip varchar(255) PRIMARY KEY,last_created_at timestamptz NOT NULL)`);await pool.query(`CREATE TABLE IF NOT EXISTS login_limits(ip varchar(255) NOT NULL,email varchar(320) NOT NULL,failed_attempts integer NOT NULL DEFAULT 0,blocked_until timestamptz,updated_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(ip,email))`);return{mode:'postgres'};}catch(error){console.error('SPORT VAULT database unavailable:',error.message);if(pool)await pool.end().catch(()=>{});pool=null;if(process.env.NODE_ENV==='production')throw error;return{mode:'memory',error:error.message};}}
 async function findUserByEmail(email){if(pool){const r=await pool.query('SELECT * FROM users WHERE email=$1',[email]);return r.rows[0]||null;}for(const u of memory.users.values())if(u.email===email)return u;return null;}
 async function getUserById(id){if(pool){const r=await pool.query('SELECT * FROM users WHERE id=$1',[id]);return r.rows[0]||null;}return memory.users.get(id)||null;}
