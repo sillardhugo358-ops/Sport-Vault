@@ -338,10 +338,10 @@ async function showClubEditor(club){
 }
 async function admin(){
  const adminReturn=state.adminReturn||null; state.adminReturn=null;
- const [o,u,a,l,com]=await Promise.all([api('/api/admin/overview'),api('/api/admin/users'),api('/api/admin/auctions'),api('/api/admin/logs'),api('/api/admin/competitions')]);
+ const [o,u,a,l,com,pk]=await Promise.all([api('/api/admin/overview'),api('/api/admin/users'),api('/api/admin/auctions'),api('/api/admin/logs'),api('/api/admin/competitions'),api('/api/admin/packs')]);
  state.user=o.admin;
  const s=o.overview.stats;
- const users=u.users||[],auctions=a.auctions||[],logs=l.logs||[],competitions=com.competitions||[],clubs=com.clubs||[];state.adminUsers=users;state.adminCompetitions=competitions;state.adminClubs=clubs;const cardsData=(await api('/api/admin/cards')).cards||[];state.adminCards=cardsData;
+ const users=u.users||[],auctions=a.auctions||[],logs=l.logs||[],competitions=com.competitions||[],clubs=com.clubs||[],packsData=pk.packs||[],poolsData=pk.pools||[];state.adminUsers=users;state.adminCompetitions=competitions;state.adminClubs=clubs;state.adminPacks=packsData;state.adminPools=poolsData;const cardsData=(await api('/api/admin/cards')).cards||[];state.adminCards=cardsData;
  const adminAuctionRow=x=>{
   const status=String(x.status||"").toLowerCase(),statusClass=status==="active"?"active":status==="completed"?"completed":status==="cancelled"?"cancelled":"";
   const statusLabel={active:"EN COURS",completed:"TERMINÉE",cancelled:"ANNULÉE"}[status]||String(x.status||"").toUpperCase();
@@ -374,7 +374,7 @@ async function admin(){
   <button class="admin-tab" data-admin-tab="players">JOUEURS</button>
 <button class="admin-tab ${adminReturn?.tab==="competitions"?"active":""}" data-admin-tab="competitions">COMPÉTITIONS</button>
   <button class="admin-tab ${adminReturn?.tab==="cards"?"active":""}" data-admin-tab="cards">CARTES</button>
-  <button class="admin-tab" data-admin-tab="auctions">ENCHÈRES</button>
+  <button class="admin-tab ${adminReturn?.tab==="packs"?"active":""}" data-admin-tab="packs">PACKS</button>\n  <button class="admin-tab" data-admin-tab="auctions">ENCHÈRES</button>
   <button class="admin-tab" data-admin-tab="logs">JOURNAL</button>
  </nav>
  <div class="admin-tab-panel ${!adminReturn||adminReturn?.tab==="dashboard"?"active":""}" data-admin-panel="dashboard">
@@ -399,7 +399,18 @@ async function admin(){
    </div>
    <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>CARTE</th><th>RARETÉ</th><th>TYPE</th><th>EXEMPLAIRES</th><th>JOUEURS</th><th>ACTION</th></tr></thead><tbody id="adminCardsBody">${cardsData.map(c=>`<tr class="admin-card-row" data-card-search="${esc([c.name,c.club,c.nation,c.id,c.position].join(' ').toLowerCase())}" data-card-rarity="${esc(c.rarity||'')}" data-card-position="${esc(c.position||'')}" data-card-club="${esc(c.club||'')}"><td><strong>${esc(c.name)}</strong><small>${esc(c.position)} · ${esc(c.club)} · ${esc(c.nation)}</small></td><td><span class="admin-status">${esc(c.rarityLabel||c.rarity)}</span></td><td><strong>${c.isLimited?'LIMITED':'STANDARD'}</strong>${c.isLimited?'<small>'+Number(c.totalInstances||0)+' / '+Number(c.maxSupply||0)+'</small>':''}</td><td>${c.isLimited?Number(c.totalInstances||0)+' / '+Number(c.maxSupply||0):c.totalInstances}</td><td>${c.owners}</td><td><button class="btn btn-gold" data-manage-catalog-card="${esc(c.id)}">GÉRER</button> <button class="btn btn-danger" data-delete-catalog-card="${esc(c.id)}">SUPPRIMER</button></td></tr>`).join('')||'<tr><td colspan="6"><span class="catalog-empty-state">Aucune carte ne correspond aux filtres.</span></td></tr>'}</tbody></table></div>
   </section>
- </div> <div class="admin-tab-panel" data-admin-panel="auctions">
+ </div> <div class="admin-tab-panel ${adminReturn?.tab==="packs"?"active":""}" data-admin-panel="packs">
+  <section class="section admin-section-first"><div class="section-head"><div><p class="eyebrow">ÉCONOMIE / OUVERTURES</p><h2>GESTION DES PACKS.</h2></div><button class="btn btn-gold" data-new-pack>+ NOUVEAU PACK</button></div>
+   <p class="lead" style="font-size:12px">Crée et contrôle les packs disponibles dans le jeu. Chaque pack utilise un pool de cartes.</p>
+   <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>PACK</th><th>PRIX</th><th>CARTES</th><th>POOL</th><th>GARANTIE</th><th>STATUT</th><th>ACTIONS</th></tr></thead><tbody>
+   ${packsData.map(p=>`<tr><td><strong>${esc(p.name)}</strong><small>${esc(p.badge||'')}</small></td><td>${money(p.price)} FC</td><td>${p.cards}</td><td><small>${esc(p.pool_name||'—')}</small></td><td><span class="admin-status">${esc(String(p.guarantee||'common').toUpperCase())} × ${p.guarantee_count}</span></td><td><span class="admin-status">${p.active?'ACTIF':'INACTIF'}</span></td><td><button class="btn btn-gold" data-edit-pack="${esc(p.id)}">GÉRER</button> <button class="btn btn-danger" data-delete-pack="${esc(p.id)}">SUPPRIMER</button></td></tr>`).join('')||'<tr><td colspan="7">Aucun pack.</td></tr>'}</tbody></table></div>
+  </section>
+  <section class="section"><div class="section-head"><div><p class="eyebrow">RÉSERVES DE CARTES</p><h2>POOLS.</h2></div><button class="btn btn-gold" data-new-pool>+ NOUVEAU POOL</button></div>
+   <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>POOL</th><th>TYPE</th><th>CONFIGURATION</th><th>ACTIONS</th></tr></thead><tbody>
+   ${poolsData.map(p=>`<tr><td><strong>${esc(p.name)}</strong></td><td><span class="admin-status">${esc(String(p.type||'all').toUpperCase())}</span></td><td><small>${esc(p.type==='rarity'?(p.config?.rarities||[]).join(', ').toUpperCase():p.type==='club'?(p.config?.club||'Club'):p.type==='season'?(p.config?.season||'Saison'):p.type==='limited'?'Cartes LIMITED':p.type==='manual'?((p.config?.cardIds||[]).length+' cartes sélectionnées'):'Toutes les cartes')}</small></td><td><button class="btn btn-gold" data-edit-pool="${esc(p.id)}">GÉRER</button> <button class="btn btn-danger" data-delete-pool="${esc(p.id)}">SUPPRIMER</button></td></tr>`).join('')||'<tr><td colspan="4">Aucun pool.</td></tr>'}</tbody></table></div>
+  </section>
+ </div>
+ <div class="admin-tab-panel" data-admin-panel="auctions">
   <section class="section admin-section-first admin-auction-panel">
    <div class="admin-auction-dashboard-head">
     <div><p class="eyebrow">CENTRE DE SURVEILLANCE</p><h2>ENCHÈRES.</h2><p>Historique des 100 dernières enchères enregistrées.</p></div>
