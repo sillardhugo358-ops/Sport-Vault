@@ -240,12 +240,12 @@ if(!packReset){
  await pool.query("INSERT INTO app_migrations(id) VALUES('reset-packs-2026-09-24')");
 }
 
-const historicalCatalogMigrationId='import-ligue1-historical-2010-2025-v3';
+const historicalCatalogMigrationId='import-ligue1-historical-2010-2025-v4';
 if(!(await pool.query('SELECT 1 FROM app_migrations WHERE id=$1',[historicalCatalogMigrationId])).rowCount){
  const historicalClient=await pool.connect();
  try{
   await historicalClient.query('BEGIN');
-  const parts=[];for(let i=1;i<=8;i++)parts.push(fs.readFileSync(path.join(ROOT,'data','ligue1-historical-2010-2025.br.part'+String(i).padStart(2,'0')+'.b64'),'utf8').trim());
+  const parts=[];for(let i=1;i<=8;i++){if(i===1||i===5){for(let j=1;j<=4;j++)parts.push(fs.readFileSync(path.join(ROOT,'data','ligue1-historical-2010-2025.br.part'+String(i).padStart(2,'0')+'.'+j+'.b64'),'utf8').trim());}else parts.push(fs.readFileSync(path.join(ROOT,'data','ligue1-historical-2010-2025.br.part'+String(i).padStart(2,'0')+'.b64'),'utf8').trim());}
   const payload=JSON.parse(zlib.brotliDecompressSync(Buffer.from(parts.join(''),'base64')).toString('utf8'));
   const dicts=payload.dicts||[],seasons=payload.seasons||{};
   const dict=(d,i)=>dicts[d]?.[Number(i)]??'';
