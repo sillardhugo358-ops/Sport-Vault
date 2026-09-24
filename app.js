@@ -503,7 +503,96 @@ async function createAuction(cardId){
  try{await api('/api/auctions/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cardInstanceId:cardId,startingBid:Number(start),duration:Number(duration)})});toast('Enchère créée.');render()}catch(e){toast(e.message)}
 }
 document.addEventListener('click',e=>{const btn=e.target.closest('#logoutBtn,#mobileLogoutBtn');if(btn){e.preventDefault();e.stopPropagation();logout()}});
-function showPoolEditor(pool=null){const p=pool||{id:'',name:'',type:'all',config:{}};setModal(`<div class="modal-box admin-user-modal"><button class="modal-close" data-close>×</button><p class="eyebrow">ADMIN / POOL</p><h2>${pool?'MODIFIER':'CRÉER'} UN POOL</h2><div class="admin-card-grant collection-meta-form"><input id="poolName" placeholder="Nom du pool" value="${esc(p.name||'')}"><select id="poolType"><option value="all">Toutes les cartes</option><option value="rarity">Par rareté</option><option value="club">Par club</option><option value="season">Par saison</option><option value="limited">LIMITED uniquement</option><option value="manual">Sélection manuelle</option></select></div><div id="poolConfigArea" style="margin-top:15px"></div><div class="auction-dialog-actions"><button class="btn btn-ghost" data-close>ANNULER</button><button class="btn btn-gold" data-save-pool>ENREGISTRER</button></div></div>`);const type=$('#poolType');type.value=p.type||'all';const renderConfig=()=>{const t=type.value,cfg=p.config||{};let html='';if(t==='rarity')html='<label class="eyebrow">RARETÉS</label><div class="pool-checks">'+['common','rare','epic','legendary','icon'].map(r=>'<label><input type="checkbox" value="'+r+'" '+((cfg.rarities||[]).includes(r)?'checked':'')+'> '+r.toUpperCase()+'</label>').join('')+'</div>';else if(t==='club')html='<select id="poolClub">'+(state.adminClubs||[]).map(x=>'<option value="'+esc(x.name)+'" '+(cfg.club===x.name?'selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select>';else if(t==='season')html='<input id="poolSeason" placeholder="Ex. 2026-2027" value="'+esc(cfg.season||'')+'">';else if(t==='manual')html='<textarea id="poolCards" placeholder="IDs de cartes séparés par des virgules">'+esc((cfg.cardIds||[]).join(', '))+'</textarea>';else html='<p class="collection-id-note">Le pool sera calculé automatiquement sur les cartes actives du catalogue.</p>';document.querySelector('#poolConfigArea').innerHTML=html;};renderConfig();type.onchange=renderConfig;document.querySelector('[data-save-pool]').onclick=async()=>{const t=type.value,cfg={};if(t==='rarity')cfg.rarities=[...document.querySelectorAll('#poolConfigArea input:checked')].map(x=>x.value);if(t==='club')cfg.club=$('#poolClub')?.value||'';if(t==='season')cfg.season=$('#poolSeason')?.value.trim()||'';if(t==='manual')cfg.cardIds=($('#poolCards')?.value||'').split(',').map(x=>x.trim()).filter(Boolean);try{await api('/api/admin/packs',{method:'POST',body:JSON.stringify({action:pool?'pool_update':'pool_create',id:p.id,name:$('#poolName').value.trim(),type:t,config:cfg})});rememberAdminView('packs');closeModal();toast('Pool enregistré.');render();}catch(e){toast(e.message)}};}
+function showPoolEditor(pool=null){
+ const p=pool||{id:'',name:'',type:'all',config:{}};
+ const selectedCardIds=new Set((p.config?.cardIds||[]).map(String));
+ setModal(`<div class="modal-box admin-user-modal">
+  <button class="modal-close" data-close>×</button>
+  <p class="eyebrow">ADMIN / POOL</p>
+  <h2>${pool?'MODIFIER':'CRÉER'} UN POOL</h2>
+  <div class="admin-card-grant collection-meta-form">
+   <input id="poolName" placeholder="Nom du pool" value="${esc(p.name||'')}">
+   <select id="poolType">
+    <option value="all">Toutes les cartes</option>
+    <option value="rarity">Par rareté</option>
+    <option value="club">Par club</option>
+    <option value="season">Par saison</option>
+    <option value="limited">LIMITED uniquement</option>
+    <option value="manual">Sélection manuelle</option>
+   </select>
+  </div>
+  <div id="poolConfigArea" style="margin-top:15px"></div>
+  <div class="auction-dialog-actions"><button class="btn btn-ghost" data-close>ANNULER</button><button class="btn btn-gold" data-save-pool>ENREGISTRER</button></div>
+ </div>`);
+ const type=$('#poolType');
+ type.value=p.type||'all';
+ const renderManualCards=()=>{
+  const input=$('#poolCardSearch');
+  const q=(input?.value||'').trim().toLowerCase();
+  const cards=(state.adminCards||[]).filter(c=>{
+   if(!q)return true;
+   return [c.name,c.club,c.nation,c.position,c.id,c.rarityLabel,c.rarity].some(v=>String(v||'').toLowerCase().includes(q));
+  });
+  const results=$('#poolCardResults');
+  const count=$('#poolCardCount');
+  if(count)count.textContent=selectedCardIds.size+' carte'+(selectedCardIds.size>1?'s':'')+' sélectionnée'+(selectedCardIds.size>1?'s':'');
+  if(!results)return;
+  results.innerHTML=cards.map(c=>{
+   const id=String(c.id),checked=selectedCardIds.has(id);
+   return `<label class="pool-card-option ${checked?'is-selected':''}">
+    <input type="checkbox" value="${esc(id)}" data-pool-card ${checked?'checked':''}>
+    <span class="pool-card-option-main">
+     <strong>${esc(c.name)}</strong>
+     <small>${esc(c.position||'—')} · ${esc(c.club||'—')} · ${esc(c.nation||'—')}</small>
+    </span>
+    <span class="pool-card-option-meta"><b>${esc(c.rarityLabel||c.rarity||'')}</b><em>OVR ${Number(c.ovr||0)}</em></span>
+   </label>`;
+  }).join('')||'<div class="empty">Aucun joueur ne correspond à la recherche.</div>';
+  results.querySelectorAll('[data-pool-card]').forEach(cb=>cb.onchange=()=>{
+   const id=String(cb.value);
+   if(cb.checked)selectedCardIds.add(id);else selectedCardIds.delete(id);
+   renderManualCards();
+  });
+ };
+ const renderConfig=()=>{
+  const t=type.value,cfg=p.config||{};
+  let html='';
+  if(t==='rarity')html='<label class="eyebrow">RARETÉS</label><div class="pool-checks">'+['common','rare','epic','legendary','icon'].map(r=>'<label><input type="checkbox" value="'+r+'" '+((cfg.rarities||[]).includes(r)?'checked':'')+'> '+r.toUpperCase()+'</label>').join('')+'</div>';
+  else if(t==='club')html='<select id="poolClub">'+(state.adminClubs||[]).map(x=>'<option value="'+esc(x.name)+'" '+(cfg.club===x.name?'selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select>';
+  else if(t==='season')html='<input id="poolSeason" placeholder="Ex. 2026-2027" value="'+esc(cfg.season||'')+'">';
+  else if(t==='manual')html=`<div class="pool-manual-picker">
+   <div class="pool-manual-head">
+    <div><p class="eyebrow">CARTES DU POOL</p><strong id="poolCardCount">${selectedCardIds.size} carte${selectedCardIds.size>1?'s':''} sélectionnée${selectedCardIds.size>1?'s':''}</strong></div>
+   </div>
+   <div class="pool-card-search">
+    <span>⌕</span>
+    <input id="poolCardSearch" type="search" placeholder="Rechercher un joueur, club, nation ou ID..." autocomplete="off">
+   </div>
+   <div id="poolCardResults" class="pool-card-results"></div>
+  </div>`;
+  else html='<p class="collection-id-note">Le pool sera calculé automatiquement sur les cartes actives du catalogue.</p>';
+  document.querySelector('#poolConfigArea').innerHTML=html;
+  if(t==='manual'){
+   renderManualCards();
+   $('#poolCardSearch')?.addEventListener('input',renderManualCards);
+  }
+ };
+ renderConfig();
+ type.onchange=renderConfig;
+ document.querySelector('[data-save-pool]').onclick=async()=>{
+  const t=type.value,cfg={};
+  if(t==='rarity')cfg.rarities=[...document.querySelectorAll('#poolConfigArea input:checked')].map(x=>x.value);
+  if(t==='club')cfg.club=$('#poolClub')?.value||'';
+  if(t==='season')cfg.season=$('#poolSeason')?.value.trim()||'';
+  if(t==='manual')cfg.cardIds=[...selectedCardIds];
+  if(!$('#poolName').value.trim())return toast('Le nom du pool est obligatoire.');
+  if(t==='manual'&&!selectedCardIds.size)return toast('Sélectionne au moins une carte pour ce pool.');
+  try{
+   await api('/api/admin/packs',{method:'POST',body:JSON.stringify({action:pool?'pool_update':'pool_create',id:p.id,name:$('#poolName').value.trim(),type:t,config:cfg})});
+   rememberAdminView('packs');closeModal();toast('Pool enregistré.');render();
+  }catch(e){toast(e.message)}
+ };
+}
 function showPackEditor(pack=null){const p=pack||{id:'',name:'',price:100,cards:5,badge:'',description:'',guarantee:'rare',guarantee_count:1,pool_id:state.adminPools?.[0]?.id||'',active:true};setModal(`<div class="modal-box admin-user-modal"><button class="modal-close" data-close>×</button><p class="eyebrow">ADMIN / PACK</p><h2>${pack?'MODIFIER':'CRÉER'} UN PACK</h2><div class="admin-card-grant collection-meta-form"><input id="packName" placeholder="Nom du pack" value="${esc(p.name||'')}"><input id="packPrice" type="number" min="0" value="${Number(p.price||0)}" placeholder="Prix FC"><input id="packCards" type="number" min="1" max="20" value="${Number(p.cards||1)}" placeholder="Nombre de cartes"><input id="packBadge" placeholder="Badge" value="${esc(p.badge||'')}"><input id="packDescription" placeholder="Description" value="${esc(p.description||'')}"><select id="packPool">${(state.adminPools||[]).map(x=>'<option value="'+esc(x.id)+'" '+(x.id===p.pool_id?'selected':'')+'>'+esc(x.name)+'</option>').join('')}</select><select id="packGuarantee"><option value="common">Common+</option><option value="rare">Rare+</option><option value="epic">Epic+</option><option value="legendary">Legendary+</option><option value="icon">Icon</option></select><input id="packGuaranteeCount" type="number" min="0" value="${Number(p.guarantee_count||0)}" placeholder="Nombre garanti"><label class="collection-id-note"><input id="packActive" type="checkbox" ${p.active!==false?'checked':''}> Pack disponible</label></div><div class="auction-dialog-actions"><button class="btn btn-ghost" data-close>ANNULER</button><button class="btn btn-gold" data-save-pack>ENREGISTRER</button></div></div>`);$('#packGuarantee').value=p.guarantee||'common';document.querySelector('[data-save-pack]').onclick=async()=>{try{await api('/api/admin/packs',{method:'POST',body:JSON.stringify({action:pack?'pack_update':'pack_create',id:p.id,name:$('#packName').value.trim(),price:Number($('#packPrice').value),cards:Number($('#packCards').value),badge:$('#packBadge').value.trim(),description:$('#packDescription').value.trim(),poolId:$('#packPool').value,guarantee:$('#packGuarantee').value,guaranteeCount:Number($('#packGuaranteeCount').value),active:$('#packActive').checked})});rememberAdminView('packs');closeModal();toast('Pack enregistré.');render();}catch(e){toast(e.message)}};}
 function bind(){
  document.querySelectorAll('[data-admin-user]').forEach(x=>x.onclick=()=>showAdminUser(x.dataset.adminUser)); 
