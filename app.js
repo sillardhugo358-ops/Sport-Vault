@@ -609,7 +609,7 @@ function showPackEditor(pack=null){
     </section>
    </div>
    <div class="pack-editor-right">
-    <section class="pack-editor-card pack-conditions-card"><h3><span>⌖</span> CONDITIONS DU PACK</h3><p class="pack-help">Le pack tire directement dans le catalogue selon ces conditions. <b>Aucun pool n'est utilisé.</b></p>
+    <section class="pack-editor-card"><h3><span>▣</span> SOURCE DU PACK</h3><p class="pack-help">Choisis une réserve de cartes (pool). Sans pool, les conditions ci-dessous s'appliquent au catalogue.</p><label class="pack-select-field"><span>▤ POOL DE CARTES</span><select id="packPool"><option value="">Catalogue selon conditions</option>${(state.adminPools||[]).map(v=>'<option value="'+esc(v.id)+'" '+(String(p.pool_id||'')===String(v.id)?'selected':'')+'>'+esc(v.name)+'</option>').join('')}</select></label></section><section class="pack-editor-card pack-conditions-card"><h3><span>⌖</span> CONDITIONS DU PACK</h3><p class="pack-help">Le pack tire directement dans le catalogue selon ces conditions. <b>Aucun pool n'est utilisé.</b></p>
      <div class="pack-condition-grid">
       <div class="pack-filter-box"><div class="pack-filter-title">RARETÉS AUTORISÉES</div>${multi('packRarities',['common','rare','epic','legendary','icon'],selected.rarities)}</div>
       <div class="pack-filter-box">${select('packPosition','POSTES',positions,selected.positions,'⚽')}</div>
@@ -634,7 +634,7 @@ function showPackEditor(pack=null){
   if(!$('#packName').value.trim())return toast('Le nom du pack est obligatoire.');
   if(conditions.limitedOnly&&conditions.standardOnly)return toast('Un pack ne peut pas être LIMITED et STANDARD uniquement.');
   if(conditions.minOvr!=null&&conditions.maxOvr!=null&&conditions.minOvr>conditions.maxOvr)return toast('L’OVR minimum ne peut pas dépasser l’OVR maximum.');
-  try{await api('/api/admin/packs',{method:'POST',body:JSON.stringify({action:pack?'pack_update':'pack_create',id:p.id,name:$('#packName').value.trim(),price:Number($('#packPrice').value),cards:Number($('#packCards').value),badge:$('#packBadge').value.trim(),description:$('#packDescription').value.trim(),conditions,guarantee:$('#packGuarantee').value,guaranteeCount:Number($('#packGuaranteeCount').value),active:$('#packActive').checked})});rememberAdminView('packs');closeModal();toast('Pack enregistré.');render()}catch(e){toast(e.message)}
+  try{await api('/api/admin/packs',{method:'POST',body:JSON.stringify({action:pack?'pack_update':'pack_create',id:p.id,name:$('#packName').value.trim(),price:Number($('#packPrice').value),cards:Number($('#packCards').value),badge:$('#packBadge').value.trim(),description:$('#packDescription').value.trim(),poolId:$('#packPool').value||null,conditions,guarantee:$('#packGuarantee').value,guaranteeCount:Number($('#packGuaranteeCount').value),active:$('#packActive').checked})});rememberAdminView('packs');closeModal();toast('Pack enregistré.');render()}catch(e){toast(e.message)}
  };
 }
 function bind(){
