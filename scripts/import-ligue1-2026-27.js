@@ -4,11 +4,10 @@ const zlib=require('node:zlib');
 const {Pool}=require('pg');
 
 const ROOT=path.join(__dirname,'..');
-const catalogPath=path.join(ROOT,'data','ligue1-2026-2027.corrected.b64');
+const catalogPath=path.join(ROOT,'data','ligue1-2026-2027.excel.json');
 
 function loadCards(){
-  const encoded=fs.readFileSync(catalogPath,'utf8').trim();
-  return JSON.parse(zlib.inflateSync(Buffer.from(encoded,'base64')).toString('utf8'));
+  return JSON.parse(fs.readFileSync(catalogPath,'utf8'));
 }
 
 async function ensureCompetition(client){
