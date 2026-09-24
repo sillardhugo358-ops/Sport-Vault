@@ -16,83 +16,22 @@ function shell(){nav();const menu=$('#menu');menu.onclick=()=>$('#nav').classLis
 function cardMarkup(c,small=false){const limited=Boolean(c.isLimited),num=c.jerseyNumber==null?'—':String(c.jerseyNumber);return `<article class="tcg-card rarity-${esc(c.rarity)}"><div class="tcg-inner"><div class="card-top"><span>FOOTVAULT · ${esc(c.season)}</span><strong>${esc(c.position)}</strong></div><div class="card-rating"><span>OVR</span><b>${Number(c.ovr||0)||'—'}</b></div><div class="card-number"><small>NO.</small><strong>${esc(num)}</strong></div><div class="card-club"><span>${esc(c.club)}</span><em>${esc(c.nation)}</em></div><h3>${esc(c.name)}</h3><div class="card-bottom"><b>${esc(c.rarityLabel||c.rarity)}</b><span>${limited?esc(c.serialLabel||'LIMITED'):'STANDARD'}</span></div></div></article>`}
 function cardLink(c){const search=[c.name,c.club,c.nation,c.position,c.rarityLabel].filter(Boolean).join(" ").toLowerCase();return `<a class="card-link" data-collection-card-search="${esc(search)}" href="#card?id=${encodeURIComponent(c.instanceId)}">${cardMarkup(c)}</a>`}
 function viewHero(kicker,title,sub,stat='',statLabel=''){return `<section class="view-hero"><div><p class="eyebrow">${esc(kicker)}</p><h1>${title}</h1>${sub?`<p class="lead">${esc(sub)}</p>`:''}</div>${stat?`<div class="hero-stat"><strong>${esc(stat)}</strong><span>${esc(statLabel)}</span></div>`:''}</section>`}
-function home(){return `
-<div class="home-page">
-  <section class="home-hero">
-    <div class="home-hero-bg"></div>
-    <div class="home-hero-content">
-      <div class="home-kicker"><span></span> SPORT VAULT · SAISON 2026 <span></span></div>
-      <h1>LE SPORT.<br><em>À COLLECTIONNER.</em></h1>
-      <p class="home-hero-lead">Construis ton Vault, ouvre des packs, complète tes albums et collectionne des cartes sportives pensées comme de véritables pièces de collection.</p>
-      <div class="actions home-actions">
-        <a class="btn btn-gold btn-large" href="#auth?mode=register">CRÉER MON VAULT <span>→</span></a>
-        <a class="btn btn-outline btn-large" href="#collection">EXPLORER LA COLLECTION</a>
-      </div>
-      <div class="home-trust"><span>24 CARTES</span><i></i><span>5 RARETÉS</span><i></i><span>SAISON 2026</span></div>
-    </div>
-    <div class="home-emblem-stage">
-      <div class="home-emblem-glow"></div>
-      <div class="home-emblem-ring"></div>
-      <img src="sport-vault-logo.svg" class="home-emblem" alt="Sport Vault">
-      <div class="home-emblem-label"><strong>SPORT VAULT</strong><span>COLLECT · PLAY · BELONG</span></div>
-    </div>
-  </section>
-
-  <section class="home-stats">
-    <div><strong>24</strong><span>CARTES DISPONIBLES</span></div>
-    <div><strong>05</strong><span>NIVEAUX DE RARETÉ</span></div>
-    <div><strong>03</strong><span>PACKS À OUVRIR</span></div>
-    <div><strong>∞</strong><span>COLLECTION À CONSTRUIRE</span></div>
-  </section>
-
-  <section class="home-section home-experience">
-    <div class="home-section-heading">
-      <div><p class="eyebrow">L'EXPÉRIENCE SPORT VAULT</p><h2>PLUS QU'UNE<br><span>COLLECTION.</span></h2></div>
-      <p>Chaque carte obtenue fait partie d'un parcours : collection, rareté, progression et marché.</p>
-    </div>
-    <div class="home-feature-grid">
-      <article class="home-feature home-feature-large"><div class="feature-number">01</div><div class="feature-icon">◆</div><h3>COLLECTIONNE</h3><p>Réunis les cartes de la saison et cherche les raretés qui feront la différence dans ton Vault.</p><a href="#collection">VOIR LES CARTES <span>→</span></a></article>
-      <article class="home-feature"><div class="feature-number">02</div><div class="feature-icon">✦</div><h3>OUVRE DES PACKS</h3><p>Trois formats de packs, des garanties de rareté et une révélation carte par carte.</p><a href="#packs">DÉCOUVRIR LES PACKS <span>→</span></a></article>
-      <article class="home-feature"><div class="feature-number">03</div><div class="feature-icon">◈</div><h3>FAIS ÉVOLUER TON VAULT</h3><p>Gagne des FOOTCOINS, de l'XP, complète des missions et avance dans les albums.</p><a href="#vault">VOIR MON VAULT <span>→</span></a></article>
-    </div>
-  </section>
-
-  <section class="home-section home-showcase">
-    <div class="home-showcase-copy">
-      <p class="eyebrow">LA CARTE AU CENTRE DU JEU</p>
-      <h2>UNE IDENTITÉ<br><span>PREMIUM.</span></h2>
-      <p>Des cartes conçues autour de la rareté, du profil du joueur et de leur place dans la collection. Les exemplaires uniques et les futures cartes LIMITED pourront porter leur propre numéro.</p>
-      <div class="home-checks"><span>✓ RARETÉ</span><span>✓ OVR</span><span>✓ SAISON</span><span>✓ COLLECTION</span></div>
-      <a class="btn btn-gold" href="#collection">EXPLORER LES CARTES →</a>
-    </div>
-    <div class="home-card-stack">
-      <div class="showcase-card showcase-back"></div>
-      <div class="showcase-card showcase-main"><div class="showcase-card-top"><span>SPORT VAULT</span><b>96</b></div><div class="showcase-ball">⚽</div><div class="showcase-card-bottom"><span>ICON</span><strong>THE VAULT</strong><small>2026 · 001</small></div></div>
-    </div>
-  </section>
-
-  <section class="home-section home-competition">
-    <div class="home-section-heading">
-      <div><p class="eyebrow">ALBUMS</p><h2>LES COMPÉTITIONS<br><span>DU VAULT.</span></h2></div>
-      <a class="btn btn-outline" href="#album">VOIR L'ALBUM →</a>
-    </div>
-    <div class="home-competition-grid">
-      <a class="home-competition-main" href="#album?competition=ligue-1">
-        <div><span class="competition-status available">DISPONIBLE</span><p class="eyebrow">FRANCE · 2026</p><h3>LIGUE 1</h3><p>La première collection officielle du Vault est disponible.</p></div>
-        <strong>L1</strong><span class="home-arrow">→</span>
-      </a>
-      <div class="home-coming">
-        <div class="coming-head"><span>À VENIR</span><strong>07</strong></div>
-        <div class="coming-list"><span>Premier League</span><span>Serie A</span><span>Bundesliga</span><span>La Liga</span><span>Ligue des Champions</span><span>Coupe du Monde</span><span>Ligue des Nations</span></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="home-final-cta">
-    <div><p class="eyebrow">TON VAULT COMMENCE ICI</p><h2>PRÊT À<br><span>COLLECTIONNER ?</span></h2><p>Crée ton compte et reçois immédiatement tes ressources de départ.</p></div>
-    <a class="btn btn-gold btn-large" href="#auth?mode=register">CRÉER MON COMPTE <span>→</span></a>
-  </section>
-</div>`}
+async function home(){
+ let catalog=[],packs=[]; try{const x=await Promise.all([api('/api/cards'),api('/api/packs')]);catalog=x[0].cards||[];packs=x[1].packs||[]}catch(e){}
+ const labels={common:'COMMON',rare:'RARE',epic:'EPIC',legendary:'LEGENDARY',icon:'ICON'};
+ const counts=Object.fromEntries(Object.keys(labels).map(r=>[r,catalog.filter(c=>c.rarity===r).length]));
+ const clubs=[...new Set(catalog.map(c=>c.club).filter(Boolean))];
+ const featured=[...catalog].sort((a,b)=>Number(b.ovr||0)-Number(a.ovr||0)).slice(0,3);
+ const cards=featured.map((c,i)=>'<article class="home-real-card rarity-'+esc(c.rarity)+' home-real-card-'+(i+1)+'"><div class="home-real-card-inner"><div class="home-real-top"><span>FOOTVAULT · 2026-27</span><strong>'+esc(c.position||'')+'</strong></div><div class="home-real-rating"><small>OVR</small><b>'+Number(c.ovr||0)+'</b></div><div class="home-real-number"><small>NO.</small><strong>'+esc(c.jerseyNumber==null?'—':c.jerseyNumber)+'</strong></div><div class="home-real-player"><span>'+esc(c.club||'')+'</span><strong>'+esc(c.name||'')+'</strong><em>'+esc(c.nation||'')+'</em></div><div class="home-real-bottom"><b>'+esc(labels[c.rarity]||c.rarity||'')+'</b><span>'+esc(c.position||'')+'</span></div></div></article>').join('');
+ const rows=featured.map(c=>'<div class="home-v2-player-row"><div class="home-v2-ovr">'+Number(c.ovr||0)+'</div><div><strong>'+esc(c.name)+'</strong><span>'+esc(c.club)+' · '+esc(c.position)+' · '+esc(c.nation)+'</span></div><b>'+esc(labels[c.rarity]||c.rarity||'')+'</b></div>').join('');
+ return '<div class="home-page home-v2">'+
+ '<section class="home-v2-hero"><div class="home-v2-hero-content"><p class="home-v2-kicker"><span></span> SPORT VAULT · SAISON 2026-27 <span></span></p><h1>LE SPORT.<br><span>TON VAULT.</span></h1><p class="home-v2-lead">Collectionne les plus grands joueurs, ouvre des packs, complète tes albums et construis une collection qui t’appartient.</p><div class="home-v2-actions"><a class="btn btn-gold btn-large" href="#auth?mode=register">COMMENCER L\\'AVENTURE <span>→</span></a><a class="btn btn-outline btn-large" href="#collection">EXPLORER LE VAULT</a></div><div class="home-v2-meta"><span><b>'+catalog.length+'</b> CARTES</span><i></i><span><b>'+clubs.length+'</b> CLUBS</span><i></i><span><b>5</b> RARETÉS</span></div></div><div class="home-v2-visual"><div class="home-v2-glow"></div><div class="home-v2-logo-ring"></div><img src="sport-vault-logo.svg" alt="FOOTVAULT" class="home-v2-logo"><div class="home-v2-cards">'+cards+'</div></div></section>'+
+ '<section class="home-v2-stats"><div><strong>'+catalog.length+'</strong><span>CARTES CATALOGUÉES</span></div><div><strong>'+clubs.length+'</strong><span>CLUBS</span></div><div><strong>'+packs.length+'</strong><span>PACKS DISPONIBLES</span></div><div><strong>∞</strong><span>COLLECTION À CONSTRUIRE</span></div></section>'+
+ '<section class="home-v2-section"><div class="home-v2-heading"><div><p class="eyebrow">COMMENT ÇA MARCHE ?</p><h2>CONSTRUIS TON<br><span>VAULT.</span></h2></div><p>FOOTVAULT transforme chaque joueur en pièce de collection. Ouvre des packs, collectionne les cartes et complète les compétitions.</p></div><div class="home-v2-feature-grid"><a href="#packs" class="home-v2-feature feature-gold"><small>01 / OUVRIR</small><b>OUVRE DES PACKS</b><span>Révèle de nouvelles cartes et chasse les raretés supérieures.</span><em>→</em></a><a href="#collection" class="home-v2-feature"><small>02 / COLLECTIONNER</small><b>REMPLIS TON VAULT</b><span>Retrouve tes joueurs, postes, nations, clubs, OVR et statistiques.</span><em>→</em></a><a href="#album" class="home-v2-feature"><small>03 / COMPLÉTER</small><b>COMPLÈTE TES ALBUMS</b><span>Parcours les compétitions, saisons et clubs disponibles.</span><em>→</em></a></div></section>'+
+ '<section class="home-v2-section home-v2-showcase"><div class="home-v2-showcase-copy"><p class="eyebrow">LA COLLECTION 2026-27</p><h2>LES JOUEURS<br><span>SONT AU CENTRE.</span></h2><p>Chaque carte possède son identité : joueur, club, nation, numéro, poste, rareté, OVR et statistiques.</p><div class="home-v2-rarity-grid">'+Object.entries(labels).map(([r,l])=>'<div><strong>'+counts[r]+'</strong><span>'+l+'</span></div>').join('')+'</div><a class="btn btn-gold" href="#collection">VOIR LE CATALOGUE →</a></div><div class="home-v2-featured-list"><p class="eyebrow">APERÇU DU CATALOGUE</p>'+rows+'</div></section>'+
+ '<section class="home-v2-section home-v2-competition"><div class="home-v2-heading"><div><p class="eyebrow">SAISON 2026-27</p><h2>UNE PREMIÈRE<br><span>COMPÉTITION.</span></h2></div><a class="btn btn-outline" href="#album">OUVRIR L\\'ALBUM →</a></div><div class="home-v2-ligue1"><div><span class="home-v2-status">● DISPONIBLE</span><p class="eyebrow">FRANCE · 2026-27</p><h3>LIGUE 1</h3><p>'+clubs.length+' clubs et '+catalog.length+' cartes cataloguées.</p></div><strong>L1</strong></div></section>'+
+ '<section class="home-v2-final"><div><p class="eyebrow">TON HISTOIRE COMMENCE ICI</p><h2>CRÉE TON<br><span>VAULT.</span></h2><p>Inscris-toi, ouvre tes premiers packs et commence à construire ta collection.</p></div><a class="btn btn-gold btn-large" href="#auth?mode=register">CRÉER MON COMPTE <span>→</span></a></section></div>';
+}
 async function loadCatalog(){if(state.catalog.length)return;state.catalog=(await api('/api/cards')).cards||[]}
 async function collection(){
  try{const d=await api("/api/collection");state.user=d.user;state.cards=d.cards||[]}catch(e){if(e.status===401)return authView("login","collection");throw e}
@@ -464,7 +403,7 @@ async function market(){
 <section id="auctionHistory" class="auction-grid" hidden><div class="empty">L’historique sera chargé à l’ouverture de cet onglet.</div></section>
  </div>`
 }
-async function render(){shell();const {r,q}=route();let html='';try{if(r==='home')html=home();else if(r==='collection')html=await collection();else if(r==='packs')html=await packs();else if(r==='vault')html=await vault();else if(r==='album')html=await album();else if(r==='card')html=await cardDetail(q.get('id'));else if(r==='auth')html=authView(q.get('mode')==='register'?'register':'login',q.get('next')||'vault');else if(r==='market')html=await market();else if(r==='admin')html=await admin();else html=home();app().innerHTML=html;bind();nav();}catch(e){app().innerHTML=`<div class="page"><div class="empty">${esc(e.message)}</div></div>`}}
+async function render(){shell();const {r,q}=route();let html='';try{if(r==='home')html=await home();else if(r==='collection')html=await collection();else if(r==='packs')html=await packs();else if(r==='vault')html=await vault();else if(r==='album')html=await album();else if(r==='card')html=await cardDetail(q.get('id'));else if(r==='auth')html=authView(q.get('mode')==='register'?'register':'login',q.get('next')||'vault');else if(r==='market')html=await market();else if(r==='admin')html=await admin();else html=home();app().innerHTML=html;bind();nav();}catch(e){app().innerHTML=`<div class="page"><div class="empty">${esc(e.message)}</div></div>`}}
 async function loadAuctionHistory(){
  try{const d=await api('/api/auctions/history');state.auctionHistory=d.auctions||[];return state.auctionHistory}catch(e){toast(e.message);return[]}
 }
