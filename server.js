@@ -35,9 +35,9 @@ const FOOTVAULT_CARDS = [
 let CARD_CATALOG = FOOTVAULT_CARDS.map(([name, position, club, nation, rarity], i) => ({ id:`fv-${String(i+1).padStart(3,'0')}`, season:'2026', name, position, club, nation, rarity, rarityLabel:RARITIES[rarity].label, distributionType:'STANDARD', isLimited:false, maxSupply:null, ovr:({common:72,rare:78,epic:84,legendary:91,icon:96}[rarity]||72), order:i+1 }));
 
 const PACKS = {
-  starter:{id:'starter',name:'STARTER PACK',price:100,currency:'coins',cards:5,badge:'POUR COMMENCER',description:'5 cartes FOOTVAULT · 1 carte RARE ou mieux garantie',guarantee:'rare'},
-  pro:{id:'pro',name:'PRO PACK',price:250,currency:'coins',cards:8,badge:'LE PLUS POPULAIRE',description:'8 cartes FOOTVAULT · 1 carte EPIC ou mieux garantie',guarantee:'epic'},
-  legend:{id:'legend',name:'LEGEND PACK',price:500,currency:'coins',cards:5,badge:'HAUTE RARETÉ',description:'5 cartes FOOTVAULT · 1 carte LEGENDARY ou mieux garantie',guarantee:'legendary'}
+  starter:{id:'starter',name:'STARTER PACK',price:100,currency:'coins',cards:5,badge:'POUR COMMENCER',description:'5 cartes FOOTVAULT',guarantee:'common'},
+  pro:{id:'pro',name:'PRO PACK',price:250,currency:'coins',cards:8,badge:'LE PLUS POPULAIRE',description:'8 cartes FOOTVAULT · 1 carte RARE ou mieux garantie',guarantee:'rare'},
+  legend:{id:'legend',name:'LEGEND PACK',price:500,currency:'coins',cards:5,badge:'HAUTE RARETÉ',description:'5 cartes FOOTVAULT · 1 carte EPIC ou mieux garantie',guarantee:'epic'}
 };
 const PACK_WEIGHTS=[['common',72],['rare',21],['epic',5],['legendary',1.8],['icon',0.2]];
 const MISSIONS=[
@@ -187,7 +187,21 @@ await pool.query(`CREATE TABLE IF NOT EXISTS admin_logs(id bigserial PRIMARY KEY
 await pool.query('CREATE TABLE IF NOT EXISTS pack_definitions(id varchar(64) PRIMARY KEY,name varchar(100) NOT NULL,price integer NOT NULL,currency varchar(20) NOT NULL DEFAULT \'coins\',cards integer NOT NULL,badge varchar(80) NOT NULL DEFAULT \'\',description varchar(300) NOT NULL DEFAULT \'\',guarantee varchar(20) NOT NULL DEFAULT \'common\',guarantee_count integer NOT NULL DEFAULT 1,pool_id varchar(64) REFERENCES pack_pools(id) ON DELETE RESTRICT,conditions jsonb NOT NULL DEFAULT \'{}\'::jsonb,active boolean NOT NULL DEFAULT true,sort_order integer NOT NULL DEFAULT 0,created_at timestamptz NOT NULL DEFAULT now(),updated_at timestamptz NOT NULL DEFAULT now())');
 await pool.query('ALTER TABLE pack_definitions ADD COLUMN IF NOT EXISTS conditions jsonb NOT NULL DEFAULT \'{}\'::jsonb');
 
-const pc=(await pool.query('SELECT count(*)::int n FROM pack_definitions')).rows[0].n;if(Number(pc)===0){await pool.query('INSERT INTO pack_pools(id,name,type,config) VALUES($1,$2,$3,$4)', ['pool-standard','POOL STANDARD 2026','all',JSON.stringify({weights:PACK_WEIGHTS})]);let pi=0;for(const p of Object.values(PACKS)){await pool.query('INSERT INTO pack_definitions(id,name,price,currency,cards,badge,description,guarantee,guarantee_count,pool_id,active,sort_order) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,true,$11)',[p.id,p.name,p.price,p.currency,p.cards,p.badge,p.description,p.guarantee,1,'pool-standard',pi++]);}}
+const pc=(await pool.query('SELECT count(*)::int n FROM pack_definitions')).rows[0].n;if(Number(pc)===0){await pool.query('INSERT INTO pack_pools(id,name,type,config) VALUES($1,$2,$3,$4)', ['pool-standard','POOL STANDARD 2026-2027','all',JSON.stringify({weights:PACK_WEIGHTS})]);let pi=0;for(const p of Object.values(PACKS)){const conditions=p.id==='starter'?{rarities:['common'],limitedOnly:false,standardOnly:true}:p.id==='pro'?{rarities:['common','rare'],limitedOnly:false,standardOnly:true}:{rarities:['common','rare','epic'],limitedOnly:false,standardOnly:true};await pool.query('INSERT INTO pack_definitions(id,name,price,currency,cards,badge,description,guarantee,guarantee_count,pool_id,conditions,active,sort_order) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,true,$12)',[p.id,p.name,p.price,p.currency,p.cards,p.badge,p.description,p.guarantee,1,'pool-standard',JSON.stringify(conditions),pi++]);}}
+await pool.query('CREATE TABLE IF NOT EXISTS app_migrations(id varchar(120) PRIMARY KEY,applied_at timestamptz NOT NULL DEFAULT now())');
+const packReset=(await pool.query("SELECT 1 FROM app_migrations WHERE id='reset-packs-2026-09-24'")).rowCount>0;
+if(!packReset){
+ await pool.query("INSERT INTO pack_pools(id,name,type,config,active) VALUES('pool-standard','POOL STANDARD 2026-2027','all',$1,true) ON CONFLICT(id) DO UPDATE SET name=excluded.name,type=excluded.type,config=excluded.config,active=true",[JSON.stringify({weights:PACK_WEIGHTS})]);
+ const resetPacks=[
+  ['starter','STARTER PACK',100,'coins',5,'POUR COMMENCER','5 cartes FOOTVAULT','common',1,{rarities:['common'],limitedOnly:false,standardOnly:true},true,0],
+  ['pro','PRO PACK',250,'coins',8,'LE PLUS POPULAIRE','8 cartes FOOTVAULT · 1 carte RARE ou mieux garantie','rare',1,{rarities:['common','rare'],limitedOnly:false,standardOnly:true},true,1],
+  ['legend','LEGEND PACK',500,'coins',5,'HAUTE RARETÉ','5 cartes FOOTVAULT · 1 carte EPIC ou mieux garantie','epic',1,{rarities:['common','rare','epic'],limitedOnly:false,standardOnly:true},true,2]
+ ];
+ for(const p of resetPacks){
+  await pool.query("INSERT INTO pack_definitions(id,name,price,currency,cards,badge,description,guarantee,guarantee_count,pool_id,conditions,active,sort_order) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,'pool-standard',$10,$11,$12) ON CONFLICT(id) DO UPDATE SET name=excluded.name,price=excluded.price,currency=excluded.currency,cards=excluded.cards,badge=excluded.badge,description=excluded.description,guarantee=excluded.guarantee,guarantee_count=excluded.guarantee_count,pool_id=excluded.pool_id,conditions=excluded.conditions,active=excluded.active,sort_order=excluded.sort_order,updated_at=now()",[p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7],p[8],JSON.stringify(p[9]),p[10],p[11]]);
+ }
+ await pool.query("INSERT INTO app_migrations(id) VALUES('reset-packs-2026-09-24')");
+}
 await pool.query(`CREATE TABLE IF NOT EXISTS registration_limits(ip varchar(255) PRIMARY KEY,last_created_at timestamptz NOT NULL)`);await pool.query(`CREATE TABLE IF NOT EXISTS login_limits(ip varchar(255) NOT NULL,email varchar(320) NOT NULL,failed_attempts integer NOT NULL DEFAULT 0,blocked_until timestamptz,updated_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(ip,email))`);return{mode:'postgres'};}catch(error){console.error('SPORT VAULT database unavailable:',error.message);if(pool)await pool.end().catch(()=>{});pool=null;if(process.env.NODE_ENV==='production')throw error;return{mode:'memory',error:error.message};}}
 async function findUserByEmail(email){if(pool){const r=await pool.query('SELECT * FROM users WHERE email=$1',[email]);return r.rows[0]||null;}for(const u of memory.users.values())if(u.email===email)return u;return null;}
 async function getUserById(id){if(pool){const r=await pool.query('SELECT * FROM users WHERE id=$1',[id]);return r.rows[0]||null;}return memory.users.get(id)||null;}
