@@ -4,11 +4,12 @@ const zlib=require('node:zlib');
 const {Pool}=require('pg');
 
 const ROOT=path.join(__dirname,'..');
-const catalogPath=path.join(ROOT,'data','ligue1-2026-2027.v3.b64');
+const catalogPath=path.join(ROOT,'data','ligue1-2026-2027.catalog.json');
 
 function loadCards(){
-  const encoded=fs.readFileSync(catalogPath,'utf8').trim();
-  return JSON.parse(zlib.inflateSync(Buffer.from(encoded,'base64')).toString('utf8'));
+  const payload=JSON.parse(fs.readFileSync(catalogPath,'utf8'));
+  if(payload.encoding!=='zlib-base64'||!payload.cards) throw new Error('Catalogue Ligue 1: format invalide.');
+  return JSON.parse(zlib.inflateSync(Buffer.from(payload.cards,'base64')).toString('utf8'));
 }
 
 async function ensureCompetition(client){
