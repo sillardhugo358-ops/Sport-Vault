@@ -95,7 +95,7 @@ function catalogCardsForPackConditions(cards,conditions={}){
  if(nations.length)out=out.filter(c=>nations.includes(String(c.nation)));
  if(positions.length)out=out.filter(c=>positions.includes(String(c.position)));
  if(conditions.limitedOnly===true)out=out.filter(c=>c.isLimited===true);
- if(conditions.standardOnly===true)out=out.filter(c=>c.isLimited!==true);
+ if(conditions.standardOnly===true)out=out.filter(c=>String(c.distributionType||'STANDARD').toUpperCase()!=='LIMITED');
  const minOvr=Number(conditions.minOvr);if(Number.isFinite(minOvr))out=out.filter(c=>Number(c.ovr||0)>=minOvr);
  const maxOvr=Number(conditions.maxOvr);if(Number.isFinite(maxOvr))out=out.filter(c=>Number(c.ovr||0)<=maxOvr);
  return out;
@@ -103,8 +103,8 @@ function catalogCardsForPackConditions(cards,conditions={}){
 async function configuredPackCards(pack){
  let cards=CARD_CATALOG;
  if(pool){
-  const rows=(await pool.query('SELECT id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,is_limited,max_supply,card_order FROM catalog_cards WHERE is_active=true')).rows;
-  cards=rows.map(r=>({id:r.id,season:r.season,name:r.name,position:r.position,jerseyNumber:r.jersey_number==null?null:Number(r.jersey_number),club:r.club,nation:r.nation,rarity:r.rarity,ovr:Number(r.ovr||72),pace:Number(r.pace||72),shooting:Number(r.shooting||72),passing:Number(r.passing||72),dribbling:Number(r.dribbling||72),defending:Number(r.defending||72),physical:Number(r.physical||72),isLimited:Boolean(r.is_limited),maxSupply:r.max_supply==null?null:Number(r.max_supply),order:Number(r.card_order||0),rarityLabel:RARITIES[r.rarity]?.label||r.rarity}));
+  const rows=(await pool.query('SELECT id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order FROM catalog_cards WHERE is_active=true')).rows;
+  cards=rows.map(r=>({id:r.id,season:r.season,name:r.name,position:r.position,jerseyNumber:r.jersey_number==null?null:Number(r.jersey_number),club:r.club,nation:r.nation,rarity:r.rarity,ovr:Number(r.ovr||72),pace:Number(r.pace||72),shooting:Number(r.shooting||72),passing:Number(r.passing||72),dribbling:Number(r.dribbling||72),defending:Number(r.defending||72),physical:Number(r.physical||72),distributionType:String(r.distribution_type||'STANDARD').toUpperCase(),isLimited:Boolean(r.is_limited),maxSupply:r.max_supply==null?null:Number(r.max_supply),order:Number(r.card_order||0),rarityLabel:RARITIES[r.rarity]?.label||r.rarity}));
   if(pack.pool_id){
    const pr=(await pool.query('SELECT type,config FROM pack_pools WHERE id=$1',[pack.pool_id])).rows[0];
    if(pr){
