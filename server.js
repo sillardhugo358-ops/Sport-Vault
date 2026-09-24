@@ -87,15 +87,15 @@ async function listPacks(){ if(pool){const r=await pool.query('SELECT id,name,pr
 async function getPackDefinition(packId){if(pool){const r=await pool.query('SELECT id,name,price,currency,cards,badge,description,guarantee,guarantee_count,pool_id,conditions,active FROM pack_definitions WHERE id=$1 AND active=true',[packId]);return r.rows[0]||null;}return PACKS[packId]||null;}
 function catalogCardsForPackConditions(cards,conditions={}){
  let out=cards.slice();
- const values=(v)=>Array.isArray(v)?v.map(String).filter(Boolean):[];
- const rarities=values(conditions.rarities),clubs=values(conditions.clubs),seasons=values(conditions.seasons),nations=values(conditions.nations),positions=values(conditions.positions);
- if(rarities.length)out=out.filter(c=>rarities.includes(String(c.rarity)));
- if(clubs.length)out=out.filter(c=>clubs.includes(String(c.club)));
- if(seasons.length)out=out.filter(c=>{const season=String(c.season);return seasons.includes(season)||(season==='2026-2027'&&seasons.includes('2026'))||(season==='2026'&&seasons.includes('2026-2027'));});
- if(nations.length)out=out.filter(c=>nations.includes(String(c.nation)));
- if(positions.length)out=out.filter(c=>positions.includes(String(c.position)));
- if(conditions.limitedOnly===true)out=out.filter(c=>c.isLimited===true);
- if(conditions.standardOnly===true)out=out.filter(c=>String(c.distributionType||'STANDARD').toUpperCase()!=='LIMITED');
+ const values=(v)=>Array.isArray(v)?v.map(x=>String(x).trim()).filter(Boolean):[];
+ const rarities=values(conditions.rarities).map(x=>x.toLowerCase()),clubs=values(conditions.clubs),seasons=values(conditions.seasons),nations=values(conditions.nations),positions=values(conditions.positions);
+ if(rarities.length)out=out.filter(c=>rarities.includes(String(c.rarity||'').trim().toLowerCase()));
+ if(clubs.length)out=out.filter(c=>clubs.includes(String(c.club||'').trim()));
+ if(seasons.length)out=out.filter(c=>{const season=String(c.season||'').trim();return seasons.includes(season)||(season==='2026-2027'&&seasons.includes('2026'))||(season==='2026'&&seasons.includes('2026-2027'));});
+ if(nations.length)out=out.filter(c=>nations.includes(String(c.nation||'').trim()));
+ if(positions.length)out=out.filter(c=>positions.includes(String(c.position||'').trim()));
+ if(conditions.limitedOnly===true)out=out.filter(c=>c.isLimited===true||String(c.distributionType||'').toUpperCase()==='LIMITED');
+ if(conditions.standardOnly===true)out=out.filter(c=>c.isLimited!==true&&String(c.distributionType||'STANDARD').toUpperCase()!=='LIMITED');
  const minOvr=Number(conditions.minOvr);if(Number.isFinite(minOvr))out=out.filter(c=>Number(c.ovr||0)>=minOvr);
  const maxOvr=Number(conditions.maxOvr);if(Number.isFinite(maxOvr))out=out.filter(c=>Number(c.ovr||0)<=maxOvr);
  return out;
