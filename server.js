@@ -2,6 +2,7 @@ const http = require('node:http');
 const path = require('node:path');
 const fs = require('node:fs');
 const crypto = require('node:crypto');
+const zlib = require('node:zlib');
 
 const PORT = Number(process.env.PORT || 3000);
 const ROOT = __dirname;
@@ -32,7 +33,20 @@ const FOOTVAULT_CARDS = [
   ['Adrien Montfort', 'GK', 'Aster FC', 'France', 'legendary'], ['Sami Kader', 'AM', 'Union Atlantique', 'France', 'legendary'],
   ['Diego Aranda', 'ST', 'Racing Nord', 'Argentina', 'legendary'], ['Victor Saint-Clair', 'ST', 'Stade Horizon', 'France', 'icon']
 ];
-let CARD_CATALOG = FOOTVAULT_CARDS.map(([name, position, club, nation, rarity], i) => ({ id:`fv-${String(i+1).padStart(3,'0')}`, season:'2026', name, position, club, nation, rarity, rarityLabel:RARITIES[rarity].label, distributionType:'STANDARD', isLimited:false, maxSupply:null, ovr:({common:72,rare:78,epic:84,legendary:91,icon:96}[rarity]||72), order:i+1 }));
+function loadFootMercatoCatalog(){
+  const base=path.join(ROOT,'data');
+  const encoded=[0,1,2].map(i=>fs.readFileSync(path.join(base,'footmercato_catalog_'+i+'.b64'),'utf8').trim()).join('');
+  const seed=JSON.parse(zlib.inflateSync(Buffer.from(encoded,'base64')).toString('utf8'));
+  return seed.rows.map((line,i)=>{
+    const v=line.split('|');
+    const club=seed.clubs[Number(v[0])],name=v[1],position=seed.positions[Number(v[2])];
+    const nation=Number(v[3])<0?'':seed.nations[Number(v[3])],rarity=seed.rarities[Number(v[4])].toLowerCase(),jersey=Number(v[5]);
+    return {id:'fv-ligue-1-2026-2027-'+String(i+1).padStart(3,'0'),season:'2026-2027',name,position,jerseyNumber:jersey<0?null:jersey,club,nation,rarity,rarityLabel:RARITIES[rarity]?.label||rarity,ovr:Number(v[6]),pace:Number(v[7]),shooting:Number(v[8]),passing:Number(v[9]),dribbling:Number(v[10]),defending:Number(v[11]),physical:Number(v[12]),distributionType:'STANDARD',isLimited:false,maxSupply:null,order:i};
+  });
+}
+let CARD_CATALOG;
+try{CARD_CATALOG=loadFootMercatoCatalog();if(CARD_CATALOG.length!==478)throw new Error('Catalogue Foot Mercato invalide: '+CARD_CATALOG.length+' cartes.');console.log('[FOOTVAULT] Catalogue Foot Mercato chargé: '+CARD_CATALOG.length+' cartes.');}
+catch(error){console.error('[FOOTVAULT] Impossible de charger le catalogue Foot Mercato:',error.message);CARD_CATALOG=FOOTVAULT_CARDS.map(([name, position, club, nation, rarity], i) => ({ id:`fv-${String(i+1).padStart(3,'0')}`, season:'2026', name, position, club, nation, rarity, rarityLabel:RARITIES[rarity].label, distributionType:'STANDARD', isLimited:false, maxSupply:null, ovr:({common:72,rare:78,epic:84,legendary:91,icon:96}[rarity]||72), order:i+1 }));}
 
 const PACKS = {
   starter:{id:'starter',name:'STARTER PACK',price:100,currency:'coins',cards:5,badge:'POUR COMMENCER',description:'5 cartes FOOTVAULT',guarantee:'common'},
@@ -189,6 +203,26 @@ await pool.query('ALTER TABLE pack_definitions ADD COLUMN IF NOT EXISTS conditio
 
 const pc=(await pool.query('SELECT count(*)::int n FROM pack_definitions')).rows[0].n;if(Number(pc)===0){await pool.query('INSERT INTO pack_pools(id,name,type,config) VALUES($1,$2,$3,$4)', ['pool-standard','POOL STANDARD 2026-2027','all',JSON.stringify({weights:PACK_WEIGHTS})]);let pi=0;for(const p of Object.values(PACKS)){const conditions=p.id==='starter'?{rarities:['common'],limitedOnly:false,standardOnly:true}:p.id==='pro'?{rarities:['common','rare'],limitedOnly:false,standardOnly:true}:{rarities:['common','rare','epic'],limitedOnly:false,standardOnly:true};await pool.query('INSERT INTO pack_definitions(id,name,price,currency,cards,badge,description,guarantee,guarantee_count,pool_id,conditions,active,sort_order) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,true,$12)',[p.id,p.name,p.price,p.currency,p.cards,p.badge,p.description,p.guarantee,1,'pool-standard',JSON.stringify(conditions),pi++]);}}
 await pool.query('CREATE TABLE IF NOT EXISTS app_migrations(id varchar(120) PRIMARY KEY,applied_at timestamptz NOT NULL DEFAULT now())');
+ const cardCatalogResetId='reset-card-catalog-footmercato-2026-09-25';
+ const cardCatalogReset=(await pool.query('SELECT 1 FROM app_migrations WHERE id=$1',[cardCatalogResetId])).rowCount>0;
+ if(!cardCatalogReset){
+  const client=await pool.connect();
+  try{
+   await client.query('BEGIN');
+   await client.query('DELETE FROM auction_bids');
+   await client.query('DELETE FROM auction_withdrawals');
+   await client.query('DELETE FROM auctions');
+   await client.query('DELETE FROM card_instances');
+   await client.query('DELETE FROM card_collection_cards');
+   await client.query('DELETE FROM catalog_cards');
+   for(const c of CARD_CATALOG){
+    await client.query(`INSERT INTO catalog_cards(id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order,is_active) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,true)`,[c.id,c.season,c.name,c.position,c.jerseyNumber??null,c.club,c.nation,c.rarity,c.ovr,c.pace,c.shooting,c.passing,c.dribbling,c.defending,c.physical,c.distributionType,Boolean(c.isLimited),c.maxSupply,c.order]);
+   }
+   await client.query('INSERT INTO app_migrations(id) VALUES($1)',[cardCatalogResetId]);
+   await client.query('COMMIT');
+   console.log('[FOOTVAULT] RESET catalogue: anciennes cartes, instances et enchères supprimées; '+CARD_CATALOG.length+' cartes Foot Mercato importées.');
+  }catch(error){await client.query('ROLLBACK').catch(()=>{});throw error;}finally{client.release();}
+ }
 const packReset=(await pool.query("SELECT 1 FROM app_migrations WHERE id='reset-packs-2026-09-24'")).rowCount>0;
 if(!packReset){
  await pool.query("INSERT INTO pack_pools(id,name,type,config,active) VALUES('pool-standard','POOL STANDARD 2026-2027','all',$1,true) ON CONFLICT(id) DO UPDATE SET name=excluded.name,type=excluded.type,config=excluded.config,active=true",[JSON.stringify({weights:PACK_WEIGHTS})]);
