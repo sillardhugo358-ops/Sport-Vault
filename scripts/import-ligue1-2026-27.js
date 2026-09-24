@@ -4,10 +4,17 @@ const zlib=require('node:zlib');
 const {Pool}=require('pg');
 
 const ROOT=path.join(__dirname,'..');
-const catalogPath=path.join(ROOT,'data','ligue1-2026-2027.excel.json');
+const seedPaths=[0,1,2].map(i=>path.join(ROOT,'data','footmercato_catalog_'+i+'.b64'));
 
 function loadCards(){
-  return JSON.parse(fs.readFileSync(catalogPath,'utf8'));
+  const encoded=seedPaths.map(p=>fs.readFileSync(p,'utf8').trim()).join('');
+  const seed=JSON.parse(zlib.inflateSync(Buffer.from(encoded,'base64')).toString('utf8'));
+  return seed.rows.map((line,i)=>{
+    const v=line.split('|');
+    const club=seed.clubs[Number(v[0])],name=v[1],position=seed.positions[Number(v[2])];
+    const nation=Number(v[3])<0?'':seed.nations[Number(v[3])],rarity=seed.rarities[Number(v[4])].toLowerCase(),jersey=Number(v[5]);
+    return {id:'fv-ligue-1-2026-2027-'+String(i+1).padStart(3,'0'),season:'2026-2027',name,position,jersey_number:jersey<0?null:jersey,club,nation,rarity,ovr:Number(v[6]),pace:Number(v[7]),shooting:Number(v[8]),passing:Number(v[9]),dribbling:Number(v[10]),defending:Number(v[11]),physical:Number(v[12]),distribution_type:'STANDARD',is_limited:false,max_supply:null,card_order:i};
+  });
 }
 
 async function ensureCompetition(client){
@@ -43,7 +50,7 @@ async function ensureClubs(client,competitionId,seasonId,cards){
 async function run(){
   if(!process.env.DATABASE_URL) throw new Error('DATABASE_URL manquante.');
   const cards=loadCards();
-  if(cards.length!==350) throw new Error('Catalogue Ligue 1 invalide: '+cards.length+' cartes.');
+  if(cards.length!==478) throw new Error('Catalogue Ligue 1 Foot Mercato invalide: '+cards.length+' cartes.');
   const db=new Pool({connectionString:process.env.DATABASE_URL,ssl:process.env.NODE_ENV==='production'?{rejectUnauthorized:false}:undefined,max:2});
   const client=await db.connect();
   try{
