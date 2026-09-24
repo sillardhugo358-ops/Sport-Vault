@@ -448,14 +448,25 @@ function parisWeekKey(date=new Date()){
   d.setUTCDate(d.getUTCDate()+diff);
   return d.toISOString().slice(0,10);
 }
+function parisOffsetMinutes(date=new Date()){
+  const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Europe/Paris',timeZoneName:'longOffset',hour:'2-digit'}).formatToParts(new Date(date));
+  const raw=parts.find(p=>p.type==='timeZoneName')?.value||'GMT+01:00';
+  const m=raw.match(/GMT([+-])(\\d{2}):?(\\d{2})?/);
+  if(!m)return 60;
+  const minutes=Number(m[2])*60+Number(m[3]||0);
+  return m[1]==='-'?-minutes:minutes;
+}
+function parisLocalMidnight(key){
+  const [year,month,day]=key.split('-').map(Number);
+  const probe=new Date(Date.UTC(year,month-1,day,12,0,0));
+  return new Date(Date.UTC(year,month-1,day,0,0,0)-parisOffsetMinutes(probe)*60000);
+}
 function periodInfo(kind,date=new Date()){
   const key=kind==='weekly'?parisWeekKey(date):parisDayKey(date);
-  const start=new Date(`${key}T00:00:00+01:00`);
-  // Use Europe/Paris local calendar arithmetic so DST changes do not shift the reset boundary.
-  const nextLocal=new Date(Date.UTC(start.getUTCFullYear(),start.getUTCMonth(),start.getUTCDate()+(kind==='weekly'?7:1),0,0,0));
-  const nextParts={year:nextLocal.getUTCFullYear(),month:nextLocal.getUTCMonth()+1,day:nextLocal.getUTCDate()};
-  const nextKey=`${nextParts.year}-${String(nextParts.month).padStart(2,'0')}-${String(nextParts.day).padStart(2,'0')}`;
-  const end=new Date(`${nextKey}T00:00:00+01:00`);
+  const start=parisLocalMidnight(key);
+  const nextUtc=new Date(Date.UTC(start.getUTCFullYear(),start.getUTCMonth(),start.getUTCDate()+(kind==='weekly'?7:1),12,0,0));
+  const nextKey=parisDayKey(nextUtc);
+  const end=parisLocalMidnight(nextKey);
   return{key,start,end};
 }
 
