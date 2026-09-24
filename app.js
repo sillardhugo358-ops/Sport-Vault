@@ -504,110 +504,75 @@ async function createAuction(cardId){
 }
 document.addEventListener('click',e=>{const btn=e.target.closest('#logoutBtn,#mobileLogoutBtn');if(btn){e.preventDefault();e.stopPropagation();logout()}});
 function showPoolEditor(pool=null){
- const p=pool||{id:'',name:'',type:'all',config:{}};
- const selectedCardIds=new Set((p.config?.cardIds||[]).map(String));
- setModal(`<div class="modal-box admin-user-modal">
-  <button class="modal-close" data-close>×</button>
-  <p class="eyebrow">ADMIN / POOL</p>
-  <h2>${pool?'MODIFIER':'CRÉER'} UN POOL</h2>
-  <div class="admin-card-grant collection-meta-form">
-   <input id="poolName" placeholder="Nom du pool" value="${esc(p.name||'')}">
-   <select id="poolType">
-    <option value="all">Toutes les cartes</option>
-    <option value="rarity">Par rareté</option>
-    <option value="club">Par club</option>
-    <option value="season">Par saison</option>
-    <option value="limited">LIMITED uniquement</option>
-    <option value="manual">Sélection manuelle</option>
-   </select>
+ const p=pool||{id:'',name:'',type:'manual',config:{}};
+ const cfg=p.config||{}, selectedCardIds=new Set((cfg.cardIds||[]).map(String));
+ const cards=state.adminCards||[];
+ const selectedById=()=>cards.filter(c=>selectedCardIds.has(String(c.id)));
+ const rarityCount=r=>selectedById().filter(c=>String(c.rarity)===r).length;
+ const total=()=>selectedCardIds.size;
+ setModal(`<div class="modal-box pool-editor-modal">
+  <button class="modal-close" data-close aria-label="Fermer">×</button>
+  <div class="pool-editor-heading"><p class="eyebrow">ADMIN / POOLS</p><h2>${pool?'MODIFIER UN POOL':'CRÉER UN POOL'}</h2><p>Un pool est une boîte de cartes limitée. Chaque carte sélectionnée peut être tirée une seule fois.</p></div>
+  <div class="pool-editor-layout">
+   <div class="pool-editor-left">
+    <section class="pool-editor-card"><h3><span>▤</span> INFORMATIONS GÉNÉRALES</h3>
+     <div class="pool-form-grid">
+      <label>Nom du pool<input id="poolName" value="${esc(p.name||'')}" placeholder="Ex. Japanese Stars"></label>
+      <label>Édition (optionnel)<input id="poolEdition" value="${esc(cfg.edition||'')}" placeholder="Ex. Saison 2026-2027"></label>
+      <label class="pool-description-field">Description<textarea id="poolDescription" maxlength="250" placeholder="Présente le contenu du pool">${esc(cfg.description||'')}</textarea><small id="poolDescCounter"></small></label>
+      <label class="pool-description-field">Image du pool (optionnel)<input id="poolImage" value="${esc(cfg.image||'')}" placeholder="URL de l'image"></label>
+     </div>
+    </section>
+    <section class="pool-editor-card"><h3><span>◆</span> COMPOSITION DU POOL</h3><p class="pool-help">Définissez la répartition souhaitée. Les quantités sont comparées aux cartes sélectionnées.</p>
+     <div class="pool-composition-row"><div><b>★</b><span>Spéciales</span></div><input id="poolSpecial" type="number" min="0" value="${Number(cfg.specialCount??3)}"><strong id="poolSpecialPct">0 %</strong><div class="pool-rarity-preview special">★</div></div>
+     <div class="pool-composition-row"><div><b>◆</b><span>Rares</span></div><input id="poolRare" type="number" min="0" value="${Number(cfg.rareCount??10)}"><strong id="poolRarePct">0 %</strong><div class="pool-rarity-preview rare">◆</div></div>
+     <div class="pool-composition-row"><div><b>●</b><span>Communes</span></div><input id="poolCommon" type="number" min="0" value="${Number(cfg.commonCount??237)}"><strong id="poolCommonPct">0 %</strong><div class="pool-rarity-preview common">●</div></div>
+     <div class="pool-composition-total"><span>TOTAL</span><strong id="poolCompositionTotal">250</strong><em>100 %</em></div>
+    </section>
+    <section class="pool-editor-card"><h3><span>⚙</span> STATUT DU POOL</h3><p class="pool-help">Activez ou désactivez ce pool dans la boutique.</p>
+     <label class="pool-switch-row"><input id="poolActive" type="checkbox" ${cfg.active!==false?'checked':''}><span class="pool-switch"></span><span><b>Pool disponible</b><small>Le pool sera visible et utilisable par les joueurs.</small></span></label>
+    </section>
+   </div>
+   <div class="pool-editor-right">
+    <section class="pool-editor-card pool-selection-card"><h3><span>▰</span> SÉLECTION DES CARTES</h3><p class="pool-help">Ajoutez les cartes qui feront partie de ce pool. Utilisez la recherche et les filtres pour trouver plus facilement les cartes.</p>
+     <div class="pool-search"><span>⌕</span><input id="poolCardSearch" type="search" placeholder="Rechercher un joueur, club, nation ou ID..." autocomplete="off"></div>
+     <div class="pool-filters">
+      <select id="poolRarityFilter"><option value="">Toutes les raretés</option><option value="common">Commun</option><option value="rare">Rare</option><option value="epic">Epic</option><option value="legendary">Legendary</option><option value="icon">Icon</option></select>
+      <select id="poolPositionFilter"><option value="">Tous les postes</option></select>
+      <select id="poolClubFilter"><option value="">Tous les clubs</option></select>
+      <select id="poolNationFilter"><option value="">Toutes les nations</option></select>
+     </div>
+     <div class="pool-selection-head"><div><span>▣</span><strong id="poolCardCount">0 cartes sélectionnées</strong></div><b id="poolSelectionMax">0 / 250</b></div>
+     <div class="pool-progress"><i id="poolProgressBar"></i></div>
+     <div id="poolCardResults" class="pool-card-grid"></div>
+    </section>
+   </div>
   </div>
-  <style>
-  .pool-manual-picker{margin-top:4px}
-  .pool-manual-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:10px}
-  .pool-manual-head strong{font-size:12px;color:var(--text)}
-  .pool-card-search{display:flex;align-items:center;gap:10px;background:#0b0d0d;border:1px solid var(--line);border-radius:8px;padding:0 14px;height:48px;margin-bottom:10px}
-  .pool-card-search span{color:var(--gold2);font-size:22px}
-  .pool-card-search input{width:100%;border:0!important;outline:0;background:transparent!important;color:var(--text);font:600 13px var(--body);padding:0!important}
-  .pool-card-results{display:grid;gap:6px;max-height:360px;overflow:auto;padding-right:3px}
-  .pool-card-option{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#0b0d0d;border:1px solid var(--line);border-radius:7px;cursor:pointer;transition:.15s}
-  .pool-card-option:hover,.pool-card-option.is-selected{border-color:rgba(212,175,55,.55);background:rgba(212,175,55,.06)}
-  .pool-card-option input{accent-color:var(--gold2);flex:0 0 auto}
-  .pool-card-option-main{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
-  .pool-card-option-main strong{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .pool-card-option-main small{color:var(--muted);font-size:10px}
-  .pool-card-option-meta{display:flex;align-items:center;gap:9px;flex:0 0 auto}
-  .pool-card-option-meta b{font-size:9px;letter-spacing:1px;color:var(--gold2)}
-  .pool-card-option-meta em{font-style:normal;font-size:10px;color:var(--muted)}
-  </style><div id="poolConfigArea" style="margin-top:15px"></div>
-  <div class="auction-dialog-actions"><button class="btn btn-ghost" data-close>ANNULER</button><button class="btn btn-gold" data-save-pool>ENREGISTRER</button></div>
+  <div class="pool-editor-footer"><button class="btn btn-ghost" data-close>ANNULER</button><button class="btn btn-gold" data-save-pool>▣ &nbsp; ${pool?'ENREGISTRER LES MODIFICATIONS':'CRÉER LE POOL'}</button></div>
  </div>`);
- const type=$('#poolType');
- type.value=p.type||'all';
- const renderManualCards=()=>{
-  const input=$('#poolCardSearch');
-  const q=(input?.value||'').trim().toLowerCase();
-  const cards=(state.adminCards||[]).filter(c=>{
-   if(!q)return true;
-   return [c.name,c.club,c.nation,c.position,c.id,c.rarityLabel,c.rarity].some(v=>String(v||'').toLowerCase().includes(q));
-  });
+ const fillSelect=(id,vals)=>{const el=$(id);if(!el)return;el.innerHTML='<option value="">'+(id==='#poolPositionFilter'?'Tous les postes':id==='#poolClubFilter'?'Tous les clubs':'Toutes les nations')+'</option>'+vals.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join('')};
+ fillSelect('#poolPositionFilter',[...new Set(cards.map(c=>String(c.position||'')).filter(Boolean))].sort());
+ fillSelect('#poolClubFilter',[...new Set(cards.map(c=>String(c.club||'')).filter(Boolean))].sort());
+ fillSelect('#poolNationFilter',[...new Set(cards.map(c=>String(c.nation||'')).filter(Boolean))].sort());
+ const render=()=>{
+  const q=($('#poolCardSearch')?.value||'').trim().toLowerCase(),rar=$('#poolRarityFilter')?.value||'',pos=$('#poolPositionFilter')?.value||'',club=$('#poolClubFilter')?.value||'',nation=$('#poolNationFilter')?.value||'';
+  const filtered=cards.filter(c=>{const hay=[c.name,c.club,c.nation,c.position,c.id].join(' ').toLowerCase();return (!q||hay.includes(q))&&(!rar||c.rarity===rar)&&(!pos||c.position===pos)&&(!club||c.club===club)&&(!nation||c.nation===nation)});
   const results=$('#poolCardResults');
-  const count=$('#poolCardCount');
-  if(count)count.textContent=selectedCardIds.size+' carte'+(selectedCardIds.size>1?'s':'')+' sélectionnée'+(selectedCardIds.size>1?'s':'');
-  if(!results)return;
-  results.innerHTML=cards.map(c=>{
-   const id=String(c.id),checked=selectedCardIds.has(id);
-   return `<label class="pool-card-option ${checked?'is-selected':''}">
-    <input type="checkbox" value="${esc(id)}" data-pool-card ${checked?'checked':''}>
-    <span class="pool-card-option-main">
-     <strong>${esc(c.name)}</strong>
-     <small>${esc(c.position||'—')} · ${esc(c.club||'—')} · ${esc(c.nation||'—')}</small>
-    </span>
-    <span class="pool-card-option-meta"><b>${esc(c.rarityLabel||c.rarity||'')}</b><em>OVR ${Number(c.ovr||0)}</em></span>
-   </label>`;
-  }).join('')||'<div class="empty">Aucun joueur ne correspond à la recherche.</div>';
-  results.querySelectorAll('[data-pool-card]').forEach(cb=>cb.onchange=()=>{
-   const id=String(cb.value);
-   if(cb.checked)selectedCardIds.add(id);else selectedCardIds.delete(id);
-   renderManualCards();
-  });
+  if(results)results.innerHTML=filtered.map(c=>{const id=String(c.id),sel=selectedCardIds.has(id);return `<label class="pool-card-tile ${sel?'is-selected':''}"><input type="checkbox" value="${esc(id)}" data-pool-card ${sel?'checked':''}><span class="pool-check">✓</span><div class="pool-card-tile-info"><strong>${esc(c.name)}</strong><small>${esc(c.position||'—')} · ${esc(c.club||'—')} · ${esc(c.nation||'—')}</small><b>${esc(c.rarityLabel||c.rarity||'')} · OVR ${Number(c.ovr||0)}</b></div></label>`}).join('')||'<div class="empty">Aucune carte ne correspond aux filtres.</div>';
+  const n=total(),max=Number($('#poolCompositionTotal')?.textContent||250);$('#poolCardCount').textContent=n+' carte'+(n!==1?'s':'')+' sélectionnée'+(n!==1?'s':'');$('#poolSelectionMax').textContent=n+' / '+max;$('#poolProgressBar').style.width=Math.min(100,max?n/max*100:0)+'%';
+  results?.querySelectorAll('[data-pool-card]').forEach(cb=>cb.onchange=()=>{const id=String(cb.value);if(cb.checked)selectedCardIds.add(id);else selectedCardIds.delete(id);render();});
  };
- const renderConfig=()=>{
-  const t=type.value,cfg=p.config||{};
-  let html='';
-  if(t==='rarity')html='<label class="eyebrow">RARETÉS</label><div class="pool-checks">'+['common','rare','epic','legendary','icon'].map(r=>'<label><input type="checkbox" value="'+r+'" '+((cfg.rarities||[]).includes(r)?'checked':'')+'> '+r.toUpperCase()+'</label>').join('')+'</div>';
-  else if(t==='club')html='<select id="poolClub">'+(state.adminClubs||[]).map(x=>'<option value="'+esc(x.name)+'" '+(cfg.club===x.name?'selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select>';
-  else if(t==='season')html='<input id="poolSeason" placeholder="Ex. 2026-2027" value="'+esc(cfg.season||'')+'">';
-  else if(t==='manual')html=`<div class="pool-manual-picker">
-   <div class="pool-manual-head">
-    <div><p class="eyebrow">CARTES DU POOL</p><strong id="poolCardCount">${selectedCardIds.size} carte${selectedCardIds.size>1?'s':''} sélectionnée${selectedCardIds.size>1?'s':''}</strong></div>
-   </div>
-   <div class="pool-card-search">
-    <span>⌕</span>
-    <input id="poolCardSearch" type="search" placeholder="Rechercher un joueur, club, nation ou ID..." autocomplete="off">
-   </div>
-   <div id="poolCardResults" class="pool-card-results"></div>
-  </div>`;
-  else html='<p class="collection-id-note">Le pool sera calculé automatiquement sur les cartes actives du catalogue.</p>';
-  document.querySelector('#poolConfigArea').innerHTML=html;
-  if(t==='manual'){
-   renderManualCards();
-   $('#poolCardSearch')?.addEventListener('input',renderManualCards);
-  }
- };
- renderConfig();
- type.onchange=renderConfig;
+ const updateComposition=()=>{const vals={special:Number($('#poolSpecial').value)||0,rare:Number($('#poolRare').value)||0,common:Number($('#poolCommon').value)||0},sum=vals.special+vals.rare+vals.common;$('#poolCompositionTotal').textContent=sum;$('#poolSpecialPct').textContent=(sum?(vals.special/sum*100:0).toFixed(1):'0')+' %';$('#poolRarePct').textContent=(sum?(vals.rare/sum*100:0).toFixed(1):'0')+' %';$('#poolCommonPct').textContent=(sum?(vals.common/sum*100:0).toFixed(1):'0')+' %';};
+ ['#poolSpecial','#poolRare','#poolCommon'].forEach(id=>$(id).oninput=updateComposition);$('#poolDescription').oninput=()=>$('#poolDescCounter').textContent=$('#poolDescription').value.length+'/250';updateComposition();$('#poolDescription').dispatchEvent(new Event('input'));
+ ['#poolCardSearch','#poolRarityFilter','#poolPositionFilter','#poolClubFilter','#poolNationFilter'].forEach(id=>$(id).addEventListener('input',render));render();
  document.querySelector('[data-save-pool]').onclick=async()=>{
-  const t=type.value,cfg={};
-  if(t==='rarity')cfg.rarities=[...document.querySelectorAll('#poolConfigArea input:checked')].map(x=>x.value);
-  if(t==='club')cfg.club=$('#poolClub')?.value||'';
-  if(t==='season')cfg.season=$('#poolSeason')?.value.trim()||'';
-  if(t==='manual')cfg.cardIds=[...selectedCardIds];
+  const composition={specialCount:Number($('#poolSpecial').value)||0,rareCount:Number($('#poolRare').value)||0,commonCount:Number($('#poolCommon').value)||0};
+  const compositionTotal=composition.specialCount+composition.rareCount+composition.commonCount;
   if(!$('#poolName').value.trim())return toast('Le nom du pool est obligatoire.');
-  if(t==='manual'&&!selectedCardIds.size)return toast('Sélectionne au moins une carte pour ce pool.');
-  try{
-   await api('/api/admin/packs',{method:'POST',body:JSON.stringify({action:pool?'pool_update':'pool_create',id:p.id,name:$('#poolName').value.trim(),type:t,config:cfg})});
-   rememberAdminView('packs');closeModal();toast('Pool enregistré.');render();
-  }catch(e){toast(e.message)}
+  if(!selectedCardIds.size)return toast('Sélectionne au moins une carte pour ce pool.');
+  if(compositionTotal!==selectedCardIds.size)return toast('La composition du pool doit correspondre au nombre de cartes sélectionnées.');
+  const config={...cfg,cardIds:[...selectedCardIds],edition:$('#poolEdition').value.trim(),description:$('#poolDescription').value.trim(),image:$('#poolImage').value.trim(),...composition,active:$('#poolActive').checked};
+  try{await api('/api/admin/packs',{method:'POST',body:JSON.stringify({action:pool?'pool_update':'pool_create',id:p.id,name:$('#poolName').value.trim(),type:'manual',config})});rememberAdminView('packs');closeModal();toast('Pool enregistré.');render()}catch(e){toast(e.message)}
  };
 }
 function showPackEditor(pack=null){
