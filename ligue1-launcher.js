@@ -1,0 +1,36 @@
+const {spawn}=require('node:child_process');
+const {execFile}=require('node:child_process');
+const path=require('node:path');
+
+const child=spawn(process.execPath,['-r','./security-bootstrap.js','server.js'],{stdio:'inherit',env:process.env});
+let imported=false;
+let timer=null;
+
+async function syncWhenReady(){
+  if(imported||!process.env.DATABASE_URL)return;
+  try{
+    const {Pool}=require('pg');
+    const db=new Pool({connectionString:process.env.DATABASE_URL,ssl:process.env.NODE_ENV==='production'?{rejectUnauthorized:false}:undefined,max:1,connectionTimeoutMillis:2000});
+    const r=await db.query("SELECT to_regclass('public.catalog_cards') AS cards,to_regclass('public.competitions') AS competitions,to_regclass('public.competition_seasons') AS seasons,to_regclass('public.clubs') AS clubs");
+    await db.end();
+    if(r.rows[0]?.cards&&r.rows[0]?.competitions&&r.rows[0]?.seasons&&r.rows[0]?.clubs){
+      imported=true;
+      clearInterval(timer);
+      execFile(process.execPath,[path.join(__dirname,'scripts','import-ligue1-2026-27.js')],{env:process.env},(error,stdout,stderr)=>{
+        if(stdout)process.stdout.write(stdout);
+        if(stderr)process.stderr.write(stderr);
+        if(error)console.error('[FOOTVAULT] Ligue 1 sync process failed:',error.message);
+      });
+    }
+  }catch{}
+}
+timer=setInterval(syncWhenReady,1500);
+syncWhenReady();
+
+child.on('exit',(code,signal)=>{
+  if(timer)clearInterval(timer);
+  if(signal)process.kill(process.pid,signal);
+  else process.exit(code===null?1:code);
+});
+process.on('SIGTERM',()=>child.kill('SIGTERM'));
+process.on('SIGINT',()=>child.kill('SIGINT'));
