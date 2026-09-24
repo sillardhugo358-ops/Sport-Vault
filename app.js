@@ -612,67 +612,64 @@ function showPoolEditor(pool=null){
 }
 function showPackEditor(pack=null){
  const p=pack||{id:'',name:'',price:100,cards:5,badge:'',description:'',guarantee:'rare',guarantee_count:1,conditions:{},active:true};
- const cfg=p.conditions||{};
- const arr=v=>Array.isArray(v)?v.map(String):[];
+ const cfg=p.conditions||{}, arr=v=>Array.isArray(v)?v.map(String):[];
  const selected={rarities:new Set(arr(cfg.rarities)),clubs:new Set(arr(cfg.clubs)),seasons:new Set(arr(cfg.seasons)),nations:new Set(arr(cfg.nations)),positions:new Set(arr(cfg.positions))};
  const cards=state.adminCards||[];
  const seasons=[...new Set(cards.map(c=>String(c.season||'')).filter(Boolean))].sort((a,b)=>b.localeCompare(a,'fr',{numeric:true}));
  const clubs=[...new Set(cards.map(c=>String(c.club||'')).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
  const nations=[...new Set(cards.map(c=>String(c.nation||'')).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
  const positions=[...new Set(cards.map(c=>String(c.position||'')).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
- const multi=(id,values,set)=>'<div class="pack-condition-checks" id="'+id+'">'+values.map(v=>'<label><input type="checkbox" value="'+esc(v)+'" '+(set.has(v)?'checked':'')+'> '+esc(v.toUpperCase())+'</label>').join('')+'</div>';
- setModal(`<div class="modal-box admin-user-modal">
-  <button class="modal-close" data-close>×</button>
-  <p class="eyebrow">ADMIN / PACK</p>
-  <h2>${pack?'MODIFIER':'CRÉER'} UN PACK</h2>
-  <div class="admin-card-grant collection-meta-form">
-   <input id="packName" placeholder="Nom du pack" value="${esc(p.name||'')}">
-   <input id="packPrice" type="number" min="0" value="${Number(p.price||0)}" placeholder="Prix FC">
-   <input id="packCards" type="number" min="1" max="20" value="${Number(p.cards||1)}" placeholder="Nombre de cartes">
-   <input id="packBadge" placeholder="Badge" value="${esc(p.badge||'')}">
-   <input id="packDescription" placeholder="Description" value="${esc(p.description||'')}">
-  </div>
-  <div class="pack-conditions-editor">
-   <p class="eyebrow">CONDITIONS DU PACK</p>
-   <p class="collection-id-note">Le pack tire directement dans le catalogue selon ces conditions. Il n'utilise aucun pool.</p>
-   <div class="pack-condition-group"><span>RARETÉS</span>${multi('packRarities',['common','rare','epic','legendary','icon'],selected.rarities)}</div>
-   <div class="pack-condition-group"><span>POSTES</span>${multi('packPositions',positions,selected.positions)}</div>
-   <div class="pack-condition-group"><span>CLUBS</span>${multi('packClubs',clubs,selected.clubs)}</div>
-   <div class="pack-condition-group"><span>NATIONALITÉS</span>${multi('packNations',nations,selected.nations)}</div>
-   <div class="pack-condition-group"><span>SAISONS</span>${multi('packSeasons',seasons,selected.seasons)}</div>
-   <div class="pack-condition-row">
-    <label>OVR MINIMUM<input id="packMinOvr" type="number" min="0" max="100" value="${cfg.minOvr??''}" placeholder="Aucun"></label>
-    <label>OVR MAXIMUM<input id="packMaxOvr" type="number" min="0" max="100" value="${cfg.maxOvr??''}" placeholder="Aucun"></label>
+ const multi=(id,values,set)=>'<div class="pack-condition-checks" id="'+id+'">'+values.map(v=>'<label><input type="checkbox" value="'+esc(v)+'" '+(set.has(v)?'checked':'')+'><span>'+esc(v.toUpperCase())+'</span></label>').join('')+'</div>';
+ const select=(id,label,values,set,icon)=>'<label class="pack-select-field"><span>'+icon+' '+label+'</span><select id="'+id+'"><option value="">Tous</option>'+values.map(v=>'<option value="'+esc(v)+'" '+(set.size===1&&set.has(v)?'selected':'')+'>'+esc(v)+'</option>').join('')+'</select></label>';
+ setModal(`<div class="modal-box pack-editor-modal">
+  <button class="modal-close" data-close aria-label="Fermer">×</button>
+  <div class="pack-editor-heading"><p class="eyebrow">ADMIN / PACKS</p><h2>${pack?'MODIFIER UN PACK':'CRÉER UN PACK'}</h2></div>
+  <div class="pack-editor-layout">
+   <div class="pack-editor-left">
+    <section class="pack-editor-card"><h3><span>✎</span> INFORMATIONS GÉNÉRALES</h3>
+     <div class="pack-form-grid">
+      <label>Nom du pack<input id="packName" value="${esc(p.name||'')}" placeholder="Ex. Japanese Stars"></label>
+      <label>Prix (FC)<input id="packPrice" type="number" min="0" value="${Number(p.price||0)}"></label>
+      <label>Nombre de cartes<input id="packCards" type="number" min="1" max="20" value="${Number(p.cards||1)}"></label>
+      <label>Badge (optionnel)<input id="packBadge" value="${esc(p.badge||'')}" placeholder="Haute rareté"></label>
+      <label class="pack-description-field">Description<textarea id="packDescription" maxlength="150" placeholder="Description du pack">${esc(p.description||'')}</textarea><small class="pack-counter" id="packDescCounter"></small></label>
+     </div>
+    </section>
+    <section class="pack-editor-card"><h3><span>★</span> GARANTIE DE RARETÉ</h3><p class="pack-help">Définit le type de carte garanti dans ce pack.</p>
+     <div class="pack-form-grid two"><label>Rareté minimale garantie<select id="packGuarantee"><option value="common">Common+</option><option value="rare">Rare+</option><option value="epic">Epic+</option><option value="legendary">Legendary+</option><option value="icon">Icon</option></select></label><label>Nombre de cartes garanties<input id="packGuaranteeCount" type="number" min="0" value="${Number(p.guarantee_count||0)}"></label></div>
+     <div class="pack-info-note">ⓘ Au moins <b id="packGuaranteeText">1</b> carte <b id="packGuaranteeLabel">Rare</b> ou mieux sera garantie dans ce pack.</div>
+    </section>
+    <section class="pack-editor-card"><h3><span>⚙</span> DISPONIBILITÉ</h3><p class="pack-help">Active ou désactive l'affichage de ce pack dans la boutique.</p>
+     <label class="pack-switch-row"><input id="packActive" type="checkbox" ${p.active!==false?'checked':''}><span class="pack-switch"></span><span><b>Pack disponible</b><small>Le pack sera visible et achetable par les joueurs.</small></span></label>
+    </section>
    </div>
-   <div class="pack-condition-toggles">
-    <label><input id="packLimitedOnly" type="checkbox" ${cfg.limitedOnly?'checked':''}> LIMITED uniquement</label>
-    <label><input id="packStandardOnly" type="checkbox" ${cfg.standardOnly?'checked':''}> STANDARD uniquement</label>
+   <div class="pack-editor-right">
+    <section class="pack-editor-card pack-conditions-card"><h3><span>⌖</span> CONDITIONS DU PACK</h3><p class="pack-help">Le pack tire directement dans le catalogue selon ces conditions. <b>Aucun pool n'est utilisé.</b></p>
+     <div class="pack-condition-grid">
+      <div class="pack-filter-box"><div class="pack-filter-title">RARETÉS AUTORISÉES</div>${multi('packRarities',['common','rare','epic','legendary','icon'],selected.rarities)}</div>
+      <div class="pack-filter-box">${select('packPosition','POSTES',positions,selected.positions,'⚽')}</div>
+      <div class="pack-filter-box">${select('packClub','CLUBS',clubs,selected.clubs,'◈')}</div>
+      <div class="pack-filter-box">${select('packNation','NATIONALITÉS',nations,selected.nations,'⚑')}</div>
+      <div class="pack-filter-box">${select('packSeason','SAISONS',seasons,selected.seasons,'▣')}</div>
+      <div class="pack-ovr-box"><label>OVR MINIMUM<input id="packMinOvr" type="number" min="0" max="100" value="${cfg.minOvr??''}" placeholder="Aucun"></label><label>OVR MAXIMUM<input id="packMaxOvr" type="number" min="0" max="100" value="${cfg.maxOvr??''}" placeholder="Aucun"></label></div>
+     </div>
+     <div class="pack-type-box"><div class="pack-filter-title">TYPE DE CARTES</div><label><input id="packLimitedOnly" type="checkbox" ${cfg.limitedOnly?'checked':''}> <span>◆</span> LIMITED uniquement</label><label><input id="packStandardOnly" type="checkbox" ${cfg.standardOnly?'checked':''}> <span>▰</span> STANDARD uniquement</label></div>
+    </section>
    </div>
   </div>
-  <div class="admin-card-grant collection-meta-form" style="margin-top:15px">
-   <select id="packGuarantee"><option value="common">Common+</option><option value="rare">Rare+</option><option value="epic">Epic+</option><option value="legendary">Legendary+</option><option value="icon">Icon</option></select>
-   <input id="packGuaranteeCount" type="number" min="0" value="${Number(p.guarantee_count||0)}" placeholder="Nombre garanti">
-   <label class="collection-id-note"><input id="packActive" type="checkbox" ${p.active!==false?'checked':''}> Pack disponible</label>
-  </div>
-  <div class="auction-dialog-actions"><button class="btn btn-ghost" data-close>ANNULER</button><button class="btn btn-gold" data-save-pack>ENREGISTRER</button></div>
+  <div class="pack-editor-footer"><button class="btn btn-ghost" data-close>ANNULER</button><button class="btn btn-gold" data-save-pack>▣ &nbsp; ENREGISTRER</button></div>
  </div>`);
  $('#packGuarantee').value=p.guarantee||'common';
+ const updateGuarantee=()=>{const names={common:'Common',rare:'Rare',epic:'Epic',legendary:'Legendary',icon:'Icon'};$('#packGuaranteeText').textContent=$('#packGuaranteeCount').value||0;$('#packGuaranteeLabel').textContent=names[$('#packGuarantee').value]||'Rare';$('#packDescCounter').textContent=(($('#packDescription').value||'').length)+'/150';};
+ $('#packGuarantee').onchange=updateGuarantee;$('#packGuaranteeCount').oninput=updateGuarantee;$('#packDescription').oninput=updateGuarantee;updateGuarantee();
  document.querySelector('[data-save-pack]').onclick=async()=>{
   const getChecked=id=>[...document.querySelectorAll('#'+id+' input:checked')].map(x=>x.value);
-  const conditions={
-   rarities:getChecked('packRarities'),positions:getChecked('packPositions'),clubs:getChecked('packClubs'),
-   nations:getChecked('packNations'),seasons:getChecked('packSeasons'),
-   minOvr:$('#packMinOvr').value===''?null:Number($('#packMinOvr').value),
-   maxOvr:$('#packMaxOvr').value===''?null:Number($('#packMaxOvr').value),
-   limitedOnly:$('#packLimitedOnly').checked,standardOnly:$('#packStandardOnly').checked
-  };
+  const one=id=>{const v=$(id)?.value||'';return v?[v]:[]};
+  const conditions={rarities:getChecked('packRarities'),positions:one('#packPosition'),clubs:one('#packClub'),nations:one('#packNation'),seasons:one('#packSeason'),minOvr:$('#packMinOvr').value===''?null:Number($('#packMinOvr').value),maxOvr:$('#packMaxOvr').value===''?null:Number($('#packMaxOvr').value),limitedOnly:$('#packLimitedOnly').checked,standardOnly:$('#packStandardOnly').checked};
   if(!$('#packName').value.trim())return toast('Le nom du pack est obligatoire.');
   if(conditions.limitedOnly&&conditions.standardOnly)return toast('Un pack ne peut pas être LIMITED et STANDARD uniquement.');
   if(conditions.minOvr!=null&&conditions.maxOvr!=null&&conditions.minOvr>conditions.maxOvr)return toast('L’OVR minimum ne peut pas dépasser l’OVR maximum.');
-  try{
-   await api('/api/admin/packs',{method:'POST',body:JSON.stringify({action:pack?'pack_update':'pack_create',id:p.id,name:$('#packName').value.trim(),price:Number($('#packPrice').value),cards:Number($('#packCards').value),badge:$('#packBadge').value.trim(),description:$('#packDescription').value.trim(),conditions,guarantee:$('#packGuarantee').value,guaranteeCount:Number($('#packGuaranteeCount').value),active:$('#packActive').checked})});
-   rememberAdminView('packs');closeModal();toast('Pack enregistré.');render();
-  }catch(e){toast(e.message)}
+  try{await api('/api/admin/packs',{method:'POST',body:JSON.stringify({action:pack?'pack_update':'pack_create',id:p.id,name:$('#packName').value.trim(),price:Number($('#packPrice').value),cards:Number($('#packCards').value),badge:$('#packBadge').value.trim(),description:$('#packDescription').value.trim(),conditions,guarantee:$('#packGuarantee').value,guaranteeCount:Number($('#packGuaranteeCount').value),active:$('#packActive').checked})});rememberAdminView('packs');closeModal();toast('Pack enregistré.');render()}catch(e){toast(e.message)}
  };
 }
 function bind(){
