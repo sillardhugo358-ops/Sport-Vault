@@ -619,34 +619,54 @@ async function openPoolForUser(userId,poolId){
  const pack={id:'pool:'+poolDef.id,name:poolDef.name,price:Number(poolDef.price),cards:Number(poolDef.cards),guarantee:'common',guarantee_count:0,pool_id:poolDef.id,conditions:{}};
  if(pack.price<0||pack.cards<1)return{error:'Configuration du tirage invalide.',status:400};
  const client=await pool.connect();try{await client.query('BEGIN');const r=await client.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[userId]);const user=r.rows[0];if(!user){await client.query('ROLLBACK');return{error:'Utilisateur introuvable.',status:404};}if(Number(user.coins)-Number(user.reserved_coins||0)<pack.price){await client.query('ROLLBACK');return{error:'FOOTCOINS disponibles insuffisants : une partie de tes FC est réservée par une enchère.',status:400};}const drawn=await drawDynamicPack(pack);const cards=[];for(const c of drawn){const instance=await buildInstance(c,userId,pack.id,client);await createCardInstance(instance,client);cards.push(publicCard(instance));}await client.query('UPDATE users SET coins=coins-$1,xp=xp+$2,packs_opened=packs_opened+1 WHERE id=$3',[pack.price,pack.cards*10,userId]);await securityEvent(userId,null,'pool_draw',{poolId:poolDef.id,price:pack.price,cards:cards.length},client);const updatedUser=(await client.query('SELECT * FROM users WHERE id=$1',[userId])).rows[0];await client.query('COMMIT');return{user:safeUser(updatedUser),cards,pack:{...pack,poolId:poolDef.id,pool:true}};}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}}
-async function albumViews(owned){
+async function albumViews(owned,selectedSeasonId=null,userId=null){
  if(pool){
-  const comps=(await pool.query('SELECT id,name,tag,country,description,status,sort_order FROM competitions ORDER BY sort_order,id')).rows;
-  const seasons=(await pool.query('SELECT id,competition_id,season,label,status,description,sort_order FROM competition_seasons ORDER BY competition_id,sort_order,season DESC')).rows;
-  const links=(await pool.query('SELECT sc.season_id,c.id,c.name,c.tag,c.country,c.sort_order FROM season_clubs sc JOIN clubs c ON c.id=sc.club_id ORDER BY sc.season_id,sc.position,c.sort_order')).rows;
-  const catalogRows=(await pool.query('SELECT id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order FROM catalog_cards WHERE is_active=true ORDER BY card_order,id')).rows;
-  const catalog=catalogRows.map(r=>({id:r.id,season:r.season,name:r.name,position:r.position,jerseyNumber:r.jersey_number==null?null:Number(r.jersey_number),club:r.club,nation:r.nation,rarity:r.rarity,ovr:Number(r.ovr||72),pace:Number(r.pace||72),shooting:Number(r.shooting||72),passing:Number(r.passing||72),dribbling:Number(r.dribbling||72),defending:Number(r.defending||72),physical:Number(r.physical||72),distributionType:String(r.distribution_type||'STANDARD').toUpperCase(),isLimited:Boolean(r.is_limited),maxSupply:r.max_supply==null?null:Number(r.max_supply),order:Number(r.card_order||0),rarityLabel:RARITIES[r.rarity]?.label||r.rarity}));
-  const seasonById=new Map(seasons.map(s=>[s.id,String(s.season)]));
+  const [comps,seasons,links,counts]=await Promise.all([
+   pool.query('SELECT id,name,tag,country,description,status,sort_order FROM competitions ORDER BY sort_order,id'),
+   pool.query('SELECT id,competition_id,season,label,status,description,sort_order FROM competition_seasons ORDER BY competition_id,sort_order,season DESC'),
+   pool.query('SELECT sc.season_id,c.id,c.name,c.tag,c.country,c.sort_order FROM season_clubs sc JOIN clubs c ON c.id=sc.club_id ORDER BY sc.season_id,sc.position,c.sort_order'),
+   pool.query(`SELECT cc.season,cc.club,COUNT(DISTINCT cc.id)::int AS total,
+     COUNT(DISTINCT cc.id) FILTER (WHERE ci.instance_id IS NOT NULL)::int AS owned
+     FROM catalog_cards cc
+     LEFT JOIN card_instances ci ON ci.card_id=cc.id AND ci.owner_id=$1 AND ci.status='owned'
+     WHERE cc.is_active=true GROUP BY cc.season,cc.club`,[userId])
+  ]);
+  const seasonRows=seasons.rows,seasonById=new Map(seasonRows.map(x=>[x.id,String(x.season)]));
   const norm=v=>String(v??'').trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase();
+  const countMap=new Map(counts.rows.map(r=>[String(r.season)+'|'+norm(r.club),{total:Number(r.total||0),owned:Number(r.owned||0)}]));
+  const selected=seasonRows.find(x=>x.id===selectedSeasonId),selectedSeason=selected?String(selected.season):null;
+  const selectedRows=selectedSeason?(await pool.query('SELECT id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order FROM catalog_cards WHERE is_active=true AND season=$1 ORDER BY card_order,id',[selectedSeason])).rows:[];
+  const cardsByClub=new Map();
+  for(const r of selectedRows){
+   const key=String(r.season)+'|'+norm(r.club),arr=cardsByClub.get(key)||[];
+   arr.push({id:r.id,season:r.season,name:r.name,position:r.position,jerseyNumber:r.jersey_number==null?null:Number(r.jersey_number),club:r.club,nation:r.nation,rarity:r.rarity,ovr:Number(r.ovr||72),pace:Number(r.pace||72),shooting:Number(r.shooting||72),passing:Number(r.passing||72),dribbling:Number(r.dribbling||72),defending:Number(r.defending||72),physical:Number(r.physical||72),distributionType:String(r.distribution_type||'STANDARD').toUpperCase(),isLimited:Boolean(r.is_limited),maxSupply:r.max_supply==null?null:Number(r.max_supply),order:Number(r.card_order||0),rarityLabel:RARITIES[r.rarity]?.label||r.rarity});
+   cardsByClub.set(key,arr);
+  }
   const grouped=new Map();
-  for(const x of links){
+  for(const x of links.rows){
+   const season=seasonById.get(x.season_id)||'',key=season+'|'+norm(x.name),stats=countMap.get(key)||{total:0,owned:0};
+   const cards=selectedSeason===season?(cardsByClub.get(key)||[]):[];
    const arr=grouped.get(x.season_id)||[];
-   const season=seasonById.get(x.season_id)||'';
-   const clubKey=norm(x.name);
-   const cards=catalog.filter(card=>norm(card.club)===clubKey&&String(card.season).trim()===String(season).trim());
-   const own=cards.filter(card=>owned.has(card.id)).length;
-   arr.push({id:x.id,name:x.name,tag:x.tag,country:x.country,cards,owned:own,total:cards.length,complete:cards.length>0&&own===cards.length});
+   arr.push({id:x.id,name:x.name,tag:x.tag,country:x.country,cards,owned:stats.owned,total:stats.total,complete:stats.total>0&&stats.owned===stats.total});
    grouped.set(x.season_id,arr);
   }
-  return comps.map(c=>({...c,seasons:seasons.filter(s=>s.competition_id===c.id).map(s=>({...s,clubs:grouped.get(s.id)||[]}))}));
+  return comps.rows.map(comp=>({...comp,seasons:seasonRows.filter(x=>x.competition_id===comp.id).map(season=>({...season,clubs:grouped.get(season.id)||[]}))}));
  }
  return [{id:'ligue-1',name:'Ligue 1',tag:'L1',country:'France',status:'available',seasons:[{id:'ligue-1-2026',competition_id:'ligue-1',season:'2026',label:'Saison 2026',status:'available',clubs:ALBUM_CLUBS.map(club=>{const cards=CARD_CATALOG.filter(c=>c.club===club.name&&String(c.season)==='2026');const own=cards.filter(c=>owned.has(c.id)).length;return{...club,cards,owned:own,total:cards.length,complete:cards.length>0&&own===cards.length};})}]}];
 }
-async function albumData(userId){
-  const cards=await getUserCards(userId),owned=new Set(cards.map(c=>c.cardId));
-  const competitions=await albumViews(owned);
-  const allClubs=competitions.flatMap(c=>c.seasons.flatMap(season=>season.clubs.map(v=>({...v,seasonId:season.id,season:season.season,competitionId:c.id}))));
-  return{universe:'FOOTVAULT',season:'2026',album:{competitions,overallOwned:allClubs.reduce((s,c)=>s+c.owned,0),overallTotal:allClubs.reduce((s,c)=>s+c.total,0)},rewards:{clubs:await Promise.all(allClubs.map(async v=>({seasonId:v.seasonId,clubId:v.id,club:v.name,claimed:await claimExists(userId,'album:'+v.seasonId+':'+v.id)})))}};}
+async function albumData(userId,selectedSeasonId=null){
+ const cards=await getUserCards(userId),owned=new Set(cards.map(c=>c.cardId));
+ const competitions=await albumViews(owned,selectedSeasonId,userId);
+ const allClubs=competitions.flatMap(c=>c.seasons.flatMap(season=>season.clubs.map(v=>({...v,seasonId:season.id,season:season.season,competitionId:c.id}))));
+ let claimedIds=new Set();
+ if(pool){
+  const claims=(await pool.query("SELECT claim_id FROM reward_claims WHERE user_id=$1 AND claim_id LIKE 'album:%'",[userId])).rows;
+  claimedIds=new Set(claims.map(x=>x.claim_id));
+ }else{
+  for(const v of allClubs){const id='album:'+v.seasonId+':'+v.id;if(await claimExists(userId,id))claimedIds.add(id);}
+ }
+ return{universe:'FOOTVAULT',season:'2026',album:{competitions,overallOwned:allClubs.reduce((s,c)=>s+c.owned,0),overallTotal:allClubs.reduce((s,c)=>s+c.total,0)},rewards:{clubs:allClubs.map(v=>({seasonId:v.seasonId,clubId:v.id,club:v.name,claimed:claimedIds.has('album:'+v.seasonId+':'+v.id)}))}};
+}
 function auctionDurationMs(minutes){return Number(minutes)*60_000;}
 function auctionMinBid(current){return Math.ceil(Number(current)*1.10);}
 function auctionPublic(row){return{id:row.id,cardInstanceId:row.card_instance_id,sellerId:row.seller_id,startingBid:Number(row.starting_bid),currentBid:Number(row.current_bid),currentBidderId:row.current_bidder_id||null,startsAt:row.starts_at,endsAt:row.ends_at,status:row.status,createdAt:row.created_at,completedAt:row.completed_at||null};}
@@ -929,7 +949,7 @@ if(req.method==='POST'&&url.pathname==='/api/internal/historical-import'){
  }catch(e){await client.query('ROLLBACK').catch(()=>{});console.error('[FOOTVAULT] historical upload error',e);return json(res,500,{error:e.message});}finally{client.release();}
 }
 
- if(req.method==='GET'&&url.pathname==='/api/album'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});return json(res,200,await albumData(user.id));}
+ if(req.method==='GET'&&url.pathname==='/api/album'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});return json(res,200,await albumData(user.id,url.searchParams.get('seasonId')||null));}
  if(req.method==='POST'&&url.pathname==='/api/album/claim'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});const body=await readBody(req),clubId=String(body.clubId||''),seasonId=String(body.seasonId||''),data=await albumData(user.id),view=data.album.competitions.flatMap(c=>c.seasons.flatMap(s=>s.clubs.map(v=>({...v,seasonId:s.id,season:s.season,competitionId:c.id})))).find(c=>c.id===clubId&&c.seasonId===seasonId);if(!view)return json(res,404,{error:'Set introuvable.'});if(!view.complete)return json(res,400,{error:'Set incomplet.'});const claimId='album:'+seasonId+':'+clubId;if(await claimExists(user.id,claimId))return json(res,400,{error:'Récompense déjà récupérée.'});if(pool){const client=await pool.connect();try{await client.query('BEGIN');const inserted=await client.query('INSERT INTO reward_claims(user_id,claim_id) VALUES($1,$2) ON CONFLICT DO NOTHING RETURNING claim_id',[user.id,claimId]);if(!inserted.rowCount){await client.query('ROLLBACK');return json(res,400,{error:'Récompense déjà récupérée.'});}const updated=await applyReward(user.id,{coins:250,xp:75},client);await client.query('COMMIT');return json(res,200,{reward:{coins:250,xp:75},user:safeUser(updated)});}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}}await addClaim(user.id,claimId);const updated=await applyReward(user.id,{coins:250,xp:75});return json(res,200,{reward:{coins:250,xp:75},user:safeUser(updated)});}
 if(req.method==='POST'&&url.pathname==='/api/logout'){await destroySession(req,res);return json(res,200,{ok:true});}
  if(req.method==='POST'&&url.pathname==='/api/packs/open'){const user=await currentUser(req);if(!user)return json(res,401,{error:'Non connecté'});const body=await readBody(req);const result=await openPackForUser(user.id,String(body.packId||''));return json(res,result.error?result.status||400:200,result);}
