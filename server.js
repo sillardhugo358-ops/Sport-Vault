@@ -628,10 +628,12 @@ async function albumViews(owned){
   const catalog=catalogRows.map(r=>({id:r.id,season:r.season,name:r.name,position:r.position,jerseyNumber:r.jersey_number==null?null:Number(r.jersey_number),club:r.club,nation:r.nation,rarity:r.rarity,ovr:Number(r.ovr||72),pace:Number(r.pace||72),shooting:Number(r.shooting||72),passing:Number(r.passing||72),dribbling:Number(r.dribbling||72),defending:Number(r.defending||72),physical:Number(r.physical||72),distributionType:String(r.distribution_type||'STANDARD').toUpperCase(),isLimited:Boolean(r.is_limited),maxSupply:r.max_supply==null?null:Number(r.max_supply),order:Number(r.card_order||0),rarityLabel:RARITIES[r.rarity]?.label||r.rarity}));
   const seasonById=new Map(seasons.map(s=>[s.id,String(s.season)]));
   const grouped=new Map();
+  const norm=v=>String(v??'').trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase();
   for(const x of links){
    const arr=grouped.get(x.season_id)||[];
    const season=seasonById.get(x.season_id)||'';
-   const cards=catalog.filter(card=>String(card.club)===String(x.name)&&String(card.season)===season);
+   const clubKey=norm(x.name);
+   const cards=catalog.filter(card=>norm(card.club)===clubKey&&String(card.season).trim()===String(season).trim());
    const own=cards.filter(card=>owned.has(card.id)).length;
    arr.push({id:x.id,name:x.name,tag:x.tag,country:x.country,cards,owned:own,total:cards.length,complete:cards.length>0&&own===cards.length});
    grouped.set(x.season_id,arr);
