@@ -888,8 +888,15 @@ if(req.method==='POST'&&url.pathname==='/api/internal/historical-import'){
   }
   let clubPos=0;
   for(const [club,clubId] of clubs){
-   await client.query("INSERT INTO clubs(id,name,tag,country,sort_order) VALUES($1,$2,$3,'France',$4) ON CONFLICT(name) DO UPDATE SET tag=excluded.tag",[clubId,club,club.replace(/[^A-Za-z0-9]/g,'').slice(0,3).toUpperCase()||'L1',clubPos]);
-   const actual=(await client.query('SELECT id FROM clubs WHERE name=$1',[club])).rows[0].id;
+   const existingByName=(await client.query('SELECT id FROM clubs WHERE name=$1',[club])).rows[0];
+   let actual=existingByName?.id||clubId;
+   if(!existingByName){
+    const collision=(await client.query('SELECT id FROM clubs WHERE id=$1',[clubId])).rows[0];
+    if(collision) actual=clubId+'-'+crypto.createHash('sha1').update(club).digest('hex').slice(0,8);
+    await client.query("INSERT INTO clubs(id,name,tag,country,sort_order) VALUES($1,$2,$3,'France',$4) ON CONFLICT(id) DO UPDATE SET name=excluded.name,tag=excluded.tag",[actual,club,club.replace(/[^A-Za-z0-9]/g,'').slice(0,3).toUpperCase()||'L1',clubPos]);
+   } else {
+    await client.query("UPDATE clubs SET tag=$2 WHERE id=$1",[actual,club.replace(/[^A-Za-z0-9]/g,'').slice(0,3).toUpperCase()||'L1']);
+   }
    await client.query("INSERT INTO competition_clubs(competition_id,club_id,position) VALUES('ligue-1',$1,$2) ON CONFLICT DO NOTHING",[actual,clubPos]);
    await client.query("INSERT INTO season_clubs(season_id,club_id,position) VALUES($1,$2,$3) ON CONFLICT DO NOTHING",[seasonId,actual,clubPos++]);
   }
