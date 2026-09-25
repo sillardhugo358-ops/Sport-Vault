@@ -627,6 +627,10 @@ async function albumViews(owned){
   const catalogRows=(await pool.query('SELECT id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order FROM catalog_cards WHERE is_active=true ORDER BY card_order,id')).rows;
   const catalog=catalogRows.map(r=>({id:r.id,season:r.season,name:r.name,position:r.position,jerseyNumber:r.jersey_number==null?null:Number(r.jersey_number),club:r.club,nation:r.nation,rarity:r.rarity,ovr:Number(r.ovr||72),pace:Number(r.pace||72),shooting:Number(r.shooting||72),passing:Number(r.passing||72),dribbling:Number(r.dribbling||72),defending:Number(r.defending||72),physical:Number(r.physical||72),distributionType:String(r.distribution_type||'STANDARD').toUpperCase(),isLimited:Boolean(r.is_limited),maxSupply:r.max_supply==null?null:Number(r.max_supply),order:Number(r.card_order||0),rarityLabel:RARITIES[r.rarity]?.label||r.rarity}));
   const seasonById=new Map(seasons.map(s=>[s.id,String(s.season)]));
+  if(process.env.NODE_ENV!=='production-debug'){
+   const hist2019=catalog.filter(card=>String(card.season).trim()==='2019-2020');
+   if(hist2019.length) console.log('[FOOTVAULT] album 2019-2020 catalog:',hist2019.length,'sample:',hist2019.slice(0,3).map(card=>({club:card.club,season:card.season,name:card.name})));
+  }
   const grouped=new Map();
   const norm=v=>String(v??'').trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase();
   for(const x of links){
