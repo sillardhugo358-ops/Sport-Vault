@@ -111,8 +111,8 @@ function catalogCardsForPackConditions(cards,conditions={}){
  if(positions.length)out=out.filter(c=>positions.includes(String(c.position||'').trim()));
  if(conditions.limitedOnly===true)out=out.filter(c=>c.isLimited===true||String(c.distributionType||'').toUpperCase()==='LIMITED');
  if(conditions.standardOnly===true)out=out.filter(c=>c.isLimited!==true&&String(c.distributionType||'STANDARD').toUpperCase()!=='LIMITED');
- const minOvr=Number(conditions.minOvr);if(Number.isFinite(minOvr))out=out.filter(c=>Number(c.ovr||0)>=minOvr);
- const maxOvr=Number(conditions.maxOvr);if(Number.isFinite(maxOvr))out=out.filter(c=>Number(c.ovr||0)<=maxOvr);
+ const minOvr=conditions.minOvr==null||conditions.minOvr===''?NaN:Number(conditions.minOvr);if(Number.isFinite(minOvr))out=out.filter(c=>Number(c.ovr||0)>=minOvr);
+ const maxOvr=conditions.maxOvr==null||conditions.maxOvr===''?NaN:Number(conditions.maxOvr);if(Number.isFinite(maxOvr))out=out.filter(c=>Number(c.ovr||0)<=maxOvr);
  return out;
 }
 async function configuredPackCards(pack){
