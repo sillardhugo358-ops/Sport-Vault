@@ -59,6 +59,8 @@ async function run(){
     await ensureClubs(client,competitionId,seasonId,cards);
     // Désactiver uniquement l'ancien catalogue 2026-2027 : ne jamais toucher aux saisons historiques fv-h-*.
     await client.query("UPDATE catalog_cards SET is_active=false,updated_at=now() WHERE season='2026-2027'");
+    // Réactiver les cartes historiques déjà importées : elles ne font pas partie du sync 2026-2027.
+    await client.query("UPDATE catalog_cards SET is_active=true,updated_at=now() WHERE id LIKE 'fv-h-%'");
     let synced=0;
     for(const c of cards){
       const existing=(await client.query(
