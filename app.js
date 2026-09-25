@@ -78,9 +78,10 @@ async function mission(id){try{const d=await api('/api/missions/claim',{method:'
 async function task(kind,id){try{const d=await api('/api/tasks/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind,taskId:id})});toast(`+${d.reward.coins} FOOTCOINS · +${d.reward.xp} XP`);render()}catch(e){toast(e.message)}}
 async function album(){
  let d=null;
- try{d=await api('/api/album');state.album=d;const c=await api('/api/collection');state.user=c.user;state.cards=c.cards||[]}
+ const seasonId=route().q.get('season');
+ try{d=await api('/api/album'+(seasonId?'?seasonId='+encodeURIComponent(seasonId):''));state.album=d;if(seasonId){const c=await api('/api/collection');state.user=c.user;state.cards=c.cards||[]}else{state.cards=[]}}
  catch(e){if(e.status===401)return authView('login','album');throw e}
- const competitions=d.album.competitions||[],competitionId=route().q.get('competition'),seasonId=route().q.get('season'),total=d.album.overallTotal||0,own=d.album.overallOwned||0;
+ const competitions=d.album.competitions||[],competitionId=route().q.get('competition'),total=d.album.overallTotal||0,own=d.album.overallOwned||0;
  if(!competitionId){
   return `<div class="page">${viewHero('FOOTVAULT / ALBUM','LES <span>COMPÉTITIONS.</span>','Choisis une compétition pour découvrir ses éditions saison par saison.')}<section class="album-competitions-grid">${competitions.map(c=>`<a class="competition-album-card ${c.status==='available'?'available':'locked'}" href="${c.status==='available'&&c.seasons?.length?'#album?competition='+encodeURIComponent(c.id):'#album'}"><div class="competition-album-top"><span class="competition-status ${c.status==='available'?'available':'upcoming-status'}">${c.status==='available'?'DISPONIBLE':'À VENIR'}</span><strong>${String(Number(c.sort_order||0)+1).padStart(2,'0')}</strong></div><div class="competition-album-emblem ${c.status==='available'?'':'muted'}">${esc(c.tag)}</div><p class="eyebrow">${esc(c.country||'INTERNATIONAL')}</p><h2>${esc(c.name)}</h2><p>${esc(c.description||'De nouvelles éditions arriveront prochainement dans le Vault.')}</p><div class="competition-album-footer"><span>${c.seasons?.length||0} SAISON${(c.seasons?.length||0)>1?'S':''}</span><span>${c.status==='available'?'EXPLORER →':'BIENTÔT'}</span></div></a>`).join('')}</section></div>`;
  }
