@@ -630,6 +630,7 @@ async function albumViews(owned){
   const hist2019=catalog.filter(card=>String(card.season).trim()==='2019-2020');
   const psgLink=links.find(x=>norm(x.name)==='paris saint-germain');
   const psgCards=psgLink?catalog.filter(card=>norm(card.club)===norm(psgLink.name)&&String(card.season).trim()==='2019-2020'):[];
+  console.log('[FOOTVAULT] album PSG match:',JSON.stringify({linkName:psgLink?.name||null,season:psgLink?seasonById.get(psgLink.season_id):null,count:psgCards.length,sample:psgCards.slice(0,3).map(x=>x.name)}));
   const grouped=new Map();
   const norm=v=>String(v??'').trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase();
   for(const x of links){
