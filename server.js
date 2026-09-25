@@ -628,7 +628,8 @@ async function albumViews(owned){
   const catalog=catalogRows.map(r=>({id:r.id,season:r.season,name:r.name,position:r.position,jerseyNumber:r.jersey_number==null?null:Number(r.jersey_number),club:r.club,nation:r.nation,rarity:r.rarity,ovr:Number(r.ovr||72),pace:Number(r.pace||72),shooting:Number(r.shooting||72),passing:Number(r.passing||72),dribbling:Number(r.dribbling||72),defending:Number(r.defending||72),physical:Number(r.physical||72),distributionType:String(r.distribution_type||'STANDARD').toUpperCase(),isLimited:Boolean(r.is_limited),maxSupply:r.max_supply==null?null:Number(r.max_supply),order:Number(r.card_order||0),rarityLabel:RARITIES[r.rarity]?.label||r.rarity}));
   const seasonById=new Map(seasons.map(s=>[s.id,String(s.season)]));
   const hist2019=catalog.filter(card=>String(card.season).trim()==='2019-2020');
-  console.log('[FOOTVAULT] album catalog diagnostic:',JSON.stringify({total:catalog.length,hist2019:hist2019.length,seasons:[...new Set(catalog.map(card=>String(card.season).trim()))].sort().slice(0,25),sample:hist2019.slice(0,5).map(card=>({club:card.club,season:card.season,name:card.name}))}));
+  const psgLink=links.find(x=>norm(x.name)==='paris saint-germain');
+  const psgCards=psgLink?catalog.filter(card=>norm(card.club)===norm(psgLink.name)&&String(card.season).trim()==='2019-2020'):[];
   const grouped=new Map();
   const norm=v=>String(v??'').trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase();
   for(const x of links){
