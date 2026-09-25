@@ -1038,3 +1038,109 @@ hr{border-color:#1d3d63}
 @media(max-width:1180px){.shop-pack-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.shop-pool-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.shop-hero{grid-template-columns:minmax(0,1fr) 36%}.shop-hero-pack{width:135px;height:190px}.shop-hero-art{height:220px}}
 @media(max-width:850px){.shop-layout{grid-template-columns:1fr}.shop-filters{position:static;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch}.shop-filter-head{grid-column:1/-1}.shop-filter-group{padding:13px}.shop-hero{grid-template-columns:1fr 34%;padding:25px}.shop-hero-wallet{right:10px;bottom:10px}.shop-hero-art{height:200px}.shop-hero-pack{width:110px;height:160px}.shop-hero-pack strong{font-size:22px}.shop-hero-card{display:none}}
 @media(max-width:600px){.shop-page{width:calc(100% - 20px);padding-top:12px}.shop-hero{display:block;min-height:0;padding:25px 20px 150px}.shop-hero h1{font-size:65px}.shop-hero-copy>p:not(.shop-kicker){font-size:11px}.shop-hero-art{position:absolute;right:0;bottom:-55px;width:55%;height:190px;opacity:.9}.shop-hero-pack{width:95px;height:145px;padding:10px}.shop-hero-pack strong{font-size:19px}.shop-hero-pack b{font-size:38px}.shop-hero-wallet{left:17px;right:auto;bottom:16px;padding:8px 10px}.shop-layout{gap:14px}.shop-filters{grid-template-columns:1fr}.shop-filter-group{padding:12px 15px}.shop-filter-head{padding:13px 15px}.shop-search-row{align-items:stretch;flex-direction:column;margin-bottom:22px}.shop-all-link{justify-content:flex-end}.shop-pack-grid,.shop-pool-grid{grid-template-columns:1fr}.shop-pack-art{height:230px}.shop-pack-copy{min-height:0}.shop-pool-card{grid-template-columns:112px minmax(0,1fr)}.shop-section-heading{align-items:flex-start}.shop-section-heading h2{font-size:27px}.shop-result-count{font-size:9px;padding:6px 8px}}
+
+
+/* COLLECTION / ALBUM / VAULT — dashboard polish */
+.collection-page,.album-page{max-width:1400px}
+.collection-showcase{position:relative;display:flex;align-items:center;justify-content:space-between;gap:30px;min-height:210px;overflow:hidden;margin:0 0 18px;padding:34px 38px;border:1px solid #21466f;border-radius:14px;background:radial-gradient(ellipse at 78% 20%,rgba(36,126,255,.34),transparent 34%),radial-gradient(ellipse at 90% 110%,rgba(244,194,59,.19),transparent 37%),linear-gradient(110deg,#07172e 0%,#09284d 54%,#071329 100%);box-shadow:inset 0 0 55px rgba(24,105,201,.12)}
+.collection-showcase:after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 20%,rgba(255,255,255,.035) 50%,transparent 75%);pointer-events:none}
+.collection-showcase-copy{position:relative;z-index:1;max-width:700px}
+.collection-showcase-copy .eyebrow{color:#77baff}
+.collection-showcase h1,.album-showcase h1{margin:0;font:900 clamp(48px,7vw,86px)/.88 var(--head);letter-spacing:-1.5px;text-transform:uppercase;color:#f5f8ff}
+.collection-showcase h1 span,.album-showcase h1 span{color:#f3cc55}
+.collection-showcase-copy>p:last-child,.album-showcase-copy>p:last-child{max-width:610px;margin:13px 0 0;color:#b2c9e7;font-size:12px;line-height:1.7}
+.collection-showcase-mark{position:relative;z-index:1;display:flex;align-items:center;gap:15px;margin-right:4%;color:#f5d45d}
+.collection-showcase-mark span{display:grid;place-items:center;width:105px;height:125px;border:2px solid #e6bd42;clip-path:polygon(10% 0,90% 0,83% 80%,50% 100%,17% 80%);background:linear-gradient(145deg,rgba(245,204,77,.24),rgba(8,24,48,.65));font:900 50px var(--head);text-shadow:0 0 25px #d49f28}
+.collection-showcase-mark b{font:900 13px/1.4 var(--head);letter-spacing:2px}
+.collection-overview{gap:12px;margin-bottom:20px}
+.collection-overview>div{border-color:#1c3e64;border-radius:9px;background:linear-gradient(145deg,#0b203a,#07152a);box-shadow:0 8px 24px rgba(0,0,0,.14)}
+.collection-overview span{color:#83a9d5;font-size:8px}
+.collection-overview strong{color:#f4f7ff;font-size:34px}
+.collection-overview small{color:#87a4c6;font-size:8px;letter-spacing:.2px;text-transform:none}
+.collection-progress-panel{border:1px solid #1c3e64;border-radius:10px;background:linear-gradient(145deg,#091b32,#061326);padding:20px;margin-bottom:20px}
+.collection-progress-title{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:18px}
+.collection-progress-title h2{font:900 27px var(--head);margin:0;color:#f5f7ff}
+.collection-progress-title>strong{font-size:9px;color:#8fb9e9;letter-spacing:1px}
+.collection-rarity-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.collection-rarity-mini{padding:12px;border:1px solid #1a3b60;border-radius:7px;background:#07162a}
+.collection-rarity-mini>div{display:flex;justify-content:space-between;gap:6px;margin-bottom:10px;font-size:8px;color:#91b2d9}
+.collection-rarity-mini b{font-size:15px;color:#f5f7ff}
+.collection-rarity-mini>i{display:block;height:5px;background:#122c4a;border-radius:9px;overflow:hidden}
+.collection-rarity-mini em{display:block;height:100%;background:linear-gradient(90deg,#197de7,#62baff);border-radius:9px}
+.collection-toolbar{border-color:#1b416b;border-radius:9px;background:rgba(5,18,35,.96)}
+.collection-toolbar .filter{border-radius:6px;border-color:#21466f;color:#a7c4e4}
+.collection-toolbar .filter.active{background:linear-gradient(120deg,#f3ce5a,#dba72c);border-color:#f4d66e;color:#111b2b}
+.collection-search,.collection-sort{border-color:#21466f;border-radius:6px;background:#07182e;color:#e7f1ff}
+.collection-rarity-head{border-color:#204367}
+.collection-rarity-head .eyebrow{color:#73b6ff}
+.collection-rarity-head h2{color:#eef5ff}
+.collection-quantity{display:block;margin-top:7px;padding:5px 7px;border:1px solid #1c4c7d;border-radius:5px;background:#071b33;color:#9fcfff;text-align:center;font-size:8px;font-weight:800;letter-spacing:.6px}
+.collection-card-grid .tcg-card{filter:drop-shadow(0 5px 12px rgba(0,0,0,.35))}
+.album-showcase{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 190px 290px;align-items:center;gap:25px;min-height:220px;overflow:hidden;padding:30px 34px;margin-bottom:32px;border:1px solid #1b4778;border-radius:14px;background:radial-gradient(ellipse at 55% 0%,rgba(28,132,255,.32),transparent 36%),linear-gradient(110deg,#06152c,#0a2a52 60%,#07162c)}
+.album-showcase:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,transparent 0 50px,rgba(88,166,255,.035) 51px 52px);pointer-events:none}
+.album-showcase-copy{position:relative;z-index:1}
+.album-showcase-copy .eyebrow{color:#82bdff}
+.album-showcase-trophy{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:160px;height:165px;border:1px solid rgba(94,174,255,.38);background:radial-gradient(circle,rgba(49,144,255,.24),transparent 65%);color:#b5ddff;text-align:center}
+.album-showcase-trophy span{font-size:70px;line-height:1;text-shadow:0 0 30px #248bff}
+.album-showcase-trophy b{margin-top:10px;font:900 9px/1.5 var(--head);letter-spacing:2px}
+.album-global-progress{position:relative;z-index:1;padding:17px;border:1px solid #1d4a78;border-radius:10px;background:rgba(4,18,37,.85)}
+.album-global-progress>div:first-child{display:flex;justify-content:space-between;align-items:center;gap:8px;color:#9bbde2;font-size:8px;font-weight:800;letter-spacing:.8px}
+.album-global-progress strong{font:900 31px var(--head);color:#f5d45d}
+.album-global-track{height:9px;margin:12px 0 9px;border-radius:9px;background:#142e4c;overflow:hidden}
+.album-global-track i{display:block;height:100%;background:linear-gradient(90deg,#167de9,#5bbaff);border-radius:9px}
+.album-global-progress small{color:#8baaca;font-size:9px}
+.album-heading-row{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:18px}
+.album-heading-row h2{margin:0;font:900 35px var(--head);color:#f2f6ff}
+.album-heading-row h2 span{color:#f3cd55}
+.album-collection-count{padding:8px 12px;border:1px solid #1d4773;border-radius:7px;background:#0a2039;color:#8ebbe9;font-size:9px;font-weight:800;letter-spacing:1px}
+.album-competitions-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:0}
+.album-comp-card{display:grid;grid-template-columns:115px minmax(0,1fr);gap:0;min-height:240px;padding:0;overflow:hidden;border:1px solid #1d4169;border-radius:11px;background:linear-gradient(145deg,#0a203b,#06152a);box-shadow:0 10px 28px rgba(0,0,0,.18)}
+.album-comp-card.available:hover{border-color:#4b9cf0;box-shadow:0 14px 32px rgba(12,103,214,.15)}
+.album-comp-art{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(circle at 50% 30%,rgba(51,155,255,.45),transparent 55%),linear-gradient(150deg,#155fae,#07152d 72%);border-right:1px solid #1b416a}
+.album-comp-art:before{content:"";position:absolute;width:135px;height:135px;border:1px solid rgba(158,207,255,.2);border-radius:50%;box-shadow:0 0 0 16px rgba(80,164,255,.035),0 0 0 34px rgba(80,164,255,.025)}
+.album-comp-art span{position:relative;z-index:1;font:900 23px var(--head);color:#e5f3ff;text-shadow:0 0 22px #58aaff}
+.album-comp-art>b{position:absolute;bottom:12px;left:12px;font:900 20px var(--head);color:rgba(222,239,255,.45)}
+.album-comp-art-1{background:radial-gradient(circle at 50% 30%,rgba(182,90,255,.38),transparent 55%),linear-gradient(150deg,#54318f,#09152e 72%)}
+.album-comp-art-2{background:radial-gradient(circle at 50% 30%,rgba(245,74,91,.35),transparent 55%),linear-gradient(150deg,#912b43,#10142d 72%)}
+.album-comp-art-3{background:radial-gradient(circle at 50% 30%,rgba(255,207,67,.36),transparent 55%),linear-gradient(150deg,#80601d,#111a2d 72%)}
+.album-comp-art-4{background:radial-gradient(circle at 50% 30%,rgba(77,220,183,.28),transparent 55%),linear-gradient(150deg,#1d796e,#081a2c 72%)}
+.album-comp-body{display:flex;flex-direction:column;min-width:0;padding:15px}
+.album-comp-body .competition-album-top{align-items:center}
+.album-comp-season-count{color:#8caed2;font-size:8px;font-weight:800}
+.album-comp-body .eyebrow{margin:13px 0 4px;color:#6fb7ff;font-size:8px}
+.album-comp-body h2{margin:0;font:900 25px/1 var(--head);color:#f5f7ff}
+.album-comp-body>p:not(.eyebrow){margin:8px 0 14px;color:#91a9c6;font-size:9px;line-height:1.55}
+.album-comp-progress{margin-top:auto}
+.album-comp-progress>div{display:flex;justify-content:space-between;gap:8px;margin-bottom:7px;color:#88a9ce;font-size:8px;font-weight:800}
+.album-comp-progress>div b{color:#f2cf5b}
+.album-comp-progress>i{display:block;height:5px;border-radius:8px;background:#122e4d;overflow:hidden}
+.album-comp-progress>i em{display:block;height:100%;background:linear-gradient(90deg,#187be6,#5ab6ff);border-radius:8px}
+.album-comp-body .competition-album-footer{margin-top:13px;padding-top:10px;border-color:#1b3d60;color:#8db9e8;font-size:8px}
+.album-comp-body .competition-album-footer strong{color:#f2ce5a}
+.album-comp-card.locked .album-comp-art{filter:grayscale(.65);opacity:.65}
+.vault-profile-dashboard{overflow:hidden;margin-bottom:16px;border:1px solid #1c4773;border-radius:13px;background:radial-gradient(ellipse at 90% 0%,rgba(25,112,224,.22),transparent 34%),linear-gradient(145deg,#081d37,#06142a);box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.vault-profile-main{display:flex;align-items:center;gap:17px;padding:22px 24px 17px;border-bottom:1px solid #1a3c60}
+.vault-avatar{display:grid;place-items:center;flex:none;width:62px;height:62px;border:2px solid #3e9dff;border-radius:50%;background:linear-gradient(145deg,#6c37d5,#172b7b);color:#fff;font:900 23px var(--head);box-shadow:0 0 24px rgba(58,143,255,.22)}
+.vault-profile-copy{min-width:0;flex:1}
+.vault-profile-copy .eyebrow{margin-bottom:5px;color:#80bdff}
+.vault-profile-copy h1{margin:0;color:#f3f7ff;font:900 34px var(--head);text-transform:uppercase;overflow-wrap:anywhere}
+.vault-profile-copy>span{display:block;margin-top:5px;color:#8daed1;font-size:9px;font-weight:800;letter-spacing:1px}
+.vault-profile-badge{display:grid;place-items:center;width:72px;height:72px;border:2px solid #e8c24e;color:#f4d76a;font:900 28px var(--head);clip-path:polygon(10% 0,90% 0,83% 80%,50% 100%,17% 80%);background:linear-gradient(145deg,rgba(232,194,78,.16),rgba(7,25,48,.8))}
+.vault-profile-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;padding:13px 16px}
+.vault-profile-stats>div{padding:12px;border:1px solid #1a3d62;border-radius:7px;background:rgba(5,19,38,.65)}
+.vault-profile-stats span{display:block;color:#85a9d0;font-size:8px;font-weight:800;letter-spacing:.6px}
+.vault-profile-stats strong{display:block;margin-top:7px;color:#f5f7ff;font:900 25px var(--head)}
+.vault-profile-links{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:0 16px 16px}
+.vault-profile-links a{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px;border:1px solid #1b4169;border-radius:7px;background:linear-gradient(120deg,#0d2b4e,#081a31);color:#b5d6fa;text-decoration:none;font-size:9px;font-weight:900;letter-spacing:.5px}
+.vault-profile-links a span{color:#f3cf5d;font-size:16px}
+.vault-recent-panel{margin:0 0 28px;padding:20px;border:1px solid #1b4169;border-radius:12px;background:linear-gradient(145deg,#081b32,#061427)}
+.vault-recent-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:15px}
+.vault-recent-head h2{margin:0;font:900 28px var(--head);color:#f3f7ff}
+.vault-recent-head .eyebrow{margin-bottom:5px;color:#77baff}
+.vault-recent-head>a{color:#75baff;text-decoration:none;font-size:9px;font-weight:900;white-space:nowrap}
+.vault-recent-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.vault-recent-cards .tcg-card{max-width:210px;margin:auto}
+.vault-recent-cards .empty{grid-column:1/-1}
+@media(max-width:1050px){.album-competitions-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.album-showcase{grid-template-columns:minmax(0,1fr) 130px 250px}.album-showcase-trophy{width:125px;height:145px}.vault-recent-cards{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:760px){.collection-showcase{padding:26px 22px;min-height:180px}.collection-showcase-mark{margin-right:0}.collection-showcase-mark span{width:70px;height:90px;font-size:34px}.collection-showcase-mark b{display:none}.collection-rarity-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.album-showcase{grid-template-columns:minmax(0,1fr) 100px;gap:12px;padding:24px 20px}.album-showcase-trophy{width:95px;height:120px}.album-showcase-trophy span{font-size:48px}.album-global-progress{grid-column:1/-1}.album-competitions-grid{grid-template-columns:1fr}.album-comp-card{grid-template-columns:105px minmax(0,1fr)}.vault-profile-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.vault-profile-links{grid-template-columns:repeat(2,minmax(0,1fr))}.vault-recent-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.collection-showcase-mark{display:none}.collection-showcase h1,.album-showcase h1{font-size:48px}.collection-rarity-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.album-showcase{grid-template-columns:1fr}.album-showcase-trophy{display:none}.album-heading-row h2{font-size:28px}.album-comp-card{grid-template-columns:86px minmax(0,1fr)}.album-comp-body{padding:12px}.album-comp-body h2{font-size:22px}.vault-profile-main{padding:18px 15px}.vault-profile-badge{width:52px;height:55px;font-size:21px}.vault-profile-copy h1{font-size:26px}.vault-profile-stats{padding:10px}.vault-profile-stats strong{font-size:22px}.vault-profile-links{padding:0 10px 12px}.vault-recent-panel{padding:13px}.vault-recent-head h2{font-size:23px}.vault-recent-cards{gap:8px}}
