@@ -627,12 +627,8 @@ async function albumViews(owned){
   const catalogRows=(await pool.query('SELECT id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order FROM catalog_cards WHERE is_active=true ORDER BY card_order,id')).rows;
   const catalog=catalogRows.map(r=>({id:r.id,season:r.season,name:r.name,position:r.position,jerseyNumber:r.jersey_number==null?null:Number(r.jersey_number),club:r.club,nation:r.nation,rarity:r.rarity,ovr:Number(r.ovr||72),pace:Number(r.pace||72),shooting:Number(r.shooting||72),passing:Number(r.passing||72),dribbling:Number(r.dribbling||72),defending:Number(r.defending||72),physical:Number(r.physical||72),distributionType:String(r.distribution_type||'STANDARD').toUpperCase(),isLimited:Boolean(r.is_limited),maxSupply:r.max_supply==null?null:Number(r.max_supply),order:Number(r.card_order||0),rarityLabel:RARITIES[r.rarity]?.label||r.rarity}));
   const seasonById=new Map(seasons.map(s=>[s.id,String(s.season)]));
-  const hist2019=catalog.filter(card=>String(card.season).trim()==='2019-2020');
-  const psgLink=links.find(x=>norm(x.name)==='paris saint-germain');
-  const psgCards=psgLink?catalog.filter(card=>norm(card.club)===norm(psgLink.name)&&String(card.season).trim()==='2019-2020'):[];
-  console.log('[FOOTVAULT] album PSG match:',JSON.stringify({linkName:psgLink?.name||null,season:psgLink?seasonById.get(psgLink.season_id):null,count:psgCards.length,sample:psgCards.slice(0,3).map(x=>x.name)}));
-  const grouped=new Map();
   const norm=v=>String(v??'').trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase();
+  const grouped=new Map();
   for(const x of links){
    const arr=grouped.get(x.season_id)||[];
    const season=seasonById.get(x.season_id)||'';
@@ -650,7 +646,6 @@ async function albumData(userId){
   const cards=await getUserCards(userId),owned=new Set(cards.map(c=>c.cardId));
   const competitions=await albumViews(owned);
   const allClubs=competitions.flatMap(c=>c.seasons.flatMap(season=>season.clubs.map(v=>({...v,seasonId:season.id,season:season.season,competitionId:c.id}))));
-  const catalog=pool?(await pool.query('SELECT id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order FROM catalog_cards WHERE is_active=true ORDER BY card_order,id')).rows.map(r=>({id:r.id,season:r.season,name:r.name,position:r.position,jerseyNumber:r.jersey_number==null?null:Number(r.jersey_number),club:r.club,nation:r.nation,rarity:r.rarity,ovr:Number(r.ovr||72),pace:Number(r.pace||72),shooting:Number(r.shooting||72),passing:Number(r.passing||72),dribbling:Number(r.dribbling||72),defending:Number(r.defending||72),physical:Number(r.physical||72),distributionType:String(r.distribution_type||'STANDARD').toUpperCase(),isLimited:Boolean(r.is_limited),maxSupply:r.max_supply==null?null:Number(r.max_supply),order:Number(r.card_order||0),rarityLabel:RARITIES[r.rarity]?.label||r.rarity})):CARD_CATALOG;
   return{universe:'FOOTVAULT',season:'2026',album:{competitions,overallOwned:allClubs.reduce((s,c)=>s+c.owned,0),overallTotal:allClubs.reduce((s,c)=>s+c.total,0)},rewards:{clubs:await Promise.all(allClubs.map(async v=>({seasonId:v.seasonId,clubId:v.id,club:v.name,claimed:await claimExists(userId,'album:'+v.seasonId+':'+v.id)})))}};}
 function auctionDurationMs(minutes){return Number(minutes)*60_000;}
 function auctionMinBid(current){return Math.ceil(Number(current)*1.10);}
