@@ -217,9 +217,9 @@ async function showCompetitionEditor(comp){
  save?.addEventListener('click',async()=>{
   const name=$('#competitionName').value.trim(),status=$('#competitionStatus').value;
   if(name.length<2)return toast('Le nom de la compétition doit contenir au moins 2 caractères.');
-  const slug=value=>value.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,44);
+  const slug=value=>value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,44);
   const id=comp?.id||slug(name);
-  const tag=comp?.tag||name.split(/\\s+/).filter(Boolean).map(word=>word[0]).join('').slice(0,12).toUpperCase()||'COMP';
+  const tag=comp?.tag||name.trim().split(' ').filter(Boolean).map(word=>word[0]).join('').slice(0,12).toUpperCase()||'COMP';
   try{await api('/api/admin/competitions',{method:'POST',body:JSON.stringify({action:comp?'update':'create',id,name,tag,country:comp?.country||'',description:comp?.description||'',status})});rememberAdminView('competitions');closeModal();toast('Compétition enregistrée.');render()}catch(e){toast(e.message)}
  });
  document.querySelector('[data-new-season]')?.addEventListener('click',e=>{e.preventDefault();showSeasonEditor(null,c.id)});
