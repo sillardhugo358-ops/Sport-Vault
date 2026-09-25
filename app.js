@@ -206,12 +206,8 @@ async function showCompetitionEditor(comp){
   <button class="modal-close" data-close>×</button>
   <p class="eyebrow">CRÉATEUR / COMPÉTITION</p><h2>${comp?'MODIFIER':'CRÉER'} LA COMPÉTITION</h2>
   <div class="admin-card-grant collection-meta-form">
-   <input id="competitionId" placeholder="ID technique" value="${esc(c.id)}" ${comp?'readonly':''}>
-   <input id="competitionName" placeholder="Nom" value="${esc(c.name)}">
-   <input id="competitionTag" placeholder="TAG" value="${esc(c.tag)}">
-   <input id="competitionCountry" placeholder="Pays / zone" value="${esc(c.country||'')}">
+   <input id="competitionName" placeholder="Nom de la compétition" value="${esc(c.name)}">
    <select id="competitionStatus"><option value="available" ${c.status==='available'?'selected':''}>DISPONIBLE</option><option value="upcoming" ${c.status==='upcoming'?'selected':''}>À VENIR</option></select>
-   <input id="competitionDescription" placeholder="Description" value="${esc(c.description||'')}">
   </div>
   <div class="section-head" style="margin-top:22px"><div><p class="eyebrow">ÉDITIONS</p><h3>SAISONS DE LA COMPÉTITION</h3></div><button class="btn btn-gold" type="button" data-new-season>+ NOUVELLE SAISON</button></div>
   <div class="admin-season-list">${seasons}</div>
@@ -219,9 +215,12 @@ async function showCompetitionEditor(comp){
  </div>`);
  const save=document.querySelector('[data-save-competition]');
  save?.addEventListener('click',async()=>{
-  const id=$('#competitionId').value.trim(),name=$('#competitionName').value.trim(),tag=$('#competitionTag').value.trim(),country=$('#competitionCountry').value.trim(),description=$('#competitionDescription').value.trim(),status=$('#competitionStatus').value;
-  if(!id||!name||!tag)return toast('ID, nom et tag obligatoires.');
-  try{await api('/api/admin/competitions',{method:'POST',body:JSON.stringify({action:comp?'update':'create',id,name,tag,country,description,status})});rememberAdminView('competitions');closeModal();toast('Compétition enregistrée.');render()}catch(e){toast(e.message)}
+  const name=$('#competitionName').value.trim(),status=$('#competitionStatus').value;
+  if(name.length<2)return toast('Le nom de la compétition doit contenir au moins 2 caractères.');
+  const slug=value=>value.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,44);
+  const id=comp?.id||slug(name);
+  const tag=comp?.tag||name.split(/\\s+/).filter(Boolean).map(word=>word[0]).join('').slice(0,12).toUpperCase()||'COMP';
+  try{await api('/api/admin/competitions',{method:'POST',body:JSON.stringify({action:comp?'update':'create',id,name,tag,country:comp?.country||'',description:comp?.description||'',status})});rememberAdminView('competitions');closeModal();toast('Compétition enregistrée.');render()}catch(e){toast(e.message)}
  });
  document.querySelector('[data-new-season]')?.addEventListener('click',e=>{e.preventDefault();showSeasonEditor(null,c.id)});
  document.querySelectorAll('[data-edit-season]').forEach(x=>x.addEventListener('click',e=>{e.preventDefault();const selected=(c.seasons||[]).find(v=>String(v.id)===String(x.dataset.editSeason));if(selected)showSeasonEditor(selected,c.id);else toast('Saison introuvable.')}));
@@ -238,15 +237,14 @@ async function showSeasonEditor(season,competitionId){
   <button class="modal-close" data-close>×</button><p class="eyebrow">CRÉATEUR / SAISON</p><h2>${season?'MODIFIER':'CRÉER'} L’ÉDITION</h2>
   <p class="lead">Les clubs proposés sont uniquement ceux qui sont liés à cette compétition.</p>
   <div class="admin-card-grant collection-meta-form">
-   <input id="seasonYear" placeholder="Nom de la saison (ex. 2025-2026)" value="${esc(s.season||'')}">
+   <input id="seasonYear" placeholder="Saison (ex. 2025-2026)" value="${esc(s.season||'')}">
    <select id="seasonStatus"><option value="available" ${s.status==='available'?'selected':''}>DISPONIBLE</option><option value="upcoming" ${s.status==='upcoming'?'selected':''}>À VENIR</option></select>
-   <input id="seasonDescription" placeholder="Description" value="${esc(s.description||'')}">
   </div>
   <p class="eyebrow" style="margin-top:20px">CLUBS DE L’ÉDITION</p><div class="collection-card-picker">${clubOptions}</div>
   <div class="auction-dialog-actions"><button class="btn btn-ghost" data-close>ANNULER</button><button class="btn btn-gold" data-save-season>ENREGISTRER</button></div>
  </div>`);
  document.querySelector('[data-save-season]')?.addEventListener('click',async()=>{
-  const year=$('#seasonYear').value.trim(),status=$('#seasonStatus').value,description=$('#seasonDescription').value.trim(),clubIds=[...document.querySelectorAll('.collection-card-picker input:checked')].map(x=>x.value);
+  const year=$('#seasonYear').value.trim(),status=$('#seasonStatus').value,description=season?.description||'',clubIds=[...document.querySelectorAll('.collection-card-picker input:checked')].map(x=>x.value);
   if(!year)return toast('Le nom de la saison est obligatoire.');
   try{
    const result=await api('/api/admin/competitions',{method:'POST',body:JSON.stringify({action:season?'season_update':'season_create',seasonId:season?.id||'',competitionId,season:year,label:year,seasonStatus:status,seasonDescription:description})});
