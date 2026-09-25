@@ -624,13 +624,28 @@ async function albumViews(owned){
   const comps=(await pool.query('SELECT id,name,tag,country,description,status,sort_order FROM competitions ORDER BY sort_order,id')).rows;
   const seasons=(await pool.query('SELECT id,competition_id,season,label,status,description,sort_order FROM competition_seasons ORDER BY competition_id,sort_order,season DESC')).rows;
   const links=(await pool.query('SELECT sc.season_id,c.id,c.name,c.tag,c.country,c.sort_order FROM season_clubs sc JOIN clubs c ON c.id=sc.club_id ORDER BY sc.season_id,sc.position,c.sort_order')).rows;
+  const catalogRows=(await pool.query('SELECT id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order FROM catalog_cards WHERE is_active=true ORDER BY card_order,id')).rows;
+  const catalog=catalogRows.map(r=>({id:r.id,season:r.season,name:r.name,position:r.position,jerseyNumber:r.jersey_number==null?null:Number(r.jersey_number),club:r.club,nation:r.nation,rarity:r.rarity,ovr:Number(r.ovr||72),pace:Number(r.pace||72),shooting:Number(r.shooting||72),passing:Number(r.passing||72),dribbling:Number(r.dribbling||72),defending:Number(r.defending||72),physical:Number(r.physical||72),distributionType:String(r.distribution_type||'STANDARD').toUpperCase(),isLimited:Boolean(r.is_limited),maxSupply:r.max_supply==null?null:Number(r.max_supply),order:Number(r.card_order||0),rarityLabel:RARITIES[r.rarity]?.label||r.rarity}));
+  const seasonById=new Map(seasons.map(s=>[s.id,String(s.season)]));
   const grouped=new Map();
-  for(const x of links){const arr=grouped.get(x.season_id)||[];const cards=CARD_CATALOG.filter(c=>c.club===x.name&&String(c.season)===String(seasons.find(s=>s.id===x.season_id)?.season||'')).sort((p,q)=>p.order-q.order);const own=cards.filter(c=>owned.has(c.id)).length;arr.push({id:x.id,name:x.name,tag:x.tag,country:x.country,cards,owned:own,total:cards.length,complete:cards.length>0&&own===cards.length});grouped.set(x.season_id,arr);}
+  for(const x of links){
+   const arr=grouped.get(x.season_id)||[];
+   const season=seasonById.get(x.season_id)||'';
+   const cards=catalog.filter(card=>String(card.club)===String(x.name)&&String(card.season)===season);
+   const own=cards.filter(card=>owned.has(card.id)).length;
+   arr.push({id:x.id,name:x.name,tag:x.tag,country:x.country,cards,owned:own,total:cards.length,complete:cards.length>0&&own===cards.length});
+   grouped.set(x.season_id,arr);
+  }
   return comps.map(c=>({...c,seasons:seasons.filter(s=>s.competition_id===c.id).map(s=>({...s,clubs:grouped.get(s.id)||[]}))}));
  }
  return [{id:'ligue-1',name:'Ligue 1',tag:'L1',country:'France',status:'available',seasons:[{id:'ligue-1-2026',competition_id:'ligue-1',season:'2026',label:'Saison 2026',status:'available',clubs:ALBUM_CLUBS.map(club=>{const cards=CARD_CATALOG.filter(c=>c.club===club.name&&String(c.season)==='2026');const own=cards.filter(c=>owned.has(c.id)).length;return{...club,cards,owned:own,total:cards.length,complete:cards.length>0&&own===cards.length};})}]}];
 }
-async function albumData(userId){const cards=await getUserCards(userId),owned=new Set(cards.map(c=>c.cardId)),competitions=await albumViews(owned),allClubs=competitions.flatMap(c=>c.seasons.flatMap(season=>season.clubs.map(v=>({...v,seasonId:season.id,season:season.season,competitionId:c.id}))));return{universe:'FOOTVAULT',season:'2026',cards:CARD_CATALOG,album:{competitions,overallOwned:allClubs.reduce((s,c)=>s+c.owned,0),overallTotal:allClubs.reduce((s,c)=>s+c.total,0)},rewards:{clubs:await Promise.all(allClubs.map(async v=>({seasonId:v.seasonId,clubId:v.id,club:v.name,claimed:await claimExists(userId,'album:'+v.seasonId+':'+v.id)})))}};}
+async function albumData(userId){
+  const cards=await getUserCards(userId),owned=new Set(cards.map(c=>c.cardId));
+  const competitions=await albumViews(owned);
+  const allClubs=competitions.flatMap(c=>c.seasons.flatMap(season=>season.clubs.map(v=>({...v,seasonId:season.id,season:season.season,competitionId:c.id}))));
+  const catalog=pool?(await pool.query('SELECT id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order FROM catalog_cards WHERE is_active=true ORDER BY card_order,id')).rows.map(r=>({id:r.id,season:r.season,name:r.name,position:r.position,jerseyNumber:r.jersey_number==null?null:Number(r.jersey_number),club:r.club,nation:r.nation,rarity:r.rarity,ovr:Number(r.ovr||72),pace:Number(r.pace||72),shooting:Number(r.shooting||72),passing:Number(r.passing||72),dribbling:Number(r.dribbling||72),defending:Number(r.defending||72),physical:Number(r.physical||72),distributionType:String(r.distribution_type||'STANDARD').toUpperCase(),isLimited:Boolean(r.is_limited),maxSupply:r.max_supply==null?null:Number(r.max_supply),order:Number(r.card_order||0),rarityLabel:RARITIES[r.rarity]?.label||r.rarity})):CARD_CATALOG;
+  return{universe:'FOOTVAULT',season:'2026',cards:catalog,album:{competitions,overallOwned:allClubs.reduce((s,c)=>s+c.owned,0),overallTotal:allClubs.reduce((s,c)=>s+c.total,0)},rewards:{clubs:await Promise.all(allClubs.map(async v=>({seasonId:v.seasonId,clubId:v.id,club:v.name,claimed:await claimExists(userId,'album:'+v.seasonId+':'+v.id)})))}};}
 function auctionDurationMs(minutes){return Number(minutes)*60_000;}
 function auctionMinBid(current){return Math.ceil(Number(current)*1.10);}
 function auctionPublic(row){return{id:row.id,cardInstanceId:row.card_instance_id,sellerId:row.seller_id,startingBid:Number(row.starting_bid),currentBid:Number(row.current_bid),currentBidderId:row.current_bidder_id||null,startsAt:row.starts_at,endsAt:row.ends_at,status:row.status,createdAt:row.created_at,completedAt:row.completed_at||null};}
