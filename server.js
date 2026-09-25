@@ -875,7 +875,7 @@ if(req.method==='POST'&&url.pathname==='/api/internal/historical-import'){
  if(!pool)return json(res,503,{error:'Database unavailable'});
  const body=await readBody(req);
  const season=String(body.season||'').trim();
- if(!/^\\d{4}-\\d{4}$/.test(season)||!Array.isArray(body.cards))return json(res,400,{error:'Invalid season payload'});
+ if(!/^\d{4}-\d{4}$/.test(season)||!Array.isArray(body.cards))return json(res,400,{error:'Invalid season payload'});
  const client=await pool.connect();
  try{
   await client.query('BEGIN');
