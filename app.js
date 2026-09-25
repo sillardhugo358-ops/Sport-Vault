@@ -78,7 +78,7 @@ async function mission(id){try{const d=await api('/api/missions/claim',{method:'
 async function task(kind,id){try{const d=await api('/api/tasks/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind,taskId:id})});toast(`+${d.reward.coins} FOOTCOINS · +${d.reward.xp} XP`);render()}catch(e){toast(e.message)}}
 async function album(){
  let d=null;
- try{await loadCatalog();d=await api('/api/album');state.album=d;const c=await api('/api/collection');state.user=c.user;state.cards=c.cards||[]}
+ try{d=await api('/api/album');state.album=d;const c=await api('/api/collection');state.user=c.user;state.cards=c.cards||[]}
  catch(e){if(e.status===401)return authView('login','album');throw e}
  const competitions=d.album.competitions||[],competitionId=route().q.get('competition'),seasonId=route().q.get('season'),total=d.album.overallTotal||0,own=d.album.overallOwned||0;
  if(!competitionId){
