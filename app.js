@@ -136,7 +136,38 @@ async function album(){
  const comp=competitions.find(c=>c.id===competitionId);
  if(!comp)return '<div class="page"><div class="empty">Compétition introuvable.</div></div>';
  if(!seasonId){
-  return `<div class="page">${viewHero('FOOTVAULT / ALBUM / '+esc(comp.tag),'LES <span>SAISONS.</span>','Choisis l’édition que tu souhaites explorer.')}<div class="album-back"><a class="btn btn-outline" href="#album">← COMPÉTITIONS</a></div><section class="album-competitions-grid">${(comp.seasons||[]).map(s=>`<a class="competition-album-card ${s.status==='available'?'available':'locked'}" href="${s.status==='available'?'#album?competition='+encodeURIComponent(comp.id)+'&season='+encodeURIComponent(s.id):'#album?competition='+encodeURIComponent(comp.id)}"><div class="competition-album-top"><span class="competition-status ${s.status==='available'?'available':'upcoming-status'}">${s.status==='available'?'DISPONIBLE':'À VENIR'}</span><strong>${esc(s.season)}</strong></div><div class="competition-album-emblem ${s.status==='available'?'':'muted'}">${esc(comp.tag)}</div><p class="eyebrow">${esc(comp.name)}</p><h2>${esc(s.label||('Saison '+s.season))}</h2><p>${esc(s.description||'Édition de la compétition.')}</p><div class="competition-album-footer"><span>${s.clubs.length} CLUBS</span><span>${s.status==='available'?'EXPLORER →':'BIENTÔT'}</span></div></a>`).join('')||'<div class="empty">Aucune édition configurée.</div>'}</section></div>`;
+  const seasons=comp.seasons||[];
+  const compTotal=seasons.reduce((n,s)=>n+(s.clubs||[]).reduce((m,cl)=>m+Number(cl.total||0),0),0);
+  const compOwned=seasons.reduce((n,s)=>n+(s.clubs||[]).reduce((m,cl)=>m+Number(cl.owned||0),0),0);
+  const compPct=Math.round(compOwned/Math.max(1,compTotal)*100);
+  const completedSeasons=seasons.filter(s=>s.clubs?.length&&s.clubs.every(cl=>cl.total>0&&cl.complete)).length;
+  const seasonCards=seasons.map((s,i)=>{
+   const clubs=s.clubs||[],total=sTotal=clubs.reduce((n,cl)=>n+Number(cl.total||0),0),owned=clubs.reduce((n,cl)=>n+Number(cl.owned||0),0),pct=Math.round(owned/Math.max(1,total)*100),available=s.status==='available';
+   return `<a class="season-show-card season-show-card-${i%5} ${available?'available':'locked'}" href="${available?'#album?competition='+encodeURIComponent(comp.id)+'&season='+encodeURIComponent(s.id):'#album?competition='+encodeURIComponent(comp.id)}" aria-label="Explorer la saison ${esc(s.season)}">
+    <div class="season-show-art"><div class="season-art-lights"></div><span class="season-art-tag">${esc(comp.tag)}</span><span class="season-art-year">${esc(s.season)}</span><div class="season-art-crest">${esc(comp.tag)}</div><div class="season-art-glow"></div><div class="season-art-caption"><small>${esc(comp.name)}</small><strong>${esc(s.label||('Saison '+s.season))}</strong></div></div>
+    <div class="season-show-meta"><span class="season-state ${available?'is-open':'is-locked'}">${available?'● DISPONIBLE':'◈ À VENIR'}</span><span>${clubs.length} CLUBS</span></div>
+    <div class="season-show-progress"><div><span>${owned.toLocaleString('fr-FR')} / ${total.toLocaleString('fr-FR')} CARTES</span><b>${pct}%</b></div><i><em style="width:${pct}%"></em></i></div>
+    <div class="season-show-footer"><span>${pct===100?'ÉDITION COMPLÉTÉE':'PROGRESSION DE LA COLLECTION'}</span><strong>${available?'EXPLORER ↗':'BIENTÔT'}</strong></div>
+   </a>`;
+  }).join('');
+  return `<div class="page album-season-page">
+   <section class="season-hero">
+    <div class="season-hero-copy"><p class="eyebrow">FOOTVAULT / ALBUM / ${esc(comp.tag)}</p><div class="season-breadcrumb"><a href="#album">ALBUM</a><span>›</span><b>${esc(comp.name)}</b></div><h1>LES <span>SAISONS.</span></h1><p>Revivez l’histoire de ${esc(comp.name)} à travers les éditions. Collectionne les cartes des clubs et joueurs, saison après saison.</p><div class="season-hero-pills"><span>✦ ${seasons.length} ÉDITIONS</span><span>▣ ${compTotal.toLocaleString('fr-FR')} CARTES AU TOTAL</span></div></div>
+    <div class="season-hero-art" aria-hidden="true"><div class="season-hero-orbit"></div><div class="season-hero-cup">✦</div><div class="season-hero-mark">${esc(comp.tag)}</div><div class="season-hero-ribbon">FOOTVAULT · COLLECTION</div></div>
+   </section>
+   <div class="season-layout">
+    <main class="season-main">
+     <div class="season-toolbar"><div><p class="eyebrow">ARCHIVES DE LA COMPÉTITION</p><h2>CHOISIS TON <span>ÉDITION</span></h2></div><a class="btn btn-outline season-back-btn" href="#album">← COMPÉTITIONS</a></div>
+     <div class="season-filter-strip"><span class="season-filter-active">▦ SAISONS</span><span>◈ CLUBS</span><span>♙ JOUEURS</span><span>✦ RÉCOMPENSES</span><small>TRI : PLUS RÉCENTE</small></div>
+     <section class="season-show-grid">${seasonCards||'<div class="empty">Aucune saison configurée pour cette compétition.</div>'}</section>
+    </main>
+    <aside class="season-sidebar">
+     <section class="season-side-card season-side-progress"><div class="season-side-heading"><span>PROGRESSION ${esc(comp.name.toUpperCase())}</span><b>◎</b></div><div class="season-side-ring" style="--season-pct:${compPct}%"><div><strong>${compPct}%</strong><small>COLLECTÉ</small></div></div><p>${compOwned.toLocaleString('fr-FR')} / ${compTotal.toLocaleString('fr-FR')} cartes</p><div class="season-side-divider"></div><div class="season-side-stat"><span>🏆 Éditions complétées</span><strong>${completedSeasons} / ${seasons.length}</strong></div></section>
+     <section class="season-side-card"><div class="season-side-heading"><span>TA COLLECTION</span><b>✦</b></div><div class="season-side-metric"><strong>${seasons.length}</strong><span>SAISONS DISPONIBLES OU À VENIR</span></div><div class="season-side-metric"><strong>${seasons.reduce((n,s)=>n+(s.clubs||[]).length,0)}</strong><span>CLUBS À COLLECTIONNER</span></div></section>
+     <section class="season-side-card season-side-rewards"><div class="season-side-heading"><span>RÉCOMPENSES DE COMPÉTITION</span><b>♜</b></div><div class="season-reward-row"><span class="season-reward-icon">✦</span><div><strong>Collection 25 %</strong><small>Pack de la compétition</small></div><b class="${compPct>=25?'reward-unlocked':''}">${compPct>=25?'✓':'🔒'}</b></div><div class="season-reward-row"><span class="season-reward-icon">♛</span><div><strong>Collection 50 %</strong><small>Carte exclusive</small></div><b class="${compPct>=50?'reward-unlocked':''}">${compPct>=50?'✓':'🔒'}</b></div><div class="season-reward-row"><span class="season-reward-icon">★</span><div><strong>Collection 100 %</strong><small>Trophée collector</small></div><b class="${compPct>=100?'reward-unlocked':''}">${compPct>=100?'✓':'🔒'}</b></div></section>
+    </aside>
+   </div>
+  </div>`;
  }
  const season=comp.seasons.find(s=>s.id===seasonId);
  if(!season)return '<div class="page"><div class="empty">Saison introuvable.</div></div>';
