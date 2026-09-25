@@ -240,50 +240,6 @@ if(!packReset){
  await pool.query("INSERT INTO app_migrations(id) VALUES('reset-packs-2026-09-24')");
 }
 
-const historicalCatalogMigrationId='import-ligue1-historical-2010-2025-v4';
-if(!(await pool.query('SELECT 1 FROM app_migrations WHERE id=$1',[historicalCatalogMigrationId])).rowCount){
- const historicalClient=await pool.connect();
- try{
-  await historicalClient.query('BEGIN');
-  const parts=[];for(let i=1;i<=8;i++){if(i===1||i===5){for(let j=1;j<=4;j++)parts.push(fs.readFileSync(path.join(ROOT,'data','ligue1-historical-2010-2025.br.part'+String(i).padStart(2,'0')+'.'+j+'.b64'),'utf8').trim());}else parts.push(fs.readFileSync(path.join(ROOT,'data','ligue1-historical-2010-2025.br.part'+String(i).padStart(2,'0')+'.b64'),'utf8').trim());}
-  const payload=JSON.parse(zlib.brotliDecompressSync(Buffer.from(parts.join(''),'base64')).toString('utf8'));
-  const dicts=payload.dicts||[],seasons=payload.seasons||{};
-  const dict=(d,i)=>dicts[d]?.[Number(i)]??'';
-  const slug=v=>String(v||'club').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,42)||'club';
-  const cards=[],clubs=new Map(),seasonLinks=[],clubNames=new Set();
-  let order=0;
-  for(const season of Object.keys(seasons).sort()){
-   const seasonId='ligue-1-'+season;
-   await historicalClient.query("INSERT INTO competition_seasons(id,competition_id,season,label,status,sort_order) VALUES($1,'ligue-1',$2,$3,'available',$4) ON CONFLICT(id) DO UPDATE SET label=excluded.label,status='available',sort_order=excluded.sort_order",[seasonId,season,'Ligue 1 '+season,Number(season.slice(0,4))-2010]);
-   const seenSeasonClubs=new Set();
-   for(const row of seasons[season]||[]){
-    const club=String(dict(0,row[0])||'').trim(),name=String(dict(1,row[2])||'').trim(),position=String(dict(2,row[3])||'').trim()||'ST',nation=String(dict(3,row[4])||'').trim(),rarity=String(dict(4,row[5])||'common').trim().toLowerCase()||'common';
-    if(!club||!name)continue;
-    const jersey=row[1]==null||row[1]===''?null:Number(row[1]);
-    const nums=row.slice(6,13).map(Number),ovr=Number.isFinite(nums[0])?nums[0]:72,stats=nums.slice(1).map(x=>Number.isFinite(x)?x:ovr);
-    const clubId='ligue-1-club-'+slug(club);
-    if(!clubs.has(club))clubs.set(club,clubId);
-    if(!seenSeasonClubs.has(club)){seenSeasonClubs.add(club);seasonLinks.push([seasonId,clubId]);}
-    clubNames.add(club);
-    cards.push(['fv-h-'+season+'-'+String(cards.length+1).padStart(5,'0'),season,name,position,Number.isFinite(jersey)?jersey:null,club,nation,rarity,ovr,...stats,order++]);
-   }
-  }
-  const batch=async(sql,rows,width)=>{
-   for(let i=0;i<rows.length;i+=100){const chunk=rows.slice(i,i+100),vals=[],params=[];chunk.forEach((row,ri)=>{const base=ri*width;vals.push('('+Array.from({length:width},(_,j)=>'$'+(base+j+1)).join(',')+')');params.push(...row);});await historicalClient.query(sql.replace('VALUES_PLACEHOLDER',vals.join(',')),params);}
-  };
-  const clubRows=[...clubs.entries()].map(([name,id],i)=>[id,name,name.replace(/[^A-Za-z0-9]/g,'').slice(0,3).toUpperCase()||'L1','France',i]);
-  await batch("INSERT INTO clubs(id,name,tag,country,sort_order) VALUES_PLACEHOLDER ON CONFLICT(name) DO UPDATE SET tag=excluded.tag",clubRows,5);
-  await batch("INSERT INTO competition_clubs(competition_id,club_id,position) VALUES_PLACEHOLDER ON CONFLICT DO NOTHING",[...clubs.values()].map((id,i)=>['ligue-1',id,i]),3);
-  await batch("INSERT INTO season_clubs(season_id,club_id,position) VALUES_PLACEHOLDER ON CONFLICT DO NOTHING",seasonLinks.map((x,i)=>[x[0],x[1],i]),3);
-  await batch("INSERT INTO catalog_cards(id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order,is_active) VALUES_PLACEHOLDER ON CONFLICT(id) DO UPDATE SET season=excluded.season,name=excluded.name,position=excluded.position,jersey_number=excluded.jersey_number,club=excluded.club,nation=excluded.nation,rarity=excluded.rarity,ovr=excluded.ovr,pace=excluded.pace,shooting=excluded.shooting,passing=excluded.passing,dribbling=excluded.dribbling,defending=excluded.defending,physical=excluded.physical,is_active=true,updated_at=now()",cards.map(c=>[...c.slice(0,15),'STANDARD',false,null,c[15],true]),20);
-  if(cards.length!==6465)throw new Error('Historique Ligue 1 incomplet: '+cards.length+' cartes au lieu de 6465.');
-  await historicalClient.query('INSERT INTO app_migrations(id) VALUES($1)',[historicalCatalogMigrationId]);
-  await historicalClient.query('COMMIT');
-  const rows=(await pool.query('SELECT id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order,is_active FROM catalog_cards WHERE is_active=true ORDER BY card_order,id')).rows;
-  CARD_CATALOG=rows.map(c=>({...c,rarityLabel:RARITIES[c.rarity]?.label||c.rarity,distributionType:c.distribution_type,isLimited:Boolean(c.is_limited),maxSupply:c.max_supply==null?null:Number(c.max_supply),ovr:Number(c.ovr),pace:Number(c.pace),shooting:Number(c.shooting),passing:Number(c.passing),dribbling:Number(c.dribbling),defending:Number(c.defending),physical:Number(c.physical),order:Number(c.card_order),jerseyNumber:c.jersey_number==null?null:Number(c.jersey_number),isActive:Boolean(c.is_active)}));
-  console.log('[FOOTVAULT] Historique Ligue 1 importé: '+cards.length+' cartes sur 16 saisons (2010-2011 à 2025-2026).');
- }catch(error){await historicalClient.query('ROLLBACK').catch(()=>{});throw error;}finally{historicalClient.release();}
-}
 await pool.query(`CREATE TABLE IF NOT EXISTS registration_limits(ip varchar(255) PRIMARY KEY,last_created_at timestamptz NOT NULL)`);await pool.query(`CREATE TABLE IF NOT EXISTS login_limits(ip varchar(255) NOT NULL,email varchar(320) NOT NULL,failed_attempts integer NOT NULL DEFAULT 0,blocked_until timestamptz,updated_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(ip,email))`);return{mode:'postgres'};}catch(error){console.error('SPORT VAULT database unavailable:',error.message);if(pool)await pool.end().catch(()=>{});pool=null;if(process.env.NODE_ENV==='production')throw error;return{mode:'memory',error:error.message};}}
 async function findUserByEmail(email){if(pool){const r=await pool.query('SELECT * FROM users WHERE email=$1',[email]);return r.rows[0]||null;}for(const u of memory.users.values())if(u.email===email)return u;return null;}
 async function getUserById(id){if(pool){const r=await pool.query('SELECT * FROM users WHERE id=$1',[id]);return r.rows[0]||null;}return memory.users.get(id)||null;}
