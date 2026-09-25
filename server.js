@@ -532,8 +532,13 @@ function parisLocalMidnight(key){
 function periodInfo(kind,date=new Date()){
   const key=kind==='weekly'?parisWeekKey(date):parisDayKey(date);
   const start=parisLocalMidnight(key);
-  const nextUtc=new Date(Date.UTC(start.getUTCFullYear(),start.getUTCMonth(),start.getUTCDate()+(kind==='weekly'?7:1),12,0,0));
-  const nextKey=parisDayKey(nextUtc);
+  // Advance from the calendar period key, not the UTC date of local midnight.
+  // In Europe/Paris, local midnight falls on the previous UTC date; using
+  // start.getUTCDate() here made daily periods end at their own start.
+  const [year,month,day]=key.split('-').map(Number);
+  const days=kind==='weekly'?7:1;
+  const nextDate=new Date(Date.UTC(year,month-1,day+days,12,0,0));
+  const nextKey=nextDate.toISOString().slice(0,10);
   const end=parisLocalMidnight(nextKey);
   return{key,start,end};
 }
