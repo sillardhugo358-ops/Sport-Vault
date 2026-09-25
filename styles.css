@@ -1251,3 +1251,5 @@ hr{border-color:#1d3d63}
 .album-club-identity>div{min-width:0}
 .album-club-head .album-club-identity h2{margin:3px 0 0}
 @media(max-width:520px){.album-club-logo{width:42px;height:42px}.club-logo-fallback{width:42px;height:42px}}
+
+.club-logo-fallback.is-hidden{display:none!important}
