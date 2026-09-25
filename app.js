@@ -142,7 +142,7 @@ async function album(){
   const compPct=Math.round(compOwned/Math.max(1,compTotal)*100);
   const completedSeasons=seasons.filter(s=>s.clubs?.length&&s.clubs.every(cl=>cl.total>0&&cl.complete)).length;
   const seasonCards=seasons.map((s,i)=>{
-   const clubs=s.clubs||[],total=sTotal=clubs.reduce((n,cl)=>n+Number(cl.total||0),0),owned=clubs.reduce((n,cl)=>n+Number(cl.owned||0),0),pct=Math.round(owned/Math.max(1,total)*100),available=s.status==='available';
+   const clubs=s.clubs||[],total=clubs.reduce((n,cl)=>n+Number(cl.total||0),0),owned=clubs.reduce((n,cl)=>n+Number(cl.owned||0),0),pct=Math.round(owned/Math.max(1,total)*100),available=s.status==='available';
    return `<a class="season-show-card season-show-card-${i%5} ${available?'available':'locked'}" href="${available?'#album?competition='+encodeURIComponent(comp.id)+'&season='+encodeURIComponent(s.id):'#album?competition='+encodeURIComponent(comp.id)}" aria-label="Explorer la saison ${esc(s.season)}">
     <div class="season-show-art"><div class="season-art-lights"></div><span class="season-art-tag">${esc(comp.tag)}</span><span class="season-art-year">${esc(s.season)}</span><div class="season-art-crest">${esc(comp.tag)}</div><div class="season-art-glow"></div><div class="season-art-caption"><small>${esc(comp.name)}</small><strong>${esc(s.label||('Saison '+s.season))}</strong></div></div>
     <div class="season-show-meta"><span class="season-state ${available?'is-open':'is-locked'}">${available?'● DISPONIBLE':'◈ À VENIR'}</span><span>${clubs.length} CLUBS</span></div>
