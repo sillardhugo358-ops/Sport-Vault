@@ -1241,3 +1241,13 @@ hr{border-color:#1d3d63}
  .pack-reveal-modal .reveal-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-height:40vh}
  .pack-reveal-modal .reveal-card{max-height:210px}
 }
+
+/* Team crests / logos */
+.club-logo{display:inline-flex;align-items:center;justify-content:center;object-fit:contain;background:#fff;border:1px solid rgba(255,255,255,.12);border-radius:50%;padding:5px;flex:0 0 auto}
+.club-logo-fallback{display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:50%;flex:0 0 auto;background:linear-gradient(145deg,rgba(216,181,107,.22),rgba(20,38,64,.9));border:1px solid rgba(216,181,107,.38);color:var(--gold2);font:800 12px var(--head);letter-spacing:.03em}
+.album-club-identity,.admin-club-identity{display:flex;align-items:center;gap:12px;min-width:0}
+.album-club-logo{width:54px;height:54px}
+.admin-club-logo{width:38px;height:38px}
+.album-club-identity>div{min-width:0}
+.album-club-head .album-club-identity h2{margin:3px 0 0}
+@media(max-width:520px){.album-club-logo{width:42px;height:42px}.club-logo-fallback{width:42px;height:42px}}
