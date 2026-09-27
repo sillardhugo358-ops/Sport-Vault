@@ -690,7 +690,7 @@ async function albumViews(owned,selectedSeasonId=null,userId=null){
    seenClubKeys.add(uniqueKey);
    const cards=selectedSeason===season?(cardsByClub.get(key)||[]):[];
    const arr=grouped.get(x.season_id)||[];
-   const isTroyes=clubKey(x.name)==='estac troyes';
+   const isTroyes=clubKey(x.name)==='estactroyes';
    arr.push({id:x.id,name:isTroyes?'ESTAC Troyes':x.name,tag:isTroyes?'EST':x.tag,country:x.country,logoUrl:x.logo_url||'',cards,owned:stats.owned,total:stats.total,complete:stats.total>0&&stats.owned===stats.total});
    grouped.set(x.season_id,arr);
   }
