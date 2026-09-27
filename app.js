@@ -17,12 +17,16 @@ function cardMarkup(c,small=false){const limited=Boolean(c.isLimited),num=c.jers
 function cardLink(c){const search=[c.name,c.club,c.nation,c.position,c.rarityLabel].filter(Boolean).join(" ").toLowerCase();return `<a class="card-link" data-collection-card-search="${esc(search)}" href="#card?id=${encodeURIComponent(c.instanceId)}">${cardMarkup(c)}</a>`}
 function viewHero(kicker,title,sub,stat='',statLabel=''){return `<section class="view-hero"><div><p class="eyebrow">${esc(kicker)}</p><h1>${title}</h1>${sub?`<p class="lead">${esc(sub)}</p>`:''}</div>${stat?`<div class="hero-stat"><strong>${esc(stat)}</strong><span>${esc(statLabel)}</span></div>`:''}</section>`}
 async function home(){
+ const homeFetch=(path,fallback)=>Promise.race([
+  api(path),
+  new Promise(resolve=>setTimeout(()=>resolve(fallback),7000))
+ ]).catch(()=>fallback);
  const [catalogData,packsData,auctionData,meData,progressData]=await Promise.all([
-  api('/api/cards').catch(()=>({cards:[]})),
-  api('/api/packs').catch(()=>({packs:[]})),
-  api('/api/auctions').catch(()=>({auctions:[]})),
-  api('/api/me').catch(()=>({user:null})),
-  api('/api/progression').catch(()=>null)
+  homeFetch('/api/cards',{cards:[]}),
+  homeFetch('/api/packs',{packs:[]}),
+  homeFetch('/api/auctions',{auctions:[]}),
+  homeFetch('/api/me',{user:null}),
+  homeFetch('/api/progression',null)
  ]);
  const catalog=catalogData.cards||[],packs=packsData.packs||[],auctions=auctionData.auctions||[];
  state.user=meData.user||state.user;
