@@ -565,16 +565,18 @@ async function admin(){
   </section>
  </div>
  <div class="admin-tab-panel" data-admin-panel="auctions">
-  <section class="section admin-section-first admin-auction-panel">
-   <div class="admin-auction-dashboard-head">
-    <div><p class="eyebrow">CENTRE DE SURVEILLANCE</p><h2>ENCHÈRES.</h2><p>Historique des 100 dernières enchères enregistrées.</p></div>
-    <div class="admin-auction-summary">
-     <span><b>${auctions.filter(x=>x.status==="active").length}</b> EN COURS</span>
-     <span><b>${auctions.filter(x=>x.status==="completed").length}</b> TERMINÉES</span>
-     <span><b>${auctions.filter(x=>x.status==="cancelled").length}</b> ANNULÉES</span>
-    </div>
+  <section class="admin-management-page admin-market-page">
+   <header class="admin-management-hero"><div class="admin-management-title"><p class="eyebrow">FOOTVAULT / ÉCONOMIE &amp; ÉCHANGES</p><h2>MARCHÉ <span>/ ENCHÈRES.</span></h2><p>Surveillez les annonces, les transactions et les enchères actives du marché.</p></div><div class="admin-management-hero-actions"><span class="admin-management-live"><i></i> SURVEILLANCE ACTIVE</span></div></header>
+   <div class="admin-management-kpis">
+    <article class="admin-management-kpi blue"><span class="admin-management-kpi-icon">⚒</span><div><small>ANNONCES EN COURS</small><strong>\${auctions.filter(x=>x.status==="active").length.toLocaleString('fr-FR')}</strong><span>Offres ouvertes</span></div></article>
+    <article class="admin-management-kpi green"><span class="admin-management-kpi-icon">✓</span><div><small>ENCHÈRES TERMINÉES</small><strong>\${auctions.filter(x=>x.status==="completed").length.toLocaleString('fr-FR')}</strong><span>Clôturées</span></div></article>
+    <article class="admin-management-kpi gold"><span class="admin-management-kpi-icon">◈</span><div><small>ANNONCES ANNULÉES</small><strong>\${auctions.filter(x=>x.status==="cancelled").length.toLocaleString('fr-FR')}</strong><span>Retirées du marché</span></div></article>
+    <article class="admin-management-kpi purple"><span class="admin-management-kpi-icon">◷</span><div><small>ANNONCES CHARGÉES</small><strong>\${auctions.length.toLocaleString('fr-FR')}</strong><span>Historique récent</span></div></article>
    </div>
-   <div class="admin-auction-grid">${auctions.map(adminAuctionRow).join("")||'<div class="admin-auction-empty"><strong>AUCUNE ENCHÈRE</strong><span>Les activités du marché apparaîtront ici dès qu’une enchère sera créée.</span></div>'}</div>
+   <section class="admin-management-block admin-market-list">
+    <div class="admin-management-block-head"><div><p class="eyebrow">ACTIVITÉ DU MARCHÉ</p><h3>Suivi des enchères</h3><p>Historique des \${auctions.length} dernières enchères enregistrées, avec les offres, les vendeurs et les statuts.</p></div><span class="admin-management-count">\${auctions.length} ANNONCE(S)</span></div>
+    <div class="admin-auction-grid">\${auctions.map(adminAuctionRow).join("")||'<div class="admin-auction-empty"><strong>AUCUNE ENCHÈRE</strong><span>Les activités du marché apparaîtront ici dès qu’une enchère sera créée.</span></div>'}</div>
+   </section>
   </section>
  </div>
  <div class="admin-tab-panel" data-admin-panel="logs">
