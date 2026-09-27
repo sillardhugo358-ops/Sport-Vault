@@ -1493,3 +1493,56 @@ hr{border-color:#1d3d63}
 .admin-table-empty{text-align:center;padding:28px;color:#7893b3;font-size:12px}
 @media(max-width:1100px){.admin-management-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-management-table-head{align-items:flex-start;flex-direction:column}.admin-management-tools{width:100%;flex-wrap:wrap}.admin-search-field{flex:1}.admin-management-table-wrap{overflow-x:auto}}
 @media(max-width:700px){.admin-management-section{padding:12px;margin-bottom:16px}.admin-management-heading{gap:10px;align-items:flex-start}.admin-management-icon{width:42px;height:42px;font-size:20px}.admin-management-heading-action{margin-left:auto}.admin-management-heading-action .btn{font-size:10px;padding:9px}.admin-management-stats{gap:8px}.admin-management-stat{min-height:82px;padding:10px;gap:9px}.admin-management-stat .stat-icon{width:37px;height:37px;font-size:18px}.admin-management-stat strong{font-size:20px}.admin-management-stat span:not(.stat-icon){font-size:11px}.admin-management-tools select{min-width:0;flex:1}.admin-search-field{min-width:150px}.admin-management-table{min-width:850px}.admin-management-table-foot{font-size:9px}.admin-club-total{flex:1}}
+
+
+/* Admin entity editors — Club & Competition */
+.admin-entity-editor{width:min(1060px,calc(100vw - 36px));max-width:1060px;max-height:min(90vh,900px);overflow:auto;padding:30px;background:linear-gradient(145deg,#0b1a30 0%,#071326 62%,#08101f 100%);border:1px solid rgba(93,159,232,.32);box-shadow:0 28px 90px rgba(0,0,0,.58),inset 0 1px rgba(255,255,255,.035);color:#edf4ff}
+.admin-entity-editor .modal-close{position:sticky;float:right;top:0;z-index:3;width:36px;height:36px;border:1px solid rgba(142,184,232,.24);border-radius:10px;background:#102541;color:#dceaff;font-size:24px}
+.entity-editor-top{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin:0 42px 24px 0}
+.entity-editor-top .eyebrow{color:#72baff;font-size:10px;letter-spacing:2px;margin:0 0 8px}
+.entity-editor-top h2{font:900 clamp(25px,3vw,38px)/1.1 var(--head);letter-spacing:-.6px;text-transform:none;margin:0;color:#f2f6ff}
+.entity-editor-top p:not(.eyebrow){margin:9px 0 0;color:#93a9c5;font-size:13px;line-height:1.5}
+.entity-editor-status{flex:none;padding:8px 11px;border:1px solid rgba(85,170,255,.28);border-radius:8px;background:rgba(39,126,220,.1);color:#80c4ff;font-size:9px;font-weight:900;letter-spacing:1.2px}
+.entity-editor-layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:22px;align-items:start}
+.entity-editor-preview{position:sticky;top:8px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:25px 18px 18px;border:1px solid rgba(88,154,222,.27);border-radius:16px;background:radial-gradient(circle at 50% 20%,rgba(24,94,165,.32),transparent 48%),linear-gradient(155deg,#0c2341,#071326 80%);text-align:center;min-height:245px}
+.entity-preview-logo{width:112px;height:112px;border-radius:50%;display:grid;place-items:center;overflow:hidden;border:1px solid rgba(115,188,255,.48);background:radial-gradient(circle at 50% 35%,#164d83,#07162b 74%);box-shadow:0 8px 26px rgba(0,0,0,.3);color:#b9dcff;font-size:19px;font-weight:900;letter-spacing:1px}
+.entity-preview-logo img{width:100%;height:100%;object-fit:contain;padding:13px;box-sizing:border-box}
+.entity-preview-logo.is-empty{background:radial-gradient(circle at 50% 35%,#164d83,#07162b 74%)}
+.entity-editor-preview>strong{font:900 19px/1.2 var(--head);color:#f2f6ff;overflow-wrap:anywhere}
+.entity-editor-preview>small{font-size:9px;letter-spacing:1.4px;color:#6e93ba}
+.entity-preview-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;margin-top:auto;padding-top:15px;border-top:1px solid rgba(124,170,220,.16);font-size:9px;color:#87a8ce;letter-spacing:1px}
+.entity-preview-meta b{color:#6de0ba;font-size:10px;letter-spacing:.4px}
+.entity-editor-fields{min-width:0;display:grid;gap:14px}
+.entity-editor-section{padding:20px;border:1px solid rgba(106,157,211,.2);border-radius:14px;background:rgba(13,34,60,.56)}
+.entity-editor-section-title{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.entity-editor-section-title>span:first-child{display:grid;place-items:center;width:32px;height:32px;flex:none;border:1px solid rgba(76,169,255,.34);border-radius:9px;background:rgba(39,132,220,.12);color:#7dc5ff;font-weight:900;font-size:11px}
+.entity-editor-section-title h3{margin:0;color:#edf4ff;font:800 17px/1.2 var(--head)}
+.entity-editor-section-title p{margin:5px 0 0;color:#829bb9;font-size:11px;line-height:1.45}
+.entity-editor-section-title .entity-selection-count{margin-left:auto;color:#82c8ff;font-size:10px;white-space:nowrap}
+.entity-field{display:flex;flex-direction:column;gap:8px;margin-top:15px;min-width:0}
+.entity-field>span{font-size:10px;font-weight:800;letter-spacing:.8px;color:#a8bfd9}
+.entity-field i,.entity-editor-footer>span i{font-style:normal;color:#f6c75e}
+.entity-field input,.entity-field select,.entity-field textarea{width:100%;min-width:0;box-sizing:border-box;border:1px solid rgba(116,164,217,.24);border-radius:9px;background:#07162a;color:#edf4ff;padding:12px 13px;font:600 13px var(--body);outline:none;transition:border-color .15s,box-shadow .15s}
+.entity-field input:focus,.entity-field select:focus,.entity-field textarea:focus{border-color:#429bf0;box-shadow:0 0 0 3px rgba(51,145,234,.12)}
+.entity-field textarea{resize:vertical;line-height:1.5}
+.entity-field-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.entity-field-help{margin:8px 0 0;color:#7592b4;font-size:10px;line-height:1.5}
+.entity-competition-picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:230px;overflow:auto}
+.entity-competition-picker .collection-card-option{border-radius:9px;border-color:rgba(111,159,211,.2);background:#091a30;padding:12px}
+.entity-competition-picker .collection-card-option strong{font-size:11px;color:#e4efff}
+.entity-competition-picker .collection-card-option small{font-size:9px;color:#7898bd}
+.entity-seasons-section{margin-top:18px}
+.entity-seasons-section .entity-editor-section-title{align-items:center}
+.entity-seasons-section .entity-editor-section-title>button{margin-left:auto;white-space:nowrap}
+.entity-empty-seasons{padding:22px;text-align:center;border:1px dashed rgba(116,164,217,.25);border-radius:10px;color:#8099b7;font-size:12px}
+.admin-entity-editor .admin-season-list{max-height:300px;margin-top:0}
+.admin-entity-editor .admin-season-row{border-color:rgba(116,164,217,.18);border-radius:9px;background:#091a30;padding:13px}
+.admin-entity-editor .admin-season-row strong{font-size:12px;color:#e5efff}
+.admin-entity-editor .admin-season-row small{font-size:9px;color:#7f9bbc}
+.entity-editor-footer{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-top:22px;padding-top:18px;border-top:1px solid rgba(116,164,217,.18)}
+.entity-editor-footer>span{font-size:10px;color:#7f9bbc}
+.entity-editor-footer>div{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+.entity-editor-footer .btn{min-height:42px;border-radius:9px;padding:0 17px;font-size:11px}
+.entity-editor-footer .btn-gold{background:linear-gradient(135deg,#2386e8,#1466bd);border-color:#3297f2;color:#fff}
+.entity-editor-footer .btn-gold span{margin-left:8px;font-size:17px}
+@media(max-width:760px){.admin-entity-editor{padding:20px 15px;width:calc(100vw - 20px);max-height:92vh}.entity-editor-top{display:block;margin-right:36px}.entity-editor-status{display:inline-block;margin-top:12px}.entity-editor-layout{grid-template-columns:1fr;gap:14px}.entity-editor-preview{position:relative;top:auto;min-height:0;padding:18px}.entity-preview-logo{width:82px;height:82px}.entity-editor-preview>strong{font-size:16px}.entity-editor-section{padding:15px}.entity-field-grid,.entity-competition-picker{grid-template-columns:1fr}.entity-seasons-section .entity-editor-section-title{flex-wrap:wrap}.entity-seasons-section .entity-editor-section-title>button{margin:8px 0 0;width:100%}.entity-editor-footer{align-items:stretch;flex-direction:column}.entity-editor-footer>div{width:100%}.entity-editor-footer>div .btn{flex:1}.entity-editor-footer>span{font-size:9px}}
