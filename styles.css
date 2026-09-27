@@ -1253,3 +1253,56 @@ hr{border-color:#1d3d63}
 @media(max-width:520px){.album-club-logo{width:42px;height:42px}.club-logo-fallback{width:42px;height:42px}}
 
 .club-logo-fallback.is-hidden{display:none!important}
+
+
+
+/* FOOTVAULT ALBUM — premium club collection redesign */
+.album-season-progress{
+  position:relative;overflow:hidden;border:1px solid rgba(72,145,231,.35);
+  border-radius:14px;padding:24px 26px;margin:0 0 24px;
+  background:radial-gradient(ellipse at 100% 0%,rgba(38,116,210,.18),transparent 48%),linear-gradient(115deg,#0a1a31,#071326 68%,#0b1c35);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 14px 35px rgba(0,0,0,.16)
+}
+.album-season-progress .eyebrow{color:#79b7ff;letter-spacing:1.8px}
+.album-season-progress h2{font:900 clamp(27px,3vw,39px)/1 var(--head);letter-spacing:.3px;color:#f4f7ff}
+.album-season-progress>strong{font:900 31px var(--head);color:#f2d15d}
+.album-season-track{height:8px;border-radius:20px;background:#152b48;overflow:hidden}
+.album-season-track i{border-radius:20px;background:linear-gradient(90deg,#197be6,#45c4f4);box-shadow:0 0 18px rgba(51,166,255,.35)}
+.album-summary{gap:12px;margin:0 0 26px}
+.album-summary:after{display:none}
+.album-summary .summary{position:relative;overflow:hidden;border:1px solid #1a3c63;border-radius:10px;padding:17px 20px;background:linear-gradient(145deg,#0b203b,#071529)}
+.album-summary .summary:after{content:"";position:absolute;right:-24px;top:-30px;width:95px;height:95px;border:1px solid rgba(100,164,234,.12);border-radius:50%;box-shadow:0 0 0 14px rgba(100,164,234,.025),0 0 0 28px rgba(100,164,234,.02)}
+.album-summary .summary span{color:#86a9d1;font-size:9px;font-weight:800;letter-spacing:1.2px}
+.album-summary .summary strong{position:relative;z-index:1;font:900 clamp(23px,2.5vw,33px)/1.05 var(--head);color:#f3d365;overflow-wrap:anywhere}
+.album-clubs-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:0}
+.album-club-card{
+  position:relative;overflow:hidden;padding:19px;border:1px solid #1b3c60;border-radius:12px;
+  background:radial-gradient(ellipse at 100% 0%,rgba(28,95,163,.12),transparent 48%),linear-gradient(145deg,#0b1d35,#071326 78%);
+  box-shadow:0 12px 28px rgba(0,0,0,.14);transition:transform .2s,border-color .2s,box-shadow .2s
+}
+.album-club-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#3188df,#f1d36a);opacity:.7}
+.album-club-card:hover{transform:translateY(-3px);border-color:rgba(83,160,241,.55);box-shadow:0 18px 36px rgba(0,0,0,.25),0 0 24px rgba(26,105,193,.08)}
+.album-club-head{align-items:center;padding-bottom:15px;border-bottom:1px solid rgba(98,149,207,.14)}
+.album-club-identity{gap:13px}
+.album-club-logo,.album-club-identity .club-logo-fallback{width:56px;height:56px;padding:6px;border:1px solid rgba(112,165,224,.3);background:linear-gradient(145deg,#fff,#dce7f5);box-shadow:0 5px 14px rgba(0,0,0,.2)}
+.album-club-identity .club-logo-fallback{background:linear-gradient(145deg,#1c3f69,#0b1a30);color:#f0d36c;font-size:13px}
+.album-club-identity .eyebrow{margin:0 0 5px;color:#76b5f5;font-size:8px;letter-spacing:1.1px}
+.album-club-head h2{font:900 clamp(21px,2vw,27px)/1.05 var(--head);color:#f4f7ff;letter-spacing:.1px}
+.album-club-head>strong{flex:0 0 auto;padding:7px 10px;border:1px solid rgba(241,209,93,.24);border-radius:7px;background:rgba(241,209,93,.07);font:900 22px var(--head);color:#f4d665}
+.album-club-card>.progress{height:7px;margin:15px 0 10px;border-radius:20px;background:#142b48;overflow:hidden}
+.album-club-card>.progress i{border-radius:20px;background:linear-gradient(90deg,#2689e8,#39c4b2);box-shadow:0 0 12px rgba(41,156,220,.2)}
+.album-club-meta{margin:0 0 12px;color:#88a8cc;font-size:8px;letter-spacing:.5px}
+.album-club-meta b{color:#f0d36b;font-size:8px}
+.album-cards{grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.album-cards .mini-card{position:relative;min-width:0;min-height:78px;padding:9px;border:1px solid #1a385a;border-radius:6px;background:linear-gradient(145deg,#102744,#09182c);transition:transform .18s,border-color .18s,background .18s}
+.album-cards .mini-card strong{font:800 12px/1.2 var(--head);color:#e3edfa;overflow-wrap:anywhere}
+.album-cards .mini-card small{display:block;margin-top:7px;color:#78a2d0;font-size:7px;letter-spacing:.5px;text-transform:uppercase}
+.album-cards .mini-card.missing{opacity:.48;background:linear-gradient(145deg,#0a192c,#071326)}
+.album-cards .mini-card:not(.missing){border-color:rgba(63,153,227,.42);background:linear-gradient(145deg,#12365b,#0a1b31)}
+.album-cards .mini-card:not(.missing):hover{border-color:#f0d36b;background:linear-gradient(145deg,#17436e,#0a1b31);transform:translateY(-2px)}
+.album-club-card>.btn{min-height:43px;margin-top:16px;border-radius:7px}
+.album-club-card>.btn:disabled{background:#0a1a2e;border-color:#1b3654;color:#7990ac;opacity:1}
+.album-club-card>.btn.btn-gold{background:linear-gradient(135deg,#d3aa4e,#f4dc86);color:#111;border-color:#f4dc86}
+@media(max-width:1100px){.album-cards{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:760px){.album-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.album-summary .summary{padding:14px 12px}.album-summary .summary strong{font-size:23px}.album-clubs-grid{grid-template-columns:1fr;gap:12px}.album-cards{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media(max-width:520px){.album-season-progress{padding:17px}.album-summary{grid-template-columns:1fr}.album-summary .summary strong{font-size:25px}.album-club-card{padding:14px}.album-club-logo,.album-club-identity .club-logo-fallback{width:44px;height:44px}.album-club-head h2{font-size:22px}.album-club-head>strong{font-size:19px;padding:6px 8px}.album-cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.album-cards .mini-card{min-height:67px;padding:7px}.album-cards .mini-card strong{font-size:11px}}
