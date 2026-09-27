@@ -295,26 +295,38 @@ async function showCatalogCardEditor(card,isNew=false){
 async function showCompetitionEditor(comp){
  if(state.user?.role!=='creator')return;
  const c=comp||{id:'',name:'',tag:'',country:'',description:'',status:'upcoming',seasons:[]};
- const seasons=(c.seasons||[]).map(s=>`<div class="admin-season-row"><div><strong>${esc(s.label||('Saison '+s.season))}</strong><small>${esc(s.season)} · ${s.status==='available'?'DISPONIBLE':'À VENIR'} · ${s.clubCount} clubs</small></div><div><button class="btn" data-edit-season="${esc(s.id)}">GÉRER</button><button class="btn btn-danger" data-delete-season="${esc(s.id)}">SUPPRIMER</button></div></div>`).join('')||'<div class="empty">Aucune saison configurée.</div>';
- setModal(`<div class="modal-box admin-user-modal">
-  <button class="modal-close" data-close>×</button>
-  <p class="eyebrow">CRÉATEUR / COMPÉTITION</p><h2>${comp?'MODIFIER':'CRÉER'} LA COMPÉTITION</h2>
-  <div class="admin-card-grant collection-meta-form">
-   <input id="competitionName" placeholder="Nom de la compétition" value="${esc(c.name)}">
-   <select id="competitionStatus"><option value="available" ${c.status==='available'?'selected':''}>DISPONIBLE</option><option value="upcoming" ${c.status==='upcoming'?'selected':''}>À VENIR</option></select>
+ const seasons=(c.seasons||[]).map(s=>`<div class="admin-season-row"><div><strong>${esc(s.label||('Saison '+s.season))}</strong><small>${esc(s.season)} · ${s.status==='available'?'DISPONIBLE':'À VENIR'} · ${s.clubCount} clubs</small></div><div><button class="btn" data-edit-season="${esc(s.id)}">Gérer</button><button class="btn btn-danger" data-delete-season="${esc(s.id)}">Supprimer</button></div></div>`).join('')||'<div class="entity-empty-seasons">Aucune saison configurée pour le moment.</div>';
+ setModal(`<div class="modal-box admin-entity-editor competition-editor">
+  <button class="modal-close" data-close aria-label="Fermer">×</button>
+  <div class="entity-editor-top"><div><p class="eyebrow">ADMINISTRATION / STRUCTURE</p><h2>${comp?'Modifier la compétition':'Ajouter une compétition'}</h2><p>Gère les informations principales, la disponibilité et les saisons.</p></div><span class="entity-editor-status">${comp?'ÉDITION':'NOUVELLE'}</span></div>
+  <div class="entity-editor-layout">
+   <aside class="entity-editor-preview competition-preview"><div class="entity-preview-logo" id="competitionPreviewLogo"><span id="competitionPreviewTag">${esc(c.tag||'COMP')}</span></div><strong id="competitionPreviewName">${esc(c.name||'Nom de la compétition')}</strong><small id="competitionPreviewCountry">${esc(c.country||'PAYS / RÉGION')}</small><div class="entity-preview-meta"><span>STATUT</span><b id="competitionPreviewStatus">${c.status==='available'?'DISPONIBLE':'À VENIR'}</b></div></aside>
+   <div class="entity-editor-fields">
+    <section class="entity-editor-section"><div class="entity-editor-section-title"><span>01</span><div><h3>Informations générales</h3><p>Les informations visibles dans le catalogue.</p></div></div>
+     <label class="entity-field"><span>Nom de la compétition <i>*</i></span><input id="competitionName" placeholder="Ex. Ligue 1" maxlength="80" value="${esc(c.name)}" required></label>
+     <div class="entity-field-grid">
+      <label class="entity-field"><span>Code / abréviation <i>*</i></span><input id="competitionTag" placeholder="Ex. L1" maxlength="12" value="${esc(c.tag||'')}" required></label>
+      <label class="entity-field"><span>Pays / région</span><input id="competitionCountry" placeholder="Ex. France" maxlength="100" value="${esc(c.country||'')}"></label>
+     </div>
+     <label class="entity-field"><span>Description</span><textarea id="competitionDescription" rows="3" maxlength="500" placeholder="Quelques mots sur cette compétition…">${esc(c.description||'')}</textarea></label>
+     <label class="entity-field"><span>Disponibilité</span><select id="competitionStatus"><option value="available" ${c.status==='available'?'selected':''}>Disponible</option><option value="upcoming" ${c.status==='upcoming'?'selected':''}>À venir</option></select></label>
+    </section>
+   </div>
   </div>
-  <div class="section-head" style="margin-top:22px"><div><p class="eyebrow">ÉDITIONS</p><h3>SAISONS DE LA COMPÉTITION</h3></div><button class="btn btn-gold" type="button" data-new-season>+ NOUVELLE SAISON</button></div>
-  <div class="admin-season-list">${seasons}</div>
-  <div class="auction-dialog-actions"><button class="btn btn-ghost" data-close>ANNULER</button><button class="btn btn-gold" data-save-competition>ENREGISTRER</button></div>
+  <section class="entity-editor-section entity-seasons-section"><div class="entity-editor-section-title"><span>02</span><div><h3>Saisons de la compétition</h3><p>Gère les éditions et les clubs associés à chaque saison.</p></div><button class="btn btn-gold" type="button" data-new-season>＋ Nouvelle saison</button></div><div class="admin-season-list">${seasons}</div></section>
+  <div class="entity-editor-footer"><span><i>*</i> Champs obligatoires</span><div><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-gold" data-save-competition>Enregistrer la compétition <span>→</span></button></div></div>
  </div>`);
+ const nameInput=$('#competitionName'),tagInput=$('#competitionTag'),countryInput=$('#competitionCountry'),statusInput=$('#competitionStatus');
+ const refreshPreview=()=>{$('#competitionPreviewName').textContent=nameInput.value.trim()||'Nom de la compétition';$('#competitionPreviewTag').textContent=tagInput.value.trim().toUpperCase()||'COMP';$('#competitionPreviewCountry').textContent=countryInput.value.trim()||'PAYS / RÉGION';$('#competitionPreviewStatus').textContent=statusInput.value==='available'?'DISPONIBLE':'À VENIR';};
+ [nameInput,tagInput,countryInput,statusInput].forEach(input=>input.addEventListener('input',refreshPreview));
  const save=document.querySelector('[data-save-competition]');
  save?.addEventListener('click',async()=>{
-  const name=$('#competitionName').value.trim(),status=$('#competitionStatus').value;
+  const name=nameInput.value.trim(),tag=tagInput.value.trim().toUpperCase(),country=countryInput.value.trim(),description=$('#competitionDescription').value.trim(),status=statusInput.value;
   if(name.length<2)return toast('Le nom de la compétition doit contenir au moins 2 caractères.');
-  const slug=value=>value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,44);
+  if(!tag||tag.length>12)return toast('Le code de la compétition est obligatoire (12 caractères maximum).');
+  const slug=value=>value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,44);
   const id=comp?.id||slug(name);
-  const tag=comp?.tag||name.trim().split(' ').filter(Boolean).map(word=>word[0]).join('').slice(0,12).toUpperCase()||'COMP';
-  try{await api('/api/admin/competitions',{method:'POST',body:JSON.stringify({action:comp?'update':'create',id,name,tag,country:comp?.country||'',description:comp?.description||'',status})});rememberAdminView('competitions');closeModal();toast('Compétition enregistrée.');render()}catch(e){toast(e.message)}
+  try{await api('/api/admin/competitions',{method:'POST',body:JSON.stringify({action:comp?'update':'create',id,name,tag,country,description,status})});rememberAdminView('competitions');closeModal();toast('Compétition enregistrée.');render()}catch(e){toast(e.message)}
  });
  document.querySelector('[data-new-season]')?.addEventListener('click',e=>{e.preventDefault();showSeasonEditor(null,c.id)});
  document.querySelectorAll('[data-edit-season]').forEach(x=>x.addEventListener('click',e=>{e.preventDefault();const selected=(c.seasons||[]).find(v=>String(v.id)===String(x.dataset.editSeason));if(selected)showSeasonEditor(selected,c.id);else toast('Saison introuvable.')}));
@@ -353,23 +365,38 @@ async function showClubEditor(club){
  const c=club||{id:'',name:'',competitionIds:[]};
  const competitions=(state.adminCompetitions||[]).filter(x=>x.status==='available');
  const currentCompetitionIds=club?.competitionIds||[];
- const competitionOptions=competitions.map(comp=>`<label class="collection-card-option"><input type="checkbox" value="${esc(comp.id)}" ${currentCompetitionIds.includes(comp.id)?'checked':''}><span><strong>${esc(comp.name)}</strong><small>${esc(comp.country||'')}</small></span></label>`).join('')||'<div class="empty">Aucune compétition disponible.</div>';
- setModal(`<div class="modal-box admin-user-modal">
-  <button class="modal-close" data-close>×</button>
-  <p class="eyebrow">CRÉATEUR / CLUB</p>
-  <h2>${club?'MODIFIER':'CRÉER'} LE CLUB</h2>
-  <p class="lead" style="font-size:12px">Sélectionne les compétitions dans lesquelles ce club est disponible. Un club peut appartenir à plusieurs compétitions.</p>
-  <div class="admin-card-grant collection-meta-form"><input id="clubName" placeholder="Nom du club" value="${esc(c.name)}"></div>
-  <div class="admin-card-grant collection-meta-form" style="margin-top:12px"><input id="clubLogoUrl" type="url" inputmode="url" placeholder="URL du logo (https://...)" value="${esc(c.logo_url||c.logoUrl||'')}"></div>
-  <p class="catalog-context-help" style="margin-top:8px">Ajoute un lien direct vers le logo du club (PNG, SVG ou WebP). Laisse vide pour retirer le logo.</p>
-  <p class="eyebrow" style="margin-top:20px">COMPÉTITIONS DISPONIBLES</p>
-  <div class="collection-card-picker" id="clubCompetitionPicker">${competitionOptions}</div>
-  <p class="catalog-context-help" style="margin-top:12px">L'identifiant technique et le tag sont générés automatiquement et restent internes au système.</p>
-  <div class="auction-dialog-actions"><button class="btn btn-ghost" data-close>ANNULER</button><button class="btn btn-gold" data-save-club>ENREGISTRER</button></div>
+ const competitionOptions=competitions.map(comp=>`<label class="collection-card-option"><input type="checkbox" value="${esc(comp.id)}" ${currentCompetitionIds.includes(comp.id)?'checked':''}><span><strong>${esc(comp.name)}</strong><small>${esc(comp.country||'Pays non renseigné')}</small></span></label>`).join('')||'<div class="empty">Aucune compétition disponible.</div>';
+ setModal(`<div class="modal-box admin-entity-editor club-editor">
+  <button class="modal-close" data-close aria-label="Fermer">×</button>
+  <div class="entity-editor-top"><div><p class="eyebrow">ADMINISTRATION / CATALOGUE</p><h2>${club?'Modifier le club':'Ajouter un club'}</h2><p>Configure son identité visuelle et ses compétitions de rattachement.</p></div><span class="entity-editor-status">${club?'ÉDITION':'NOUVEAU CLUB'}</span></div>
+  <div class="entity-editor-layout">
+   <aside class="entity-editor-preview"><div class="entity-preview-logo" id="clubLogoPreview">${c.logo_url||c.logoUrl?`<img src="${esc(c.logo_url||c.logoUrl)}" alt="Aperçu du logo" onerror="this.style.display='none';this.parentElement.classList.add('is-empty')">`:'<span>CLUB</span>'}</div><strong id="clubPreviewName">${esc(c.name||'Nom du club')}</strong><small>APERÇU DE LA FICHE</small><div class="entity-preview-meta"><span>COMPÉTITIONS</span><b id="clubPreviewCount">${currentCompetitionIds.length}</b></div></aside>
+   <div class="entity-editor-fields">
+    <section class="entity-editor-section"><div class="entity-editor-section-title"><span>01</span><div><h3>Identité du club</h3><p>Nom affiché et logo officiel.</p></div></div>
+     <label class="entity-field"><span>Nom du club <i>*</i></span><input id="clubName" placeholder="Ex. Paris Saint-Germain" maxlength="80" value="${esc(c.name)}" required></label>
+     <label class="entity-field"><span>URL du logo</span><input id="clubLogoUrl" type="url" inputmode="url" placeholder="https://…/logo.png" value="${esc(c.logo_url||c.logoUrl||'')}"></label>
+     <p class="entity-field-help">Lien direct vers une image PNG, SVG ou WebP. Laisse vide pour retirer le logo.</p>
+    </section>
+    <section class="entity-editor-section"><div class="entity-editor-section-title"><span>02</span><div><h3>Compétitions associées</h3><p>Un club peut être rattaché à plusieurs compétitions.</p></div><b class="entity-selection-count" id="clubSelectionCount">${currentCompetitionIds.length} sélectionnée(s)</b></div>
+     <div class="entity-competition-picker" id="clubCompetitionPicker">${competitionOptions}</div>
+    </section>
+   </div>
+  </div>
+  <div class="entity-editor-footer"><span><i>*</i> Champs obligatoires</span><div><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-gold" data-save-club>Enregistrer le club <span>→</span></button></div></div>
  </div>`);
+ const nameInput=$('#clubName'),logoInput=$('#clubLogoUrl'),picker=$('#clubCompetitionPicker');
+ const refreshPreview=()=>{
+  $('#clubPreviewName').textContent=nameInput.value.trim()||'Nom du club';
+  const count=picker.querySelectorAll('input:checked').length;
+  $('#clubPreviewCount').textContent=count;$('#clubSelectionCount').textContent=count+' sélectionnée(s)';
+  const url=logoInput.value.trim(),preview=$('#clubLogoPreview');
+  preview.innerHTML=url?`<img src="${esc(url)}" alt="Aperçu du logo" onerror="this.style.display='none';this.parentElement.classList.add('is-empty')">`:'<span>CLUB</span>';
+  preview.classList.toggle('is-empty',!url);
+ };
+ nameInput.addEventListener('input',refreshPreview);logoInput.addEventListener('input',refreshPreview);picker.addEventListener('change',refreshPreview);
  document.querySelector('[data-save-club]').onclick=async()=>{
-  const name=$('#clubName').value.trim(),logoUrl=$('#clubLogoUrl').value.trim();
-  const competitionIds=[...document.querySelectorAll('#clubCompetitionPicker input:checked')].map(x=>x.value);
+  const name=nameInput.value.trim(),logoUrl=logoInput.value.trim();
+  const competitionIds=[...picker.querySelectorAll('input:checked')].map(x=>x.value);
   if(!name)return toast('Le nom du club est obligatoire.');
   if(!competitionIds.length)return toast('Sélectionne au moins une compétition.');
   try{
