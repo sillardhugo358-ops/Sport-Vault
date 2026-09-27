@@ -55,18 +55,18 @@ const PACKS = {
 };
 const PACK_WEIGHTS=[['common',72],['rare',21],['epic',5],['legendary',1.8],['icon',0.2]];
 const MISSIONS=[
-  {id:'collect-5',order:1,title:'PREMIÈRE COLLECTION',description:'Possède au moins 5 cartes dans ton Vault.',target:5,type:'cards',reward:{coins:150,xp:25}},
-  {id:'open-1',order:2,title:'PREMIÈRE OUVERTURE',description:'Ouvre ton premier pack.',target:1,type:'packs',prerequisite:'collect-5',reward:{coins:150,xp:30}},
-  {id:'rare-1',order:3,title:'PREMIÈRE RARETÉ',description:'Obtiens une carte RARE ou supérieure.',target:1,type:'rarePlus',prerequisite:'open-1',reward:{coins:250,xp:40}},
-  {id:'collect-15',order:4,title:'SCOUTING INTENSIF',description:'Possède au moins 15 cartes.',target:15,type:'cards',prerequisite:'rare-1',reward:{coins:300,xp:50}},
-  {id:'open-3',order:5,title:'COLLECTIONNEUR ACTIF',description:'Ouvre 3 packs au total.',target:3,type:'packs',prerequisite:'collect-15',reward:{coins:350,xp:60}},
-  {id:'epic-1',order:6,title:'CAP SUR L’ÉLITE',description:'Obtiens une carte EPIC ou supérieure.',target:1,type:'epicPlus',prerequisite:'open-3',reward:{coins:450,xp:75}},
-  {id:'collect-25',order:7,title:'VAULT EN PLEINE CROISSANCE',description:'Possède au moins 25 cartes.',target:25,type:'cards',prerequisite:'epic-1',reward:{coins:500,xp:90}},
-  {id:'clubs-4',order:8,title:'TOUR DU TERRAIN',description:'Possède des cartes provenant d’au moins 4 clubs différents.',target:4,type:'distinctClubs',prerequisite:'collect-25',reward:{coins:600,xp:110}},
-  {id:'legend-1',order:9,title:'TOUCHE DE LÉGENDE',description:'Obtiens une carte LEGENDARY ou supérieure.',target:1,type:'legendaryPlus',prerequisite:'clubs-4',reward:{coins:750,xp:130}},
-  {id:'open-10',order:10,title:'OUVREUR EXPÉRIMENTÉ',description:'Ouvre 10 packs au total.',target:10,type:'packs',prerequisite:'legend-1',reward:{coins:900,xp:150}},
-  {id:'collect-40',order:11,title:'GRAND COLLECTIONNEUR',description:'Possède au moins 40 cartes.',target:40,type:'cards',prerequisite:'open-10',reward:{coins:1000,xp:175}},
-  {id:'icon-1',order:12,title:'AU SOMMET DU VAULT',description:'Obtiens une carte ICON.',target:1,type:'iconPlus',prerequisite:'collect-40',reward:{coins:1500,xp:200}}
+  {id:'collect-5',order:1,title:'PREMIÈRE COLLECTION',description:'Possède au moins 5 cartes dans ton Vault.',target:5,type:'cards',reward:{coins:20,xp:10}},
+  {id:'open-1',order:2,title:'PREMIÈRE OUVERTURE',description:'Ouvre ton premier pack.',target:1,type:'packs',prerequisite:'collect-5',reward:{coins:20,xp:10}},
+  {id:'rare-1',order:3,title:'PREMIÈRE RARETÉ',description:'Obtiens une carte RARE ou supérieure.',target:1,type:'rarePlus',prerequisite:'open-1',reward:{coins:25,xp:12}},
+  {id:'collect-15',order:4,title:'SCOUTING INTENSIF',description:'Possède au moins 15 cartes.',target:15,type:'cards',prerequisite:'rare-1',reward:{coins:30,xp:15}},
+  {id:'open-3',order:5,title:'COLLECTIONNEUR ACTIF',description:'Ouvre 3 packs au total.',target:3,type:'packs',prerequisite:'collect-15',reward:{coins:35,xp:18}},
+  {id:'epic-1',order:6,title:'CAP SUR L’ÉLITE',description:'Obtiens une carte EPIC ou supérieure.',target:1,type:'epicPlus',prerequisite:'open-3',reward:{coins:40,xp:20}},
+  {id:'collect-25',order:7,title:'VAULT EN PLEINE CROISSANCE',description:'Possède au moins 25 cartes.',target:25,type:'cards',prerequisite:'epic-1',reward:{coins:45,xp:22}},
+  {id:'clubs-4',order:8,title:'TOUR DU TERRAIN',description:'Possède des cartes provenant d’au moins 4 clubs différents.',target:4,type:'distinctClubs',prerequisite:'collect-25',reward:{coins:50,xp:25}},
+  {id:'legend-1',order:9,title:'TOUCHE DE LÉGENDE',description:'Obtiens une carte LEGENDARY ou supérieure.',target:1,type:'legendaryPlus',prerequisite:'clubs-4',reward:{coins:60,xp:30}},
+  {id:'open-10',order:10,title:'OUVREUR EXPÉRIMENTÉ',description:'Ouvre 10 packs au total.',target:10,type:'packs',prerequisite:'legend-1',reward:{coins:70,xp:35}},
+  {id:'collect-40',order:11,title:'GRAND COLLECTIONNEUR',description:'Possède au moins 40 cartes.',target:40,type:'cards',prerequisite:'open-10',reward:{coins:80,xp:40}},
+  {id:'icon-1',order:12,title:'AU SOMMET DU VAULT',description:'Obtiens une carte ICON.',target:1,type:'iconPlus',prerequisite:'collect-40',reward:{coins:100,xp:50}}
 ];
 const DAILY_TASKS=[
   {id:'open-2',title:'DOUBLE OUVERTURE',description:'Ouvre 2 packs différents aujourd’hui.',target:2,type:'packsOpened',reward:{coins:10,xp:5}},
