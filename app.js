@@ -412,16 +412,38 @@ async function admin(){
  };
  return `<div class="page"><section class="view-hero"><div><p class="eyebrow">FOOTVAULT / ADMIN</p><h1>CENTRE DE <span>CONTRÔLE.</span></h1><p class="lead">Supervision de la plateforme, des comptes, de l'économie et des enchères.</p></div><div class="hero-stat"><strong>ADMIN</strong><span>ACCÈS PRIVILÉGIÉ</span></div></section>
  <nav class="admin-tabs" aria-label="Sections administration">
-  <button class="admin-tab ${!adminReturn||adminReturn?.tab==="dashboard"?"active":""}" data-admin-tab="dashboard">TABLEAU DE BORD</button>
-  <button class="admin-tab" data-admin-tab="players">JOUEURS</button>
-<button class="admin-tab ${adminReturn?.tab==="competitions"?"active":""}" data-admin-tab="competitions">COMPÉTITIONS</button>
-  <button class="admin-tab ${adminReturn?.tab==="cards"?"active":""}" data-admin-tab="cards">CARTES</button>
-  <button class="admin-tab ${adminReturn?.tab==="packs"?"active":""}" data-admin-tab="packs">PACKS</button>\n  <button class="admin-tab" data-admin-tab="auctions">ENCHÈRES</button>
-  <button class="admin-tab" data-admin-tab="logs">JOURNAL</button>
+  <p class="admin-nav-label">ADMINISTRATION</p>
+  <button class="admin-tab ${!adminReturn||adminReturn?.tab==="dashboard"?"active":""}" data-admin-tab="dashboard"><span>▦</span> Tableau de bord</button>
+  <button class="admin-tab" data-admin-tab="players"><span>♙</span> Joueurs</button>
+  <button class="admin-tab ${adminReturn?.tab==="competitions"?"active":""}" data-admin-tab="competitions"><span>♜</span> Compétitions & saisons</button>
+  <button class="admin-tab ${adminReturn?.tab==="cards"?"active":""}" data-admin-tab="cards"><span>▤</span> Cartes</button>
+  <button class="admin-tab ${adminReturn?.tab==="packs"?"active":""}" data-admin-tab="packs"><span>⬡</span> Packs & pools</button>
+  <button class="admin-tab" data-admin-tab="auctions"><span>⚒</span> Marché / enchères</button>
+  <button class="admin-tab" data-admin-tab="logs"><span>▧</span> Journal système</button>
+  <a class="admin-back-link" href="#home"><span>↗</span> Retour au site</a>
  </nav>
  <div class="admin-tab-panel ${!adminReturn||adminReturn?.tab==="dashboard"?"active":""}" data-admin-panel="dashboard">
-  <section class="section admin-section-first"><div class="section-head"><div><p class="eyebrow">VUE GLOBALE</p><h2>TABLEAU DE BORD.</h2></div><p>État actuel de SPORT VAULT.</p></div>
-   <div class="admin-grid"><div class="admin-stat"><span>COMPTES</span><strong>${s.users}</strong></div><div class="admin-stat"><span>CARTES EN CIRCULATION</span><strong>${s.cards}</strong></div><div class="admin-stat"><span>ENCHÈRES ACTIVES</span><strong>${s.activeAuctions}</strong></div><div class="admin-stat"><span>ENCHÈRES TERMINÉES</span><strong>${s.completedAuctions}</strong></div><div class="admin-stat"><span>PACKS OUVERTS</span><strong>${s.packsOpened}</strong></div><div class="admin-stat"><span>FOOTCOINS ÉMIS</span><strong>${money(s.totalCoins)}</strong></div><div class="admin-stat"><span>FOOTCOINS RÉSERVÉS</span><strong>${money(s.reservedCoins)}</strong></div><div class="admin-stat"><span>GEMS EN CIRCULATION</span><strong>${money(s.totalGems)}</strong></div></div>
+  <section class="admin-dashboard">
+   <header class="admin-dashboard-heading"><div><p class="eyebrow">FOOTVAULT / ADMINISTRATION</p><h2>TABLEAU <span>DE BORD.</span></h2><p class="lead">Gérez votre plateforme et suivez son activité en un coup d’œil.</p></div><div class="admin-live-status"><span class="admin-live-dot"></span><div><strong>ESPACE ADMINISTRATEUR</strong><small>Vue d’ensemble de la plateforme</small></div></div></header>
+   <div class="admin-highlight-grid">
+    <article class="admin-highlight admin-highlight-blue"><div class="admin-highlight-icon">▤</div><div><span>CARTES EN CIRCULATION</span><strong>${Number(s.cards||0).toLocaleString('fr-FR')}</strong><small>Cartes possédées par les joueurs</small></div></article>
+    <article class="admin-highlight admin-highlight-green"><div class="admin-highlight-icon">♙</div><div><span>COMPTES JOUEURS</span><strong>${Number(s.users||0).toLocaleString('fr-FR')}</strong><small>Comptes enregistrés</small></div></article>
+    <article class="admin-highlight admin-highlight-purple"><div class="admin-highlight-icon">♢</div><div><span>ENCHÈRES ACTIVES</span><strong>${Number(s.activeAuctions||0).toLocaleString('fr-FR')}</strong><small>Enchères en cours</small></div></article>
+    <article class="admin-highlight admin-highlight-gold"><div class="admin-highlight-icon">🏆</div><div><span>ENCHÈRES TERMINÉES</span><strong>${Number(s.completedAuctions||0).toLocaleString('fr-FR')}</strong><small>Enchères clôturées</small></div></article>
+   </div>
+   <div class="admin-dashboard-section-head"><div><p class="eyebrow">PILOTAGE RAPIDE</p><h3>Actions rapides</h3></div><span>Accès direct aux outils</span></div>
+   <div class="admin-quick-actions">
+    <button type="button" data-admin-tab="players"><span class="admin-quick-icon blue">♙</span><span><strong>Gérer les joueurs</strong><small>Comptes, rôles et activité</small></span><b>→</b></button>
+    <button type="button" data-admin-tab="competitions"><span class="admin-quick-icon purple">♜</span><span><strong>Compétitions & saisons</strong><small>Organiser l’album</small></span><b>→</b></button>
+    <button type="button" data-admin-tab="cards"><span class="admin-quick-icon cyan">▤</span><span><strong>Catalogue de cartes</strong><small>Ajouter et modifier des cartes</small></span><b>→</b></button>
+    <button type="button" data-admin-tab="packs"><span class="admin-quick-icon green">⬡</span><span><strong>Gérer les packs</strong><small>Offres et tirages</small></span><b>→</b></button>
+    <button type="button" data-admin-tab="auctions"><span class="admin-quick-icon gold">⚒</span><span><strong>Marché & enchères</strong><small>Suivre les ventes en cours</small></span><b>→</b></button>
+    <button type="button" data-admin-tab="logs"><span class="admin-quick-icon slate">▤</span><span><strong>Journal système</strong><small>Consulter les événements</small></span><b>→</b></button>
+   </div>
+   <div class="admin-dashboard-bottom">
+    <section class="admin-economy-panel"><div class="admin-dashboard-section-head"><div><p class="eyebrow">ÉCONOMIE DU JEU</p><h3>Ressources en circulation</h3></div></div><div class="admin-economy-grid"><div><span>FOOTCOINS ÉMIS</span><strong>${money(s.totalCoins)}</strong></div><div><span>FOOTCOINS RÉSERVÉS</span><strong>${money(s.reservedCoins)}</strong></div><div><span>GEMS EN CIRCULATION</span><strong>${money(s.totalGems)}</strong></div><div><span>PACKS OUVERTS</span><strong>${Number(s.packsOpened||0).toLocaleString('fr-FR')}</strong></div></div></section>
+    <section class="admin-system-panel"><div class="admin-dashboard-section-head"><div><p class="eyebrow">ÉTAT DE LA PLATEFORME</p><h3>Vue synthétique</h3></div></div><div class="admin-system-row"><span>Catalogue</span><strong>${Number(s.cards||0).toLocaleString('fr-FR')} cartes</strong></div><div class="admin-system-row"><span>Communauté</span><strong>${Number(s.users||0).toLocaleString('fr-FR')} comptes</strong></div><div class="admin-system-row"><span>Marché actif</span><strong>${Number(s.activeAuctions||0).toLocaleString('fr-FR')} enchères</strong></div></section>
+   </div>
   </section>
  </div>
  <div class="admin-tab-panel" data-admin-panel="players">
