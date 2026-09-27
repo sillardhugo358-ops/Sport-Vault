@@ -670,8 +670,8 @@ async function albumViews(owned,selectedSeasonId=null,userId=null){
      WHERE cc.is_active=true GROUP BY cc.season,cc.club`,[userId])
   ]);
   const seasonRows=seasons.rows,seasonById=new Map(seasonRows.map(x=>[x.id,String(x.season)]));
-  const norm=v=>String(v??'').trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase();
-  const clubKey=v=>{const n=norm(v);return ['troyes','estac','estac troyes'].includes(n)?'estac troyes':n;};
+  const norm=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const clubKey=v=>{const n=norm(v);const aliases={troyes:'estactroyes',estac:'estactroyes',estactroyes:'estactroyes,losclille:'lille',losc:'lille',lilleosc:'lille',angerssco:'angers',stadebretois:'brest',stadebretois29:'brest'};return aliases[n]||n;};
   const countMap=new Map(counts.rows.map(r=>[String(r.season)+'|'+clubKey(r.club),{total:Number(r.total||0),owned:Number(r.owned||0)}]));
   const selected=seasonRows.find(x=>x.id===selectedSeasonId),selectedSeason=selected?String(selected.season):null;
   const selectedRows=selectedSeason?(await pool.query('SELECT id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order FROM catalog_cards WHERE is_active=true AND season=$1 ORDER BY card_order,id',[selectedSeason])).rows:[];
