@@ -55,30 +55,33 @@ const PACKS = {
 };
 const PACK_WEIGHTS=[['common',72],['rare',21],['epic',5],['legendary',1.8],['icon',0.2]];
 const MISSIONS=[
-  {id:'collect-5',order:1,title:'PREMIÈRE COLLECTION',description:'Possède au moins 5 cartes dans ton Vault.',target:5,type:'cards',reward:{coins:150,xp:25}},
-  {id:'open-1',order:2,title:'PREMIÈRE OUVERTURE',description:'Ouvre ton premier pack.',target:1,type:'packs',prerequisite:'collect-5',reward:{coins:150,xp:30}},
-  {id:'rare-1',order:3,title:'PREMIÈRE RARETÉ',description:'Obtiens une carte RARE ou supérieure.',target:1,type:'rarePlus',prerequisite:'open-1',reward:{coins:250,xp:40}},
-  {id:'collect-15',order:4,title:'SCOUTING INTENSIF',description:'Possède au moins 15 cartes.',target:15,type:'cards',prerequisite:'rare-1',reward:{coins:300,xp:50}},
-  {id:'open-3',order:5,title:'COLLECTIONNEUR ACTIF',description:'Ouvre 3 packs au total.',target:3,type:'packs',prerequisite:'collect-15',reward:{coins:350,xp:60}},
-  {id:'epic-1',order:6,title:'CAP SUR L’ÉLITE',description:'Obtiens une carte EPIC ou supérieure.',target:1,type:'epicPlus',prerequisite:'open-3',reward:{coins:450,xp:75}},
-  {id:'collect-25',order:7,title:'VAULT EN PLEINE CROISSANCE',description:'Possède au moins 25 cartes.',target:25,type:'cards',prerequisite:'epic-1',reward:{coins:500,xp:90}},
-  {id:'clubs-4',order:8,title:'TOUR DU TERRAIN',description:'Possède des cartes provenant d’au moins 4 clubs différents.',target:4,type:'distinctClubs',prerequisite:'collect-25',reward:{coins:600,xp:110}},
-  {id:'legend-1',order:9,title:'TOUCHE DE LÉGENDE',description:'Obtiens une carte LEGENDARY ou supérieure.',target:1,type:'legendaryPlus',prerequisite:'clubs-4',reward:{coins:750,xp:130}},
-  {id:'open-10',order:10,title:'OUVREUR EXPÉRIMENTÉ',description:'Ouvre 10 packs au total.',target:10,type:'packs',prerequisite:'legend-1',reward:{coins:900,xp:150}},
-  {id:'collect-40',order:11,title:'GRAND COLLECTIONNEUR',description:'Possède au moins 40 cartes.',target:40,type:'cards',prerequisite:'open-10',reward:{coins:1000,xp:175}},
-  {id:'icon-1',order:12,title:'AU SOMMET DU VAULT',description:'Obtiens une carte ICON.',target:1,type:'iconPlus',prerequisite:'collect-40',reward:{coins:1500,xp:200}}
+  {id:'collect-5',order:1,title:'PREMIÈRE COLLECTION',description:'Possède au moins 5 cartes dans ton Vault.',target:5,type:'cards',reward:{coins:20,xp:10}},
+  {id:'open-1',order:2,title:'PREMIÈRE OUVERTURE',description:'Ouvre ton premier pack.',target:1,type:'packs',prerequisite:'collect-5',reward:{coins:20,xp:10}},
+  {id:'rare-1',order:3,title:'PREMIÈRE RARETÉ',description:'Obtiens une carte RARE ou supérieure.',target:1,type:'rarePlus',prerequisite:'open-1',reward:{coins:25,xp:12}},
+  {id:'collect-15',order:4,title:'SCOUTING INTENSIF',description:'Possède au moins 15 cartes.',target:15,type:'cards',prerequisite:'rare-1',reward:{coins:30,xp:15}},
+  {id:'open-3',order:5,title:'COLLECTIONNEUR ACTIF',description:'Ouvre 3 packs au total.',target:3,type:'packs',prerequisite:'collect-15',reward:{coins:35,xp:18}},
+  {id:'epic-1',order:6,title:'CAP SUR L’ÉLITE',description:'Obtiens une carte EPIC ou supérieure.',target:1,type:'epicPlus',prerequisite:'open-3',reward:{coins:40,xp:20}},
+  {id:'collect-25',order:7,title:'VAULT EN PLEINE CROISSANCE',description:'Possède au moins 25 cartes.',target:25,type:'cards',prerequisite:'epic-1',reward:{coins:45,xp:22}},
+  {id:'clubs-4',order:8,title:'TOUR DU TERRAIN',description:'Possède des cartes provenant d’au moins 4 clubs différents.',target:4,type:'distinctClubs',prerequisite:'collect-25',reward:{coins:50,xp:25}},
+  {id:'legend-1',order:9,title:'TOUCHE DE LÉGENDE',description:'Obtiens une carte LEGENDARY ou supérieure.',target:1,type:'legendaryPlus',prerequisite:'clubs-4',reward:{coins:60,xp:30}},
+  {id:'open-10',order:10,title:'OUVREUR EXPÉRIMENTÉ',description:'Ouvre 10 packs au total.',target:10,type:'packs',prerequisite:'legend-1',reward:{coins:70,xp:35}},
+  {id:'collect-40',order:11,title:'GRAND COLLECTIONNEUR',description:'Possède au moins 40 cartes.',target:40,type:'cards',prerequisite:'open-10',reward:{coins:80,xp:40}},
+  {id:'icon-1',order:12,title:'AU SOMMET DU VAULT',description:'Obtiens une carte ICON.',target:1,type:'iconPlus',prerequisite:'collect-40',reward:{coins:100,xp:50}}
 ];
 const DAILY_TASKS=[
-  {id:'open-1',title:'OUVERTURE DU JOUR',description:'Ouvre au moins 1 pack aujourd’hui.',target:1,type:'packsOpened',reward:{coins:100,xp:10}},
-  {id:'cards-5',title:'RÉCOLTE QUOTIDIENNE',description:'Obtiens au moins 5 cartes aujourd’hui.',target:5,type:'cardsObtained',reward:{coins:150,xp:15}},
-  {id:'rare-1',title:'ÉCLAT QUOTIDIEN',description:'Obtiens au moins 1 carte RARE ou supérieure aujourd’hui.',target:1,type:'rarePlusObtained',reward:{coins:200,xp:20}},
-  {id:'clubs-2',title:'TOUR DES CLUBS',description:'Obtiens des cartes provenant d’au moins 2 clubs différents aujourd’hui.',target:2,type:'distinctClubsObtained',reward:{coins:250,xp:25}}
+  {id:'open-2',title:'DOUBLE OUVERTURE',description:'Ouvre 2 packs différents aujourd’hui.',target:2,type:'packsOpened',reward:{coins:10,xp:5}},
+  {id:'cards-6',title:'RECRUTEMENT INTENSIF',description:'Obtiens au moins 6 cartes aujourd’hui.',target:6,type:'cardsObtained',reward:{coins:15,xp:8}},
+  {id:'rare-2',title:'CHASSE AUX RARETÉS',description:'Obtiens 2 cartes RARE ou supérieures aujourd’hui.',target:2,type:'rarePlusObtained',reward:{coins:20,xp:10}},
+  {id:'clubs-3',title:'TOURNÉE DES CLUBS',description:'Obtiens des cartes de 3 clubs différents aujourd’hui.',target:3,type:'distinctClubsObtained',reward:{coins:20,xp:10}},
+  {id:'seasons-2',title:'VOYAGE DANS LE TEMPS',description:'Obtiens des cartes issues d’au moins 2 saisons différentes aujourd’hui.',target:2,type:'distinctSeasonsObtained',reward:{coins:15,xp:8}}
 ];
 const WEEKLY_TASKS=[
-  {id:'open-5',title:'OUVREUR DE LA SEMAINE',description:'Ouvre au moins 5 packs cette semaine.',target:5,type:'packsOpened',reward:{coins:400,xp:35}},
-  {id:'cards-15',title:'COLLECTE HEBDOMADAIRE',description:'Obtiens au moins 15 cartes cette semaine.',target:15,type:'cardsObtained',reward:{coins:500,xp:40}},
-  {id:'rare-3',title:'CHASSE AUX RARETÉS',description:'Obtiens au moins 3 cartes RARE ou supérieures cette semaine.',target:3,type:'rarePlusObtained',reward:{coins:650,xp:50}},
-  {id:'clubs-4',title:'EXPLORATION DU TERRAIN',description:'Obtiens des cartes provenant d’au moins 4 clubs différents cette semaine.',target:4,type:'distinctClubsObtained',reward:{coins:750,xp:60}}
+  {id:'open-8',title:'OUVREUR CONFIRMÉ',description:'Ouvre 8 packs cette semaine.',target:8,type:'packsOpened',reward:{coins:30,xp:15}},
+  {id:'cards-25',title:'GRANDE COLLECTE',description:'Obtiens au moins 25 cartes cette semaine.',target:25,type:'cardsObtained',reward:{coins:40,xp:20}},
+  {id:'rare-5',title:'CHASSE AUX RARETÉS',description:'Obtiens 5 cartes RARE ou supérieures cette semaine.',target:5,type:'rarePlusObtained',reward:{coins:45,xp:25}},
+  {id:'clubs-5',title:'EXPLORATION DU TERRAIN',description:'Obtiens des cartes de 5 clubs différents cette semaine.',target:5,type:'distinctClubsObtained',reward:{coins:50,xp:25}},
+  {id:'epic-2',title:'SÉLECTION D’ÉLITE',description:'Obtiens 2 cartes EPIC ou supérieures cette semaine.',target:2,type:'epicPlusObtained',reward:{coins:60,xp:30}},
+  {id:'seasons-4',title:'ARCHIVES DU FOOTBALL',description:'Obtiens des cartes issues d’au moins 4 saisons différentes cette semaine.',target:4,type:'distinctSeasonsObtained',reward:{coins:60,xp:30}}
 ];
 const ALBUM_CLUBS=[['aster-fc','Aster FC','AST'],['racing-nord','Racing Nord','RN'],['union-atlantique','Union Atlantique','UA'],['stade-horizon','Stade Horizon','SH']].map(([id,name,tag])=>({id,name,tag}));
 
@@ -88,7 +91,7 @@ async function readBody(req){let body='';for await(const chunk of req){body+=chu
 function hashPassword(password,salt=crypto.randomBytes(16).toString('hex')){return `${salt}:${crypto.scryptSync(password,salt,64).toString('hex')}`;}
 function verifyPassword(password,stored){try{const [salt,hex]=String(stored).split(':');const actual=crypto.scryptSync(password,salt,64);const expected=Buffer.from(hex,'hex');return actual.length===expected.length&&crypto.timingSafeEqual(actual,expected);}catch{return false;}}
 function validPassword(password){return typeof password==='string'&&password.length>=10&&password.length<=128&&/[A-Za-z]/.test(password)&&/[0-9]/.test(password);}
-function levelProgressFromXp(value){let remaining=Math.max(0,Math.floor(Number(value)||0)),level=1,xpToNext=150;while(remaining>=xpToNext){remaining-=xpToNext;level++;xpToNext=150+40*(level-1);}return{level,currentXp:remaining,xpToNext};}
+function levelProgressFromXp(value){let remaining=Math.max(0,Math.floor(Number(value)||0)),level=1,xpToNext=150;while(level<100&&remaining>=xpToNext){remaining-=xpToNext;level++;xpToNext=150+40*(level-1);}if(level>=100)return{level:100,currentXp:0,xpToNext:0};return{level,currentXp:remaining,xpToNext};}
 function safeUser(user){const coins=Number(user.coins||0),reservedCoins=Number(user.reserved_coins||0);return{id:user.id,name:user.name,email:user.email,role:user.role||'user',coins,gems:Number(user.gems),xp:Number(user.xp),reservedCoins,availableCoins:Math.max(0,coins-reservedCoins),createdAt:user.createdAt||user.created_at,accountStatus:user.account_status||'active',blockedUntil:user.blocked_until||null,dailyClaimedAt:user.daily_claimed_at||user.dailyClaimedAt||null};}
 function sessionCookie(token){return `fv_session=${encodeURIComponent(token)}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${SESSION_DAYS*86400}`;}
 function expiryDate(){return new Date(Date.now()+SESSION_DAYS*86400_000);}
@@ -612,6 +615,8 @@ function taskProgress(task,activity){
   if(task.type==='cardsObtained')return activity.cards.length;
   if(task.type==='rarePlusObtained')return activity.cards.filter(c=>Number(RARITIES[c.rarity]?.order||0)>=2).length;
   if(task.type==='distinctClubsObtained')return new Set(activity.cards.map(c=>c.club).filter(Boolean)).size;
+  if(task.type==='distinctSeasonsObtained')return new Set(activity.cards.map(c=>c.season).filter(Boolean)).size;
+  if(task.type==='epicPlusObtained')return activity.cards.filter(c=>Number(RARITIES[c.rarity]?.order||0)>=3).length;
   return 0;
 }
 function taskClaimId(kind,periodKey,taskId){return `${kind}:${periodKey}:${taskId}`;}
@@ -641,7 +646,7 @@ async function claimTask(userId,kind,taskId){
   const user=await applyReward(userId,task.reward);
   return{task,reward:task.reward,user:safeUser(user),period:activity.key};
 }
-async function claimDaily(userId){const reward={coins:150,xp:10};if(pool){const client=await pool.connect();try{await client.query('BEGIN');const r=await client.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[userId]);const user=r.rows[0];if(!user){await client.query('ROLLBACK');return{error:'Utilisateur introuvable.',status:404};}if(user.daily_claimed_at&&parisDayKey(user.daily_claimed_at)===parisDayKey(new Date())){await client.query('ROLLBACK');return{error:'Récompense quotidienne déjà récupérée.',status:400,user:safeUser(user)};}const updated=await applyReward(userId,reward,client);await client.query('UPDATE users SET daily_claimed_at=now() WHERE id=$1',[userId]);await securityEvent(userId,null,'daily_reward_claim',{coins:reward.coins,xp:reward.xp},client);await client.query('COMMIT');return{reward,user:safeUser(updated)};}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}}const user=memory.users.get(userId);if(!user)return{error:'Utilisateur introuvable.',status:404};if(user.dailyClaimedAt&&utcDayKey(user.dailyClaimedAt)===utcDayKey(new Date()))return{error:'Récompense quotidienne déjà récupérée.',status:400,user:safeUser(user)};user.coins+=reward.coins;user.xp+=reward.xp;user.dailyClaimedAt=new Date().toISOString();return{reward,user:safeUser(user)};}
+async function claimDaily(userId){const reward={coins:15,xp:5};if(pool){const client=await pool.connect();try{await client.query('BEGIN');const r=await client.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[userId]);const user=r.rows[0];if(!user){await client.query('ROLLBACK');return{error:'Utilisateur introuvable.',status:404};}if(user.daily_claimed_at&&parisDayKey(user.daily_claimed_at)===parisDayKey(new Date())){await client.query('ROLLBACK');return{error:'Récompense quotidienne déjà récupérée.',status:400,user:safeUser(user)};}const updated=await applyReward(userId,reward,client);await client.query('UPDATE users SET daily_claimed_at=now() WHERE id=$1',[userId]);await securityEvent(userId,null,'daily_reward_claim',{coins:reward.coins,xp:reward.xp},client);await client.query('COMMIT');return{reward,user:safeUser(updated)};}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}}const user=memory.users.get(userId);if(!user)return{error:'Utilisateur introuvable.',status:404};if(user.dailyClaimedAt&&utcDayKey(user.dailyClaimedAt)===utcDayKey(new Date()))return{error:'Récompense quotidienne déjà récupérée.',status:400,user:safeUser(user)};user.coins+=reward.coins;user.xp+=reward.xp;user.dailyClaimedAt=new Date().toISOString();return{reward,user:safeUser(user)};}
 async function claimMission(userId,missionId){
   const mission=MISSIONS.find(m=>m.id===missionId);
   if(!mission)return{error:'Mission introuvable.',status:404};
