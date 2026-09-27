@@ -671,21 +671,27 @@ async function albumViews(owned,selectedSeasonId=null,userId=null){
   ]);
   const seasonRows=seasons.rows,seasonById=new Map(seasonRows.map(x=>[x.id,String(x.season)]));
   const norm=v=>String(v??'').trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase();
-  const countMap=new Map(counts.rows.map(r=>[String(r.season)+'|'+norm(r.club),{total:Number(r.total||0),owned:Number(r.owned||0)}]));
+  const clubKey=v=>{const n=norm(v);return ['troyes','estac','estac troyes'].includes(n)?'estac troyes':n;};
+  const countMap=new Map(counts.rows.map(r=>[String(r.season)+'|'+clubKey(r.club),{total:Number(r.total||0),owned:Number(r.owned||0)}]));
   const selected=seasonRows.find(x=>x.id===selectedSeasonId),selectedSeason=selected?String(selected.season):null;
   const selectedRows=selectedSeason?(await pool.query('SELECT id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order FROM catalog_cards WHERE is_active=true AND season=$1 ORDER BY card_order,id',[selectedSeason])).rows:[];
   const cardsByClub=new Map();
   for(const r of selectedRows){
-   const key=String(r.season)+'|'+norm(r.club),arr=cardsByClub.get(key)||[];
+   const key=String(r.season)+'|'+clubKey(r.club),arr=cardsByClub.get(key)||[];
    arr.push({id:r.id,season:r.season,name:r.name,position:r.position,jerseyNumber:r.jersey_number==null?null:Number(r.jersey_number),club:r.club,nation:r.nation,rarity:r.rarity,ovr:Number(r.ovr||72),pace:Number(r.pace||72),shooting:Number(r.shooting||72),passing:Number(r.passing||72),dribbling:Number(r.dribbling||72),defending:Number(r.defending||72),physical:Number(r.physical||72),distributionType:String(r.distribution_type||'STANDARD').toUpperCase(),isLimited:Boolean(r.is_limited),maxSupply:r.max_supply==null?null:Number(r.max_supply),order:Number(r.card_order||0),rarityLabel:RARITIES[r.rarity]?.label||r.rarity});
    cardsByClub.set(key,arr);
   }
   const grouped=new Map();
+  const seenClubKeys=new Set();
   for(const x of links.rows){
-   const season=seasonById.get(x.season_id)||'',key=season+'|'+norm(x.name),stats=countMap.get(key)||{total:0,owned:0};
+   const season=seasonById.get(x.season_id)||'',key=season+'|'+clubKey(x.name),stats=countMap.get(key)||{total:0,owned:0};
+   const uniqueKey=String(x.season_id)+'|'+clubKey(x.name);
+   if(seenClubKeys.has(uniqueKey)) continue;
+   seenClubKeys.add(uniqueKey);
    const cards=selectedSeason===season?(cardsByClub.get(key)||[]):[];
    const arr=grouped.get(x.season_id)||[];
-   arr.push({id:x.id,name:x.name,tag:x.tag,country:x.country,logoUrl:x.logo_url||'',cards,owned:stats.owned,total:stats.total,complete:stats.total>0&&stats.owned===stats.total});
+   const isTroyes=clubKey(x.name)==='estac troyes';
+   arr.push({id:x.id,name:isTroyes?'ESTAC Troyes':x.name,tag:isTroyes?'EST':x.tag,country:x.country,logoUrl:x.logo_url||'',cards,owned:stats.owned,total:stats.total,complete:stats.total>0&&stats.owned===stats.total});
    grouped.set(x.season_id,arr);
   }
   return comps.rows.map(comp=>({...comp,seasons:seasonRows.filter(x=>x.competition_id===comp.id).map(season=>({...season,clubs:grouped.get(season.id)||[]}))}));
