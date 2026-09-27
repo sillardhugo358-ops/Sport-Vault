@@ -1260,6 +1260,7 @@ hr{border-color:#1d3d63}
 .season-art-tag{position:absolute;top:12px;left:12px;font:900 10px var(--head);letter-spacing:1px;color:#9ecaff}
 .season-art-year{position:relative;z-index:1;font:950 clamp(20px,2vw,27px)/1 var(--head);letter-spacing:-.5px;color:#f6f9ff;text-shadow:0 3px 16px rgba(0,0,0,.6)}
 .season-art-crest{position:relative;z-index:1;display:grid;place-items:center;width:76px;height:76px;margin-top:13px;border:1px solid rgba(111,181,255,.6);border-radius:50%;background:radial-gradient(circle,#1b579b,#07172f 70%);color:#d9ecff;font:950 20px var(--head);box-shadow:0 0 27px rgba(53,140,255,.3)}
+.season-art-crest img{display:block;width:39px;height:49px;object-fit:contain;filter:brightness(0) invert(1);opacity:.96}
 .season-art-glow{position:absolute;bottom:-55px;left:10%;width:80%;height:100px;background:rgba(37,119,255,.3);filter:blur(35px)}
 .season-art-caption{position:absolute;z-index:2;bottom:10px;left:10px;right:10px;text-align:center;text-shadow:0 2px 8px #020817}
 .season-art-caption small{display:block;color:#a7c7f0;font-size:8px;letter-spacing:1px;text-transform:uppercase}
