@@ -1452,7 +1452,7 @@ hr{border-color:#1d3d63}
 
 /* Admin competition and club management redesign */
 .admin-competition-panel{--admin-accent:#1678ee;--admin-line:rgba(90,150,220,.22);color:#edf4ff}
-.admin-management-section{margin:0 0:26px;padding:22px;border:1px solid var(--admin-line);border-radius:16px;background:linear-gradient(145deg,rgba(10,28,54,.96),rgba(5,17,35,.98));box-shadow:0 14px 36px rgba(0,0,0,.18);overflow:hidden}
+.admin-management-section{margin:0 0 26px;padding:22px;border:1px solid var(--admin-line);border-radius:16px;background:linear-gradient(145deg,rgba(10,28,54,.96),rgba(5,17,35,.98));box-shadow:0 14px 36px rgba(0,0,0,.18);overflow:hidden}
 .admin-management-heading{display:flex;align-items:center;gap:16px;margin-bottom:20px}
 .admin-management-icon{width:58px;height:58px;border-radius:14px;display:grid;place-items:center;font-size:28px;background:linear-gradient(145deg,#0d4e98,#071d3b);border:1px solid #2869a9;color:#f5ce54;flex:none}
 .admin-management-icon.shield{color:#d7e8ff;background:linear-gradient(145deg,#183a67,#091a32)}
