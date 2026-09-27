@@ -1449,3 +1449,47 @@ hr{border-color:#1d3d63}
 @media(max-width:1150px){.admin-highlight-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-dashboard-bottom{grid-template-columns:1fr}}
 @media(max-width:850px){.page.admin-console-page{grid-template-columns:1fr}.page.admin-console-page > .view-hero{grid-column:1}.page.admin-console-page .admin-tabs{position:relative;top:auto;grid-column:1;grid-row:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.admin-nav-label{grid-column:1/-1}.admin-back-link{grid-column:1/-1;margin-top:8px}.page.admin-console-page > .admin-tab-panel{grid-column:1;grid-row:auto}.admin-dashboard{padding:17px}}
 @media(max-width:560px){.admin-highlight-grid,.admin-quick-actions{grid-template-columns:1fr}.admin-dashboard-heading{align-items:flex-start;flex-direction:column}.admin-live-status{width:100%}.admin-highlight{padding:15px}.admin-dashboard-section-head{align-items:flex-start;flex-direction:column}.admin-economy-grid{grid-template-columns:1fr 1fr}}
+
+/* Admin competition and club management redesign */
+.admin-competition-panel{--admin-accent:#1678ee;--admin-line:rgba(90,150,220,.22);color:#edf4ff}
+.admin-management-section{margin:0 0:26px;padding:22px;border:1px solid var(--admin-line);border-radius:16px;background:linear-gradient(145deg,rgba(10,28,54,.96),rgba(5,17,35,.98));box-shadow:0 14px 36px rgba(0,0,0,.18);overflow:hidden}
+.admin-management-heading{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.admin-management-icon{width:58px;height:58px;border-radius:14px;display:grid;place-items:center;font-size:28px;background:linear-gradient(145deg,#0d4e98,#071d3b);border:1px solid #2869a9;color:#f5ce54;flex:none}
+.admin-management-icon.shield{color:#d7e8ff;background:linear-gradient(145deg,#183a67,#091a32)}
+.admin-management-heading h2{margin:0;font-size:clamp(24px,2.2vw,32px);color:#f3f7ff;letter-spacing:-.02em}
+.admin-management-heading .eyebrow{margin:0 0 5px;color:#6fb6ff;font-size:10px;letter-spacing:.14em}
+.admin-management-heading .lead{margin:4px 0 0;color:#9bb1cc;font-size:13px}
+.admin-management-heading-action{margin-left:auto;flex:none}
+.admin-management-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 16px}
+.admin-management-stat{display:flex;align-items:center;gap:15px;min-height:94px;padding:16px;border:1px solid rgba(67,132,214,.35);border-radius:11px;background:linear-gradient(120deg,rgba(10,47,91,.8),rgba(6,23,47,.9))}
+.admin-management-stat .stat-icon{width:52px;height:52px;display:grid;place-items:center;border-radius:10px;font-size:25px;background:rgba(17,111,224,.16);border:1px solid rgba(61,151,255,.48);color:#49a9ff;flex:none}
+.admin-management-stat div{display:grid;gap:3px}.admin-management-stat strong{font-size:23px;line-height:1.1;color:#f5f8ff}.admin-management-stat span:not(.stat-icon){font-size:13px;color:#dce9fb}.admin-management-stat small{font-size:11px;color:#829dbb}
+.admin-management-stat.stat-green{border-color:rgba(24,174,117,.36);background:linear-gradient(120deg,rgba(5,63,56,.6),rgba(5,27,41,.9))}.admin-management-stat.stat-green .stat-icon{color:#45e5a3;border-color:#147b61;background:rgba(20,171,113,.12)}
+.admin-management-stat.stat-purple{border-color:rgba(153,80,231,.4);background:linear-gradient(120deg,rgba(55,25,91,.62),rgba(16,20,48,.9))}.admin-management-stat.stat-purple .stat-icon{color:#c18aff;border-color:#7441a5;background:rgba(154,80,231,.12)}
+.admin-management-stat.stat-cyan{border-color:rgba(32,149,221,.4)}.admin-management-stat.stat-cyan .stat-icon{color:#51c6ff}
+.admin-management-table-card{border:1px solid rgba(75,131,190,.32);border-radius:12px;overflow:hidden;background:rgba(4,17,34,.76)}
+.admin-management-table-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 18px;border-bottom:1px solid rgba(75,131,190,.25);background:rgba(9,29,53,.9)}
+.admin-management-table-head h3{margin:0;color:#eef5ff;font-size:17px}.admin-management-table-head p{margin:5px 0 0;color:#8ea7c4;font-size:11px}
+.admin-management-tools{display:flex;align-items:center;gap:10px;min-width:0}
+.admin-search-field{display:flex;align-items:center;gap:8px;min-width:230px;height:39px;padding:0 11px;border:1px solid #254c75;border-radius:7px;background:#07182d;color:#6fa9e9}
+.admin-search-field span{font-size:20px}.admin-search-field input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#eaf3ff;font:inherit;font-size:12px}.admin-search-field input::placeholder{color:#7993b1}
+.admin-management-tools select{height:39px;min-width:135px;padding:0 12px;border:1px solid #254c75;border-radius:7px;background:#07182d;color:#dceaff;font:inherit;font-size:12px}
+.admin-management-table{width:100%;border-collapse:collapse;color:#d8e6f8;font-size:12px}
+.admin-management-table thead{background:#0b2038}.admin-management-table th{padding:12px 14px;color:#8ca9ca;font-size:10px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;text-align:left}
+.admin-management-table td{padding:10px 14px;border-top:1px solid rgba(75,131,190,.14);vertical-align:middle}
+.admin-management-table tbody tr:nth-child(even){background:rgba(20,49,78,.26)}.admin-management-table tbody tr:hover{background:rgba(24,91,153,.18)}
+.admin-competition-identity{display:flex;align-items:center;gap:12px;min-width:190px}.admin-competition-identity>img,.admin-competition-logo{width:40px;height:40px;object-fit:contain;display:grid;place-items:center;flex:none;border-radius:9px;background:linear-gradient(145deg,#0e3a71,#07172e);border:1px solid #28517d;padding:5px;color:#d7e9ff;font-weight:800;font-size:11px}
+.admin-competition-identity div{display:grid;gap:4px}.admin-competition-identity strong{font-size:13px;color:#eff6ff}.admin-competition-identity small{max-width:240px;color:#7894b4;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.admin-code-pill,.admin-type-pill{display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border-radius:5px;background:#0c3e75;border:1px solid #1a66ad;color:#d7ebff;font-size:10px;font-weight:700;white-space:nowrap}
+.admin-type-pill{background:#123e75;color:#d9eaff}
+.admin-status-dot{display:inline-flex;align-items:center;gap:7px;padding:5px 9px;border-radius:30px;background:rgba(15,173,112,.15);color:#5ce2ac;font-size:10px;font-weight:700;white-space:nowrap}.admin-status-dot:before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.admin-status-dot.is-upcoming{background:rgba(230,171,44,.14);color:#f2c65e}
+.admin-row-actions{display:flex;align-items:center;gap:6px;white-space:nowrap}.admin-row-actions .btn{padding:8px 11px;font-size:10px;line-height:1.1;white-space:nowrap}.admin-row-actions .btn-danger{min-width:34px;padding:8px}
+.admin-management-table-foot{display:flex;justify-content:space-between;gap:12px;padding:11px 17px;border-top:1px solid rgba(75,131,190,.22);color:#7693b5;font-size:10px}
+.admin-clubs-management{margin-top:22px}.admin-clubs-management .admin-management-heading{margin-bottom:16px}
+.admin-club-filter-head{align-items:flex-end;flex-wrap:wrap}.admin-club-tools{flex:1;justify-content:flex-end;flex-wrap:wrap}.admin-club-tools select{min-width:145px}.admin-club-tools .admin-search-field{flex:1;max-width:260px}
+.admin-club-total{display:flex;align-items:center;gap:10px;padding:7px 12px;border:1px solid rgba(210,174,57,.25);border-radius:8px;background:rgba(159,119,21,.1);white-space:nowrap}.admin-club-total strong{font-size:20px;color:#f4d35e}.admin-club-total span{font-size:10px;color:#c2d1e2}
+.admin-club-identity{display:flex;align-items:center;gap:10px;min-width:180px}.admin-club-identity strong{font-size:12px;color:#eaf3ff}.admin-club-identity .club-logo,.admin-club-identity .club-logo-fallback{width:34px;height:34px;flex:none;object-fit:contain;border-radius:50%;background:#0a2545;border:1px solid #284d75;padding:3px;display:grid;place-items:center;color:#cfe3fb;font-size:9px;font-weight:800}
+.admin-table-empty{text-align:center;padding:28px;color:#7893b3;font-size:12px}
+@media(max-width:1100px){.admin-management-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-management-table-head{align-items:flex-start;flex-direction:column}.admin-management-tools{width:100%;flex-wrap:wrap}.admin-search-field{flex:1}.admin-management-table-wrap{overflow-x:auto}}
+@media(max-width:700px){.admin-management-section{padding:12px;margin-bottom:16px}.admin-management-heading{gap:10px;align-items:flex-start}.admin-management-icon{width:42px;height:42px;font-size:20px}.admin-management-heading-action{margin-left:auto}.admin-management-heading-action .btn{font-size:10px;padding:9px}.admin-management-stats{gap:8px}.admin-management-stat{min-height:82px;padding:10px;gap:9px}.admin-management-stat .stat-icon{width:37px;height:37px;font-size:18px}.admin-management-stat strong{font-size:20px}.admin-management-stat span:not(.stat-icon){font-size:11px}.admin-management-tools select{min-width:0;flex:1}.admin-search-field{min-width:150px}.admin-management-table{min-width:850px}.admin-management-table-foot{font-size:9px}.admin-club-total{flex:1}}
