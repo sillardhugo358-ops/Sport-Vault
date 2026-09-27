@@ -1660,3 +1660,54 @@ hr{border-color:#1d3d63}
 .catalog-admin-row-actions .btn-danger{width:31px;padding:0;font-size:15px}
 @media(max-width:1050px){.catalog-admin-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.catalog-admin-hero{align-items:flex-start}}
 @media(max-width:680px){.catalog-admin-hero{flex-direction:column;align-items:stretch;padding:21px;gap:17px}.catalog-admin-add{width:100%}.catalog-admin-kpis{gap:9px}.catalog-admin-kpi{gap:9px;padding:12px}.catalog-admin-kpi-icon{width:38px;height:38px;flex-basis:38px;font-size:19px}.catalog-admin-kpi strong{font-size:23px}.catalog-admin-kpi small{font-size:8px}.catalog-admin-kpi>div>span{font-size:9px}.catalog-admin-list-head{align-items:flex-start}.catalog-admin-list-head h3{font-size:22px}.catalog-admin-live{font-size:8px;padding:7px}.catalog-admin-filters{padding:12px!important}}
+
+
+/* Catalog admin: cohesive, compact premium layout */
+.admin-tab-panel .catalog-admin-section{padding:22px 0 32px!important;gap:18px;overflow:visible!important;background:transparent!important;border:0!important;box-shadow:none!important}
+.catalog-admin-hero{display:flex!important;min-height:164px;align-items:center;justify-content:space-between;gap:26px;padding:27px 30px!important;border:1px solid rgba(68,153,255,.26)!important;border-radius:16px!important;background:radial-gradient(ellipse at 86% 5%,rgba(31,121,255,.24),transparent 42%),linear-gradient(120deg,#0c203a 0%,#081528 65%,#0b1930 100%)!important;box-shadow:0 16px 38px rgba(0,0,0,.22)!important}
+.catalog-admin-hero-copy .eyebrow{margin:0 0 10px!important;color:#75bfff!important;font-size:10px!important;letter-spacing:.17em!important}
+.catalog-admin-hero-copy h2{font-size:clamp(30px,3.4vw,43px)!important;line-height:1.02!important;margin:0!important;color:#f3f7ff!important}
+.catalog-admin-hero-copy h2 span{color:#68b9ff!important}
+.catalog-admin-hero-copy>p:last-child{margin:10px 0 0!important;max-width:590px;color:#9eb5d2!important;font-size:13px!important;line-height:1.65!important}
+.catalog-admin-add{flex-shrink:0;min-height:46px!important;border-radius:9px!important;padding:0 18px!important;font-size:10px!important;letter-spacing:.08em!important}
+.catalog-admin-kpis{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px!important}
+.catalog-admin-kpi{min-height:108px;padding:17px!important;border-radius:12px!important;background:linear-gradient(145deg,#0c1e35,#081426)!important;border-color:rgba(91,147,209,.2)!important;box-shadow:0 8px 24px rgba(0,0,0,.13)!important}
+.catalog-admin-kpi-icon{width:44px!important;height:44px!important;flex-basis:44px!important;border-radius:11px!important}
+.catalog-admin-kpi small{font-size:9px!important;letter-spacing:.07em!important;color:#90aaca!important}
+.catalog-admin-kpi strong{font-size:27px!important;color:#f4f7ff!important}
+.catalog-admin-list-head{margin:10px 0 0!important;align-items:center!important}
+.catalog-admin-list-head .eyebrow{margin:0 0 5px!important;font-size:9px!important;letter-spacing:.16em!important;color:#72bdff!important}
+.catalog-admin-list-head h3{font-size:24px!important;line-height:1.15!important;color:#edf5ff!important}
+.catalog-admin-list-head p:last-child{margin:6px 0 0!important;color:#91a9c7!important;font-size:12px!important}
+.catalog-admin-live{padding:8px 11px!important}
+.catalog-admin-filters{display:grid!important;gap:12px!important;padding:16px!important;border:1px solid rgba(80,145,215,.2)!important;border-radius:13px!important;background:linear-gradient(145deg,#0c1e35,#071426)!important}
+.catalog-admin-filters .catalog-search-box{min-height:48px;border-radius:9px!important;border:1px solid rgba(93,148,209,.22)!important;background:#071225!important}
+.catalog-admin-filters .catalog-search-box input{background:transparent!important;color:#e8f2ff!important}
+.catalog-admin-filters .catalog-search-box input::placeholder{color:#6f87a7!important}
+.catalog-admin-filters .catalog-filter-selects{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px!important}
+.catalog-admin-filters .catalog-filter-selects select{min-width:0;width:100%;height:44px;border:1px solid rgba(83,145,213,.28)!important;border-radius:8px!important;background:#0a1b31!important;color:#dceaff!important;padding:0 13px!important;font-size:12px!important}
+.catalog-admin-filters .catalog-filter-footer{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;padding-top:2px!important;color:#8ca7c9!important;font-size:11px!important}
+.catalog-admin-filters .catalog-filter-footer .btn{min-height:36px!important;padding:0 14px!important;border-radius:8px!important;font-size:9px!important}
+.catalog-admin-table-wrap{width:100%;overflow-x:auto!important;border:1px solid rgba(85,145,211,.2)!important;border-radius:12px!important;background:#071426!important}
+.catalog-admin-table{width:100%;min-width:790px;border-collapse:separate!important;border-spacing:0!important}
+.catalog-admin-table thead th{padding:14px 15px!important;background:#0d213b!important;color:#89a8cd!important;border-bottom:1px solid rgba(96,151,211,.2)!important;font-size:9px!important;font-weight:800!important;letter-spacing:.1em!important;text-align:left!important;white-space:nowrap}
+.catalog-admin-table tbody tr{background:rgba(7,20,38,.65)!important;transition:background .16s ease}
+.catalog-admin-table tbody tr:nth-child(even){background:rgba(13,31,54,.55)!important}
+.catalog-admin-table tbody tr:hover{background:rgba(31,107,190,.15)!important}
+.catalog-admin-table tbody td{padding:12px 15px!important;border-bottom:1px solid rgba(91,143,199,.12)!important;color:#d4e2f5!important;vertical-align:middle!important;font-size:12px!important}
+.catalog-admin-table tbody tr:last-child td{border-bottom:0!important}
+.catalog-admin-player{display:flex!important;align-items:center!important;gap:12px!important;min-width:220px}
+.catalog-admin-player-mark{width:42px!important;height:50px!important;flex:0 0 42px!important;border:1px solid rgba(76,161,255,.34)!important;border-radius:8px!important;background:linear-gradient(145deg,#164777,#08182d)!important;color:#a6d8ff!important;font-size:11px!important}
+.catalog-admin-player>div{display:grid!important;gap:5px!important;min-width:0}
+.catalog-admin-player strong{color:#eaf3ff!important;font-size:12px!important;font-weight:800!important}
+.catalog-admin-player small{color:#849dbb!important;font-size:10px!important;line-height:1.45!important}
+.catalog-admin-rarity{padding:6px 9px!important;border-radius:6px!important;font-size:9px!important}
+.catalog-admin-edition{font-size:9px!important}
+.catalog-admin-number{color:#d9e9fc!important;font-size:12px!important;font-weight:700!important;white-space:nowrap}
+.catalog-admin-holder-count{color:#b9d4f3!important;font-size:11px!important}
+.catalog-admin-row-actions{display:flex!important;align-items:center!important;gap:7px!important;white-space:nowrap!important}
+.catalog-admin-row-actions .btn{min-height:34px!important;padding:0 12px!important;border-radius:7px!important;font-size:9px!important;letter-spacing:.06em!important}
+.catalog-admin-row-actions .btn-danger{width:34px!important;min-width:34px!important;padding:0!important;background:rgba(216,78,98,.08)!important;border:1px solid rgba(232,104,120,.25)!important;color:#f0a1ab!important;font-size:18px!important}
+.catalog-admin-row-actions .btn-danger:hover{background:rgba(216,78,98,.18)!important;border-color:rgba(232,104,120,.5)!important}
+@media(max-width:1050px){.catalog-admin-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}.catalog-admin-hero{align-items:flex-start!important}}
+@media(max-width:680px){.admin-tab-panel .catalog-admin-section{padding:14px 0 24px!important;gap:13px!important}.catalog-admin-hero{flex-direction:column!important;align-items:stretch!important;padding:20px!important;gap:17px!important}.catalog-admin-add{width:100%!important}.catalog-admin-kpis{gap:8px!important}.catalog-admin-kpi{gap:9px!important;padding:11px!important;min-height:95px!important}.catalog-admin-kpi-icon{width:36px!important;height:36px!important;flex-basis:36px!important;font-size:18px!important}.catalog-admin-kpi strong{font-size:22px!important}.catalog-admin-kpi small{font-size:8px!important;line-height:1.3}.catalog-admin-kpi>div>span{font-size:9px!important}.catalog-admin-list-head h3{font-size:21px!important}.catalog-admin-filters{padding:11px!important}.catalog-admin-filters .catalog-filter-selects{grid-template-columns:1fr!important;gap:8px!important}.catalog-admin-filters .catalog-filter-footer{flex-wrap:wrap}.catalog-admin-live{font-size:8px!important;padding:7px 8px!important}}
