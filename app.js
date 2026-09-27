@@ -518,8 +518,19 @@ async function admin(){
   </section>
  </div>
  <div class="admin-tab-panel ${adminReturn?.tab==="cards"?"active":""}" data-admin-panel="cards">
-  <section class="section admin-section-first"><div class="section-head"><div><p class="eyebrow">CATALOGUE</p><h2>GESTION DES CARTES.</h2></div><div class="actions"><p>Ajoutez, modifiez ou retirez les cartes joueur du catalogue.</p><button class="btn btn-gold" data-new-catalog-card>+ AJOUTER UNE CARTE</button></div></div>
-   <div class="catalog-filter-bar">
+  <section class="section admin-section-first catalog-admin-section">
+   <div class="catalog-admin-hero">
+    <div class="catalog-admin-hero-copy"><p class="eyebrow">ADMINISTRATION / BASE DE DONNÉES</p><h2>GESTION DES <span>CARTES</span></h2><p>Centralisez le catalogue des joueurs, les éditions limitées et les exemplaires en circulation.</p></div>
+    <button class="btn btn-gold catalog-admin-add" data-new-catalog-card><span>＋</span> AJOUTER UNE CARTE</button>
+   </div>
+   <div class="catalog-admin-kpis">
+    <div class="catalog-admin-kpi"><span class="catalog-admin-kpi-icon">▤</span><div><small>CARTES AU CATALOGUE</small><strong>${cardsData.length.toLocaleString('fr-FR')}</strong><span>Fiches joueurs actives</span></div></div>
+    <div class="catalog-admin-kpi limited"><span class="catalog-admin-kpi-icon">✦</span><div><small>ÉDITIONS LIMITÉES</small><strong>${cardsData.filter(c=>c.isLimited).length.toLocaleString('fr-FR')}</strong><span>Cartes à tirage limité</span></div></div>
+    <div class="catalog-admin-kpi gold"><span class="catalog-admin-kpi-icon">▣</span><div><small>EXEMPLAIRES ÉMIS</small><strong>${cardsData.reduce((sum,c)=>sum+Number(c.totalInstances||0),0).toLocaleString('fr-FR')}</strong><span>Cartes distribuées</span></div></div>
+    <div class="catalog-admin-kpi violet"><span class="catalog-admin-kpi-icon">♙</span><div><small>DÉTENTEURS CUMULÉS</small><strong>${cardsData.reduce((sum,c)=>sum+Number(c.owners||0),0).toLocaleString('fr-FR')}</strong><span>Possessions sur le catalogue</span></div></div>
+   </div>
+   <div class="catalog-admin-list-head"><div><p class="eyebrow">BIBLIOTHÈQUE</p><h3>Catalogue des joueurs</h3><p>Recherchez, filtrez et gérez chaque fiche joueur.</p></div><span class="catalog-admin-live"><i></i> SYNCHRONISÉ</span></div>
+   <div class="catalog-filter-bar catalog-admin-filters">
     <div class="catalog-search-box"><span>⌕</span><input id="adminCardSearch" type="search" value="${esc(adminReturn?.search||"")}" placeholder="Rechercher un joueur, club, nation ou ID..." autocomplete="off"><button type="button" id="adminCardSearchClear" class="catalog-filter-clear" aria-label="Effacer">×</button></div>
     <div class="catalog-filter-selects">
      <select id="adminCardRarity"><option value="">Toutes les raretés</option>${[...new Set(cardsData.map(c=>c.rarity).filter(Boolean))].map(r=>`<option value="${esc(r)}" ${adminReturn?.rarity===r?"selected":""}>${esc(String(r).toUpperCase())}</option>`).join('')}</select>
