@@ -121,6 +121,33 @@ async function vault(){
  '<section class="section vault-missions-section"><div class="section-head vault-section-head"><div><p class="eyebrow">04 / TÂCHES HEBDOMADAIRES</p><h2>OBJECTIFS DE LA SEMAINE</h2></div><p>Toutes les tâches sont disponibles dès le début. Elles se réinitialisent chaque lundi à minuit.</p></div><div class="mission-grid vault-mission-grid">'+(taskHtml(weeklyTasks,'weekly')||'<div class="empty">Aucune tâche hebdomadaire.</div>')+'</div></section>' +
  '<section class="section vault-missions-section"><div class="section-head vault-section-head"><div><p class="eyebrow">05 / MISSIONS ACTIVES</p><h2>MISSIONS FOOTVAULT</h2></div><p>Les objectifs permanents se débloquent progressivement. Termine une mission pour accéder à la suivante.</p></div><div class="mission-grid vault-mission-grid">'+(missionHtml||'<div class="empty">Aucune mission active pour le moment.</div>')+'</div></section>'+(completedMissions.length?'<section class="section vault-missions-section mission-completed-section"><div class="section-head vault-section-head"><div><p class="eyebrow">06 / HISTORIQUE</p><h2>MISSIONS TERMINÉES</h2></div><p>Retrouve ici les missions permanentes dont la récompense a déjà été récupérée.</p></div><div class="mission-grid vault-mission-grid">'+completedMissionHtml+'</div></section>':'')+'</div>';
 }
+
+async function achievements(){
+ let p=null,cards=[];
+ try{p=await api('/api/progression');state.user=p.user;state.progress=p;const d=await api('/api/collection');cards=d.cards||[]}
+ catch(e){if(e.status===401)return authView('login','successes');throw e}
+ const rarityCounts={common:0,rare:0,epic:0,legendary:0,icon:0};
+ cards.forEach(c=>{const r=String(c.rarity||'').toLowerCase();if(rarityCounts[r]!==undefined)rarityCounts[r]++});
+ const unique=new Set(cards.map(c=>String(c.cardId||c.id||c.name||''))).size;
+ const all=[
+  {id:'first-card',name:'Première carte',cat:'Collection',desc:'Obtiens ta première carte.',target:1,value:Number(p.cardCount||0),icon:'▤',reward:'Badge · Débutant'},
+  {id:'collector-10',name:'Collectionneur',cat:'Collection',desc:'Possède 10 cartes.',target:10,value:Number(p.cardCount||0),icon:'▤',reward:'+50 FC · +20 XP'},
+  {id:'collector-50',name:'Passionné',cat:'Collection',desc:'Possède 50 cartes.',target:50,value:Number(p.cardCount||0),icon:'▤',reward:'+100 FC · +40 XP'},
+  {id:'collector-100',name:'Archiviste',cat:'Collection',desc:'Possède 100 cartes.',target:100,value:Number(p.cardCount||0),icon:'▤',reward:'+150 FC · +60 XP'},
+  {id:'distinct-50',name:'Cinquante nuances',cat:'Collection',desc:'Possède 50 cartes différentes.',target:50,value:unique,icon:'▦',reward:'+100 FC · +40 XP'},
+  {id:'rare-1',name:'Première rare',cat:'Raretés',desc:'Obtiens une carte Rare.',target:1,value:rarityCounts.rare,icon:'◆',reward:'+30 FC · +15 XP'},
+  {id:'epic-1',name:'Première épique',cat:'Raretés',desc:'Obtiens une carte Epic.',target:1,value:rarityCounts.epic,icon:'✦',reward:'+50 FC · +25 XP'},
+  {id:'legendary-1',name:'Première légende',cat:'Raretés',desc:'Obtiens une carte Legendary.',target:1,value:rarityCounts.legendary,icon:'♛',reward:'+100 FC · +50 XP'},
+  {id:'icon-1',name:'Première icône',cat:'Raretés',desc:'Obtiens une carte Icon.',target:1,value:rarityCounts.icon,icon:'✧',reward:'+200 FC · +100 XP'},
+  {id:'clubs-3',name:'Voyageur',cat:'Diversité',desc:'Possède des cartes de 3 clubs différents.',target:3,value:new Set(cards.map(c=>c.club).filter(Boolean)).size,icon:'♧',reward:'+60 FC · +30 XP'},
+  {id:'packs-10',name:'Ouvreur confirmé',cat:'Packs',desc:'Ouvre 10 packs.',target:10,value:Number(p.user.packsOpened||0),icon:'⬡',reward:'+80 FC · +40 XP'},
+  {id:'level-10',name:'Niveau 10',cat:'Progression',desc:'Atteins le niveau 10.',target:10,value:Number(p.level||1),icon:'↗',reward:'Badge · Vétéran'}
+ ];
+ const earned=all.filter(a=>a.value>=a.target).length;
+ const cats=['Tous','Collection','Raretés','Diversité','Packs','Progression'];
+ return '<div class="page success-page"><section class="success-hero"><div><p class="eyebrow">FOOTVAULT / COLLECTION & PROGRESSION</p><h1>MES <span>SUCCÈS.</span></h1><p>Chaque carte, chaque saison et chaque étape compte. Suis tes exploits et complète ton palmarès.</p></div><div class="success-hero-mark"><span>✦</span><b>HALL<br>OF FAME</b></div></section><section class="success-summary"><article><span>SUCCÈS DÉBLOQUÉS</span><strong>'+earned+'<small> / '+all.length+'</small></strong><div class="success-track"><i style="width:'+Math.round(earned/Math.max(1,all.length)*100)+'%"></i></div></article><article><span>CARTES COLLECTIONNÉES</span><strong>'+Number(p.cardCount||0).toLocaleString('fr-FR')+'</strong><small>Exemplaires dans ton Vault</small></article><article><span>NIVEAU ACTUEL</span><strong>'+String(p.level||1).padStart(2,'0')+'</strong><small>Continue à gagner de l’XP</small></article></section><div class="success-filter" role="group" aria-label="Catégories des succès">'+cats.map((c,i)=>'<button class="success-filter-btn '+(i===0?'active':'')+'" data-success-filter="'+c+'">'+c+'</button>').join('')+'</div><section class="success-grid">'+all.map(a=>{const done=a.value>=a.target,pct=Math.min(100,Math.round(a.value/Math.max(1,a.target)*100));return '<article class="success-card '+(done?'is-earned':'')+'" data-success-category="'+a.cat+'"><div class="success-card-top"><span class="success-icon">'+a.icon+'</span><span class="success-status">'+(done?'✓ DÉBLOQUÉ':'À DÉBLOQUER')+'</span></div><p class="eyebrow">'+a.cat.toUpperCase()+'</p><h3>'+a.name+'</h3><p>'+a.desc+'</p><div class="success-progress"><div class="success-track"><i style="width:'+pct+'%"></i></div><span>'+Math.min(a.value,a.target)+' / '+a.target+'</span></div><div class="success-reward"><span>RÉCOMPENSE</span><b>'+a.reward+'</b></div></article>'}).join('')+'</section><p class="success-note">Première version de l’interface : les indicateurs affichés sont calculés à partir des données actuellement disponibles. Le catalogue complet, les déblocages persistants et les récompenses de succès nécessitent encore leur moteur dédié.</p></div>';
+}
+
 async function logout(){
  if(logout.busy)return; logout.busy=true;
  try{
@@ -446,6 +473,7 @@ async function admin(){
   <button class="admin-tab ${adminReturn?.tab==="cards"?"active":""}" data-admin-tab="cards"><span>▤</span> Cartes</button>
   <button class="admin-tab ${adminReturn?.tab==="packs"?"active":""}" data-admin-tab="packs"><span>⬡</span> Packs & pools</button>
   <button class="admin-tab" data-admin-tab="auctions"><span>⚒</span> Marché / enchères</button>
+  <button class="admin-tab" data-admin-tab="successes"><span>🏆</span> Succès & missions</button>
   <button class="admin-tab" data-admin-tab="logs"><span>▧</span> Journal système</button>
   <a class="admin-back-link" href="#home"><span>↗</span> Retour au site</a>
  </nav>
@@ -579,6 +607,21 @@ async function admin(){
    </section>
   </section>
  </div>
+ <div class="admin-tab-panel" data-admin-panel="successes">
+  <section class="admin-management-page success-admin-page">
+   <header class="admin-management-hero"><div class="admin-management-title"><p class="eyebrow">FOOTVAULT / PROGRESSION</p><h2>SUCCÈS <span>& MISSIONS.</span></h2><p>Vue de préparation du catalogue de succès et des objectifs de progression.</p></div><div class="admin-management-hero-actions"><span class="admin-management-live"><i></i> ESPACE ADMIN</span></div></header>
+   <div class="admin-management-kpis">
+    <article class="admin-management-kpi gold"><span class="admin-management-kpi-icon">🏆</span><div><small>SUCCÈS PRÉVUS</small><strong>200</strong><span>Succès permanents dans la banque d’idées</span></div></article>
+    <article class="admin-management-kpi blue"><span class="admin-management-kpi-icon">◷</span><div><small>MISSIONS RÉCURRENTES</small><strong>100</strong><span>Quotidiennes, hebdomadaires et mensuelles</span></div></article>
+    <article class="admin-management-kpi green"><span class="admin-management-kpi-icon">↗</span><div><small>NIVEAUX</small><strong>1–100</strong><span>Progression par expérience</span></div></article>
+    <article class="admin-management-kpi purple"><span class="admin-management-kpi-icon">✦</span><div><small>RÉCOMPENSES</small><strong>4 types</strong><span>FC · XP · Packs · Badges</span></div></article>
+   </div>
+   <section class="admin-management-block"><div class="admin-management-block-head"><div><p class="eyebrow">STRUCTURE DU CATALOGUE</p><h3>Catégories de succès</h3><p>Référentiel de travail basé sur la banque d’idées FOOTVAULT.</p></div></div>
+    <div class="success-admin-categories"><article><b>01</b><strong>Collection</strong><span>Quantité de cartes et doublons</span></article><article><b>02</b><strong>Raretés</strong><span>Obtention et cumul des paliers</span></article><article><b>03</b><strong>Clubs & diversité</strong><span>Clubs, albums, nations et saisons</span></article><article><b>04</b><strong>Postes & statistiques</strong><span>Composition, attributs et OVR</span></article><article><b>05</b><strong>Packs & économie</strong><span>Ouvertures, dépenses et chance</span></article><article><b>06</b><strong>Marché & enchères</strong><span>Achats, ventes et enchères</span></article><article><b>07</b><strong>Progression</strong><span>Niveaux, XP et fidélité</span></article><article><b>08</b><strong>Secrets & fun</strong><span>Succès cachés et objectifs spéciaux</span></article></div>
+   </section>
+   <div class="success-admin-warning"><strong>Prochaine étape technique</strong><p>Cette vue pose la structure de l’espace Admin. Les formulaires de création/modification, l’activation des succès, les règles de progression et l’attribution sécurisée des récompenses devront être reliés à une table de configuration et à des endpoints serveur avant toute modification en production.</p></div>
+  </section>
+ </div>
  <div class="admin-tab-panel" data-admin-panel="logs">
   <section class="admin-management-page admin-logs-page">
    <header class="admin-management-hero"><div class="admin-management-title"><p class="eyebrow">FOOTVAULT / SUPERVISION</p><h2>JOURNAL <span>SYSTÈME.</span></h2><p>Consultez les actions administratives et les événements enregistrés sur la plateforme.</p></div><div class="admin-management-hero-actions"><span class="admin-management-live"><i></i> JOURNAL SYNCHRONISÉ</span></div></header>
@@ -626,7 +669,7 @@ async function market(){
 <section id="auctionHistory" class="auction-grid" hidden><div class="empty">L’historique sera chargé à l’ouverture de cet onglet.</div></section>
  </div>`
 }
-async function render(){shell();const {r,q}=route();let html='';try{if(r==='home')html=await home();else if(r==='collection')html=await collection();else if(r==='packs')html=await packs();else if(r==='vault')html=await vault();else if(r==='album')html=await album();else if(r==='card')html=await cardDetail(q.get('id'));else if(r==='auth')html=authView(q.get('mode')==='register'?'register':'login',q.get('next')||'vault');else if(r==='market')html=await market();else if(r==='admin')html=await admin();else html=home();app().innerHTML=html;bind();nav();}catch(e){app().innerHTML=`<div class="page"><div class="empty">${esc(e.message)}</div></div>`}}
+async function render(){shell();const {r,q}=route();let html='';try{if(r==='home')html=await home();else if(r==='collection')html=await collection();else if(r==='packs')html=await packs();else if(r==='vault')html=await vault();else if(r==='successes')html=await achievements();else if(r==='album')html=await album();else if(r==='card')html=await cardDetail(q.get('id'));else if(r==='auth')html=authView(q.get('mode')==='register'?'register':'login',q.get('next')||'vault');else if(r==='market')html=await market();else if(r==='admin')html=await admin();else html=home();app().innerHTML=html;bind();nav();}catch(e){app().innerHTML=`<div class="page"><div class="empty">${esc(e.message)}</div></div>`}}
 async function loadAuctionHistory(){
  try{const d=await api('/api/auctions/history');state.auctionHistory=d.auctions||[];return state.auctionHistory}catch(e){toast(e.message);return[]}
 }
