@@ -4,10 +4,10 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { startServer, newPlayer, userRow } = require('./helpers');
+const { startServer, newPlayer, userRow, awayFromParisMidnight } = require('./helpers');
 
 let server;
-test.before(async () => { server = await startServer(); });
+test.before(async () => { await awayFromParisMidnight(); server = await startServer(); });
 test.after(async () => { await server?.stop(); });
 
 const coinsOf = async p => Number((await userRow(server, p.user.id)).coins);
@@ -85,4 +85,20 @@ test('tâche hebdomadaire : accordée une fois par semaine', async () => {
   assert.equal((await p.post('/api/tasks/claim', { kind: 'weekly', taskId: 'open-5' })).status, 200);
   assert.equal((await p.post('/api/tasks/claim', { kind: 'weekly', taskId: 'open-5' })).status, 400);
   assert.equal(await coinsOf(p), before + 400);
+});
+
+test('journal de sécurité en échec : la récompense reste acquise', async () => {
+  const p = await newPlayer(server, 'Journal');
+  await p.post('/api/packs/open', { packId: 'starter' });
+  // Simule un échec d'écriture du journal pour cet événement uniquement.
+  await server.db.query("ALTER TABLE security_events ADD CONSTRAINT test_refuse_mission CHECK (event <> 'mission_reward_claim') NOT VALID");
+  try {
+    const before = await coinsOf(p);
+    const r = await p.post('/api/missions/claim', { missionId: 'collect-5' });
+    assert.equal(r.status, 200);
+    assert.equal(await coinsOf(p), before + 150);
+    assert.equal((await p.post('/api/missions/claim', { missionId: 'collect-5' })).status, 400);
+  } finally {
+    await server.db.query('ALTER TABLE security_events DROP CONSTRAINT test_refuse_mission');
+  }
 });

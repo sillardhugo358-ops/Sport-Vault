@@ -267,8 +267,13 @@ if(!packReset){
 await pool.query(`CREATE TABLE IF NOT EXISTS registration_limits(ip varchar(255) PRIMARY KEY,last_created_at timestamptz NOT NULL)`);await pool.query(`CREATE TABLE IF NOT EXISTS login_limits(ip varchar(255) NOT NULL,email varchar(320) NOT NULL,failed_attempts integer NOT NULL DEFAULT 0,blocked_until timestamptz,updated_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(ip,email))`);return{mode:'postgres'};}catch(error){console.error('SPORT VAULT database unavailable:',error.message);if(pool)await pool.end().catch(()=>{});pool=null;if(process.env.NODE_ENV==='production')throw error;return{mode:'memory',error:error.message};}}
 async function findUserByEmail(email){if(pool){const r=await pool.query('SELECT * FROM users WHERE email=$1',[email]);return r.rows[0]||null;}for(const u of memory.users.values())if(u.email===email)return u;return null;}
 async function getUserById(id){if(pool){const r=await pool.query('SELECT * FROM users WHERE id=$1',[id]);return r.rows[0]||null;}return memory.users.get(id)||null;}
-async function adminLog(adminId,targetUserId,action,details={}){await pool.query('INSERT INTO admin_logs(admin_id,target_user_id,action,details) VALUES($1,$2,$3,$4::jsonb)',[adminId,targetUserId,action,JSON.stringify(details)]);}
-async function securityEvent(userId,ip,event,details={},client=null){const db=client||pool;if(!db)return;try{await db.query('INSERT INTO security_events(user_id,ip,event,details) VALUES($1,$2,$3,$4::jsonb)',[userId||null,ip||null,event,JSON.stringify(details)])}catch(e){console.error('SPORT VAULT security event error:',e.message)}}
+async function adminLog(adminId,targetUserId,action,details={},client=null){await (client||pool).query('INSERT INTO admin_logs(admin_id,target_user_id,action,details) VALUES($1,$2,$3,$4::jsonb)',[adminId,targetUserId,action,JSON.stringify(details)]);}
+async function securityEvent(userId,ip,event,details={},client=null){const db=client||pool;if(!db)return;
+ // Inside a transaction, a failed INSERT would abort it and turn the caller's
+ // COMMIT into a silent ROLLBACK: isolate the write in a savepoint.
+ if(client)await client.query('SAVEPOINT security_event');
+ try{await db.query('INSERT INTO security_events(user_id,ip,event,details) VALUES($1,$2,$3,$4::jsonb)',[userId||null,ip||null,event,JSON.stringify(details)]);if(client)await client.query('RELEASE SAVEPOINT security_event');}
+ catch(e){console.error('SPORT VAULT security event error:',e.message);if(client)await client.query('ROLLBACK TO SAVEPOINT security_event');}}
 async function cleanupSessions(){if(!pool)return;try{await pool.query('DELETE FROM sessions WHERE expires_at<=now()')}catch(e){console.error('SPORT VAULT session cleanup error:',e.message)}}
 function roleLevel(role){return role==='creator'?3:role==='admin'?2:1}
 function canManage(actor,target){return roleLevel(actor.role)>roleLevel(target.role)}
@@ -292,15 +297,24 @@ async function adminSetRole(adminId,userId,role){
  await pool.query('UPDATE users SET role=$1 WHERE id=$2',[role,userId]);await adminLog(adminId,userId,'role_change',{role});return{ok:true,role};
 }
 async function adminAdjustResources(adminId,userId,kind,amount,reason){
- const admin=await getUserById(adminId),u=(await pool.query('SELECT id,role,coins,reserved_coins,gems FROM users WHERE id=$1 FOR UPDATE',[userId])).rows[0];
+ const client=await pool.connect();
+ try{
+ await client.query('BEGIN');
+ const result=await adjustResourcesLocked(client,adminId,userId,kind,amount,reason);
+ await client.query(result.error?'ROLLBACK':'COMMIT');
+ return result;
+ }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}
+}
+async function adjustResourcesLocked(client,adminId,userId,kind,amount,reason){
+ const admin=await getUserById(adminId),u=(await client.query('SELECT id,role,coins,reserved_coins,gems FROM users WHERE id=$1 FOR UPDATE',[userId])).rows[0];
  if(!u)return{error:'Utilisateur introuvable.',status:404};if(!(admin.role==='creator'&&adminId===userId)&&!canManage(admin,u))return{error:'Tu ne peux pas modifier ce compte.',status:403};
  const n=Number(amount);if(!Number.isInteger(n)||n===0||Math.abs(n)>100000000)return{error:'Montant invalide.',status:400};
  if(kind==='coins'&&n<0&&Number(u.coins)-Number(u.reserved_coins)+n<0)return{error:'Impossible de retirer des FC disponibles.',status:400};
  if(kind==='gems'&&n<0&&Number(u.gems)+n<0)return{error:'Impossible de retirer autant de GEMS.',status:400};
  if(!['coins','gems'].includes(kind))return{error:'Ressource invalide.',status:400};
- const col=kind==='coins'?'coins':'gems';const updated=(await pool.query(`UPDATE users SET ${col}=${col}+$1 WHERE id=$2 RETURNING *`,[n,userId])).rows[0];
- await securityEvent(userId,null,'admin_resource_adjust',{adminId,resource:kind,amount:n});
- await adminLog(adminId,userId,'resource_adjust',{resource:kind,amount:n,reason:String(reason||'').slice(0,200)});
+ const col=kind==='coins'?'coins':'gems';const updated=(await client.query(`UPDATE users SET ${col}=${col}+$1 WHERE id=$2 RETURNING *`,[n,userId])).rows[0];
+ await securityEvent(userId,null,'admin_resource_adjust',{adminId,resource:kind,amount:n},client);
+ await adminLog(adminId,userId,'resource_adjust',{resource:kind,amount:n,reason:String(reason||'').slice(0,200)},client);
  return{ok:true,user:safeUser(updated)};
 }
 async function adminTransferCard(adminId,instanceId,toUserId){
@@ -800,7 +814,8 @@ async function withdrawAuctionParticipation(userId,auctionId){
   }
   await securityEvent(userId,null,'auction_withdraw',{auctionId,currentBidderChanged: a.current_bidder_id===userId,restoredBid:restoredBid?.amount||null},client);
   await client.query('COMMIT');
-  return{ok:true,auction:{id:auctionId,currentBid:restoredBid?.amount||Number(a.starting_bid),currentBidderId:restoredBid?.bidderId||null}};
+  const after=(await pool.query('SELECT current_bid,current_bidder_id FROM auctions WHERE id=$1',[auctionId])).rows[0];
+  return{ok:true,auction:{id:auctionId,currentBid:Number(after.current_bid),currentBidderId:after.current_bidder_id||null}};
  }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release();}
 }
 async function auctionHistory(userId){
