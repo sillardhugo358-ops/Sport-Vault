@@ -97,4 +97,8 @@ timeline
 
 Étape 5 : récompenses et progression dans `lib/rewards.js` (niveaux, bonus quotidien, missions, tâches, album) ; `server.js` à 714 lignes. Les succès, gérés directement dans les routes, suivront avec le routeur.
 
-Prochaine étape : **phase 3, étape 6 — enchères**. Sauvegarde manuelle chaque semaine en attendant son automatisation.
+Hors phase, le 30/09/2026 : catalogue étendu à Premier League, La Liga, Serie A et Bundesliga (43 781 cartes, `scripts/import-europe.js`) ; site accéléré (cache du catalogue, compression) ; packs par compétition et par décennie.
+
+Étape 6 : enchères dans `lib/auctions.js` (création, offres, anti-sniping, règlement, annulation, retrait, historique) ; `server.js` à 556 lignes.
+
+Prochaine étape : **phase 3, étape 7 — administration**. Sauvegarde manuelle chaque semaine en attendant son automatisation.
