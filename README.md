@@ -2,37 +2,58 @@
 
 **COLLECT THE GAME.**
 
-Reconstruction complète de l'expérience FOOTVAULT : une interface unique, premium et mobile-first pour collectionner les cartes de football.
+Plateforme de cartes à collectionner consacrée au football : collection par saison, albums par club, ouverture de packs, enchères, missions et succès. Interface unique, mobile-first.
+
+Production : https://sport-vault.onrender.com
 
 ## Fonctionnalités
 
-- Compte et session serveur
-- 1 000 FOOTCOINS + 50 GEMS à la création
-- 3 cartes de bienvenue
-- Collection personnelle persistante
-- 24 cartes du catalogue / 5 raretés
-- Packs Starter, Pro et Legend avec tirages côté serveur
-- Révélation animée des cartes
-- XP et niveaux
-- Bonus quotidien : 150 FC + 25 XP
-- Missions avec progression réelle et protection anti-double récompense
-- Album par club avec récompense de 250 FC + 75 XP
-- Fiche détaillée : OVR, 6 attributs, Vault Value, édition, source et date d'acquisition
-- Market préparé pour une prochaine brique
-- Interface responsive téléphone / tablette / ordinateur
-- Anciennes URLs conservées via redirections vers l'application
+- Comptes et sessions côté serveur, avec limites anti-abus à l'inscription et à la connexion
+- 1 000 FOOTCOINS + 50 GEMS à la création du compte, cartes de bienvenue
+- Catalogue Ligue 1 2026-2027 : **478 cartes**, 5 raretés (Common, Rare, Epic, Legendary, Icon)
+- Collection personnelle et album par club, avec récompense d'album
+- Packs Starter, Pro et Legend : tirages et garanties de rareté côté serveur ; pools de cartes
+- Missions déverrouillables, tâches quotidiennes et hebdomadaires (heure de Paris), bonus quotidien
+- Succès et progression (XP, niveaux)
+- Market : enchères avec palier minimal de +10 % et prolongation d'une minute pour une enchère dans les 30 dernières secondes
+- Console d'administration : utilisateurs, cartes, compétitions et clubs, packs, marché, journaux, succès
 
 ## Architecture
 
-Le navigateur ne constitue jamais la source de vérité pour l'économie ou les cartes. Les comptes, soldes, sessions, instances de cartes et récompenses sont gérés par `server.js`, avec PostgreSQL sur Render lorsque `DATABASE_URL` est disponible.
+| Élément | Détail |
+|---|---|
+| Serveur | Node.js ≥ 18, module `http` natif, sans framework — `server.js` |
+| Interface | SPA en JavaScript vanilla, navigation par hash — `index.html`, `app.js`, `styles.css` |
+| Base | PostgreSQL hébergé sur Aiven (voir [SAUVEGARDE.md](docs/SAUVEGARDE.md)). Tables créées au démarrage par `initDb()` |
+| Démarrage | `ligue1-launcher.js` lance `server.js` puis synchronise le catalogue (`scripts/import-ligue1-2026-27.js`) |
 
-L'interface FOOTVAULT est maintenant une SPA légère servie par Node, avec navigation par hash pour éviter les multiplications de pages et les fenêtres/panneaux persistants.
+Le navigateur n'est jamais la source de vérité : soldes, sessions, cartes et récompenses sont gérés par le serveur. Sans `DATABASE_URL`, le serveur fonctionne en mémoire (données perdues à l'arrêt) ; en production il refuse de démarrer sans base.
 
-## Local
+## Lancer en local
 
 ```bash
 npm install
 npm start
 ```
 
-Puis ouvrir `http://localhost:3000`.
+Puis ouvrir http://localhost:3000.
+
+Variables d'environnement utiles :
+
+| Variable | Rôle |
+|---|---|
+| `DATABASE_URL` | Connexion PostgreSQL (sinon mode mémoire). Pour Aiven, terminer par `?sslmode=no-verify` |
+| `PORT` | Port HTTP (3000 par défaut) |
+| `ADMIN_EMAILS` | E-mails des comptes administrateurs, séparés par des virgules |
+| `ADMIN_BOOTSTRAP_NAME`, `ADMIN_BOOTSTRAP_PASSWORD` | Création du premier compte administrateur |
+| `HISTORICAL_IMPORT_TOKEN` | Jeton de la route d'import de l'historique Ligue 1 |
+
+## Contrôles
+
+La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`. Il n'y a pas encore de tests automatisés.
+
+## Documentation
+
+- [Point de départ et feuille de route](docs/POINT-DE-DEPART.md)
+- [Sauvegarde et restauration de la base](docs/SAUVEGARDE.md)
+- [Inventaire du dossier data/](data/README.md)

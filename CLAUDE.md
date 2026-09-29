@@ -15,7 +15,9 @@ pools et de progresser grâce à des missions et des succès.
 
 -   **Dépôt GitHub :** `sillardhugo358-ops/Sport-Vault`
 -   **Site en production :** https://sport-vault.onrender.com
--   **Base de données :** Supabase
+-   **Base de données :** PostgreSQL hébergé sur Render (`DATABASE_URL`,
+    schéma créé par `initDb()` dans `server.js`) — pas de Supabase dans
+    le code actuel
 -   **Hébergement actuellement utilisé :** Render
 -   **Technologies front-end et organisation exacte :** à vérifier dans
     le dépôt avant toute modification. Ne pas supposer qu'un framework
@@ -28,9 +30,9 @@ pools et de progresser grâce à des missions et des succès.
     déploiement avant d'éditer.
 2.  **Préserver les fonctionnalités existantes.** Éviter les réécritures
     globales lorsqu'une modification ciblée suffit.
-3.  **Ne jamais inventer le schéma Supabase.** Vérifier les tables,
-    colonnes, relations, politiques RLS et fonctions réellement
-    présentes.
+3.  **Ne jamais inventer le schéma de la base.** Vérifier les tables,
+    colonnes, relations, contraintes et contrôles d'accès réellement
+    présents.
 4.  **Protéger les secrets.** Ne jamais afficher, committer ou intégrer
     dans le front-end des clés privées, mots de passe ou secrets.
     Utiliser les variables d'environnement prévues par le projet.
@@ -163,8 +165,8 @@ actuel avant de supposer qu'il est entièrement en place.
 -   Toute action sensible (achats, récompenses, soldes, enchères, droits
     administrateur) doit être vérifiée côté serveur ou par des règles de
     sécurité adaptées, pas seulement dans l'interface.
--   Contrôler les politiques Supabase RLS et les permissions de chaque
-    table concernée.
+-   Contrôler les vérifications d'accès côté serveur (session, rôle
+    admin) pour chaque table et route concernée.
 -   Ne jamais faire confiance à un prix, un solde, une rareté ou une
     récompense calculés uniquement par le client.
 -   Prévoir des opérations idempotentes lorsque des achats ou
@@ -208,7 +210,7 @@ déjà réalisées.
 Avant toute intervention, vérifier : - la structure exacte des fichiers
 et le point d'entrée de l'application ; - les commandes de lancement, de
 test et de build ; - les versions et bibliothèques réellement utilisées
-; - les tables Supabase et leurs relations ; - les variables
+; - les tables PostgreSQL et leurs relations ; - les variables
 d'environnement nécessaires ; - la configuration Render et le processus
 de déploiement ; - l'état réel des fonctionnalités listées ci-dessus.
 

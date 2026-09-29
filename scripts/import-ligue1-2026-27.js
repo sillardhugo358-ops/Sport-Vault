@@ -26,7 +26,7 @@ async function ensureCompetition(client){
   }
   let season=(await client.query("SELECT id FROM competition_seasons WHERE competition_id=$1 AND season='2026-2027' LIMIT 1",[competition.id])).rows[0];
   if(!season){
-    season=(await client.query("INSERT INTO competition_seasons(id,competition_id,season,label,status,description,sort_order) VALUES($1,$2,'2026-2027','2026-2027','available','Saison Ligue 1 2026-2027',0) RETURNING id",[competition.id+'-2026-2027'])).rows[0];
+    season=(await client.query("INSERT INTO competition_seasons(id,competition_id,season,label,status,description,sort_order) VALUES($1,$2,'2026-2027','2026-2027','available','Saison Ligue 1 2026-2027',0) RETURNING id",[competition.id+'-2026-2027',competition.id])).rows[0];
   } else {
     await client.query("UPDATE competition_seasons SET status='available',label='2026-2027',updated_at=now() WHERE id=$1",[season.id]);
   }
