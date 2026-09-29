@@ -101,4 +101,6 @@ Hors phase, le 30/09/2026 : catalogue étendu à Premier League, La Liga, Serie 
 
 Étape 6 : enchères dans `lib/auctions.js` (création, offres, anti-sniping, règlement, annulation, retrait, historique) ; `server.js` à 556 lignes.
 
-Prochaine étape : **phase 3, étape 7 — administration**. Sauvegarde manuelle chaque semaine en attendant son automatisation.
+Étape 7 : administration dans `lib/admin.js` (comptes, ressources, cartes des joueurs, catalogue, compétitions, collections, packs, journaux, vue d'ensemble) ; nouveau `test/admin.test.js` ; `server.js` à 329 lignes.
+
+Prochaine étape : **phase 3, étape 8 — routeur et succès** (dernière étape du découpage). Sauvegarde manuelle chaque semaine en attendant son automatisation.
