@@ -1,6 +1,6 @@
 # Inventaire du dossier `data/`
 
-État au 29/09/2026. Seuls trois fichiers sont lus par le code.
+État au 29/09/2026. Tous ces fichiers ont été ajoutés en une seule fois (commit `6224d57`). Seuls trois sont lus par le code ; les autres n'ont été ni supprimés ni modifiés en attendant une décision.
 
 ## Utilisés par l'application
 
@@ -10,9 +10,18 @@
 
 **Ne pas supprimer ni renommer** : si le chargement échoue, le serveur retombe sur 24 cartes fictives.
 
-## Supprimés le 29/09/2026
+## Non lus par le code : versions du catalogue 2026-2027 (350 cartes)
 
-Anciennes versions du catalogue 2026-2027 (350 cartes, `ligue1-2026-2027.*`) et `l1v4.part*` : non lues par le code, remplacées par le catalogue de 478 cartes. Récupérables dans l'historique Git (commit `6224d57`).
+Fichiers source 2026-2027. **À conserver** (décision du 29/09/2026).
+
+| Fichiers | Contenu constaté |
+|---|---|
+| `ligue1-2026-2027.excel.json` | JSON lisible, 350 cartes |
+| `ligue1-2026-2027.catalog.json` | 350 cartes (champ `cards` en zlib + base64) |
+| `ligue1-2026-2027.part1.b64` + `part2.v2` + `part3.v2` + `part4.v2` + `part5.v2` | 350 cartes une fois concaténés |
+| `ligue1-2026-2027.part2.b64`, `part3.b64`, `part4.b64` | Première version des morceaux, non décodable telle quelle |
+| `ligue1-2026-2027.v3.b64`, `ligue1-2026-2027.corrected.b64` | Non décodables en l'état (format inconnu ou incomplet) |
+| `l1v4.part1.b64` à `part4.b64` | Non décodables une fois concaténés |
 
 ## Non utilisés : historique Ligue 1 2010-2025
 
