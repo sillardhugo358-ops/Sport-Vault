@@ -74,4 +74,4 @@ Les comptages doivent correspondre à ceux affichés par le script au moment de 
 
 ## Ce qui a été testé
 
-Le 29/09/2026, sur une base PostgreSQL 16 locale de test (pas la production) : démarrage de l'application sur base vide, sauvegarde avec `scripts/backup-db.sh`, restauration dans une seconde base. Résultat : 23 tables et 478 cartes restaurées. La sauvegarde de la production n'a **pas** été faite : elle nécessite l'URL de la base, que seul le propriétaire du compte Render possède.
+Le 29/09/2026, sur une base PostgreSQL 16 locale de test (pas la production) : démarrage de l'application sur base vide, sauvegarde avec `scripts/backup-db.sh`, restauration dans une seconde base. Résultat : 23 tables et 478 cartes restaurées. La sauvegarde de production du 29/09/2026 (pgAdmin, PostgreSQL 18) a été lue et vérifiée hors outils PostgreSQL (23 tables), puis restaurée sur Aiven avec des comptages identiques (voir « Historique » ci-dessus).
