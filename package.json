@@ -6,15 +6,13 @@
   "scripts": {
     "start": "node ligue1-launcher.js",
     "test": "node --test test/*.test.js",
-    "check": "node scripts/check-identifiers.js server.js security-bootstrap.js ligue1-launcher.js scripts/*.js lib/*.js",
-    "import:four-leagues": "node scripts/import-four-leagues.js"
+    "check": "node scripts/check-identifiers.js server.js security-bootstrap.js ligue1-launcher.js scripts/*.js lib/*.js"
   },
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
-    "pg": "^8.16.3",
-    "exceljs": "^4.4.0"
+    "pg": "^8.16.3"
   },
   "devDependencies": {
     "acorn": "^8.15.0",
