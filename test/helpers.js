@@ -42,7 +42,47 @@ async function startServer() {
   const admin = new Pool({ connectionString: adminUrl(), max: 1 });
   await admin.query(`CREATE DATABASE ${dbName}`);
   const databaseUrl = withDatabase(adminUrl(), dbName);
-  const port = await freePort();
+  let child = null;
+  const cleanup = async () => {
+    if (child && child.exitCode === null) {
+      child.kill('SIGTERM');
+      await new Promise(r => child.once('exit', r));
+    }
+    await admin.query(`DROP DATABASE IF EXISTS ${dbName} WITH (FORCE)`).catch(() => {});
+    await admin.end().catch(() => {});
+  };
+  try {
+    // Plusieurs fichiers de test tournent en parallèle : si le port choisi
+    // est pris entre-temps, le serveur s'arrête et on réessaie ailleurs.
+    for (let attempt = 1; ; attempt++) {
+      const port = await freePort();
+      const started = await launch(databaseUrl, port);
+      child = started.child;
+      if (started.ok) {
+        const db = new Pool({ connectionString: databaseUrl, max: 2 });
+        let ipCounter = 0;
+        return {
+          base: `http://127.0.0.1:${port}`,
+          db,
+          logs: started.logs,
+          // Chaque joueur a sa propre IP : le serveur limite à une inscription
+          // par IP toutes les 72 h.
+          newIp: () => `10.${(process.pid >> 8) & 255}.${process.pid & 255}.${++ipCounter}`,
+          async stop() {
+            await db.end();
+            await cleanup();
+          }
+        };
+      }
+      if (!started.portInUse || attempt >= 3) throw new Error(started.error);
+    }
+  } catch (e) {
+    await cleanup();
+    throw e;
+  }
+}
+
+async function launch(databaseUrl, port) {
   let logs = '';
   const child = spawn(process.execPath, ['-r', './security-bootstrap.js', 'server.js'], {
     cwd: ROOT,
@@ -54,32 +94,32 @@ async function startServer() {
   const base = `http://127.0.0.1:${port}`;
   const deadline = Date.now() + 60_000;
   for (;;) {
-    if (child.exitCode !== null) throw new Error('Le serveur s\'est arrêté au démarrage :\n' + logs);
-    try {
-      const r = await fetch(base + '/api/health');
-      const body = await r.json();
-      if (body.ready && body.storage === 'postgres') break;
-    } catch {}
-    if (Date.now() > deadline) throw new Error('Serveur non prêt après 60 s :\n' + logs);
-    await new Promise(r => setTimeout(r, 250));
-  }
-  const db = new Pool({ connectionString: databaseUrl, max: 2 });
-  let ipCounter = 0;
-  return {
-    base,
-    db,
-    logs: () => logs,
-    // Chaque joueur a sa propre IP : le serveur limite à une inscription
-    // par IP toutes les 72 h.
-    newIp: () => `10.${(process.pid >> 8) & 255}.${process.pid & 255}.${++ipCounter}`,
-    async stop() {
-      await db.end();
+    if (child.exitCode !== null) return { ok: false, child, portInUse: /EADDRINUSE/.test(logs), error: 'Le serveur s\'est arrêté au démarrage :\n' + logs };
+    // N'interroger le port qu'une fois que *notre* serveur l'écoute.
+    if (logs.includes(`running on ${port}`)) {
+      try {
+        const r = await fetch(base + '/api/health');
+        const body = await r.json();
+        if (body.ready && body.storage === 'postgres') return { ok: true, child, logs: () => logs };
+      } catch {}
+    }
+    if (Date.now() > deadline) {
       child.kill('SIGTERM');
       await new Promise(r => child.once('exit', r));
-      await admin.query(`DROP DATABASE IF EXISTS ${dbName} WITH (FORCE)`);
-      await admin.end();
+      return { ok: false, child, portInUse: false, error: 'Serveur non prêt après 60 s :\n' + logs };
     }
-  };
+    await new Promise(r => setTimeout(r, 250));
+  }
+}
+
+// Les récompenses quotidiennes et hebdomadaires dépendent de l'heure réelle :
+// si minuit (heure de Paris) approche, attendre qu'il soit passé pour qu'un
+// test ne commence pas un jour et ne finisse pas le lendemain.
+async function awayFromParisMidnight(marginMs = 120_000) {
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' })
+    .formatToParts(new Date()).map(p => [p.type, p.value]));
+  const msToMidnight = ((24 - Number(parts.hour)) * 3600 - Number(parts.minute) * 60 - Number(parts.second)) * 1000;
+  if (msToMidnight < marginMs) await new Promise(r => setTimeout(r, msToMidnight + 2000));
 }
 
 // Client HTTP d'un joueur : garde son cookie de session et son IP.
@@ -124,4 +164,4 @@ async function userRow(server, userId) {
   return (await server.db.query('SELECT * FROM users WHERE id=$1', [userId])).rows[0];
 }
 
-module.exports = { startServer, client, newPlayer, setCoins, userRow };
+module.exports = { startServer, client, newPlayer, setCoins, userRow, awayFromParisMidnight };

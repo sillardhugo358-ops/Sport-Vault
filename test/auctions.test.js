@@ -176,6 +176,38 @@ test('retrait : un enchérisseur surenchéri quitte la vente et ne peut plus mis
   await bob.post('/api/auctions/bid', { auctionId: a.id, amount: 110 });
   const w = await alice.post('/api/auctions/withdraw', { auctionId: a.id });
   assert.equal(w.status, 200, JSON.stringify(w.body));
+  // Bob mène toujours : la réponse doit le refléter.
+  assert.equal(w.body.auction.currentBid, 110);
+  assert.equal(w.body.auction.currentBidderId, bob.user.id);
   assert.equal(await reserved(alice), 0);
   assert.equal((await alice.post('/api/auctions/bid', { auctionId: a.id, amount: 200 })).status, 400);
+});
+
+test('journal de sécurité en échec : l\'enchère est bien créée', async () => {
+  const { seller, card } = await sellerWithCard();
+  await server.db.query("ALTER TABLE security_events ADD CONSTRAINT test_refuse_auction CHECK (event <> 'auction_create') NOT VALID");
+  try {
+    const a = await createAuction(seller, card, 100);
+    assert.equal((await auctionRow(a.id))?.status, 'active');
+  } finally {
+    await server.db.query('ALTER TABLE security_events DROP CONSTRAINT test_refuse_auction');
+  }
+});
+
+test('admin : retrait de FC limité aux FC non réservés par une enchère', async () => {
+  const admin = await newPlayer(server, 'Admin');
+  await server.db.query("UPDATE users SET role='admin' WHERE id=$1", [admin.user.id]);
+  const { seller, card } = await sellerWithCard();
+  const a = await createAuction(seller, card, 100);
+  const alice = await newPlayer(server, 'Alice');
+  await alice.post('/api/auctions/bid', { auctionId: a.id, amount: 600 });
+  const route = `/api/admin/users/${alice.user.id}/resources`;
+  assert.equal((await admin.post(route, { resource: 'coins', amount: -500, reason: 'test' })).status, 400);
+  const ok = await admin.post(route, { resource: 'coins', amount: -400, reason: 'test' });
+  assert.equal(ok.status, 200, JSON.stringify(ok.body));
+  const row = await userRow(server, alice.user.id);
+  assert.equal(Number(row.coins), 600);
+  assert.equal(Number(row.reserved_coins), 600);
+  const log = await server.db.query("SELECT count(*) FROM admin_logs WHERE target_user_id=$1 AND action='resource_adjust'", [alice.user.id]);
+  assert.equal(Number(log.rows[0].count), 1);
 });

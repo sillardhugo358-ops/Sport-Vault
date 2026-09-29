@@ -8,12 +8,14 @@ let server;
 test.before(async () => { server = await startServer(); });
 test.after(async () => { await server?.stop(); });
 
-test('santé : serveur prêt sur PostgreSQL avec 478 cartes', async () => {
+test('santé : serveur prêt sur PostgreSQL, catalogue chargé', async () => {
   const r = await client(server).get('/api/health');
   assert.equal(r.status, 200);
   assert.equal(r.body.ok, true);
   assert.equal(r.body.storage, 'postgres');
-  assert.equal(r.body.cards, 478);
+  const active = Number((await server.db.query('SELECT count(*) FROM catalog_cards WHERE is_active=true')).rows[0].count);
+  assert.ok(active > 0);
+  assert.equal(r.body.cards, active);
   assert.deepEqual(r.body.packs, ['starter', 'pro', 'legend']);
 });
 
