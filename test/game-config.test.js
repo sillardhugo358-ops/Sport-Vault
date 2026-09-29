@@ -4,7 +4,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { RARITIES, PACKS, PACK_WEIGHTS, MISSIONS, DEFAULT_ACHIEVEMENTS, DAILY_TASKS, WEEKLY_TASKS } = require('../lib/game-config');
+const { RARITIES, PACKS, THEMED_PACKS, PACK_WEIGHTS, MISSIONS, DEFAULT_ACHIEVEMENTS, DAILY_TASKS, WEEKLY_TASKS } = require('../lib/game-config');
 
 const positive = r => Number(r.coins) >= 0 && Number(r.xp) >= 0 && Number(r.coins) + Number(r.xp) > 0;
 
@@ -45,4 +45,12 @@ test('packs de secours : raretés connues, prix et nombre de cartes positifs', (
 test('succès par défaut : identifiants uniques, objectifs et récompenses positifs', () => {
   assert.equal(new Set(DEFAULT_ACHIEVEMENTS.map(a => a.id)).size, DEFAULT_ACHIEVEMENTS.length);
   for (const a of DEFAULT_ACHIEVEMENTS) assert.ok(a.target > 0 && positive(a), a.id);
+});
+
+test('packs thématiques : identifiants uniques, garantie possible, un critère compétition ou décennie', () => {
+  assert.equal(new Set(THEMED_PACKS.map(p => p.id)).size, THEMED_PACKS.length);
+  for (const p of THEMED_PACKS) {
+    assert.ok(RARITIES[p.guarantee] && p.price > 0 && p.cards > 0 && p.guaranteeCount <= p.cards, p.id);
+    assert.ok((p.conditions.competitions || []).length + (p.conditions.decades || []).length === 1, p.id);
+  }
 });

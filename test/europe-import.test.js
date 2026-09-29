@@ -6,7 +6,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { execFile } = require('node:child_process');
 const path = require('node:path');
-const { startServer, newPlayer } = require('./helpers');
+const { startServer, newPlayer, setCoins } = require('./helpers');
 const { loadCards, importEurope } = require('../scripts/import-europe');
 const { rarityFromOvr } = require('../lib/rarity');
 
@@ -69,4 +69,26 @@ test('accueil : résumé du catalogue léger ; packs tirés dans tout le catalog
   const open = await p.post('/api/packs/open', { packId: 'starter' });
   assert.equal(open.status, 200, JSON.stringify(open.body));
   assert.equal(open.body.cards.length, 5);
+});
+
+test('packs thématiques : cartes de la compétition ou de la décennie demandée', async () => {
+  const competitionOf = new Map(loadCards().map(c => [c.id, c.competitionId]));
+  const packs = (await (await fetch(server.base + '/api/packs')).json()).packs;
+  const expected = ['pack-ligue-1', 'pack-premier-league', 'pack-la-liga', 'pack-serie-a', 'pack-bundesliga', 'pack-annees-2010', 'pack-annees-2020'];
+  for (const id of expected) assert.ok(packs.some(p => p.id === id), id);
+  const p = await newPlayer(server, 'Thematique');
+  await setCoins(server, p.user.id, 300 * expected.length * 3);
+  for (let round = 0; round < 3; round++) {
+    for (const id of expected) {
+      const r = await p.post('/api/packs/open', { packId: id });
+      assert.equal(r.status, 200, id + ' ' + JSON.stringify(r.body));
+      assert.equal(r.body.cards.length, 6);
+      assert.ok(r.body.cards.some(c => ['rare', 'epic', 'legendary', 'icon'].includes(c.rarity)), id + ' : pas de RARE garantie');
+      for (const c of r.body.cards) {
+        if (id === 'pack-ligue-1') assert.ok(!competitionOf.has(c.cardId), `${id} : ${c.cardId}`);
+        else if (id.startsWith('pack-annees-')) assert.equal(String(Number(c.season.slice(0, 4)) - Number(c.season.slice(0, 4)) % 10), id.slice(-4), `${id} : ${c.season}`);
+        else assert.equal(competitionOf.get(c.cardId), id.slice(5), `${id} : ${c.cardId}`);
+      }
+    }
+  }
 });

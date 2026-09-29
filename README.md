@@ -12,7 +12,7 @@ Production : https://sport-vault.onrender.com
 - 1 000 FOOTCOINS + 50 GEMS à la création du compte, cartes de bienvenue
 - Catalogue : Ligue 1 (2010-2011 à 2026-2027), Premier League, LaLiga, Serie A et Bundesliga (2010-2011 à 2026-2027) — **50 719 cartes**, 5 raretés (Common, Rare, Epic, Legendary, Icon)
 - Collection personnelle et album par club, avec récompense d'album
-- Packs Starter, Pro et Legend : tirages et garanties de rareté côté serveur ; pools de cartes
+- Packs Starter, Pro et Legend, packs par compétition (Ligue 1, Premier League, La Liga, Serie A, Bundesliga) et par décennie (années 2010, années 2020) : tirages et garanties de rareté côté serveur ; pools de cartes
 - Missions déverrouillables, tâches quotidiennes et hebdomadaires (heure de Paris), bonus quotidien
 - Succès et progression (XP, niveaux)
 - Market : enchères avec palier minimal de +10 % et prolongation d'une minute pour une enchère dans les 30 dernières secondes
@@ -51,7 +51,7 @@ Variables d'environnement utiles :
 
 ## Contrôles
 
-La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, signale tout identifiant non déclaré (`npm run check`), puis lance `npm test` : 72 tests sur une base PostgreSQL jetable (comptes, packs, récompenses, enchères, périodes, import du catalogue). Mode d'emploi : [test/README.md](test/README.md).
+La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, signale tout identifiant non déclaré (`npm run check`), puis lance `npm test` : 75 tests sur une base PostgreSQL jetable (comptes, packs, récompenses, enchères, périodes, import du catalogue). Mode d'emploi : [test/README.md](test/README.md).
 
 ## Documentation
 
