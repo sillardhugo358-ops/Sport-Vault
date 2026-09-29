@@ -51,31 +51,42 @@ async function startServer() {
     await admin.query(`DROP DATABASE IF EXISTS ${dbName} WITH (FORCE)`).catch(() => {});
     await admin.end().catch(() => {});
   };
-  try {
-    // Plusieurs fichiers de test tournent en parallèle : si le port choisi
-    // est pris entre-temps, le serveur s'arrête et on réessaie ailleurs.
+  // Plusieurs fichiers de test tournent en parallèle : si le port choisi
+  // est pris entre-temps, le serveur s'arrête et on réessaie ailleurs.
+  async function launchWithRetry() {
     for (let attempt = 1; ; attempt++) {
       const port = await freePort();
       const started = await launch(databaseUrl, port);
       child = started.child;
-      if (started.ok) {
-        const db = new Pool({ connectionString: databaseUrl, max: 2 });
-        let ipCounter = 0;
-        return {
-          base: `http://127.0.0.1:${port}`,
-          db,
-          logs: started.logs,
-          // Chaque joueur a sa propre IP : le serveur limite à une inscription
-          // par IP toutes les 72 h.
-          newIp: () => `10.${(process.pid >> 8) & 255}.${process.pid & 255}.${++ipCounter}`,
-          async stop() {
-            await db.end();
-            await cleanup();
-          }
-        };
-      }
+      if (started.ok) return { port, logs: started.logs };
       if (!started.portInUse || attempt >= 3) throw new Error(started.error);
     }
+  }
+  try {
+    const first = await launchWithRetry();
+    const db = new Pool({ connectionString: databaseUrl, max: 2 });
+    let ipCounter = 0;
+    const server = {
+      base: `http://127.0.0.1:${first.port}`,
+      db,
+      logs: first.logs,
+      // Chaque joueur a sa propre IP : le serveur limite à une inscription
+      // par IP toutes les 72 h.
+      newIp: () => `10.${(process.pid >> 8) & 255}.${process.pid & 255}.${++ipCounter}`,
+      // Redémarre le serveur sur la même base (migrations au démarrage).
+      async restart() {
+        child.kill('SIGTERM');
+        await new Promise(r => child.once('exit', r));
+        const next = await launchWithRetry();
+        server.base = `http://127.0.0.1:${next.port}`;
+        server.logs = next.logs;
+      },
+      async stop() {
+        await db.end();
+        await cleanup();
+      }
+    };
+    return server;
   } catch (e) {
     await cleanup();
     throw e;

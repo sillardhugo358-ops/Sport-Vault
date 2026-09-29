@@ -2,6 +2,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const zlib=require('node:zlib');
 const {Pool}=require('pg');
+const {rarityFromOvr}=require('../rarity');
 
 const ROOT=path.join(__dirname,'..');
 const seedPaths=[0,1,2].map(i=>path.join(ROOT,'data','footmercato_catalog_'+i+'.b64'));
@@ -12,8 +13,8 @@ function loadCards(){
   return seed.rows.map((line,i)=>{
     const v=line.split('|');
     const club=seed.clubs[Number(v[0])],name=v[1],position=seed.positions[Number(v[2])];
-    const nation=Number(v[3])<0?'':seed.nations[Number(v[3])],rarity=seed.rarities[Number(v[4])].toLowerCase(),jersey=Number(v[5]);
-    return {id:'fv-ligue-1-2026-2027-'+String(i+1).padStart(3,'0'),season:'2026-2027',name,position,jersey_number:jersey<0?null:jersey,club,nation,rarity,ovr:Number(v[6]),pace:Number(v[7]),shooting:Number(v[8]),passing:Number(v[9]),dribbling:Number(v[10]),defending:Number(v[11]),physical:Number(v[12]),distribution_type:'STANDARD',is_limited:false,max_supply:null,card_order:i};
+    const nation=Number(v[3])<0?'':seed.nations[Number(v[3])],jersey=Number(v[5]);
+    return {id:'fv-ligue-1-2026-2027-'+String(i+1).padStart(3,'0'),season:'2026-2027',name,position,jersey_number:jersey<0?null:jersey,club,nation,rarity:rarityFromOvr(Number(v[6])),ovr:Number(v[6]),pace:Number(v[7]),shooting:Number(v[8]),passing:Number(v[9]),dribbling:Number(v[10]),defending:Number(v[11]),physical:Number(v[12]),distribution_type:'STANDARD',is_limited:false,max_supply:null,card_order:i};
   });
 }
 
@@ -73,7 +74,7 @@ async function run(){
         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
         ON CONFLICT(id) DO UPDATE SET
           season=excluded.season,name=excluded.name,position=excluded.position,jersey_number=excluded.jersey_number,
-          club=excluded.club,nation=excluded.nation,rarity=excluded.rarity,ovr=excluded.ovr,pace=excluded.pace,
+          club=excluded.club,nation=excluded.nation,rarity=CASE WHEN catalog_cards.rarity_locked THEN catalog_cards.rarity ELSE excluded.rarity END,ovr=excluded.ovr,pace=excluded.pace,
           shooting=excluded.shooting,passing=excluded.passing,dribbling=excluded.dribbling,defending=excluded.defending,
           physical=excluded.physical,distribution_type=excluded.distribution_type,is_limited=excluded.is_limited,
           max_supply=excluded.max_supply,card_order=excluded.card_order,is_active=true,updated_at=now()`,

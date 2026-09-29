@@ -29,8 +29,8 @@
 | Succès / progression | 🟡 | Moteur en place, page Succès, éditeur admin récemment simplifié — ergonomie/aperçu/filtres à finaliser |
 | Enchères | ✅ | Création, enchère, annulation, retrait, historique ; palier +10 % et prolongation d'1 min si enchère dans les 30 dernières secondes |
 | Admin | ✅ | Utilisateurs, cartes, compétitions/clubs, packs, marché, journaux, succès |
-| Barème de rareté | ❌ | La rareté est **stockée dans les données** ; aucune fonction n'applique le barème officiel (< 78 / 78-83 / 84-89 / 90-91 / ≥ 92) |
-| Attributs gardiens | ❌ | Les GK utilisent les 6 attributs de champ ; PLG, JEU, DÉG, RÉF, VIT, POS absents |
+| Barème de rareté | ✅ | *Phase 2 :* rareté calculée depuis la note par `rarity.js` (création, modification, import) ; cartes spéciales à rareté manuelle (`rarity_locked`) |
+| Attributs gardiens | ✅ | Affichés PLG, JEU, DÉG, RÉF, VIT, POS ; stockés dans les 6 colonnes communes (correspondance dans [QUALITE-DONNEES.md](QUALITE-DONNEES.md)). *Constat initial erroné corrigé en phase 2.* |
 | Historique Ligue 1 2010-2025 | 🟡 | Données présentes dans `data/` et route d'import protégée par jeton — état réel en production à vérifier |
 | Tableau de bord statistique | 🟡 | Vue d'ensemble admin (`/api/admin/overview`) à enrichir |
 
@@ -46,7 +46,7 @@
 4. **Fichiers monolithiques** — `server.js`, `app.js` et `styles.css` sont très gros avec des lignes très longues, ce qui rend les revues et les corrections risquées.
 5. **Dossier `data/` encombré** — ~40 fichiers base64 avec plusieurs versions (`v2`, `v3`, `corrected`, `part…`) ; *Phase 0 : inventaire fait ([data/README.md](../data/README.md)) — seuls 3 fichiers sont lus ; suppression des anciennes versions en attente de décision.*
 6. **Configuration de session** — `render.yaml` définit `SESSION_TTL_DAYS`, mais cette variable n'est lue nulle part : la durée est codée en dur (`SESSION_DAYS = 2/24`, soit 2 h).
-7. **Règles métier non centralisées** — rareté et attributs gardiens (voir § 2).
+7. **Règles métier non centralisées** — *Traité en phase 2 :* barème centralisé. **Reste :** 2 136 nationalités vides et 296 cartes aux statistiques de remplissage, à compléter depuis une source fiable ([QUALITE-DONNEES.md](QUALITE-DONNEES.md)).
 8. **Import Ligue 1 cassé sur base neuve** — `scripts/import-ligue1-2026-27.js` créait la saison avec un paramètre manquant (erreur `bind message supplies 1 parameters`). Sans effet sur la prod où la saison existe déjà, mais bloquant pour une réinstallation. *Corrigé en phase 0.*
 
 ## 4. Frise chronologique
@@ -85,4 +85,6 @@ timeline
 
 **Phase 1 terminée le 29/09/2026.** 45 tests automatiques, 4 bugs corrigés (voir § 3).
 
-Prochaine étape : **phase 2 — données et règles métier** (barème de rareté, attributs gardiens). Sauvegarde manuelle chaque semaine en attendant son automatisation.
+**Phase 2 terminée le 29/09/2026** pour le code : barème des raretés appliqué partout, 4 cartes spéciales verrouillées, poste LM converti, libellés gardiens alignés. Données à compléter en attente d'une source.
+
+Prochaine étape : **phase 3 — découpage du code**. Sauvegarde manuelle chaque semaine en attendant son automatisation.

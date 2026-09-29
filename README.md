@@ -51,10 +51,11 @@ Variables d'environnement utiles :
 
 ## Contrôles
 
-La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, puis lance `npm test` : 54 tests sur une base PostgreSQL jetable (comptes, packs, récompenses, enchères, périodes). Mode d'emploi : [test/README.md](test/README.md).
+La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, puis lance `npm test` : 62 tests sur une base PostgreSQL jetable (comptes, packs, récompenses, enchères, périodes). Mode d'emploi : [test/README.md](test/README.md).
 
 ## Documentation
 
 - [Point de départ et feuille de route](docs/POINT-DE-DEPART.md)
 - [Sauvegarde et restauration de la base](docs/SAUVEGARDE.md)
 - [Inventaire du dossier data/](data/README.md)
+- [Qualité des données du catalogue](docs/QUALITE-DONNEES.md)

@@ -28,8 +28,11 @@ Chaque fichier crée une base jetable `fv_test_…`, démarre son propre serveur
 | `rewards.test.js` | Bonus quotidien, missions et tâches : jamais attribués deux fois, même en rafale ; déverrouillage progressif |
 | `auctions.test.js` | Durées autorisées, palier +10 %, anti-sniping, réservation des FC, règlement, annulation, retrait, enchères simultanées |
 | `periods.test.js` | Minuit et lundi heure de Paris (y compris changements d'heure), calcul du palier d'enchère |
+| `catalog.test.js` | Rareté imposée par le barème à la création et à la modification, cartes spéciales, migration (verrouillage, LM → LW) au redémarrage |
+| `rarity.test.js` | Seuils du barème officiel |
+| `client-ip.test.js` | Détermination de l'IP du client selon le réglage du proxy |
 
 ## Fichiers techniques
 
-- `helpers.js` : base jetable, démarrage du serveur, client HTTP avec cookie de session. Chaque joueur de test a sa propre IP (en-tête `X-Forwarded-For`), car le serveur limite les inscriptions par IP.
+- `helpers.js` : base jetable, démarrage et redémarrage du serveur, client HTTP avec cookie de session. Chaque joueur de test a sa propre IP (en-tête `X-Forwarded-For`), car le serveur limite les inscriptions par IP.
 - `extract.js` : `server.js` n'exporte rien ; ce fichier extrait ses fonctions pures pour les tester isolément. Temporaire, jusqu'au découpage en modules (phase 3).
