@@ -86,20 +86,21 @@ async function readGroups(filePath) {
 async function ensureComp(client, comp, order) {
   const name = Object.keys(COMPS).find(n => COMPS[n].id === comp.id);
   await client.query(
-    'INSERT INTO competitions(id,name,tag,country,description,status,sort_order) VALUES($1,$2,$3,$4,$5,\\'available\\',$6) ' +
-    'ON CONFLICT(id) DO UPDATE SET name=excluded.name,tag=excluded.tag,country=excluded.country,description=excluded.description,status=\\'available\\',updated_at=now()',
-    [comp.id, name, comp.tag, comp.country, comp.desc, order]
+    'INSERT INTO competitions(id,name,tag,country,description,status,sort_order) VALUES($1,$2,$3,$4,$5,$6,$7) ' +
+    'ON CONFLICT(id) DO UPDATE SET name=excluded.name,tag=excluded.tag,country=excluded.country,description=excluded.description,status=excluded.status,updated_at=now()',
+    [comp.id, name, comp.tag, comp.country, comp.desc, 'available', order]
   );
 }
 async function ensureSeason(client, comp, season, start) {
   const id = comp.id + '-' + season;
   await client.query(
-    'INSERT INTO competition_seasons(id,competition_id,season,label,status,description,sort_order) VALUES($1,$2,$3,$3,\\'available\\',$4,$5) ' +
-    'ON CONFLICT(competition_id,season) DO UPDATE SET label=excluded.label,status=\\'available\\',description=excluded.description,sort_order=excluded.sort_order,updated_at=now()',
-    [id, comp.id, season, 'Saison ' + season + ' — ' + comp.desc, start - 2010]
+    'INSERT INTO competition_seasons(id,competition_id,season,label,status,description,sort_order) VALUES($1,$2,$3,$3,$4,$5,$6) ' +
+    'ON CONFLICT(competition_id,season) DO UPDATE SET label=excluded.label,status=excluded.status,description=excluded.description,sort_order=excluded.sort_order,updated_at=now()',
+    [id, comp.id, season, 'available', 'Saison ' + season + ' — ' + comp.desc, start - 2010]
   );
   return (await client.query('SELECT id FROM competition_seasons WHERE competition_id=$1 AND season=$2', [comp.id, season])).rows[0].id;
 }
+
 async function ensureClub(client, name, country, order, cache) {
   if (cache.has(name)) return cache.get(name);
   let found = (await client.query('SELECT id FROM clubs WHERE name=$1', [name])).rows[0];
