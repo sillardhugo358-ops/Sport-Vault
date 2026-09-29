@@ -37,7 +37,11 @@
 ## 3. Dettes et risques (par priorité)
 
 1. **Risque de perte de données** — *Traité en phase 0 :* sauvegarde de production faite le 29/09/2026 (23 tables, 3 utilisateurs, 334 cartes possédées, 6 938 cartes au catalogue), base migrée de Render free (expiration le 15/10/2026) vers Aiven (gratuit, sans expiration). **Reste :** Aiven gratuit n'a pas de sauvegarde automatique → sauvegardes manuelles régulières ([SAUVEGARDE.md](SAUVEGARDE.md)), à automatiser plus tard.
-2. **Aucun test automatisé** — toute modification de l'économie (packs, récompenses, enchères) se fait sans filet.
+2. **Aucun test automatisé** — *Traité en phase 1 :* 45 tests (`npm test`, lancés par la CI). Bugs trouvés et corrigés :
+   - fin d'enchère : le gagnant recevait la carte **sans être débité** (FOOTCOINS créés de rien) ; aucune vente réglée en production au 29/09/2026 ;
+   - palier d'enchère faux par erreur d'arrondi (100 → 111 au lieu de 110 ; 50 → 56 ; 200 → 221), côté serveur et interface ;
+   - blocage à partir de 5 inscriptions ou ouvertures de packs simultanées (connexions à la base épuisées → erreur 500) ;
+   - jours de changement d'heure : début de journée des tâches décalé d'une heure.
 3. **Documentation incohérente** — `CLAUDE.md` mentionnait Supabase et le `README.md` parlait de 24 cartes. *Corrigé en phase 0.*
 4. **Fichiers monolithiques** — `server.js`, `app.js` et `styles.css` sont très gros avec des lignes très longues, ce qui rend les revues et les corrections risquées.
 5. **Dossier `data/` encombré** — ~40 fichiers base64 avec plusieurs versions (`v2`, `v3`, `corrected`, `part…`) ; *Phase 0 : inventaire fait ([data/README.md](../data/README.md)) — seuls 3 fichiers sont lus ; suppression des anciennes versions en attente de décision.*
@@ -77,6 +81,8 @@ timeline
 
 ## 5. Prochaine action concrète
 
-**Phase 0 terminée le 29/09/2026**, sauf la décision sur les anciens fichiers de `data/` (voir [data/README.md](../data/README.md)). Base sauvegardée et migrée sur Aiven, documentation à jour, bug d'import corrigé.
+**Phase 0 terminée le 29/09/2026.** Base sauvegardée et migrée sur Aiven.
 
-Prochaine étape : **phase 1 — filet de sécurité** (tests automatiques). Faire aussi une sauvegarde manuelle chaque semaine tant qu'elle n'est pas automatisée.
+**Phase 1 terminée le 29/09/2026.** 45 tests automatiques, 4 bugs corrigés (voir § 3).
+
+Prochaine étape : **phase 2 — données et règles métier** (barème de rareté, attributs gardiens). Sauvegarde manuelle chaque semaine en attendant son automatisation.

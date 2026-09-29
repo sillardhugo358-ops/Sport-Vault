@@ -126,13 +126,14 @@ function catalogCardsForPackConditions(cards,conditions={}){
  const maxOvr=conditions.maxOvr==null||conditions.maxOvr===''?NaN:Number(conditions.maxOvr);if(Number.isFinite(maxOvr))out=out.filter(c=>Number(c.ovr||0)<=maxOvr);
  return out;
 }
-async function configuredPackCards(pack){
+async function configuredPackCards(pack,client=null){
+ const db=client||pool;
  let cards=CARD_CATALOG;
  if(pool){
-  const rows=(await pool.query('SELECT id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order FROM catalog_cards WHERE is_active=true')).rows;
+  const rows=(await db.query('SELECT id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,distribution_type,is_limited,max_supply,card_order FROM catalog_cards WHERE is_active=true')).rows;
   cards=rows.map(r=>({id:r.id,season:r.season,name:r.name,position:r.position,jerseyNumber:r.jersey_number==null?null:Number(r.jersey_number),club:r.club,nation:r.nation,rarity:r.rarity,ovr:Number(r.ovr||72),pace:Number(r.pace||72),shooting:Number(r.shooting||72),passing:Number(r.passing||72),dribbling:Number(r.dribbling||72),defending:Number(r.defending||72),physical:Number(r.physical||72),distributionType:String(r.distribution_type||'STANDARD').toUpperCase(),isLimited:Boolean(r.is_limited),maxSupply:r.max_supply==null?null:Number(r.max_supply),order:Number(r.card_order||0),rarityLabel:RARITIES[r.rarity]?.label||r.rarity}));
   if(pack.pool_id){
-   const pr=(await pool.query('SELECT type,config FROM pack_pools WHERE id=$1',[pack.pool_id])).rows[0];
+   const pr=(await db.query('SELECT type,config FROM pack_pools WHERE id=$1',[pack.pool_id])).rows[0];
    if(pr){
     const cfg=pr.config&&typeof pr.config==='object'?pr.config:{};
     if(pr.type==='manual'){const ids=Array.isArray(cfg.cardIds)?new Set(cfg.cardIds.map(String)):new Set();cards=cards.filter(c=>ids.has(String(c.id)));}
@@ -146,8 +147,8 @@ async function configuredPackCards(pack){
  }
  return catalogCardsForPackConditions(cards,pack.conditions||{});
 }
-async function drawDynamicPack(pack){
- const source=await configuredPackCards(pack);
+async function drawDynamicPack(pack,client=null){
+ const source=await configuredPackCards(pack,client);
  if(!source.length){console.error(`[FOOTVAULT] Pack ${pack.id}: aucune carte après application des conditions`,JSON.stringify(pack.conditions||{}));throw new Error('Aucune carte ne correspond aux conditions de ce pack.');}
  const used=new Set(),drawn=[],guaranteed=Math.min(Number(pack.guarantee_count||0),Number(pack.cards||0));
  for(let i=0;i<Number(pack.cards||0);i++){
@@ -518,13 +519,13 @@ async function currentUser(req){const token=cookies(req).fv_session;if(!token)re
 async function createSession(userId){const token=crypto.randomBytes(32).toString('hex'),expires=expiryDate();if(pool){await pool.query('DELETE FROM sessions WHERE expires_at<=now()');await pool.query('INSERT INTO sessions(token,user_id,expires_at) VALUES($1,$2,$3)',[token,userId,expires]);}else memory.sessions.set(token,{userId,expiresAt:expires.getTime()});return token;}
 async function destroySession(req,res){const token=cookies(req).fv_session;if(token){if(pool)await pool.query('DELETE FROM sessions WHERE token=$1',[token]);else memory.sessions.delete(token);}res.setHeader('Set-Cookie','fv_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');}
 async function createCardInstance(instance,client=null){const db=client||pool;if(db){await db.query(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,is_limited,serial,max_supply,acquired_at,source,status) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)`,[instance.instanceId,instance.cardId,instance.ownerId,instance.season,instance.name,instance.position,instance.club,instance.nation,instance.rarity,Number(instance.ovr||72),Number(instance.pace||72),Number(instance.shooting||72),Number(instance.passing||72),Number(instance.dribbling||72),Number(instance.defending||72),Number(instance.physical||72),Boolean(instance.isLimited),instance.serial,instance.maxSupply,instance.acquiredAt,instance.source,instance.status]);}else memory.cards.set(instance.instanceId,instance);}
-async function getUserCards(ownerId){if(pool){const r=await pool.query("SELECT * FROM card_instances WHERE owner_id=$1 AND status='owned' ORDER BY acquired_at DESC",[ownerId]);return r.rows.map(publicCard);}return[...memory.cards.values()].filter(c=>c.ownerId===ownerId&&c.status==='owned').sort((a,b)=>new Date(b.acquiredAt)-new Date(a.acquiredAt)).map(publicCard);}
+async function getUserCards(ownerId,client=null){if(pool){const r=await (client||pool).query("SELECT * FROM card_instances WHERE owner_id=$1 AND status='owned' ORDER BY acquired_at DESC",[ownerId]);return r.rows.map(publicCard);}return[...memory.cards.values()].filter(c=>c.ownerId===ownerId&&c.status==='owned').sort((a,b)=>new Date(b.acquiredAt)-new Date(a.acquiredAt)).map(publicCard);}
 function welcomeRarity(){const roll=Math.random()*100;return roll<5?'epic':roll<25?'rare':'common'}
 async function grantWelcomeCards(userId,client=null){
- const existing=await getUserCards(userId);if(existing.length>=3)return existing;
+ const existing=await getUserCards(userId,client);if(existing.length>=3)return existing;
  let source=CARD_CATALOG;
  if(pool){
-  const rows=(await pool.query("SELECT id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,is_limited,max_supply,card_order FROM catalog_cards WHERE is_active=true ORDER BY card_order,id")).rows;
+  const rows=(await (client||pool).query("SELECT id,season,name,position,jersey_number,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,is_limited,max_supply,card_order FROM catalog_cards WHERE is_active=true ORDER BY card_order,id")).rows;
   source=rows.map(r=>({id:r.id,season:r.season,name:r.name,position:r.position,jerseyNumber:r.jersey_number==null?null:Number(r.jersey_number),club:r.club,nation:r.nation,rarity:r.rarity,ovr:Number(r.ovr||72),pace:Number(r.pace||72),shooting:Number(r.shooting||72),passing:Number(r.passing||72),dribbling:Number(r.dribbling||72),defending:Number(r.defending||72),physical:Number(r.physical||72),isLimited:Boolean(r.is_limited),maxSupply:r.max_supply==null?null:Number(r.max_supply),order:Number(r.card_order||0),rarityLabel:RARITIES[r.rarity]?.label||r.rarity}));
  }
  const created=[],used=new Set();
@@ -570,7 +571,9 @@ function parisOffsetMinutes(date=new Date()){
 }
 function parisLocalMidnight(key){
   const [year,month,day]=key.split('-').map(Number);
-  const probe=new Date(Date.UTC(year,month-1,day,12,0,0));
+  // Offset read just before local midnight (22:00 UTC the previous day), not
+  // at noon: on daylight-saving days the noon offset differs from midnight's.
+  const probe=new Date(Date.UTC(year,month-1,day,0,0,0)-2*3600_000);
   return new Date(Date.UTC(year,month-1,day,0,0,0)-parisOffsetMinutes(probe)*60000);
 }
 function periodInfo(kind,date=new Date()){
@@ -661,13 +664,13 @@ async function claimMission(userId,missionId){
   const missionUser=await getUserById(userId);
   const progress=Math.min(missionProgress(mission,cards,missionUser),mission.target);
   if(progress<mission.target)return{error:'Mission non terminée.',status:400,progress,target:mission.target};
-  if(await claimExists(userId,mission.id))return{error:'Mission déjà récupérée.',status:400};if(pool){const client=await pool.connect();try{await client.query('BEGIN');const inserted=await client.query('INSERT INTO reward_claims(user_id,claim_id) VALUES($1,$2) ON CONFLICT DO NOTHING RETURNING claim_id',[userId,mission.id]);if(!inserted.rowCount){await client.query('ROLLBACK');return{error:'Mission déjà récupérée.',status:400};}const user=await applyReward(userId,mission.reward,client);await securityEvent(userId,null,'mission_reward_claim',{missionId:mission.id,coins:mission.reward.coins,xp:mission.reward.xp});await client.query('COMMIT');return{mission,reward:mission.reward,user:safeUser(user)};}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}}await addClaim(userId,mission.id);const user=await applyReward(userId,mission.reward);return{mission,reward:mission.reward,user:safeUser(user)};}
-async function openPackForUser(userId,packId){const pack=await getPackDefinition(packId);if(!pack)return{error:'Pack introuvable.',status:404};if(pool){const client=await pool.connect();try{await client.query('BEGIN');const r=await client.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[userId]);const user=r.rows[0];if(!user){await client.query('ROLLBACK');return{error:'Utilisateur introuvable.',status:404};}if(Number(user.coins)-Number(user.reserved_coins||0)<pack.price){await client.query('ROLLBACK');return{error:'FOOTCOINS disponibles insuffisants : une partie de tes FC est réservée par une enchère.',status:400};}const drawn=await drawDynamicPack(pack);await client.query('UPDATE users SET coins=coins-$1,xp=xp+$2,packs_opened=packs_opened+1 WHERE id=$3',[pack.price,pack.cards*2,userId]);const cards=[];for(const c of drawn){const instance=await buildInstance(c,userId,`pack:${pack.id}`,client);await createCardInstance(instance,client);cards.push(publicCard(instance));}await securityEvent(userId,null,'pack_open',{packId:pack.id,price:pack.price,cards:cards.length},client);const updatedUser=(await client.query('SELECT * FROM users WHERE id=$1',[userId])).rows[0];await client.query('COMMIT');return{user:safeUser(updatedUser),cards,pack};}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}}const user=await getUserById(userId);if(!user)return{error:'Utilisateur introuvable.',status:404};if(Number(user.coins)-Number(user.reserved_coins||0)<pack.price)return{error:'FOOTCOINS disponibles insuffisants : une partie de tes FC est réservée par une enchère.',status:400};const drawn=drawPack(packId);user.coins-=pack.price;user.xp+=pack.cards*2;const cards=[];for(const c of drawn){const instance=await buildInstance(c,userId,`pack:${pack.id}`,null);await createCardInstance(instance);cards.push(publicCard(instance));}memory.activity.push({userId,event:'pack_open',at:new Date().toISOString()});return{user:safeUser(user),cards,pack};}
+  if(await claimExists(userId,mission.id))return{error:'Mission déjà récupérée.',status:400};if(pool){const client=await pool.connect();try{await client.query('BEGIN');const inserted=await client.query('INSERT INTO reward_claims(user_id,claim_id) VALUES($1,$2) ON CONFLICT DO NOTHING RETURNING claim_id',[userId,mission.id]);if(!inserted.rowCount){await client.query('ROLLBACK');return{error:'Mission déjà récupérée.',status:400};}const user=await applyReward(userId,mission.reward,client);await securityEvent(userId,null,'mission_reward_claim',{missionId:mission.id,coins:mission.reward.coins,xp:mission.reward.xp},client);await client.query('COMMIT');return{mission,reward:mission.reward,user:safeUser(user)};}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}}await addClaim(userId,mission.id);const user=await applyReward(userId,mission.reward);return{mission,reward:mission.reward,user:safeUser(user)};}
+async function openPackForUser(userId,packId){const pack=await getPackDefinition(packId);if(!pack)return{error:'Pack introuvable.',status:404};if(pool){const client=await pool.connect();try{await client.query('BEGIN');const r=await client.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[userId]);const user=r.rows[0];if(!user){await client.query('ROLLBACK');return{error:'Utilisateur introuvable.',status:404};}if(Number(user.coins)-Number(user.reserved_coins||0)<pack.price){await client.query('ROLLBACK');return{error:'FOOTCOINS disponibles insuffisants : une partie de tes FC est réservée par une enchère.',status:400};}const drawn=await drawDynamicPack(pack,client);await client.query('UPDATE users SET coins=coins-$1,xp=xp+$2,packs_opened=packs_opened+1 WHERE id=$3',[pack.price,pack.cards*2,userId]);const cards=[];for(const c of drawn){const instance=await buildInstance(c,userId,`pack:${pack.id}`,client);await createCardInstance(instance,client);cards.push(publicCard(instance));}await securityEvent(userId,null,'pack_open',{packId:pack.id,price:pack.price,cards:cards.length},client);const updatedUser=(await client.query('SELECT * FROM users WHERE id=$1',[userId])).rows[0];await client.query('COMMIT');return{user:safeUser(updatedUser),cards,pack};}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}}const user=await getUserById(userId);if(!user)return{error:'Utilisateur introuvable.',status:404};if(Number(user.coins)-Number(user.reserved_coins||0)<pack.price)return{error:'FOOTCOINS disponibles insuffisants : une partie de tes FC est réservée par une enchère.',status:400};const drawn=drawPack(packId);user.coins-=pack.price;user.xp+=pack.cards*2;const cards=[];for(const c of drawn){const instance=await buildInstance(c,userId,`pack:${pack.id}`,null);await createCardInstance(instance);cards.push(publicCard(instance));}memory.activity.push({userId,event:'pack_open',at:new Date().toISOString()});return{user:safeUser(user),cards,pack};}
 async function openPoolForUser(userId,poolId){
  const pr=await pool.query('SELECT id,name,type,config,price,cards,badge,description,active FROM pack_pools WHERE id=$1 AND active=true',[poolId]);const poolDef=pr.rows[0];if(!poolDef)return{error:'Tirage introuvable.',status:404};
  const pack={id:'pool:'+poolDef.id,name:poolDef.name,price:Number(poolDef.price),cards:Number(poolDef.cards),guarantee:'common',guarantee_count:0,pool_id:poolDef.id,conditions:{}};
  if(pack.price<0||pack.cards<1)return{error:'Configuration du tirage invalide.',status:400};
- const client=await pool.connect();try{await client.query('BEGIN');const r=await client.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[userId]);const user=r.rows[0];if(!user){await client.query('ROLLBACK');return{error:'Utilisateur introuvable.',status:404};}if(Number(user.coins)-Number(user.reserved_coins||0)<pack.price){await client.query('ROLLBACK');return{error:'FOOTCOINS disponibles insuffisants : une partie de tes FC est réservée par une enchère.',status:400};}const drawn=await drawDynamicPack(pack);const cards=[];for(const c of drawn){const instance=await buildInstance(c,userId,pack.id,client);await createCardInstance(instance,client);cards.push(publicCard(instance));}await client.query('UPDATE users SET coins=coins-$1,xp=xp+$2,packs_opened=packs_opened+1 WHERE id=$3',[pack.price,pack.cards*2,userId]);await securityEvent(userId,null,'pool_draw',{poolId:poolDef.id,price:pack.price,cards:cards.length},client);const updatedUser=(await client.query('SELECT * FROM users WHERE id=$1',[userId])).rows[0];await client.query('COMMIT');return{user:safeUser(updatedUser),cards,pack:{...pack,poolId:poolDef.id,pool:true}};}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}}
+ const client=await pool.connect();try{await client.query('BEGIN');const r=await client.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[userId]);const user=r.rows[0];if(!user){await client.query('ROLLBACK');return{error:'Utilisateur introuvable.',status:404};}if(Number(user.coins)-Number(user.reserved_coins||0)<pack.price){await client.query('ROLLBACK');return{error:'FOOTCOINS disponibles insuffisants : une partie de tes FC est réservée par une enchère.',status:400};}const drawn=await drawDynamicPack(pack,client);const cards=[];for(const c of drawn){const instance=await buildInstance(c,userId,pack.id,client);await createCardInstance(instance,client);cards.push(publicCard(instance));}await client.query('UPDATE users SET coins=coins-$1,xp=xp+$2,packs_opened=packs_opened+1 WHERE id=$3',[pack.price,pack.cards*2,userId]);await securityEvent(userId,null,'pool_draw',{poolId:poolDef.id,price:pack.price,cards:cards.length},client);const updatedUser=(await client.query('SELECT * FROM users WHERE id=$1',[userId])).rows[0];await client.query('COMMIT');return{user:safeUser(updatedUser),cards,pack:{...pack,poolId:poolDef.id,pool:true}};}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}}
 async function albumViews(owned,selectedSeasonId=null,userId=null){
  if(pool){
   const [comps,seasons,links,counts]=await Promise.all([
@@ -723,7 +726,7 @@ async function albumData(userId,selectedSeasonId=null){
  return{universe:'FOOTVAULT',season:'2026',album:{competitions,overallOwned:allClubs.reduce((s,c)=>s+c.owned,0),overallTotal:allClubs.reduce((s,c)=>s+c.total,0)},rewards:{clubs:allClubs.map(v=>({seasonId:v.seasonId,clubId:v.id,club:v.name,claimed:claimedIds.has('album:'+v.seasonId+':'+v.id)}))}};
 }
 function auctionDurationMs(minutes){return Number(minutes)*60_000;}
-function auctionMinBid(current){return Math.ceil(Number(current)*1.10);}
+function auctionMinBid(current){return Math.ceil(Number(current)*11/10);}
 function auctionPublic(row){return{id:row.id,cardInstanceId:row.card_instance_id,sellerId:row.seller_id,startingBid:Number(row.starting_bid),currentBid:Number(row.current_bid),currentBidderId:row.current_bidder_id||null,startsAt:row.starts_at,endsAt:row.ends_at,status:row.status,createdAt:row.created_at,completedAt:row.completed_at||null};}
 async function settleExpiredAuctions(){
  if(!pool)return;
@@ -733,7 +736,7 @@ async function settleExpiredAuctions(){
   const auctions=(await client.query("SELECT * FROM auctions WHERE status='active' AND ends_at<=now() ORDER BY ends_at FOR UPDATE SKIP LOCKED LIMIT 50")).rows;
   for(const a of auctions){
    if(a.current_bidder_id){
-    await client.query('UPDATE users SET reserved_coins=GREATEST(0,reserved_coins-$1) WHERE id=$2',[Number(a.current_bid),a.current_bidder_id]);
+    await client.query('UPDATE users SET coins=coins-$1,reserved_coins=GREATEST(0,reserved_coins-$1) WHERE id=$2',[Number(a.current_bid),a.current_bidder_id]);
     await client.query('UPDATE users SET coins=coins+$1 WHERE id=$2',[Number(a.current_bid),a.seller_id]);
     await client.query("UPDATE card_instances SET owner_id=$1,status='owned',tradeable=true WHERE instance_id=$2",[a.current_bidder_id,a.card_instance_id]);
    }else{
@@ -795,7 +798,7 @@ async function withdrawAuctionParticipation(userId,auctionId){
       await client.query('UPDATE auctions SET current_bid=starting_bid,current_bidder_id=NULL WHERE id=$1',[auctionId]);
     }
   }
-  await securityEvent(userId,null,'auction_withdraw',{auctionId,currentBidderChanged: a.current_bidder_id===userId,restoredBid:restoredBid?.amount||null});
+  await securityEvent(userId,null,'auction_withdraw',{auctionId,currentBidderChanged: a.current_bidder_id===userId,restoredBid:restoredBid?.amount||null},client);
   await client.query('COMMIT');
   return{ok:true,auction:{id:auctionId,currentBid:restoredBid?.amount||Number(a.starting_bid),currentBidderId:restoredBid?.bidderId||null}};
  }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release();}
@@ -835,7 +838,7 @@ async function createAuction(userId,cardInstanceId,startingBid,duration){
   const id=crypto.randomUUID(),ends=new Date(Date.now()+auctionDurationMs(mins));
   await client.query("UPDATE card_instances SET status='auction' WHERE instance_id=$1",[cardInstanceId]);
   await client.query("INSERT INTO auctions(id,card_instance_id,seller_id,starting_bid,current_bid,starts_at,ends_at) VALUES($1,$2,$3,$4,$4,now(),$5)",[id,cardInstanceId,userId,bid,ends]);
-  await securityEvent(userId,null,'auction_create',{auctionId:id,cardInstanceId,startingBid:bid,durationMinutes:mins});await client.query('COMMIT');
+  await securityEvent(userId,null,'auction_create',{auctionId:id,cardInstanceId,startingBid:bid,durationMinutes:mins},client);await client.query('COMMIT');
   return{auction:{id,cardInstanceId,startingBid:bid,currentBid:bid,endsAt:ends.toISOString(),status:'active'}};
  }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release();}
 }
@@ -886,7 +889,7 @@ async function cancelAuction(userId,auctionId){
   if(a.current_bidder_id){await client.query('ROLLBACK');return{error:'Impossible d’annuler après la première enchère.',status:400};}
   await client.query("UPDATE auctions SET status='cancelled',cancelled_at=now() WHERE id=$1",[auctionId]);
   await client.query("UPDATE card_instances SET status='owned' WHERE instance_id=$1",[a.card_instance_id]);
-  await securityEvent(userId,null,'auction_cancel',{auctionId});await client.query('COMMIT');
+  await securityEvent(userId,null,'auction_cancel',{auctionId},client);await client.query('COMMIT');
   return{ok:true};
  }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release();}
 }
