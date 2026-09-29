@@ -76,3 +76,18 @@ test('pool : tirage payé au prix configuré, cartes ajoutées ; tirage inconnu 
   assert.equal((await p.get('/api/collection')).body.count, 3 + Number(pool.cards));
   assert.equal((await p.post('/api/pools/open', { poolId: 'inexistant' })).status, 404);
 });
+
+test('pack : le catalogue en cache suit les cartes désactivées', async () => {
+  const p = await newPlayer(server, 'Cache');
+  await setCoins(server, p.user.id, 1000);
+  assert.equal((await p.post('/api/packs/open', { packId: 'starter' })).status, 200); // remplit le cache
+  const keep = (await server.db.query("SELECT id FROM catalog_cards WHERE is_active AND rarity='common' ORDER BY id LIMIT 10")).rows.map(r => r.id);
+  const off = (await server.db.query('UPDATE catalog_cards SET is_active=false,updated_at=now() WHERE is_active AND NOT (id = ANY($1)) RETURNING id', [keep])).rows.map(r => r.id);
+  try {
+    const r = await p.post('/api/packs/open', { packId: 'starter' });
+    assert.equal(r.status, 200, JSON.stringify(r.body));
+    for (const c of r.body.cards) assert.ok(keep.includes(c.cardId), `carte désactivée tirée : ${c.cardId}`);
+  } finally {
+    await server.db.query('UPDATE catalog_cards SET is_active=true,updated_at=now() WHERE id = ANY($1)', [off]);
+  }
+});
