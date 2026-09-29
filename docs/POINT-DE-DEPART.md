@@ -36,13 +36,14 @@
 
 ## 3. Dettes et risques (par priorité)
 
-1. **Risque de perte de données** — la base Postgres Render en plan free est limitée dans le temps et aucun mécanisme de sauvegarde n'est visible dans le dépôt. *À vérifier sur le tableau de bord Render.*
+1. **Risque de perte de données** — la base Postgres Render en plan free est limitée dans le temps et aucune sauvegarde automatique n'existe. *Phase 0 : procédure et script prêts ([SAUVEGARDE.md](SAUVEGARDE.md)) ; sauvegarde de la production et date d'expiration à faire/vérifier par le propriétaire du compte Render.*
 2. **Aucun test automatisé** — toute modification de l'économie (packs, récompenses, enchères) se fait sans filet.
-3. **Documentation incohérente** — `CLAUDE.md` mentionnait Supabase (corrigé dans ce même changement) ; le `README.md` parle encore de 24 cartes.
+3. **Documentation incohérente** — `CLAUDE.md` mentionnait Supabase et le `README.md` parlait de 24 cartes. *Corrigé en phase 0.*
 4. **Fichiers monolithiques** — `server.js`, `app.js` et `styles.css` sont très gros avec des lignes très longues, ce qui rend les revues et les corrections risquées.
-5. **Dossier `data/` encombré** — ~40 fichiers base64 avec plusieurs versions (`v2`, `v3`, `corrected`, `part…`) ; les fichiers réellement utilisés ne sont pas identifiés.
+5. **Dossier `data/` encombré** — ~40 fichiers base64 avec plusieurs versions (`v2`, `v3`, `corrected`, `part…`) ; *Phase 0 : inventaire fait ([data/README.md](../data/README.md)) — seuls 3 fichiers sont lus ; suppression des anciennes versions en attente de décision.*
 6. **Configuration de session** — `render.yaml` définit `SESSION_TTL_DAYS`, mais cette variable n'est lue nulle part : la durée est codée en dur (`SESSION_DAYS = 2/24`, soit 2 h).
 7. **Règles métier non centralisées** — rareté et attributs gardiens (voir § 2).
+8. **Import Ligue 1 cassé sur base neuve** — `scripts/import-ligue1-2026-27.js` créait la saison avec un paramètre manquant (erreur `bind message supplies 1 parameters`). Sans effet sur la prod où la saison existe déjà, mais bloquant pour une réinstallation. *Corrigé en phase 0.*
 
 ## 4. Frise chronologique
 
