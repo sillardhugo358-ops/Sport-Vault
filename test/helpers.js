@@ -70,6 +70,7 @@ async function startServer(options = {}) {
     const server = {
       base: `http://127.0.0.1:${first.port}`,
       db,
+      databaseUrl,
       logs: first.logs,
       // Chaque joueur a sa propre IP : le serveur limite à une inscription
       // par IP toutes les 72 h.

@@ -95,4 +95,6 @@ timeline
 
 Étape 4 : cartes et packs dans `lib/cards.js` (instances, tirages, packs, pools, cartes de bienvenue) ; nouveau test du tirage de pool.
 
-Prochaine étape : **phase 3, étape 5 — missions, succès et récompenses**. Sauvegarde manuelle chaque semaine en attendant son automatisation.
+Étape 5 : récompenses et progression dans `lib/rewards.js` (niveaux, bonus quotidien, missions, tâches, album) ; `server.js` à 714 lignes. Les succès, gérés directement dans les routes, suivront avec le routeur.
+
+Prochaine étape : **phase 3, étape 6 — enchères**. Sauvegarde manuelle chaque semaine en attendant son automatisation.

@@ -1,6 +1,6 @@
 # Inventaire du dossier `data/`
 
-État au 29/09/2026. Tous ces fichiers ont été ajoutés en une seule fois (commit `6224d57`). Seuls trois sont lus par le code ; les autres n'ont été ni supprimés ni modifiés en attendant une décision.
+État au 29/09/2026. Tous ces fichiers ont été ajoutés en une seule fois (commit `6224d57`). Seuls trois sont lus par le code (plus `europe-2010-2027.json.gz`, ajouté le 29/09/2026) ; les autres n'ont été ni supprimés ni modifiés en attendant une décision.
 
 ## Utilisés par l'application
 
@@ -8,7 +8,11 @@
 |---|---|---|
 | `footmercato_catalog_0.b64`, `_1`, `_2` | Catalogue Ligue 1 2026-2027 : **478 cartes**, JSON compressé zlib puis base64, découpé en 3 morceaux à concaténer dans l'ordre | `server.js` (`loadFootMercatoCatalog`) et `scripts/import-ligue1-2026-27.js` |
 
+| `europe-2010-2027.json.gz` | Premier League, LaLiga, Serie A, Bundesliga, saisons 2010-2011 à 2026-2027 : **43 781 cartes**, JSON compressé gzip. Généré depuis le classeur `cartes_FIFA_2010-11_a_2026-27.xlsx` (postes convertis en codes officiels, statistiques des gardiens rangées dans les colonnes communes, codes pays convertis en noms, première nationalité seulement) | `scripts/import-europe.js`, lancé au démarrage par `ligue1-launcher.js` |
+
 **Ne pas supprimer ni renommer** : si le chargement échoue, le serveur retombe sur 24 cartes fictives.
+
+Import Europe : identifiants stables `fv-e-…`, relance sans doublon, import sauté tant que le fichier ne change pas (table `data_imports`). Pour publier une nouvelle version du classeur : régénérer ce fichier, pousser, redéployer.
 
 ## Non lus par le code : versions du catalogue 2026-2027 (350 cartes)
 

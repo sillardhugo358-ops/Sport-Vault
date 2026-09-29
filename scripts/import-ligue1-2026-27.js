@@ -58,8 +58,9 @@ async function run(){
     await client.query('BEGIN');
     const {competitionId,seasonId}=await ensureCompetition(client);
     await ensureClubs(client,competitionId,seasonId,cards);
-    // Désactiver uniquement l'ancien catalogue 2026-2027 : ne jamais toucher aux saisons historiques fv-h-*.
-    await client.query("UPDATE catalog_cards SET is_active=false,updated_at=now() WHERE season='2026-2027'");
+    // Désactiver uniquement l'ancien catalogue 2026-2027 : ne jamais toucher aux saisons historiques fv-h-*
+    // ni aux cartes des autres championnats (fv-e-*, scripts/import-europe.js).
+    await client.query("UPDATE catalog_cards SET is_active=false,updated_at=now() WHERE season='2026-2027' AND id NOT LIKE 'fv-e-%'");
     // Réactiver les cartes historiques déjà importées : elles ne font pas partie du sync 2026-2027.
     await client.query("UPDATE catalog_cards SET is_active=true,updated_at=now() WHERE id LIKE 'fv-h-%'");
     let synced=0;

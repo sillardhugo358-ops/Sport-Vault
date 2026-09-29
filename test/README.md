@@ -32,6 +32,7 @@ Chaque fichier crée une base jetable `fv_test_…`, démarre son propre serveur
 | `rarity.test.js` | Seuils du barème officiel |
 | `client-ip.test.js` | Détermination de l'IP du client selon le réglage du proxy |
 | `bootstrap.test.js` | Premier compte admin créé au démarrage (`ADMIN_EMAILS`, `ADMIN_BOOTSTRAP_PASSWORD`), promu créateur au redémarrage |
+| `europe-import.test.js` | Fichier des 4 championnats (postes, barème, attributs des gardiens), import sans doublon, carte désactivée respectée, synchro Ligue 1 sans impact, résumé de l'accueil |
 | `game-config.test.js` | Cohérence de la configuration du jeu : chaîne des missions, packs, tâches, succès |
 
 ## Fichiers techniques
