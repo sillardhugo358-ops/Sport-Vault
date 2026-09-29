@@ -7,7 +7,7 @@
 | Élément | Réalité dans le dépôt |
 |---|---|
 | Serveur | Node.js ≥ 18, module `http` natif, **sans framework** — `server.js` (~168 Ko) |
-| Front-end | SPA en JavaScript vanilla, navigation par hash — `index.html`, `app.js` (~192 Ko), `styles.css` (~282 Ko), `success-admin-editor.js` |
+| Front-end | SPA en JavaScript vanilla, navigation par hash — `index.html`, `app.js` (~192 Ko), `styles.css` (~282 Ko), `achievement-admin-editor.js`, `mission-admin-editor.js` |
 | Dépendances | Une seule : `pg` |
 | Base de données | **PostgreSQL hébergé sur Aiven** (Render jusqu'au 29/09/2026), connexion par la variable `DATABASE_URL` saisie dans Render. Pas de Supabase dans le code. Mode mémoire en local si `DATABASE_URL` est absente (refusé en production). |
 | Schéma | Créé automatiquement au démarrage par `initDb()` dans `server.js` (23 tables : `users`, `sessions`, `catalog_cards`, `card_instances`, `pack_definitions`, `pack_pools`, `auctions`, `auction_bids`, `auction_withdrawals`, `achievements`, `reward_claims`, `clubs`, `competitions`, `competition_seasons`, `competition_clubs`, `season_clubs`, `card_collections`, `card_collection_cards`, `admin_logs`, `security_events`, `login_limits`, `registration_limits`, `app_migrations`) |
@@ -107,4 +107,6 @@ Hors phase, le 30/09/2026 : catalogue étendu à Premier League, La Liga, Serie 
 
 **Phase 4 en cours.** Étape 1 : missions en base (table `missions`, reprise des 12 missions d'origine, récompenses déjà validées conservées) et éditeur de missions dans la console admin (onglet « Succès & missions ») : création avec identifiant généré, modification, activation, prérequis contrôlés (pas de boucle, jamais de chaîne bloquée), aperçu joueur. La zone des missions terminées existait déjà.
 
-Prochaine étape : **phase 4, étape 2 — éditeur de succès** (aperçu, validation, filtres). Sauvegarde manuelle chaque semaine en attendant son automatisation.
+Étape 2 : éditeur de succès refait sur le modèle des missions (`lib/achievements.js`, `achievement-admin-editor.js`) : identifiant créé par le serveur (plus d'écrasement possible), erreurs par champ, aperçu joueur, filtres (statut, catégorie, condition), activation, suppression confirmée et tracée ; ancien `success-admin-editor.js` retiré.
+
+Prochaine étape : **phase 4, étape 3 — tâches quotidiennes et hebdomadaires éditables** (ou passage à la phase 5 selon priorité). Sauvegarde manuelle chaque semaine en attendant son automatisation.

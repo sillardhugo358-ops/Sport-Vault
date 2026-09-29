@@ -37,6 +37,7 @@ Chaque fichier crée une base jetable `fv_test_…`, démarre son propre serveur
 | `routes.test.js` | Tour de toutes les routes de l'API : réponses attendues, accès refusés, import interne protégé, chemin inconnu |
 | `missions.test.js` | Missions en base (reprise à l'identique), éditeur admin : droits, identifiant généré sans doublon, modification, validation (boucle, prérequis inconnu, récompense nulle), désactivation, chaîne jamais bloquée |
 | `static.test.js` | Fichiers servis : l'interface oui ; code serveur, `lib/`, `data/`, configuration et `.git/` jamais, même avec `..` dans le chemin |
+| `achievements.test.js` | Éditeur de succès : droits, identifiant généré sans écrasement, modification, nom en double, validation par champ, désactivation, suppression tracée, récompenses conservées |
 | `game-config.test.js` | Cohérence de la configuration du jeu : chaîne des missions, packs, tâches, succès |
 
 ## Fichiers techniques
