@@ -9,7 +9,7 @@ Audit du 29/09/2026 sur la sauvegarde de production (6 938 cartes, saisons 2010-
 | Rareté hors barème | 4 (« R. Mater », Valenciennes : `fv-h-2010-2011-00652`, `fv-h-2011-2012-00463`, `fv-h-2012-2013-00523`, `fv-h-2013-2014-00398`) | Gardées comme **cartes spéciales** : `rarity_locked = true`, rareté inchangée |
 | Poste `LM` hors liste officielle | 7 (Lesoimier, Rothen ×2, Darbion, Roudet ×3 ; saisons 2011 à 2014) | Converti en `LW` |
 
-Depuis ce changement, la rareté de toute carte non spéciale est calculée par le serveur depuis la note générale (`rarity.js`), à la création, à la modification et à l'import.
+Depuis ce changement, la rareté de toute carte non spéciale est calculée par le serveur depuis la note générale (`lib/rarity.js`), à la création, à la modification et à l'import.
 
 ## À compléter (source nécessaire)
 

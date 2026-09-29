@@ -17,7 +17,7 @@ const MAX_AUTH_PER_WINDOW = 20;
 const MAX_PACK_OPENS_PER_WINDOW = 30;
 const MAX_AUCTION_WRITES_PER_WINDOW = 60;
 
-const { clientIp } = require('./client-ip');
+const { clientIp } = require('./lib/client-ip');
 
 function consume(key, limit, windowMs = WINDOW_MS) {
   const now = Date.now();

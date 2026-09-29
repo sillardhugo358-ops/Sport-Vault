@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { rarityFromOvr } = require('../rarity');
+const { rarityFromOvr } = require('../lib/rarity');
 
 test('barème officiel : seuils sans chevauchement', () => {
   const expected = [

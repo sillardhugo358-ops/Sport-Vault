@@ -8,35 +8,17 @@ const PORT = Number(process.env.PORT || 3000);
 const ROOT = __dirname;
 const SESSION_DAYS = 2/24;
 
+const { RARITIES, FOOTVAULT_CARDS, PACKS, PACK_WEIGHTS, MISSIONS, DEFAULT_ACHIEVEMENTS, DAILY_TASKS, WEEKLY_TASKS, ALBUM_CLUBS } = require('./lib/game-config');
+const { parisDateParts, parisDayKey, parisWeekKey, parisOffsetMinutes, parisLocalMidnight, periodInfo, taskClaimId } = require('./lib/periods');
+const { auctionDurationMs, auctionMinBid } = require('./lib/auction-rules');
+
 let pool = null;
 const memory = { users: new Map(), sessions: new Map(), cards: new Map(), claims: new Map(), activity: [], reg: new Map(), login: new Map() };
 
-const RARITIES = {
-  common: { label: 'COMMON', order: 1 },
-  rare: { label: 'RARE', order: 2 },
-  epic: { label: 'EPIC', order: 3 },
-  legendary: { label: 'LEGENDARY', order: 4 },
-  icon: { label: 'ICON', order: 5 }
-};
-
-const { rarityFromOvr, RARITY_SQL } = require('./rarity');
+const { rarityFromOvr, RARITY_SQL } = require('./lib/rarity');
 // Rareté selon le barème, sauf carte spéciale explicitement verrouillée.
 function cardRarity(body,lockedDefault=false){const locked=body.rarityLocked===undefined?lockedDefault:body.rarityLocked===true;const ovr=Number(body.ovr);return{locked,rarity:locked?String(body.rarity||'').trim().toLowerCase():(Number.isInteger(ovr)?rarityFromOvr(ovr):'common')};}
 
-const FOOTVAULT_CARDS = [
-  ['Nolan Vasseur', 'GK', 'Aster FC', 'France', 'common'], ['Maël Dervin', 'GK', 'Racing Nord', 'France', 'common'],
-  ['Ilyan Mercier', 'RB', 'Union Atlantique', 'France', 'common'], ['Sacha Perrin', 'LB', 'Stade Horizon', 'France', 'common'],
-  ['Noé Caron', 'CB', 'Aster FC', 'Belgium', 'common'], ['Tiago Valente', 'CM', 'Racing Nord', 'Portugal', 'common'],
-  ['Yanis Roux', 'CM', 'Union Atlantique', 'France', 'common'], ['Eden Marceau', 'RW', 'Stade Horizon', 'France', 'common'],
-  ['Kylian Mercier', 'ST', 'Aster FC', 'France', 'common'], ['Liam Sorel', 'LW', 'Racing Nord', 'France', 'common'],
-  ['Hugo Delmas', 'CB', 'Union Atlantique', 'France', 'rare'], ['Amine Bensaïd', 'DM', 'Stade Horizon', 'Morocco', 'rare'],
-  ['Rayan Giraud', 'AM', 'Aster FC', 'France', 'rare'], ['Matteo Rinaldi', 'ST', 'Racing Nord', 'Italy', 'rare'],
-  ['Elias Novak', 'GK', 'Union Atlantique', 'Croatia', 'rare'], ['Iker Solano', 'LW', 'Stade Horizon', 'Spain', 'rare'],
-  ['Jules Ferrand', 'CB', 'Aster FC', 'France', 'epic'], ['Nassim Belkacem', 'CM', 'Union Atlantique', 'Algeria', 'epic'],
-  ['Oscar Lund', 'RW', 'Racing Nord', 'Sweden', 'epic'], ['Milo Varga', 'ST', 'Stade Horizon', 'Hungary', 'epic'],
-  ['Adrien Montfort', 'GK', 'Aster FC', 'France', 'legendary'], ['Sami Kader', 'AM', 'Union Atlantique', 'France', 'legendary'],
-  ['Diego Aranda', 'ST', 'Racing Nord', 'Argentina', 'legendary'], ['Victor Saint-Clair', 'ST', 'Stade Horizon', 'France', 'icon']
-];
 function loadFootMercatoCatalog(){
   const base=path.join(ROOT,'data');
   const encoded=[0,1,2].map(i=>fs.readFileSync(path.join(base,'footmercato_catalog_'+i+'.b64'),'utf8').trim()).join('');
@@ -51,51 +33,6 @@ function loadFootMercatoCatalog(){
 let CARD_CATALOG;
 try{CARD_CATALOG=loadFootMercatoCatalog();if(CARD_CATALOG.length!==478)throw new Error('Catalogue Foot Mercato invalide: '+CARD_CATALOG.length+' cartes.');console.log('[FOOTVAULT] Catalogue Foot Mercato chargé: '+CARD_CATALOG.length+' cartes.');}
 catch(error){console.error('[FOOTVAULT] Impossible de charger le catalogue Foot Mercato:',error.message);CARD_CATALOG=FOOTVAULT_CARDS.map(([name, position, club, nation, rarity], i) => ({ id:`fv-${String(i+1).padStart(3,'0')}`, season:'2026', name, position, club, nation, rarity, rarityLabel:RARITIES[rarity].label, distributionType:'STANDARD', isLimited:false, maxSupply:null, ovr:({common:72,rare:78,epic:84,legendary:91,icon:96}[rarity]||72), order:i+1 }));}
-
-const PACKS = {
-  starter:{id:'starter',name:'STARTER PACK',price:100,currency:'coins',cards:5,badge:'POUR COMMENCER',description:'5 cartes FOOTVAULT',guarantee:'common'},
-  pro:{id:'pro',name:'PRO PACK',price:250,currency:'coins',cards:8,badge:'LE PLUS POPULAIRE',description:'8 cartes FOOTVAULT · 1 carte RARE ou mieux garantie',guarantee:'rare'},
-  legend:{id:'legend',name:'LEGEND PACK',price:500,currency:'coins',cards:5,badge:'HAUTE RARETÉ',description:'5 cartes FOOTVAULT · 1 carte EPIC ou mieux garantie',guarantee:'epic'}
-};
-const PACK_WEIGHTS=[['common',72],['rare',21],['epic',5],['legendary',1.8],['icon',0.2]];
-const MISSIONS=[
-  {id:'collect-5',order:1,title:'PREMIÈRE COLLECTION',description:'Possède au moins 5 cartes dans ton Vault.',target:5,type:'cards',reward:{coins:150,xp:25}},
-  {id:'open-1',order:2,title:'PREMIÈRE OUVERTURE',description:'Ouvre ton premier pack.',target:1,type:'packs',prerequisite:'collect-5',reward:{coins:150,xp:30}},
-  {id:'rare-1',order:3,title:'PREMIÈRE RARETÉ',description:'Obtiens une carte RARE ou supérieure.',target:1,type:'rarePlus',prerequisite:'open-1',reward:{coins:250,xp:40}},
-  {id:'collect-15',order:4,title:'SCOUTING INTENSIF',description:'Possède au moins 15 cartes.',target:15,type:'cards',prerequisite:'rare-1',reward:{coins:300,xp:50}},
-  {id:'open-3',order:5,title:'COLLECTIONNEUR ACTIF',description:'Ouvre 3 packs au total.',target:3,type:'packs',prerequisite:'collect-15',reward:{coins:350,xp:60}},
-  {id:'epic-1',order:6,title:'CAP SUR L’ÉLITE',description:'Obtiens une carte EPIC ou supérieure.',target:1,type:'epicPlus',prerequisite:'open-3',reward:{coins:450,xp:75}},
-  {id:'collect-25',order:7,title:'VAULT EN PLEINE CROISSANCE',description:'Possède au moins 25 cartes.',target:25,type:'cards',prerequisite:'epic-1',reward:{coins:500,xp:90}},
-  {id:'clubs-4',order:8,title:'TOUR DU TERRAIN',description:'Possède des cartes provenant d’au moins 4 clubs différents.',target:4,type:'distinctClubs',prerequisite:'collect-25',reward:{coins:600,xp:110}},
-  {id:'legend-1',order:9,title:'TOUCHE DE LÉGENDE',description:'Obtiens une carte LEGENDARY ou supérieure.',target:1,type:'legendaryPlus',prerequisite:'clubs-4',reward:{coins:750,xp:130}},
-  {id:'open-10',order:10,title:'OUVREUR EXPÉRIMENTÉ',description:'Ouvre 10 packs au total.',target:10,type:'packs',prerequisite:'legend-1',reward:{coins:900,xp:150}},
-  {id:'collect-40',order:11,title:'GRAND COLLECTIONNEUR',description:'Possède au moins 40 cartes.',target:40,type:'cards',prerequisite:'open-10',reward:{coins:1000,xp:175}},
-  {id:'icon-1',order:12,title:'AU SOMMET DU VAULT',description:'Obtiens une carte ICON.',target:1,type:'iconPlus',prerequisite:'collect-40',reward:{coins:1500,xp:200}}
-];
-const DEFAULT_ACHIEVEMENTS=[
-{id:'ach-first-card',name:'Première carte',category:'Collection',description:'Possède au moins 1 carte.',type:'cards',target:1,coins:50,xp:10,icon:'▤',active:true},
-{id:'ach-collector-10',name:'Collectionneur',category:'Collection',description:'Possède 10 cartes.',type:'cards',target:10,coins:100,xp:25,icon:'▤',active:true},
-{id:'ach-collector-50',name:'Passionné',category:'Collection',description:'Possède 50 cartes.',type:'cards',target:50,coins:250,xp:60,icon:'▤',active:true},
-{id:'ach-rare',name:'Première rare',category:'Raretés',description:'Possède une carte Rare ou supérieure.',type:'rarePlus',target:1,coins:75,xp:20,icon:'◆',active:true},
-{id:'ach-epic',name:'Première épique',category:'Raretés',description:'Possède une carte Epic ou supérieure.',type:'epicPlus',target:1,coins:150,xp:35,icon:'✦',active:true},
-{id:'ach-legendary',name:'Première légende',category:'Raretés',description:'Possède une carte Legendary ou supérieure.',type:'legendaryPlus',target:1,coins:250,xp:60,icon:'♛',active:true},
-{id:'ach-icon',name:'Première icône',category:'Raretés',description:'Possède une carte Icon.',type:'iconPlus',target:1,coins:500,xp:120,icon:'✧',active:true},
-{id:'ach-clubs-4',name:'Tour du terrain',category:'Diversité',description:'Possède des cartes de 4 clubs différents.',type:'distinctClubs',target:4,coins:200,xp:50,icon:'♧',active:true},
-{id:'ach-packs-10',name:'Ouvreur confirmé',category:'Packs',description:'Ouvre 10 packs.',type:'packs',target:10,coins:150,xp:40,icon:'⬡',active:true}
-];
-const DAILY_TASKS=[
-  {id:'open-1',title:'OUVERTURE DU JOUR',description:'Ouvre au moins 1 pack aujourd’hui.',target:1,type:'packsOpened',reward:{coins:100,xp:10}},
-  {id:'cards-5',title:'RÉCOLTE QUOTIDIENNE',description:'Obtiens au moins 5 cartes aujourd’hui.',target:5,type:'cardsObtained',reward:{coins:150,xp:15}},
-  {id:'rare-1',title:'ÉCLAT QUOTIDIEN',description:'Obtiens au moins 1 carte RARE ou supérieure aujourd’hui.',target:1,type:'rarePlusObtained',reward:{coins:200,xp:20}},
-  {id:'clubs-2',title:'TOUR DES CLUBS',description:'Obtiens des cartes provenant d’au moins 2 clubs différents aujourd’hui.',target:2,type:'distinctClubsObtained',reward:{coins:250,xp:25}}
-];
-const WEEKLY_TASKS=[
-  {id:'open-5',title:'OUVREUR DE LA SEMAINE',description:'Ouvre au moins 5 packs cette semaine.',target:5,type:'packsOpened',reward:{coins:400,xp:35}},
-  {id:'cards-15',title:'COLLECTE HEBDOMADAIRE',description:'Obtiens au moins 15 cartes cette semaine.',target:15,type:'cardsObtained',reward:{coins:500,xp:40}},
-  {id:'rare-3',title:'CHASSE AUX RARETÉS',description:'Obtiens au moins 3 cartes RARE ou supérieures cette semaine.',target:3,type:'rarePlusObtained',reward:{coins:650,xp:50}},
-  {id:'clubs-4',title:'EXPLORATION DU TERRAIN',description:'Obtiens des cartes provenant d’au moins 4 clubs différents cette semaine.',target:4,type:'distinctClubsObtained',reward:{coins:750,xp:60}}
-];
-const ALBUM_CLUBS=[['aster-fc','Aster FC','AST'],['racing-nord','Racing Nord','RN'],['union-atlantique','Union Atlantique','UA'],['stade-horizon','Stade Horizon','SH']].map(([id,name,tag])=>({id,name,tag}));
 
 function json(res,status,data){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(data));}
 function cookies(req){return Object.fromEntries((req.headers.cookie||'').split(';').filter(Boolean).map(part=>{const i=part.indexOf('=');return[part.slice(0,i).trim(),decodeURIComponent(part.slice(i+1).trim())];}));}
@@ -573,55 +510,13 @@ async function grantWelcomeCards(userId,client=null){
 }
 async function registrationAllowed(ip,client){if(client){await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',[ip]);const r=await client.query('SELECT last_created_at FROM registration_limits WHERE ip=$1',[ip]);return !r.rowCount||Date.now()-new Date(r.rows[0].last_created_at).getTime()>=72*3600_000}const last=memory.reg?.get(ip);return !last||Date.now()-last>=72*3600_000}
 async function markRegistration(ip,client){if(client)await client.query('INSERT INTO registration_limits(ip,last_created_at) VALUES($1,now()) ON CONFLICT(ip) DO UPDATE SET last_created_at=excluded.last_created_at',[ip]);else memory.reg.set(ip,Date.now())}
-const { clientIp, ipDiagnostics } = require('./client-ip');
+const { clientIp, ipDiagnostics } = require('./lib/client-ip');
 async function loginStatus(ip,email){if(pool){const r=await pool.query('SELECT failed_attempts,blocked_until FROM login_limits WHERE ip=$1 AND email=$2',[ip,email]);if(!r.rowCount)return{blocked:false,attempts:0};const x=r.rows[0];return{blocked:x.blocked_until&&new Date(x.blocked_until)>new Date(),attempts:Number(x.failed_attempts)}}const x=memory.login?.get(ip+':'+email);return x?{blocked:x.blockedUntil>Date.now(),attempts:x.attempts}:{blocked:false,attempts:0}}
 async function loginFailure(ip,email){if(pool){await pool.query("INSERT INTO login_limits(ip,email,failed_attempts,blocked_until,updated_at) VALUES($1,$2,1,NULL,now()) ON CONFLICT(ip,email) DO UPDATE SET failed_attempts=login_limits.failed_attempts+1,blocked_until=CASE WHEN login_limits.failed_attempts+1>=5 THEN now()+interval '15 minutes' ELSE login_limits.blocked_until END,updated_at=now()",[ip,email]);return}const key=ip+':'+email,x=memory.login?.get(key)||{attempts:0,blockedUntil:0};x.attempts++;if(x.attempts>=5)x.blockedUntil=Date.now()+15*60_000;memory.login.set(key,x)}
 async function loginSuccess(ip,email){if(pool)await pool.query('DELETE FROM login_limits WHERE ip=$1 AND email=$2',[ip,email]);else memory.login?.delete(ip+':'+email)}
 async function applyReward(userId,reward,client=null){const db=client||pool;if(db){const r=await db.query('UPDATE users SET coins=coins+$1,xp=xp+$2 WHERE id=$3 RETURNING *',[reward.coins||0,reward.xp||0,userId]);return r.rows[0]||null;}const user=memory.users.get(userId);if(!user)return null;user.coins+=reward.coins||0;user.xp+=reward.xp||0;return user;}
 async function claimExists(userId,claimId){if(pool){const r=await pool.query('SELECT 1 FROM reward_claims WHERE user_id=$1 AND claim_id=$2',[userId,claimId]);return r.rowCount>0;}return memory.claims.has(`${userId}:${claimId}`);}
 async function addClaim(userId,claimId,client=null){const db=client||pool;if(db){await db.query('INSERT INTO reward_claims(user_id,claim_id) VALUES($1,$2) ON CONFLICT DO NOTHING',[userId,claimId]);}else memory.claims.set(`${userId}:${claimId}`,true);}
-function parisDateParts(date=new Date()){
-  const parts=new Intl.DateTimeFormat('fr-FR',{timeZone:'Europe/Paris',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(date));
-  const out={};for(const p of parts)if(p.type!=='literal')out[p.type]=p.value;
-  return{year:Number(out.year),month:Number(out.month),day:Number(out.day)};
-}
-function parisDayKey(date=new Date()){
-  const p=parisDateParts(date);
-  return `${p.year}-${String(p.month).padStart(2,'0')}-${String(p.day).padStart(2,'0')}`;
-}
-function parisWeekKey(date=new Date()){
-  const p=parisDateParts(date),d=new Date(Date.UTC(p.year,p.month-1,p.day)),day=d.getUTCDay(),diff=day===0?-6:1-day;
-  d.setUTCDate(d.getUTCDate()+diff);
-  return d.toISOString().slice(0,10);
-}
-function parisOffsetMinutes(date=new Date()){
-  const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Europe/Paris',timeZoneName:'longOffset',hour:'2-digit'}).formatToParts(new Date(date));
-  const raw=parts.find(p=>p.type==='timeZoneName')?.value||'GMT+01:00';
-  const m=raw.match(/GMT([+-])(\d{2}):?(\d{2})?/);
-  if(!m)return 60;
-  const minutes=Number(m[2])*60+Number(m[3]||0);
-  return m[1]==='-'?-minutes:minutes;
-}
-function parisLocalMidnight(key){
-  const [year,month,day]=key.split('-').map(Number);
-  // Offset read just before local midnight (22:00 UTC the previous day), not
-  // at noon: on daylight-saving days the noon offset differs from midnight's.
-  const probe=new Date(Date.UTC(year,month-1,day,0,0,0)-2*3600_000);
-  return new Date(Date.UTC(year,month-1,day,0,0,0)-parisOffsetMinutes(probe)*60000);
-}
-function periodInfo(kind,date=new Date()){
-  const key=kind==='weekly'?parisWeekKey(date):parisDayKey(date);
-  const start=parisLocalMidnight(key);
-  // Advance from the calendar period key, not the UTC date of local midnight.
-  // In Europe/Paris, local midnight falls on the previous UTC date; using
-  // start.getUTCDate() here made daily periods end at their own start.
-  const [year,month,day]=key.split('-').map(Number);
-  const days=kind==='weekly'?7:1;
-  const nextDate=new Date(Date.UTC(year,month-1,day+days,12,0,0));
-  const nextKey=nextDate.toISOString().slice(0,10);
-  const end=parisLocalMidnight(nextKey);
-  return{key,start,end};
-}
 
 function missionProgress(mission,cards,user){
   if(mission.type==='cards')return cards.length;
@@ -661,7 +556,7 @@ function taskProgress(task,activity){
   if(task.type==='distinctClubsObtained')return new Set(activity.cards.map(c=>c.club).filter(Boolean)).size;
   return 0;
 }
-function taskClaimId(kind,periodKey,taskId){return `${kind}:${periodKey}:${taskId}`;}
+
 async function claimTask(userId,kind,taskId){
   const tasks=kind==='weekly'?WEEKLY_TASKS:DAILY_TASKS;
   const task=tasks.find(t=>t.id===taskId);
@@ -758,8 +653,7 @@ async function albumData(userId,selectedSeasonId=null){
  }
  return{universe:'FOOTVAULT',season:'2026',album:{competitions,overallOwned:allClubs.reduce((s,c)=>s+c.owned,0),overallTotal:allClubs.reduce((s,c)=>s+c.total,0)},rewards:{clubs:allClubs.map(v=>({seasonId:v.seasonId,clubId:v.id,club:v.name,claimed:claimedIds.has('album:'+v.seasonId+':'+v.id)}))}};
 }
-function auctionDurationMs(minutes){return Number(minutes)*60_000;}
-function auctionMinBid(current){return Math.ceil(Number(current)*11/10);}
+
 function auctionPublic(row){return{id:row.id,cardInstanceId:row.card_instance_id,sellerId:row.seller_id,startingBid:Number(row.starting_bid),currentBid:Number(row.current_bid),currentBidderId:row.current_bidder_id||null,startsAt:row.starts_at,endsAt:row.ends_at,status:row.status,createdAt:row.created_at,completedAt:row.completed_at||null};}
 async function settleExpiredAuctions(){
  if(!pool)return;
