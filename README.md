@@ -47,11 +47,11 @@ Variables d'environnement utiles :
 | `ADMIN_EMAILS` | E-mails des comptes administrateurs, séparés par des virgules |
 | `ADMIN_BOOTSTRAP_NAME`, `ADMIN_BOOTSTRAP_PASSWORD` | Création du premier compte administrateur |
 | `HISTORICAL_IMPORT_TOKEN` | Jeton de la route d'import de l'historique Ligue 1 |
-| `CLIENT_IP_HEADER`, `TRUSTED_PROXY_HOPS` | Détermination de l'IP réelle du joueur derrière le proxy (limites d'inscription et de débit). Voir `client-ip.js` et la route admin `/api/admin/ip-debug` |
+| `CLIENT_IP_HEADER`, `TRUSTED_PROXY_HOPS` | Détermination de l'IP réelle du joueur derrière le proxy (limites d'inscription et de débit). En production : `CLIENT_IP_HEADER=cf-connecting-ip` (Cloudflare devant Render). Sans réglage, un client peut falsifier son IP. Voir `client-ip.js` et la route admin `/api/admin/ip-debug` |
 
 ## Contrôles
 
-La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, puis lance `npm test` : 45 tests d'intégration sur une base PostgreSQL jetable (comptes, packs, récompenses, enchères, périodes). Mode d'emploi : [test/README.md](test/README.md).
+La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, puis lance `npm test` : 54 tests sur une base PostgreSQL jetable (comptes, packs, récompenses, enchères, périodes). Mode d'emploi : [test/README.md](test/README.md).
 
 ## Documentation
 
