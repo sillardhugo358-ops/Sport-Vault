@@ -15,9 +15,9 @@ pools et de progresser grâce à des missions et des succès.
 
 -   **Dépôt GitHub :** `sillardhugo358-ops/Sport-Vault`
 -   **Site en production :** https://sport-vault.onrender.com
--   **Base de données :** PostgreSQL hébergé sur Render (`DATABASE_URL`,
-    schéma créé par `initDb()` dans `server.js`) — pas de Supabase dans
-    le code actuel
+-   **Base de données :** PostgreSQL hébergé sur Aiven depuis le
+    29/09/2026 (`DATABASE_URL`, schéma créé par `initDb()` dans
+    `server.js`) — pas de Supabase dans le code actuel
 -   **Hébergement actuellement utilisé :** Render
 -   **Technologies front-end et organisation exacte :** à vérifier dans
     le dépôt avant toute modification. Ne pas supposer qu'un framework
@@ -87,7 +87,7 @@ Les seuils doivent être appliqués sans chevauchement. En cas de
 modification du barème, vérifier tous les endroits où la rareté est
 calculée, filtrée, affichée ou enregistrée.
 
-Implémentation : `rarity.js` (`rarityFromOvr`, `RARITY_SQL`), utilisé par
+Implémentation : `lib/rarity.js` (`rarityFromOvr`, `RARITY_SQL`), utilisé par
 le serveur, l'import 2026-2027 et l'éditeur admin (copie du barème dans
 `app.js`, le serveur fait foi). Exception : cartes spéciales à rareté
 manuelle (`catalog_cards.rarity_locked`).

@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { clientIp } = require('../client-ip');
+const { clientIp } = require('../lib/client-ip');
 
 const req = (headers = {}, remoteAddress = '10.0.0.9') => ({ headers, socket: { remoteAddress } });
 // Client qui envoie un faux en-tête ; le proxy ajoute la vraie IP à droite.

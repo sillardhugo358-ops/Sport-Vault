@@ -22,7 +22,7 @@ Production : https://sport-vault.onrender.com
 
 | Élément | Détail |
 |---|---|
-| Serveur | Node.js ≥ 18, module `http` natif, sans framework — `server.js` |
+| Serveur | Node.js ≥ 18, module `http` natif, sans framework — `server.js` (routes et logique), `lib/` (modules sans état : configuration du jeu, périodes, règles d'enchères, barème des raretés, IP client) |
 | Interface | SPA en JavaScript vanilla, navigation par hash — `index.html`, `app.js`, `styles.css` |
 | Base | PostgreSQL hébergé sur Aiven (voir [SAUVEGARDE.md](docs/SAUVEGARDE.md)). Tables créées au démarrage par `initDb()` |
 | Démarrage | `ligue1-launcher.js` lance `server.js` puis synchronise le catalogue (`scripts/import-ligue1-2026-27.js`) |
@@ -47,11 +47,11 @@ Variables d'environnement utiles :
 | `ADMIN_EMAILS` | E-mails des comptes administrateurs, séparés par des virgules |
 | `ADMIN_BOOTSTRAP_NAME`, `ADMIN_BOOTSTRAP_PASSWORD` | Création du premier compte administrateur |
 | `HISTORICAL_IMPORT_TOKEN` | Jeton de la route d'import de l'historique Ligue 1 |
-| `CLIENT_IP_HEADER`, `TRUSTED_PROXY_HOPS` | Détermination de l'IP réelle du joueur derrière le proxy (limites d'inscription et de débit). En production : `CLIENT_IP_HEADER=cf-connecting-ip` (Cloudflare devant Render). Sans réglage, un client peut falsifier son IP. Voir `client-ip.js` et la route admin `/api/admin/ip-debug` |
+| `CLIENT_IP_HEADER`, `TRUSTED_PROXY_HOPS` | Détermination de l'IP réelle du joueur derrière le proxy (limites d'inscription et de débit). En production : `CLIENT_IP_HEADER=cf-connecting-ip` (Cloudflare devant Render). Sans réglage, un client peut falsifier son IP. Voir `lib/client-ip.js` et la route admin `/api/admin/ip-debug` |
 
 ## Contrôles
 
-La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, puis lance `npm test` : 62 tests sur une base PostgreSQL jetable (comptes, packs, récompenses, enchères, périodes). Mode d'emploi : [test/README.md](test/README.md).
+La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, puis lance `npm test` : 66 tests sur une base PostgreSQL jetable (comptes, packs, récompenses, enchères, périodes). Mode d'emploi : [test/README.md](test/README.md).
 
 ## Documentation
 

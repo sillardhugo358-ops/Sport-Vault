@@ -2,7 +2,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const zlib=require('node:zlib');
 const {Pool}=require('pg');
-const {rarityFromOvr}=require('../rarity');
+const {rarityFromOvr}=require('../lib/rarity');
 
 const ROOT=path.join(__dirname,'..');
 const seedPaths=[0,1,2].map(i=>path.join(ROOT,'data','footmercato_catalog_'+i+'.b64'));

@@ -29,7 +29,7 @@
 | Succès / progression | 🟡 | Moteur en place, page Succès, éditeur admin récemment simplifié — ergonomie/aperçu/filtres à finaliser |
 | Enchères | ✅ | Création, enchère, annulation, retrait, historique ; palier +10 % et prolongation d'1 min si enchère dans les 30 dernières secondes |
 | Admin | ✅ | Utilisateurs, cartes, compétitions/clubs, packs, marché, journaux, succès |
-| Barème de rareté | ✅ | *Phase 2 :* rareté calculée depuis la note par `rarity.js` (création, modification, import) ; cartes spéciales à rareté manuelle (`rarity_locked`) |
+| Barème de rareté | ✅ | *Phase 2 :* rareté calculée depuis la note par `lib/rarity.js` (création, modification, import) ; cartes spéciales à rareté manuelle (`rarity_locked`) |
 | Attributs gardiens | ✅ | Affichés PLG, JEU, DÉG, RÉF, VIT, POS ; stockés dans les 6 colonnes communes (correspondance dans [QUALITE-DONNEES.md](QUALITE-DONNEES.md)). *Constat initial erroné corrigé en phase 2.* |
 | Historique Ligue 1 2010-2025 | 🟡 | Données présentes dans `data/` et route d'import protégée par jeton — état réel en production à vérifier |
 | Tableau de bord statistique | 🟡 | Vue d'ensemble admin (`/api/admin/overview`) à enrichir |
@@ -87,4 +87,6 @@ timeline
 
 **Phase 2 terminée le 29/09/2026** pour le code : barème des raretés appliqué partout, 4 cartes spéciales verrouillées, poste LM converti, libellés gardiens alignés. Données à compléter en attente d'une source.
 
-Prochaine étape : **phase 3 — découpage du code**. Sauvegarde manuelle chaque semaine en attendant son automatisation.
+**Phase 3 en cours.** Étape 1 : modules sans état extraits dans `lib/` (configuration du jeu, périodes, règles d'enchères, barème, IP client) ; `server.js` passe de 1 121 à 1 015 lignes. Étapes suivantes : accès à la base, comptes et sessions, packs, missions et succès, enchères, administration, routeur.
+
+Prochaine étape : **phase 3, étape 2 — accès à la base**. Sauvegarde manuelle chaque semaine en attendant son automatisation.

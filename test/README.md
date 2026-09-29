@@ -31,8 +31,8 @@ Chaque fichier crée une base jetable `fv_test_…`, démarre son propre serveur
 | `catalog.test.js` | Rareté imposée par le barème à la création et à la modification, cartes spéciales, migration (verrouillage, LM → LW) au redémarrage |
 | `rarity.test.js` | Seuils du barème officiel |
 | `client-ip.test.js` | Détermination de l'IP du client selon le réglage du proxy |
+| `game-config.test.js` | Cohérence de la configuration du jeu : chaîne des missions, packs, tâches, succès |
 
 ## Fichiers techniques
 
 - `helpers.js` : base jetable, démarrage et redémarrage du serveur, client HTTP avec cookie de session. Chaque joueur de test a sa propre IP (en-tête `X-Forwarded-For`), car le serveur limite les inscriptions par IP.
-- `extract.js` : `server.js` n'exporte rien ; ce fichier extrait ses fonctions pures pour les tester isolément. Temporaire, jusqu'au découpage en modules (phase 3).

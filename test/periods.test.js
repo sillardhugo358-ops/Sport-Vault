@@ -5,11 +5,9 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadFunctions } = require('./extract');
-
-const f = loadFunctions([
-  'parisDateParts', 'parisDayKey', 'parisWeekKey', 'parisOffsetMinutes', 'parisLocalMidnight', 'periodInfo', 'auctionMinBid'
-]);
+const periods = require('../lib/periods');
+const { auctionMinBid } = require('../lib/auction-rules');
+const f = { ...periods, auctionMinBid };
 
 test('jour : bascule à minuit heure de Paris (hiver, UTC+1)', () => {
   assert.equal(f.parisDayKey(new Date('2026-01-15T22:59:59Z')), '2026-01-15');
