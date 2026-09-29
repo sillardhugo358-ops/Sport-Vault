@@ -10,7 +10,7 @@ Production : https://sport-vault.onrender.com
 
 - Comptes et sessions côté serveur, avec limites anti-abus à l'inscription et à la connexion
 - 1 000 FOOTCOINS + 50 GEMS à la création du compte, cartes de bienvenue
-- Catalogue Ligue 1 2026-2027 : **478 cartes**, 5 raretés (Common, Rare, Epic, Legendary, Icon)
+- Catalogue : Ligue 1 (2010-2011 à 2026-2027), Premier League, LaLiga, Serie A et Bundesliga (2010-2011 à 2026-2027) — **50 719 cartes**, 5 raretés (Common, Rare, Epic, Legendary, Icon)
 - Collection personnelle et album par club, avec récompense d'album
 - Packs Starter, Pro et Legend : tirages et garanties de rareté côté serveur ; pools de cartes
 - Missions déverrouillables, tâches quotidiennes et hebdomadaires (heure de Paris), bonus quotidien
@@ -25,7 +25,7 @@ Production : https://sport-vault.onrender.com
 | Serveur | Node.js ≥ 18, module `http` natif, sans framework — `server.js` (routes et logique), `lib/` (configuration du jeu, périodes, règles d'enchères, barème des raretés, IP client, schéma de la base, comptes et sessions, cartes et packs, récompenses et progression) |
 | Interface | SPA en JavaScript vanilla, navigation par hash — `index.html`, `app.js`, `styles.css` |
 | Base | PostgreSQL hébergé sur Aiven (voir [SAUVEGARDE.md](docs/SAUVEGARDE.md)). Tables, données de départ et migrations au démarrage : `lib/schema.js` (`initDb`) |
-| Démarrage | `ligue1-launcher.js` lance `server.js` puis synchronise le catalogue (`scripts/import-ligue1-2026-27.js`) |
+| Démarrage | `ligue1-launcher.js` lance `server.js` puis synchronise le catalogue : Ligue 1 2026-2027 (`scripts/import-ligue1-2026-27.js`), puis les 4 championnats européens (`scripts/import-europe.js`, sauté si déjà à jour) |
 
 Le navigateur n'est jamais la source de vérité : soldes, sessions, cartes et récompenses sont gérés par le serveur. Sans `DATABASE_URL`, le serveur fonctionne en mémoire (données perdues à l'arrêt) ; en production il refuse de démarrer sans base.
 
@@ -51,7 +51,7 @@ Variables d'environnement utiles :
 
 ## Contrôles
 
-La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, signale tout identifiant non déclaré (`npm run check`), puis lance `npm test` : 69 tests sur une base PostgreSQL jetable (comptes, packs, récompenses, enchères, périodes). Mode d'emploi : [test/README.md](test/README.md).
+La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, signale tout identifiant non déclaré (`npm run check`), puis lance `npm test` : 72 tests sur une base PostgreSQL jetable (comptes, packs, récompenses, enchères, périodes, import du catalogue). Mode d'emploi : [test/README.md](test/README.md).
 
 ## Documentation
 

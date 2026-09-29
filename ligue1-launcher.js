@@ -20,6 +20,12 @@ async function syncWhenReady(){
         if(stdout)process.stdout.write(stdout);
         if(stderr)process.stderr.write(stderr);
         if(error)console.error('[FOOTVAULT] Ligue 1 sync process failed:',error.message);
+        // Puis les 4 championnats européens (sauté si déjà à jour).
+        execFile(process.execPath,[path.join(__dirname,'scripts','import-europe.js')],{env:process.env,maxBuffer:4*1024*1024},(error2,stdout2,stderr2)=>{
+          if(stdout2)process.stdout.write(stdout2);
+          if(stderr2)process.stderr.write(stderr2);
+          if(error2)console.error('[FOOTVAULT] Europe import process failed:',error2.message);
+        });
       });
     }
   }catch{}
