@@ -11,9 +11,9 @@ async function syncWhenReady(){
   try{
     const {Pool}=require('pg');
     const db=new Pool({connectionString:process.env.DATABASE_URL,ssl:process.env.NODE_ENV==='production'?{rejectUnauthorized:false}:undefined,max:1,connectionTimeoutMillis:2000});
-    const r=await db.query("SELECT to_regclass('public.catalog_cards') AS cards,to_regclass('public.competitions') AS competitions,to_regclass('public.competition_seasons') AS seasons,to_regclass('public.clubs') AS clubs");
+    const r=await db.query("SELECT to_regclass('public.catalog_cards') AS cards,to_regclass('public.competitions') AS competitions,to_regclass('public.competition_seasons') AS seasons,to_regclass('public.clubs') AS clubs,(SELECT count(*)::int FROM information_schema.columns WHERE table_schema='public' AND table_name='catalog_cards' AND column_name='rarity_locked') AS rarity_locked");
     await db.end();
-    if(r.rows[0]?.cards&&r.rows[0]?.competitions&&r.rows[0]?.seasons&&r.rows[0]?.clubs){
+    if(r.rows[0]?.cards&&r.rows[0]?.competitions&&r.rows[0]?.seasons&&r.rows[0]?.clubs&&r.rows[0]?.rarity_locked){
       imported=true;
       clearInterval(timer);
       execFile(process.execPath,[path.join(__dirname,'scripts','import-ligue1-2026-27.js')],{env:process.env},(error,stdout,stderr)=>{

@@ -87,6 +87,11 @@ Les seuils doivent être appliqués sans chevauchement. En cas de
 modification du barème, vérifier tous les endroits où la rareté est
 calculée, filtrée, affichée ou enregistrée.
 
+Implémentation : `rarity.js` (`rarityFromOvr`, `RARITY_SQL`), utilisé par
+le serveur, l'import 2026-2027 et l'éditeur admin (copie du barème dans
+`app.js`, le serveur fait foi). Exception : cartes spéciales à rareté
+manuelle (`catalog_cards.rarity_locked`).
+
 ### Attributs des cartes
 
 **Joueurs de champ :** VIT (vitesse), TIR (tir), PAS (passe), DRI
@@ -94,6 +99,11 @@ calculée, filtrée, affichée ou enregistrée.
 
 **Gardiens :** PLG (plongeon), JEU (jeu à la main), DÉG (dégagement),
 RÉF (réflexes), VIT (vitesse), POS (placement).
+
+Les attributs des gardiens réutilisent les colonnes communes (PLG =
+`shooting`, JEU = `passing`, DÉG = `dribbling`, RÉF = `defending`,
+VIT = `pace`, POS = `physical`) ; l'affichage est dans
+`cardStatDefinitions` (`app.js`).
 
 Ne pas modifier les règles de calcul de la note générale sans retrouver
 et vérifier leur implémentation actuelle.
