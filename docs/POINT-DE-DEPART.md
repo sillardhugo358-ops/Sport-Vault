@@ -87,7 +87,7 @@ timeline
 
 **Phase 2 terminée le 29/09/2026** pour le code : barème des raretés appliqué partout, 4 cartes spéciales verrouillées, poste LM converti, libellés gardiens alignés. Données à compléter en attente d'une source.
 
-**Phase 3 en cours.** Étape 1 : modules sans état extraits dans `lib/` (configuration du jeu, périodes, règles d'enchères, barème, IP client) ; `server.js` passe de 1 121 à 1 015 lignes. Étapes suivantes : accès à la base, comptes et sessions, packs, missions et succès, enchères, administration, routeur.
+**Phase 3 terminée le 30/09/2026.** Étape 1 : modules sans état extraits dans `lib/` (configuration du jeu, périodes, règles d'enchères, barème, IP client) ; `server.js` passe de 1 121 à 1 015 lignes. Étapes suivantes : accès à la base, comptes et sessions, packs, missions et succès, enchères, administration, routeur.
 
 Étape 2 : schéma, données de départ et migrations dans `lib/schema.js` (`initDb`) ; `server.js` à 905 lignes. Bug corrigé au passage : sur une base neuve, la création du premier admin (`ADMIN_BOOTSTRAP_PASSWORD`) échouait (table `card_instances` pas encore créée) et le serveur retombait en mode mémoire.
 
@@ -103,4 +103,6 @@ Hors phase, le 30/09/2026 : catalogue étendu à Premier League, La Liga, Serie 
 
 Étape 7 : administration dans `lib/admin.js` (comptes, ressources, cartes des joueurs, catalogue, compétitions, collections, packs, journaux, vue d'ensemble) ; nouveau `test/admin.test.js` ; `server.js` à 329 lignes.
 
-Prochaine étape : **phase 3, étape 8 — routeur et succès** (dernière étape du découpage). Sauvegarde manuelle chaque semaine en attendant son automatisation.
+Étape 8 : routeur découpé par domaine dans `lib/routes/` (comptes, cartes et packs, progression et succès, enchères, administration, import interne) ; `json` et `readBody` dans `lib/http.js` ; nouveau `test/routes.test.js` (tour de toutes les routes, passant aussi sur l'ancien routeur). `server.js` : **1 121 → 59 lignes** (démarrage, fichiers statiques, santé, `securityEvent`).
+
+Prochaine étape : **phase 4 — progression** (éditeur de succès, éditeur de missions, zone des missions terminées). Sauvegarde manuelle chaque semaine en attendant son automatisation.
