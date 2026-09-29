@@ -30,7 +30,7 @@ Versions antérieures, remplacées par le catalogue de 478 cartes. Candidates à
 | `ligue1-historical-2010-2025.b64`, `ligue1-historical-2010-2025.part0.b64` | Non décodables en l'état |
 | `ligue1-historical-2010-2025.br.part01…part08` (+ sous-morceaux `01.1`–`01.4`, `01a`–`01d`, `05.1`–`05.4`) | Probablement brotli découpé ; aucune combinaison testée ne se décompresse. Les sous-morceaux ne recomposent pas `part01` à l'identique |
 
-Aucun code ne lit ces fichiers. L'historique se charge par la route protégée `POST /api/internal/historical-import` (jeton `HISTORICAL_IMPORT_TOKEN`), qui reçoit les cartes dans le corps de la requête. Le script qui l'appelait n'est pas dans le dépôt. **Constaté dans une sauvegarde de production du 27/09/2026** : 6 941 cartes dans `catalog_cards` et 27 saisons dans `competition_seasons` — l'historique est donc déjà importé en production, indépendamment de ces fichiers.
+Aucun code ne lit ces fichiers. L'historique se charge par la route protégée `POST /api/internal/historical-import` (jeton `HISTORICAL_IMPORT_TOKEN`), qui reçoit les cartes dans le corps de la requête. Le script qui l'appelait n'est pas dans le dépôt. **Constaté dans une sauvegarde de production du 27/09/2026** : 6 938 cartes dans `catalog_cards` et 27 saisons dans `competition_seasons` — l'historique est donc déjà importé en production, indépendamment de ces fichiers.
 
 ## Décision à prendre
 
