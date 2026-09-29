@@ -35,6 +35,7 @@ Chaque fichier crée une base jetable `fv_test_…`, démarre son propre serveur
 | `europe-import.test.js` | Fichier des 4 championnats (postes, barème, attributs des gardiens), import sans doublon, carte désactivée respectée, synchro Ligue 1 sans impact, résumé de l'accueil, packs par compétition et par décennie |
 | `admin.test.js` | Console admin : accès refusé aux joueurs, lectures, ajout de FC et don de carte tracés, bannissement, modification d'un pack |
 | `routes.test.js` | Tour de toutes les routes de l'API : réponses attendues, accès refusés, import interne protégé, chemin inconnu |
+| `missions.test.js` | Missions en base (reprise à l'identique), éditeur admin : droits, identifiant généré sans doublon, modification, validation (boucle, prérequis inconnu, récompense nulle), désactivation, chaîne jamais bloquée |
 | `game-config.test.js` | Cohérence de la configuration du jeu : chaîne des missions, packs, tâches, succès |
 
 ## Fichiers techniques

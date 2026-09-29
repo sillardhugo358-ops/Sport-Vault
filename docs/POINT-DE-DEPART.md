@@ -105,4 +105,6 @@ Hors phase, le 30/09/2026 : catalogue étendu à Premier League, La Liga, Serie 
 
 Étape 8 : routeur découpé par domaine dans `lib/routes/` (comptes, cartes et packs, progression et succès, enchères, administration, import interne) ; `json` et `readBody` dans `lib/http.js` ; nouveau `test/routes.test.js` (tour de toutes les routes, passant aussi sur l'ancien routeur). `server.js` : **1 121 → 59 lignes** (démarrage, fichiers statiques, santé, `securityEvent`).
 
-Prochaine étape : **phase 4 — progression** (éditeur de succès, éditeur de missions, zone des missions terminées). Sauvegarde manuelle chaque semaine en attendant son automatisation.
+**Phase 4 en cours.** Étape 1 : missions en base (table `missions`, reprise des 12 missions d'origine, récompenses déjà validées conservées) et éditeur de missions dans la console admin (onglet « Succès & missions ») : création avec identifiant généré, modification, activation, prérequis contrôlés (pas de boucle, jamais de chaîne bloquée), aperçu joueur. La zone des missions terminées existait déjà.
+
+Prochaine étape : **phase 4, étape 2 — éditeur de succès** (aperçu, validation, filtres). Sauvegarde manuelle chaque semaine en attendant son automatisation.
