@@ -24,7 +24,7 @@ Production : https://sport-vault.onrender.com
 |---|---|
 | Serveur | Node.js ≥ 18, module `http` natif, sans framework — `server.js` |
 | Interface | SPA en JavaScript vanilla, navigation par hash — `index.html`, `app.js`, `styles.css` |
-| Base | PostgreSQL (Render). Tables créées au démarrage par `initDb()` |
+| Base | PostgreSQL hébergé sur Aiven (voir [SAUVEGARDE.md](docs/SAUVEGARDE.md)). Tables créées au démarrage par `initDb()` |
 | Démarrage | `ligue1-launcher.js` lance `server.js` puis synchronise le catalogue (`scripts/import-ligue1-2026-27.js`) |
 
 Le navigateur n'est jamais la source de vérité : soldes, sessions, cartes et récompenses sont gérés par le serveur. Sans `DATABASE_URL`, le serveur fonctionne en mémoire (données perdues à l'arrêt) ; en production il refuse de démarrer sans base.
@@ -42,7 +42,7 @@ Variables d'environnement utiles :
 
 | Variable | Rôle |
 |---|---|
-| `DATABASE_URL` | Connexion PostgreSQL (sinon mode mémoire) |
+| `DATABASE_URL` | Connexion PostgreSQL (sinon mode mémoire). Pour Aiven, terminer par `?sslmode=no-verify` |
 | `PORT` | Port HTTP (3000 par défaut) |
 | `ADMIN_EMAILS` | E-mails des comptes administrateurs, séparés par des virgules |
 | `ADMIN_BOOTSTRAP_NAME`, `ADMIN_BOOTSTRAP_PASSWORD` | Création du premier compte administrateur |

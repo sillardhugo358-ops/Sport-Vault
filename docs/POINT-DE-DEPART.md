@@ -9,10 +9,10 @@
 | Serveur | Node.js ≥ 18, module `http` natif, **sans framework** — `server.js` (~168 Ko) |
 | Front-end | SPA en JavaScript vanilla, navigation par hash — `index.html`, `app.js` (~192 Ko), `styles.css` (~282 Ko), `success-admin-editor.js` |
 | Dépendances | Une seule : `pg` |
-| Base de données | **PostgreSQL hébergé sur Render** (`render.yaml`, variable `DATABASE_URL`). Pas de Supabase dans le code. Mode mémoire en local si `DATABASE_URL` est absente (refusé en production). |
+| Base de données | **PostgreSQL hébergé sur Aiven** (Render jusqu'au 29/09/2026), connexion par la variable `DATABASE_URL` saisie dans Render. Pas de Supabase dans le code. Mode mémoire en local si `DATABASE_URL` est absente (refusé en production). |
 | Schéma | Créé automatiquement au démarrage par `initDb()` dans `server.js` (23 tables : `users`, `sessions`, `catalog_cards`, `card_instances`, `pack_definitions`, `pack_pools`, `auctions`, `auction_bids`, `auction_withdrawals`, `achievements`, `reward_claims`, `clubs`, `competitions`, `competition_seasons`, `competition_clubs`, `season_clubs`, `card_collections`, `card_collection_cards`, `admin_logs`, `security_events`, `login_limits`, `registration_limits`, `app_migrations`) |
 | Démarrage | `npm start` → `ligue1-launcher.js` lance `server.js` (préchargé avec `security-bootstrap.js`) puis `scripts/import-ligue1-2026-27.js` dès que les tables existent |
-| Déploiement | Render, plan **free**, région Francfort, health check `/api/health` |
+| Déploiement | Service web sur Render (plan **free**, Francfort), base sur Aiven, health check `/api/health` |
 | CI | `.github/workflows/check.yml` : uniquement `node --check server.js` et `node --check app.js` |
 | Tests | **Aucun** |
 
@@ -36,7 +36,7 @@
 
 ## 3. Dettes et risques (par priorité)
 
-1. **Risque de perte de données** — la base Postgres Render free **expire le 15 octobre 2026** et aucune sauvegarde automatique n'existe. *Phase 0 : procédure et script prêts ([SAUVEGARDE.md](SAUVEGARDE.md)) ; sauvegarde de production faite le 29/09/2026 (23 tables, 3 utilisateurs, 334 cartes possédées, 6 938 cartes au catalogue) ; reste à choisir l'hébergement de la base avant le 15/10.*
+1. **Risque de perte de données** — *Traité en phase 0 :* sauvegarde de production faite le 29/09/2026 (23 tables, 3 utilisateurs, 334 cartes possédées, 6 938 cartes au catalogue), base migrée de Render free (expiration le 15/10/2026) vers Aiven (gratuit, sans expiration). **Reste :** Aiven gratuit n'a pas de sauvegarde automatique → sauvegardes manuelles régulières ([SAUVEGARDE.md](SAUVEGARDE.md)), à automatiser plus tard.
 2. **Aucun test automatisé** — toute modification de l'économie (packs, récompenses, enchères) se fait sans filet.
 3. **Documentation incohérente** — `CLAUDE.md` mentionnait Supabase et le `README.md` parlait de 24 cartes. *Corrigé en phase 0.*
 4. **Fichiers monolithiques** — `server.js`, `app.js` et `styles.css` sont très gros avec des lignes très longues, ce qui rend les revues et les corrections risquées.
@@ -77,4 +77,6 @@ timeline
 
 ## 5. Prochaine action concrète
 
-Commencer la **phase 0** : faire une sauvegarde de la base Render (`pg_dump` avec la `DATABASE_URL`, depuis le tableau de bord Render) et vérifier la date d'expiration éventuelle de la base free. C'est le seul risque qui peut faire perdre des données réelles.
+**Phase 0 terminée le 29/09/2026**, sauf la décision sur les anciens fichiers de `data/` (voir [data/README.md](../data/README.md)). Base sauvegardée et migrée sur Aiven, documentation à jour, bug d'import corrigé.
+
+Prochaine étape : **phase 1 — filet de sécurité** (tests automatiques). Faire aussi une sauvegarde manuelle chaque semaine tant qu'elle n'est pas automatisée.
