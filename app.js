@@ -775,14 +775,16 @@ function showPoolEditor(pool=null){
 function showPackEditor(pack=null){
  const p=pack||{id:'',name:'',price:100,cards:5,badge:'',description:'',guarantee:'rare',guarantee_count:1,conditions:{},active:true};
  const cfg=p.conditions||{}, arr=v=>Array.isArray(v)?v.map(String):[];
- const selected={rarities:new Set(arr(cfg.rarities)),clubs:new Set(arr(cfg.clubs)),seasons:new Set(arr(cfg.seasons)),nations:new Set(arr(cfg.nations)),positions:new Set(arr(cfg.positions))};
+ const selected={competitions:new Set(arr(cfg.competitions)),decades:new Set(arr(cfg.decades)),rarities:new Set(arr(cfg.rarities)),clubs:new Set(arr(cfg.clubs)),seasons:new Set(arr(cfg.seasons)),nations:new Set(arr(cfg.nations)),positions:new Set(arr(cfg.positions))};
  const cards=state.adminCards||[];
  const seasons=[...new Set(cards.map(c=>String(c.season||'')).filter(Boolean))].sort((a,b)=>b.localeCompare(a,'fr',{numeric:true}));
  const clubs=[...new Set(cards.map(c=>String(c.club||'')).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
  const nations=[...new Set(cards.map(c=>String(c.nation||'')).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
  const positions=[...new Set(cards.map(c=>String(c.position||'')).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
  const multi=(id,values,set)=>'<div class="pack-condition-checks" id="'+id+'">'+values.map(v=>'<label><input type="checkbox" value="'+esc(v)+'" '+(set.has(v)?'checked':'')+'><span>'+esc(v.toUpperCase())+'</span></label>').join('')+'</div>';
- const select=(id,label,values,set,icon)=>'<label class="pack-select-field"><span>'+icon+' '+label+'</span><select id="'+id+'"><option value="">Tous</option>'+values.map(v=>'<option value="'+esc(v)+'" '+(set.size===1&&set.has(v)?'selected':'')+'>'+esc(v)+'</option>').join('')+'</select></label>';
+ const select=(id,label,values,set,icon,text=v=>v)=>'<label class="pack-select-field"><span>'+icon+' '+label+'</span><select id="'+id+'"><option value="">Tous</option>'+values.map(v=>'<option value="'+esc(v)+'" '+(set.size===1&&set.has(v)?'selected':'')+'>'+esc(text(v))+'</option>').join('')+'</select></label>';
+ const competitionList=(state.adminCompetitions||[]).filter(c=>c.status==='available'||selected.competitions.has(String(c.id))),competitionName=id=>competitionList.find(c=>String(c.id)===String(id))?.name||id;
+ const decades=[...new Set(seasons.map(s=>{const y=Number(String(s).slice(0,4));return Number.isFinite(y)?String(y-y%10):''}).filter(Boolean))].sort((a,b)=>b.localeCompare(a));
  setModal(`<div class="modal-box pack-editor-modal">
   <button class="modal-close" data-close aria-label="Fermer">×</button>
   <div class="pack-editor-heading"><p class="eyebrow">ADMIN / PACKS</p><h2>${pack?'MODIFIER UN PACK':'CRÉER UN PACK'}</h2></div>
@@ -809,6 +811,8 @@ function showPackEditor(pack=null){
     <section class="pack-editor-card"><h3><span>▣</span> SOURCE DU PACK</h3><p class="pack-help">Choisis une réserve de cartes (pool). Sans pool, les conditions ci-dessous s'appliquent au catalogue.</p><label class="pack-select-field"><span>▤ POOL DE CARTES</span><select id="packPool"><option value="">Catalogue selon conditions</option>${(state.adminPools||[]).map(v=>'<option value="'+esc(v.id)+'" '+(String(p.pool_id||'')===String(v.id)?'selected':'')+'>'+esc(v.name)+'</option>').join('')}</select></label></section><section class="pack-editor-card pack-conditions-card"><h3><span>⌖</span> CONDITIONS DU PACK</h3><p class="pack-help">Le pack tire directement dans le catalogue selon ces conditions. <b>Aucun pool n'est utilisé.</b></p>
      <div class="pack-condition-grid">
       <div class="pack-filter-box"><div class="pack-filter-title">RARETÉS AUTORISÉES</div>${multi('packRarities',['common','rare','epic','legendary','icon'],selected.rarities)}</div>
+      <div class="pack-filter-box">${select('packCompetition','COMPÉTITION',competitionList.map(c=>String(c.id)),selected.competitions,'🏆',competitionName)}</div>
+      <div class="pack-filter-box">${select('packDecade','DÉCENNIE',decades,selected.decades,'◷',d=>'Années '+d)}</div>
       <div class="pack-filter-box">${select('packPosition','POSTES',positions,selected.positions,'⚽')}</div>
       <div class="pack-filter-box">${select('packClub','CLUBS',clubs,selected.clubs,'◈')}</div>
       <div class="pack-filter-box">${select('packNation','NATIONALITÉS',nations,selected.nations,'⚑')}</div>
@@ -827,7 +831,7 @@ function showPackEditor(pack=null){
  document.querySelector('[data-save-pack]').onclick=async()=>{
   const getChecked=id=>[...document.querySelectorAll('#'+id+' input:checked')].map(x=>x.value);
   const one=id=>{const v=$(id)?.value||'';return v?[v]:[]};
-  const conditions={rarities:getChecked('packRarities'),positions:one('#packPosition'),clubs:one('#packClub'),nations:one('#packNation'),seasons:one('#packSeason'),minOvr:$('#packMinOvr').value===''?null:Number($('#packMinOvr').value),maxOvr:$('#packMaxOvr').value===''?null:Number($('#packMaxOvr').value),limitedOnly:$('#packLimitedOnly').checked,standardOnly:$('#packStandardOnly').checked};
+  const conditions={competitions:one('#packCompetition'),decades:one('#packDecade'),rarities:getChecked('packRarities'),positions:one('#packPosition'),clubs:one('#packClub'),nations:one('#packNation'),seasons:one('#packSeason'),minOvr:$('#packMinOvr').value===''?null:Number($('#packMinOvr').value),maxOvr:$('#packMaxOvr').value===''?null:Number($('#packMaxOvr').value),limitedOnly:$('#packLimitedOnly').checked,standardOnly:$('#packStandardOnly').checked};
   if(!$('#packName').value.trim())return toast('Le nom du pack est obligatoire.');
   if(conditions.limitedOnly&&conditions.standardOnly)return toast('Un pack ne peut pas être LIMITED et STANDARD uniquement.');
   if(conditions.minOvr!=null&&conditions.maxOvr!=null&&conditions.minOvr>conditions.maxOvr)return toast('L’OVR minimum ne peut pas dépasser l’OVR maximum.');
