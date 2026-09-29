@@ -31,6 +31,7 @@ Chaque fichier crée une base jetable `fv_test_…`, démarre son propre serveur
 | `catalog.test.js` | Rareté imposée par le barème à la création et à la modification, cartes spéciales, migration (verrouillage, LM → LW) au redémarrage |
 | `rarity.test.js` | Seuils du barème officiel |
 | `client-ip.test.js` | Détermination de l'IP du client selon le réglage du proxy |
+| `bootstrap.test.js` | Premier compte admin créé au démarrage (`ADMIN_EMAILS`, `ADMIN_BOOTSTRAP_PASSWORD`), promu créateur au redémarrage |
 | `game-config.test.js` | Cohérence de la configuration du jeu : chaîne des missions, packs, tâches, succès |
 
 ## Fichiers techniques

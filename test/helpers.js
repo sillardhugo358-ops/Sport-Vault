@@ -37,7 +37,8 @@ function freePort() {
   });
 }
 
-async function startServer() {
+// options.env : variables d'environnement supplémentaires du serveur.
+async function startServer(options = {}) {
   const dbName = 'fv_test_' + crypto.randomBytes(5).toString('hex');
   const admin = new Pool({ connectionString: adminUrl(), max: 1 });
   await admin.query(`CREATE DATABASE ${dbName}`);
@@ -56,7 +57,7 @@ async function startServer() {
   async function launchWithRetry() {
     for (let attempt = 1; ; attempt++) {
       const port = await freePort();
-      const started = await launch(databaseUrl, port);
+      const started = await launch(databaseUrl, port, options.env);
       child = started.child;
       if (started.ok) return { port, logs: started.logs };
       if (!started.portInUse || attempt >= 3) throw new Error(started.error);
@@ -93,11 +94,11 @@ async function startServer() {
   }
 }
 
-async function launch(databaseUrl, port) {
+async function launch(databaseUrl, port, extraEnv = {}) {
   let logs = '';
   const child = spawn(process.execPath, ['-r', './security-bootstrap.js', 'server.js'], {
     cwd: ROOT,
-    env: { ...process.env, DATABASE_URL: databaseUrl, PORT: String(port), NODE_ENV: 'test', ADMIN_EMAILS: '' },
+    env: { ...process.env, DATABASE_URL: databaseUrl, PORT: String(port), NODE_ENV: 'test', ADMIN_EMAILS: '', ...extraEnv },
     stdio: ['ignore', 'pipe', 'pipe']
   });
   child.stdout.on('data', d => { logs += d; });

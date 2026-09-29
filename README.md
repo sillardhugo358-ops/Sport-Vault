@@ -24,7 +24,7 @@ Production : https://sport-vault.onrender.com
 |---|---|
 | Serveur | Node.js ≥ 18, module `http` natif, sans framework — `server.js` (routes et logique), `lib/` (modules sans état : configuration du jeu, périodes, règles d'enchères, barème des raretés, IP client) |
 | Interface | SPA en JavaScript vanilla, navigation par hash — `index.html`, `app.js`, `styles.css` |
-| Base | PostgreSQL hébergé sur Aiven (voir [SAUVEGARDE.md](docs/SAUVEGARDE.md)). Tables créées au démarrage par `initDb()` |
+| Base | PostgreSQL hébergé sur Aiven (voir [SAUVEGARDE.md](docs/SAUVEGARDE.md)). Tables, données de départ et migrations au démarrage : `lib/schema.js` (`initDb`) |
 | Démarrage | `ligue1-launcher.js` lance `server.js` puis synchronise le catalogue (`scripts/import-ligue1-2026-27.js`) |
 
 Le navigateur n'est jamais la source de vérité : soldes, sessions, cartes et récompenses sont gérés par le serveur. Sans `DATABASE_URL`, le serveur fonctionne en mémoire (données perdues à l'arrêt) ; en production il refuse de démarrer sans base.
@@ -51,7 +51,7 @@ Variables d'environnement utiles :
 
 ## Contrôles
 
-La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, puis lance `npm test` : 66 tests sur une base PostgreSQL jetable (comptes, packs, récompenses, enchères, périodes). Mode d'emploi : [test/README.md](test/README.md).
+La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, puis lance `npm test` : 68 tests sur une base PostgreSQL jetable (comptes, packs, récompenses, enchères, périodes). Mode d'emploi : [test/README.md](test/README.md).
 
 ## Documentation
 
