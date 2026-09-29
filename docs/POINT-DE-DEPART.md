@@ -93,4 +93,6 @@ timeline
 
 Étape 3 : comptes et sessions dans `lib/auth.js` (mots de passe, cookies, sessions, limites de connexion, rôles). Nouveau contrôle `npm run check` (CI) : tout identifiant non déclaré est signalé ; il a trouvé `utcDayKey`, inexistant, qui faisait planter le bonus quotidien en mode mémoire (corrigé).
 
-Prochaine étape : **phase 3, étape 4 — cartes et packs**. Sauvegarde manuelle chaque semaine en attendant son automatisation.
+Étape 4 : cartes et packs dans `lib/cards.js` (instances, tirages, packs, pools, cartes de bienvenue) ; nouveau test du tirage de pool.
+
+Prochaine étape : **phase 3, étape 5 — missions, succès et récompenses**. Sauvegarde manuelle chaque semaine en attendant son automatisation.

@@ -24,7 +24,7 @@ Chaque fichier crée une base jetable `fv_test_…`, démarre son propre serveur
 | Fichier | Ce qui est vérifié |
 |---|---|
 | `account.test.js` | Santé du serveur, inscription (bonus de départ, limite par IP, validations), connexion, routes protégées, inscriptions simultanées |
-| `packs.test.js` | Prix, nombre de cartes et garantie de rareté des 3 packs, solde insuffisant, ouvertures simultanées |
+| `packs.test.js` | Prix, nombre de cartes et garantie de rareté des 3 packs, solde insuffisant, ouvertures simultanées, tirage de pool |
 | `rewards.test.js` | Bonus quotidien, missions et tâches : jamais attribués deux fois, même en rafale ; déverrouillage progressif |
 | `auctions.test.js` | Durées autorisées, palier +10 %, anti-sniping, réservation des FC, règlement, annulation, retrait, enchères simultanées |
 | `periods.test.js` | Minuit et lundi heure de Paris (y compris changements d'heure), calcul du palier d'enchère |

@@ -63,3 +63,16 @@ test('pack : 8 joueurs ouvrent en même temps, tous servis', async () => {
   const results = await Promise.all(players.map(p => p.post('/api/packs/open', { packId: 'starter' })));
   assert.deepEqual(results.map(r => r.status), Array(8).fill(200));
 });
+
+test('pool : tirage payé au prix configuré, cartes ajoutées ; tirage inconnu refusé', async () => {
+  const pool = (await server.db.query('SELECT id,price,cards FROM pack_pools WHERE active=true AND cards>0 ORDER BY id LIMIT 1')).rows[0];
+  assert.ok(pool, 'aucun pool actif dans les données de départ');
+  const p = await newPlayer(server, 'Tireur');
+  await setCoins(server, p.user.id, Number(pool.price) + 50);
+  const r = await p.post('/api/pools/open', { poolId: pool.id });
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  assert.equal(r.body.cards.length, Number(pool.cards));
+  assert.equal(Number((await userRow(server, p.user.id)).coins), 50);
+  assert.equal((await p.get('/api/collection')).body.count, 3 + Number(pool.cards));
+  assert.equal((await p.post('/api/pools/open', { poolId: 'inexistant' })).status, 404);
+});
