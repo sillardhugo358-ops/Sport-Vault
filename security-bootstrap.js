@@ -17,10 +17,7 @@ const MAX_AUTH_PER_WINDOW = 20;
 const MAX_PACK_OPENS_PER_WINDOW = 30;
 const MAX_AUCTION_WRITES_PER_WINDOW = 60;
 
-function clientIp(req) {
-  const forwarded = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
-  return forwarded || String(req.headers['x-real-ip'] || '').trim() || req.socket.remoteAddress || 'unknown';
-}
+const { clientIp } = require('./client-ip');
 
 function consume(key, limit, windowMs = WINDOW_MS) {
   const now = Date.now();

@@ -65,3 +65,13 @@ test('inscription : 8 inscriptions simultanées, toutes acceptées', async () =>
   const results = await Promise.allSettled(Array.from({ length: 8 }, (_, i) => newPlayer(server, 'Foule' + i)));
   assert.deepEqual(results.map(r => r.status), Array(8).fill('fulfilled'));
 });
+
+test('diagnostic IP : réservé aux admins, montre la chaîne reçue', async () => {
+  const p = await newPlayer(server, 'Diag');
+  assert.equal((await p.get('/api/admin/ip-debug')).status, 403);
+  await server.db.query("UPDATE users SET role='admin' WHERE id=$1", [p.user.id]);
+  const r = await p.get('/api/admin/ip-debug');
+  assert.equal(r.status, 200);
+  assert.equal(r.body.resolvedIp, p.ip);
+  assert.deepEqual(r.body.forwardedChain, [p.ip]);
+});
