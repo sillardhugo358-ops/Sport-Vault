@@ -36,7 +36,7 @@
 
 ## 3. Dettes et risques (par priorité)
 
-1. **Risque de perte de données** — la base Postgres Render free **expire le 15 octobre 2026** et aucune sauvegarde automatique n'existe. *Phase 0 : procédure et script prêts ([SAUVEGARDE.md](SAUVEGARDE.md)) ; sauvegarde de la production et date d'expiration à faire/vérifier par le propriétaire du compte Render.*
+1. **Risque de perte de données** — la base Postgres Render free **expire le 15 octobre 2026** et aucune sauvegarde automatique n'existe. *Phase 0 : procédure et script prêts ([SAUVEGARDE.md](SAUVEGARDE.md)) ; sauvegarde de production faite le 29/09/2026 (23 tables, 6 utilisateurs, 337 cartes possédées, 6 941 cartes au catalogue) ; reste à choisir l'hébergement de la base avant le 15/10.*
 2. **Aucun test automatisé** — toute modification de l'économie (packs, récompenses, enchères) se fait sans filet.
 3. **Documentation incohérente** — `CLAUDE.md` mentionnait Supabase et le `README.md` parlait de 24 cartes. *Corrigé en phase 0.*
 4. **Fichiers monolithiques** — `server.js`, `app.js` et `styles.css` sont très gros avec des lignes très longues, ce qui rend les revues et les corrections risquées.
