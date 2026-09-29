@@ -89,4 +89,6 @@ timeline
 
 **Phase 3 en cours.** Étape 1 : modules sans état extraits dans `lib/` (configuration du jeu, périodes, règles d'enchères, barème, IP client) ; `server.js` passe de 1 121 à 1 015 lignes. Étapes suivantes : accès à la base, comptes et sessions, packs, missions et succès, enchères, administration, routeur.
 
-Prochaine étape : **phase 3, étape 2 — accès à la base**. Sauvegarde manuelle chaque semaine en attendant son automatisation.
+Étape 2 : schéma, données de départ et migrations dans `lib/schema.js` (`initDb`) ; `server.js` à 905 lignes. Bug corrigé au passage : sur une base neuve, la création du premier admin (`ADMIN_BOOTSTRAP_PASSWORD`) échouait (table `card_instances` pas encore créée) et le serveur retombait en mode mémoire.
+
+Prochaine étape : **phase 3, étape 3 — comptes et sessions**. Sauvegarde manuelle chaque semaine en attendant son automatisation.

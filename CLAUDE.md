@@ -17,7 +17,7 @@ pools et de progresser grâce à des missions et des succès.
 -   **Site en production :** https://sport-vault.onrender.com
 -   **Base de données :** PostgreSQL hébergé sur Aiven depuis le
     29/09/2026 (`DATABASE_URL`, schéma créé par `initDb()` dans
-    `server.js`) — pas de Supabase dans le code actuel
+    `lib/schema.js`) — pas de Supabase dans le code actuel
 -   **Hébergement actuellement utilisé :** Render
 -   **Technologies front-end et organisation exacte :** à vérifier dans
     le dépôt avant toute modification. Ne pas supposer qu'un framework
