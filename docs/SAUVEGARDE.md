@@ -2,13 +2,11 @@
 
 La base de production est un PostgreSQL 18 hébergé sur Render (`sport-vault-db`, plan **free**). Le dépôt ne contient aucun mécanisme de sauvegarde automatique : cette procédure est à lancer manuellement.
 
-## ⚠️ À vérifier sur le tableau de bord Render
+## ⚠️ Expiration de la base : 15 octobre 2026
 
-Render limite la durée de vie des bases **free** : d'après sa documentation (à confirmer sur https://render.com/docs/free, que je n'ai pas pu consulter depuis cette session), elles expirent environ 30 jours après leur création, avec un court délai de grâce, puis sont supprimées. Les bases free n'ont pas non plus de sauvegardes automatiques.
+Le tableau de bord Render affiche : *« Your database will expire on October 15, 2026. The database will be deleted unless you upgrade to a paid compute plan. »* (constaté le 29/09/2026). Les bases free n'ont pas de sauvegarde automatique.
 
-1. Ouvrir https://dashboard.render.com → base **sport-vault-db**.
-2. Noter la **date d'expiration** si elle est affichée.
-3. Décider : passer sur un plan payant (sauvegardes incluses) ou faire des sauvegardes manuelles régulières.
+Avant cette date, il faut **faire une sauvegarde** (ci-dessous) **puis choisir** : passer la base sur un plan payant Render, ou restaurer la sauvegarde dans une autre base PostgreSQL et y rebrancher `DATABASE_URL`.
 
 ## Faire une sauvegarde
 
@@ -26,6 +24,20 @@ Prérequis : outils clients PostgreSQL **version 18 ou plus** (`pg_dump`, `pg_re
 Le script ne fait que lire la base. Il affiche à la fin le nombre de tables sauvegardées et un comptage de contrôle (`users`, `card_instances`, `catalog_cards`).
 
 **Ne jamais committer ni partager ce fichier** : il contient les comptes, e-mails et hachages de mots de passe. Le ranger dans un stockage privé (disque chiffré, drive personnel).
+
+### Depuis Windows (sans Git Bash)
+
+1. Installer PostgreSQL **18** depuis https://www.postgresql.org/download/windows/ (seuls les *Command Line Tools* sont nécessaires).
+2. Dans PowerShell :
+
+   ```powershell
+   & "C:\Program Files\PostgreSQL\18\bin\pg_dump.exe" --format=custom --no-owner --no-privileges `
+     --file "$HOME\Documents\footvault-$(Get-Date -Format yyyyMMdd-HHmmss).dump" `
+     "postgresql://…?sslmode=require"
+   & "C:\Program Files\PostgreSQL\18\bin\pg_restore.exe" --list "$HOME\Documents\footvault-….dump" | Select-String "TABLE DATA" | Measure-Object
+   ```
+
+   La dernière commande doit compter **23** tables.
 
 ## Vérifier qu'une sauvegarde est restaurable
 
