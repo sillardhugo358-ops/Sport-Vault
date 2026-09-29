@@ -12,6 +12,10 @@ services:
         value: production
       - key: SESSION_TTL_DAYS
         value: "0.0833333333"
+      # IP réelle du joueur : en-tête posé par Cloudflare devant Render, que le
+      # client ne peut pas imposer (vérifié le 29/09/2026 via /api/admin/ip-debug).
+      - key: CLIENT_IP_HEADER
+        value: cf-connecting-ip
       # Base PostgreSQL hébergée sur Aiven depuis le 29/09/2026 : la valeur se
       # saisit dans le tableau de bord Render (Service URI Aiven avec
       # ?sslmode=no-verify). Voir docs/SAUVEGARDE.md.
