@@ -6,7 +6,6 @@ const zlib = require('node:zlib');
 
 const PORT = Number(process.env.PORT || 3000);
 const ROOT = __dirname;
-const SESSION_DAYS = 2/24;
 
 const { RARITIES, FOOTVAULT_CARDS, PACKS, PACK_WEIGHTS, MISSIONS, DEFAULT_ACHIEVEMENTS, DAILY_TASKS, WEEKLY_TASKS, ALBUM_CLUBS } = require('./lib/game-config');
 const { parisDateParts, parisDayKey, parisWeekKey, parisOffsetMinutes, parisLocalMidnight, periodInfo, taskClaimId } = require('./lib/periods');
@@ -15,6 +14,7 @@ const { initDb } = require('./lib/schema');
 
 let pool = null;
 const memory = { users: new Map(), sessions: new Map(), cards: new Map(), claims: new Map(), activity: [], reg: new Map(), login: new Map() };
+const { cookies, hashPassword, verifyPassword, validPassword, safeUser, sessionCookie, expiryDate, findUserByEmail, getUserById, cleanupSessions, roleLevel, canManage, isAdmin, requireAdmin, currentUser, createSession, destroySession, registrationAllowed, markRegistration, loginStatus, loginFailure, loginSuccess } = require('./lib/auth').createAuth({ db: () => pool, memory });
 
 const { rarityFromOvr, RARITY_SQL } = require('./lib/rarity');
 // Rareté selon le barème, sauf carte spéciale explicitement verrouillée.
@@ -36,15 +36,15 @@ try{CARD_CATALOG=loadFootMercatoCatalog();if(CARD_CATALOG.length!==478)throw new
 catch(error){console.error('[FOOTVAULT] Impossible de charger le catalogue Foot Mercato:',error.message);CARD_CATALOG=FOOTVAULT_CARDS.map(([name, position, club, nation, rarity], i) => ({ id:`fv-${String(i+1).padStart(3,'0')}`, season:'2026', name, position, club, nation, rarity, rarityLabel:RARITIES[rarity].label, distributionType:'STANDARD', isLimited:false, maxSupply:null, ovr:({common:72,rare:78,epic:84,legendary:91,icon:96}[rarity]||72), order:i+1 }));}
 
 function json(res,status,data){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(data));}
-function cookies(req){return Object.fromEntries((req.headers.cookie||'').split(';').filter(Boolean).map(part=>{const i=part.indexOf('=');return[part.slice(0,i).trim(),decodeURIComponent(part.slice(i+1).trim())];}));}
+
 async function readBody(req){let body='';for await(const chunk of req){body+=chunk;if(body.length>1_000_000)throw new Error('Payload too large');}return JSON.parse(body||'{}');}
-function hashPassword(password,salt=crypto.randomBytes(16).toString('hex')){return `${salt}:${crypto.scryptSync(password,salt,64).toString('hex')}`;}
-function verifyPassword(password,stored){try{const [salt,hex]=String(stored).split(':');const actual=crypto.scryptSync(password,salt,64);const expected=Buffer.from(hex,'hex');return actual.length===expected.length&&crypto.timingSafeEqual(actual,expected);}catch{return false;}}
-function validPassword(password){return typeof password==='string'&&password.length>=10&&password.length<=128&&/[A-Za-z]/.test(password)&&/[0-9]/.test(password);}
+
+
+
 function levelProgressFromXp(value){let remaining=Math.max(0,Math.floor(Number(value)||0)),level=1,xpToNext=150;while(remaining>=xpToNext){remaining-=xpToNext;level++;xpToNext=150+40*(level-1);}return{level,currentXp:remaining,xpToNext};}
-function safeUser(user){const coins=Number(user.coins||0),reservedCoins=Number(user.reserved_coins||0);return{id:user.id,name:user.name,email:user.email,role:user.role||'user',coins,gems:Number(user.gems),xp:Number(user.xp),reservedCoins,availableCoins:Math.max(0,coins-reservedCoins),createdAt:user.createdAt||user.created_at,accountStatus:user.account_status||'active',blockedUntil:user.blocked_until||null,dailyClaimedAt:user.daily_claimed_at||user.dailyClaimedAt||null};}
-function sessionCookie(token){return `fv_session=${encodeURIComponent(token)}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${SESSION_DAYS*86400}`;}
-function expiryDate(){return new Date(Date.now()+SESSION_DAYS*86400_000);}
+
+
+
 function publicCard(card){const limited=Boolean(card.is_limited??card.isLimited);return{instanceId:card.instance_id||card.instanceId,cardId:card.card_id||card.cardId,season:card.season,name:card.name,position:card.position,jerseyNumber:card.jersey_number==null?(card.jerseyNumber==null?null:Number(card.jerseyNumber)):Number(card.jersey_number),club:card.club,nation:card.nation,rarity:card.rarity,ovr:Number(card.ovr||72),pace:Number(card.pace||72),shooting:Number(card.shooting||72),passing:Number(card.passing||72),dribbling:Number(card.dribbling||72),defending:Number(card.defending||72),physical:Number(card.physical||72),rarityLabel:RARITIES[card.rarity]?.label||card.rarity,distributionType:limited?'LIMITED':'STANDARD',isLimited:limited,serial:limited&&card.serial!=null?Number(card.serial):null,maxSupply:limited&&card.max_supply!=null?Number(card.max_supply):null,serialLabel:limited&&card.serial!=null&&card.max_supply!=null?String(Number(card.serial))+'/'+String(Number(card.max_supply)):null,acquiredAt:card.acquired_at||card.acquiredAt,source:card.source};}
 async function buildInstance(card,ownerId,source='welcome',client=null){const limited=Boolean(card.isLimited);if(limited&&(!Number.isInteger(card.maxSupply)||card.maxSupply<1))throw new Error('Carte LIMITED invalide : quantité maximale requise.');let serial=null;if(limited&&client){await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',[`limited-card:${card.id}`]);const next=Number((await client.query('SELECT COALESCE(MAX(serial),0)+1 AS n FROM card_instances WHERE card_id=$1 AND is_limited=true',[card.id])).rows[0].n);if(next>card.maxSupply)throw new Error('Cette carte LIMITED a atteint sa quantité maximale.');serial=next;}return{instanceId:crypto.randomUUID(),cardId:card.id,ownerId,season:card.season,name:card.name,position:card.position,jerseyNumber:card.jerseyNumber==null?null:Number(card.jerseyNumber),club:card.club,nation:card.nation,rarity:card.rarity,ovr:Number(card.ovr||72),pace:Number(card.pace||72),shooting:Number(card.shooting||72),passing:Number(card.passing||72),dribbling:Number(card.dribbling||72),defending:Number(card.defending||72),physical:Number(card.physical||72),isLimited:limited,serial,maxSupply:limited?card.maxSupply:null,acquiredAt:new Date().toISOString(),source,status:'owned'};}
 function weightedRarity(){const total=PACK_WEIGHTS.reduce((s,[,w])=>s+w,0);let roll=Math.random()*total;for(const[rarity,w]of PACK_WEIGHTS){roll-=w;if(roll<=0)return rarity;}return'common';}
@@ -111,8 +111,8 @@ async function drawDynamicPack(pack,client=null){
  return drawn;
 }
 
-async function findUserByEmail(email){if(pool){const r=await pool.query('SELECT * FROM users WHERE email=$1',[email]);return r.rows[0]||null;}for(const u of memory.users.values())if(u.email===email)return u;return null;}
-async function getUserById(id){if(pool){const r=await pool.query('SELECT * FROM users WHERE id=$1',[id]);return r.rows[0]||null;}return memory.users.get(id)||null;}
+
+
 async function adminLog(adminId,targetUserId,action,details={},client=null){await (client||pool).query('INSERT INTO admin_logs(admin_id,target_user_id,action,details) VALUES($1,$2,$3,$4::jsonb)',[adminId,targetUserId,action,JSON.stringify(details)]);}
 async function securityEvent(userId,ip,event,details={},client=null){const db=client||pool;if(!db)return;
  // Inside a transaction, a failed INSERT would abort it and turn the caller's
@@ -120,11 +120,11 @@ async function securityEvent(userId,ip,event,details={},client=null){const db=cl
  if(client)await client.query('SAVEPOINT security_event');
  try{await db.query('INSERT INTO security_events(user_id,ip,event,details) VALUES($1,$2,$3,$4::jsonb)',[userId||null,ip||null,event,JSON.stringify(details)]);if(client)await client.query('RELEASE SAVEPOINT security_event');}
  catch(e){console.error('SPORT VAULT security event error:',e.message);if(client)await client.query('ROLLBACK TO SAVEPOINT security_event');}}
-async function cleanupSessions(){if(!pool)return;try{await pool.query('DELETE FROM sessions WHERE expires_at<=now()')}catch(e){console.error('SPORT VAULT session cleanup error:',e.message)}}
-function roleLevel(role){return role==='creator'?3:role==='admin'?2:1}
-function canManage(actor,target){return roleLevel(actor.role)>roleLevel(target.role)}
-function isAdmin(user){return !!user&&(user.role==='admin'||user.role==='creator')}
-async function requireAdmin(req){const user=await currentUser(req);return isAdmin(user)?user:null}
+
+
+
+
+
 async function adminSetAccountStatus(adminId,userId,action){
  const admin=await getUserById(adminId),u=(await pool.query('SELECT id,role,account_status,blocked_until FROM users WHERE id=$1',[userId])).rows[0];
  if(!u)return{error:'Utilisateur introuvable.',status:404};
@@ -375,9 +375,9 @@ async function adminAuctions(){
  ORDER BY COALESCE(a.completed_at,a.ends_at) DESC LIMIT 100`);
  return r.rows;
 }
-async function currentUser(req){const token=cookies(req).fv_session;if(!token)return null;if(pool){const r=await pool.query("SELECT u.* FROM users u JOIN sessions s ON s.user_id=u.id WHERE s.token=$1 AND s.expires_at>now() AND (u.account_status='active' OR (u.account_status='blocked' AND u.blocked_until<=now()))",[token]);return r.rows[0]||null;}const s=memory.sessions.get(token);if(!s||s.expiresAt<=Date.now()){memory.sessions.delete(token);return null;}const u=memory.users.get(s.userId);return u&&u.accountStatus!=='banned'&&!(u.accountStatus==='blocked'&&u.blockedUntil>Date.now())?u:null;}
-async function createSession(userId){const token=crypto.randomBytes(32).toString('hex'),expires=expiryDate();if(pool){await pool.query('DELETE FROM sessions WHERE expires_at<=now()');await pool.query('INSERT INTO sessions(token,user_id,expires_at) VALUES($1,$2,$3)',[token,userId,expires]);}else memory.sessions.set(token,{userId,expiresAt:expires.getTime()});return token;}
-async function destroySession(req,res){const token=cookies(req).fv_session;if(token){if(pool)await pool.query('DELETE FROM sessions WHERE token=$1',[token]);else memory.sessions.delete(token);}res.setHeader('Set-Cookie','fv_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');}
+
+
+
 async function createCardInstance(instance,client=null){const db=client||pool;if(db){await db.query(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,is_limited,serial,max_supply,acquired_at,source,status) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)`,[instance.instanceId,instance.cardId,instance.ownerId,instance.season,instance.name,instance.position,instance.club,instance.nation,instance.rarity,Number(instance.ovr||72),Number(instance.pace||72),Number(instance.shooting||72),Number(instance.passing||72),Number(instance.dribbling||72),Number(instance.defending||72),Number(instance.physical||72),Boolean(instance.isLimited),instance.serial,instance.maxSupply,instance.acquiredAt,instance.source,instance.status]);}else memory.cards.set(instance.instanceId,instance);}
 async function getUserCards(ownerId,client=null){if(pool){const r=await (client||pool).query("SELECT * FROM card_instances WHERE owner_id=$1 AND status='owned' ORDER BY acquired_at DESC",[ownerId]);return r.rows.map(publicCard);}return[...memory.cards.values()].filter(c=>c.ownerId===ownerId&&c.status==='owned').sort((a,b)=>new Date(b.acquiredAt)-new Date(a.acquiredAt)).map(publicCard);}
 function welcomeRarity(){const roll=Math.random()*100;return roll<5?'epic':roll<25?'rare':'common'}
@@ -398,12 +398,12 @@ async function grantWelcomeCards(userId,client=null){
  }
  return created;
 }
-async function registrationAllowed(ip,client){if(client){await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',[ip]);const r=await client.query('SELECT last_created_at FROM registration_limits WHERE ip=$1',[ip]);return !r.rowCount||Date.now()-new Date(r.rows[0].last_created_at).getTime()>=72*3600_000}const last=memory.reg?.get(ip);return !last||Date.now()-last>=72*3600_000}
-async function markRegistration(ip,client){if(client)await client.query('INSERT INTO registration_limits(ip,last_created_at) VALUES($1,now()) ON CONFLICT(ip) DO UPDATE SET last_created_at=excluded.last_created_at',[ip]);else memory.reg.set(ip,Date.now())}
+
+
 const { clientIp, ipDiagnostics } = require('./lib/client-ip');
-async function loginStatus(ip,email){if(pool){const r=await pool.query('SELECT failed_attempts,blocked_until FROM login_limits WHERE ip=$1 AND email=$2',[ip,email]);if(!r.rowCount)return{blocked:false,attempts:0};const x=r.rows[0];return{blocked:x.blocked_until&&new Date(x.blocked_until)>new Date(),attempts:Number(x.failed_attempts)}}const x=memory.login?.get(ip+':'+email);return x?{blocked:x.blockedUntil>Date.now(),attempts:x.attempts}:{blocked:false,attempts:0}}
-async function loginFailure(ip,email){if(pool){await pool.query("INSERT INTO login_limits(ip,email,failed_attempts,blocked_until,updated_at) VALUES($1,$2,1,NULL,now()) ON CONFLICT(ip,email) DO UPDATE SET failed_attempts=login_limits.failed_attempts+1,blocked_until=CASE WHEN login_limits.failed_attempts+1>=5 THEN now()+interval '15 minutes' ELSE login_limits.blocked_until END,updated_at=now()",[ip,email]);return}const key=ip+':'+email,x=memory.login?.get(key)||{attempts:0,blockedUntil:0};x.attempts++;if(x.attempts>=5)x.blockedUntil=Date.now()+15*60_000;memory.login.set(key,x)}
-async function loginSuccess(ip,email){if(pool)await pool.query('DELETE FROM login_limits WHERE ip=$1 AND email=$2',[ip,email]);else memory.login?.delete(ip+':'+email)}
+
+
+
 async function applyReward(userId,reward,client=null){const db=client||pool;if(db){const r=await db.query('UPDATE users SET coins=coins+$1,xp=xp+$2 WHERE id=$3 RETURNING *',[reward.coins||0,reward.xp||0,userId]);return r.rows[0]||null;}const user=memory.users.get(userId);if(!user)return null;user.coins+=reward.coins||0;user.xp+=reward.xp||0;return user;}
 async function claimExists(userId,claimId){if(pool){const r=await pool.query('SELECT 1 FROM reward_claims WHERE user_id=$1 AND claim_id=$2',[userId,claimId]);return r.rowCount>0;}return memory.claims.has(`${userId}:${claimId}`);}
 async function addClaim(userId,claimId,client=null){const db=client||pool;if(db){await db.query('INSERT INTO reward_claims(user_id,claim_id) VALUES($1,$2) ON CONFLICT DO NOTHING',[userId,claimId]);}else memory.claims.set(`${userId}:${claimId}`,true);}
@@ -473,7 +473,7 @@ async function claimTask(userId,kind,taskId){
   const user=await applyReward(userId,task.reward);
   return{task,reward:task.reward,user:safeUser(user),period:activity.key};
 }
-async function claimDaily(userId){const reward={coins:150,xp:10};if(pool){const client=await pool.connect();try{await client.query('BEGIN');const r=await client.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[userId]);const user=r.rows[0];if(!user){await client.query('ROLLBACK');return{error:'Utilisateur introuvable.',status:404};}if(user.daily_claimed_at&&parisDayKey(user.daily_claimed_at)===parisDayKey(new Date())){await client.query('ROLLBACK');return{error:'Récompense quotidienne déjà récupérée.',status:400,user:safeUser(user)};}const updated=await applyReward(userId,reward,client);await client.query('UPDATE users SET daily_claimed_at=now() WHERE id=$1',[userId]);await securityEvent(userId,null,'daily_reward_claim',{coins:reward.coins,xp:reward.xp},client);await client.query('COMMIT');return{reward,user:safeUser(updated)};}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}}const user=memory.users.get(userId);if(!user)return{error:'Utilisateur introuvable.',status:404};if(user.dailyClaimedAt&&utcDayKey(user.dailyClaimedAt)===utcDayKey(new Date()))return{error:'Récompense quotidienne déjà récupérée.',status:400,user:safeUser(user)};user.coins+=reward.coins;user.xp+=reward.xp;user.dailyClaimedAt=new Date().toISOString();return{reward,user:safeUser(user)};}
+async function claimDaily(userId){const reward={coins:150,xp:10};if(pool){const client=await pool.connect();try{await client.query('BEGIN');const r=await client.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[userId]);const user=r.rows[0];if(!user){await client.query('ROLLBACK');return{error:'Utilisateur introuvable.',status:404};}if(user.daily_claimed_at&&parisDayKey(user.daily_claimed_at)===parisDayKey(new Date())){await client.query('ROLLBACK');return{error:'Récompense quotidienne déjà récupérée.',status:400,user:safeUser(user)};}const updated=await applyReward(userId,reward,client);await client.query('UPDATE users SET daily_claimed_at=now() WHERE id=$1',[userId]);await securityEvent(userId,null,'daily_reward_claim',{coins:reward.coins,xp:reward.xp},client);await client.query('COMMIT');return{reward,user:safeUser(updated)};}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}}const user=memory.users.get(userId);if(!user)return{error:'Utilisateur introuvable.',status:404};if(user.dailyClaimedAt&&parisDayKey(user.dailyClaimedAt)===parisDayKey(new Date()))return{error:'Récompense quotidienne déjà récupérée.',status:400,user:safeUser(user)};user.coins+=reward.coins;user.xp+=reward.xp;user.dailyClaimedAt=new Date().toISOString();return{reward,user:safeUser(user)};}
 async function claimMission(userId,missionId){
   const mission=MISSIONS.find(m=>m.id===missionId);
   if(!mission)return{error:'Mission introuvable.',status:404};

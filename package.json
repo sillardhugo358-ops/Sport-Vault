@@ -5,12 +5,17 @@
   "type": "commonjs",
   "scripts": {
     "start": "node ligue1-launcher.js",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "check": "node scripts/check-identifiers.js server.js security-bootstrap.js ligue1-launcher.js scripts/*.js lib/*.js"
   },
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
     "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "acorn": "^8.15.0",
+    "acorn-walk": "^8.3.4"
   }
 }
