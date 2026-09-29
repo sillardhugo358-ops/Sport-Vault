@@ -42,16 +42,5 @@ Aucun code ne lit ces fichiers. L'historique se charge par la route protégée `
 
 ## Import du classeur des quatre championnats
 
-Le script `scripts/import-four-leagues.js` importe les feuilles `Cartes` du classeur FIFA pour les quatre championnats **Premier League, LaLiga, Serie A et Bundesliga**, de 2010/11 à 2026/27.
-
-Depuis la racine du dépôt, avec une base PostgreSQL de test ou après une sauvegarde récente de la base cible :
-
-```bash
-npm install
-DATABASE_URL="postgresql://..." npm run import:four-leagues -- "/chemin/cartes_FIFA_2010-11_a_2026-27.xlsx"
-```
-
-Le script crée/actualise les compétitions, saisons, liens de clubs et cartes de catalogue dans une transaction. Il est réexécutable : les identifiants des cartes sont stables et les cartes possédant une rareté verrouillée conservent cette rareté. Le barème de rareté officiel est recalculé à partir de la note générale. Les postes du classeur sont convertis vers les codes du site ; les numéros de maillot sont laissés vides car ils ne figurent pas dans ce fichier.
-
-**Important :** cet import est une opération de base de données explicite. Il n'est pas lancé au démarrage de Render. Vérifier les données sur une base de test avant de l'exécuter en production.
+Le classeur `cartes_FIFA_2010-11_a_2026-27.xlsx` est importé par `scripts/import-europe.js` depuis `europe-2010-2027.json.gz` (voir plus haut), automatiquement au démarrage. L'ancien script manuel `scripts/import-four-leagues.js` a été retiré le 30/09/2026 : ses identifiants (`fv-pl-…`) et sa compétition `laliga` auraient dupliqué les 43 781 cartes déjà importées.
 
