@@ -48,6 +48,7 @@ Chaque fichier crée une base jetable `fv_test_…`, démarre son propre serveur
 | `health.test.js` | `/api/health` : version déployée, démarrage, base joignable, aucune adresse exposée ; durée de session lue dans `SESSION_TTL_DAYS` (cookie et base), bornes |
 | `leaderboard.test.js` | Classement : barème par rareté, doublons ignorés, dons de l'admin et comptes bannis exclus, classement de la semaine, égalités, accès public sans identifiant ni e-mail |
 | `album-rewards.test.js` | Albums par championnat : complétion par saison et par championnat (clubs sans cartes ignorés), récompenses refusées si incomplet, versées une seule fois même en rafale, journalisées, visibles au profil |
+| `ligue1-history.test.js` | Saisons historiques de Ligue 1 : migration au démarrage (saisons créées, clubs existants réutilisés via les alias, clubs manquants créés, aucun doublon), idempotence, visibles dans l'album et tirables dans le Pack Ligue 1 |
 | `ledger.test.js` | Journal des FOOTCOINS : inscription, packs, bonus, ajustement admin, enchère réglée ; rien en cas de refus ; journal toujours égal au solde, même en rafale. Statistiques admin : droits, période bornée, chiffres recoupés avec la base |
 | `game-config.test.js` | Cohérence de la configuration du jeu : chaîne des missions, packs, tâches, succès |
 

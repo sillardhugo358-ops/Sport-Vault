@@ -31,7 +31,7 @@ test('interface : page d\'accueil et tout ce qu\'elle charge', async () => {
 
 test('refusé : code serveur, bibliothèques, données, configuration, dépôt git', async () => {
   const hidden = ['/server.js', '/security-bootstrap.js', '/ligue1-launcher.js', '/package.json', '/render.yaml', '/CLAUDE.md', '/README.md',
-    '/.gitignore', '/.git/config', '/lib/rewards.js', '/lib/stats.js', '/lib/ledger.js', '/lib/tasks.js', '/lib/notifications.js', '/lib/profile.js', '/lib/leaderboard.js', '/lib/routes/auth.js', '/data/README.md', '/data/europe-2010-2027.json.gz',
+    '/.gitignore', '/.git/config', '/lib/rewards.js', '/lib/stats.js', '/lib/ledger.js', '/lib/tasks.js', '/lib/notifications.js', '/lib/profile.js', '/lib/leaderboard.js', '/lib/ligue1-history.js', '/lib/club-key.js', '/lib/routes/auth.js', '/data/README.md', '/data/europe-2010-2027.json.gz',
     '/scripts/import-europe.js', '/test/helpers.js', '/docs/SAUVEGARDE.md', '/node_modules/pg/package.json', '/.github/workflows/check.yml'];
   for (const p of hidden) assert.equal(await rawGet(p), 404, p);
   for (const p of ['/..%2fserver.js', '/lib/../server.js', '/%2e%2e/etc/passwd', '/../../etc/passwd']) assert.equal(await rawGet(p), 404, p);
