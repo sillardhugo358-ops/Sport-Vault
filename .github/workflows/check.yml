@@ -28,3 +28,9 @@ jobs:
         run: npm test
         env:
           TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+      - name: Navigateur de test (Chromium)
+        run: npx playwright-core install --with-deps chromium
+      - name: Tests navigateur (ordinateur, tablette, mobile)
+        run: npm run test:browser
+        env:
+          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres

@@ -125,4 +125,6 @@ Rapport complet du 30/09/2026 : `docs/FOOTVAULT_Rapport_30_septembre_2026.pdf` (
 
 **Plan, étape 4 — expérience joueur (2/3) : profil.** Page `#profil` (`lib/profile.js`, `GET /api/profile`, lien depuis le Vault et le menu mobile) : identité, date d'inscription, niveau et XP, cartes, clubs, packs ouverts, FOOTCOINS ; raretés, 3 meilleures cartes, saisons ; parcours (succès, missions, tâches, albums, enchères) ; 30 derniers mouvements de FOOTCOINS avec libellés lisibles (journal tenu depuis le 30/09/2026).
 
+**Plan, étape 4 — expérience joueur (3/3) : passe mobile et tests navigateur.** Relevé automatique de toutes les pages à 320, 390, 761 à 1240 et 1280 px : mobile et ordinateur sans débordement ; l'en-tête débordait de 60 à 170 px entre 761 et 1240 px (tablettes) : logo seul et navigation défilante sur cette plage, lien actif gardé visible. Tests navigateur en CI (`test/browser/ui.test.js`, `npm run test:browser`, `playwright-core` en dépendance de développement) sur ordinateur, tablette et mobile. **Étape 4 terminée.**
+
 Suite du plan : étape 3 (tableau de bord, tâches éditables, pagination admin), étape 4 (mobile, profil, notifications), étape 5 (exploitation). Sauvegarde manuelle chaque semaine en attendant son automatisation.
