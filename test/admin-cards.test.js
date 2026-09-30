@@ -65,13 +65,17 @@ test('filtres combinés : recherche, rareté, poste ; caractères spéciaux sans
 test('exemplaires et détenteurs par carte ; résumé du catalogue', async () => {
   const before = (await admin.get('/api/admin/cards/summary')).body;
   const p = await newPlayer(server, 'Detenteur');
+  // Les cartes de bienvenue sont tirées au hasard dans le catalogue, cartes de test comprises :
+  // on part de l'état réel de pg-test-007 au lieu de supposer qu'aucun joueur ne l'a reçue.
+  const base = (await page(admin, { q: 'pg-test-007' })).body.cards[0];
+  const hadIt = (await server.db.query("SELECT 1 FROM card_instances WHERE card_id='pg-test-007' AND owner_id=$1", [p.user.id])).rowCount > 0;
   for (let i = 0; i < 2; i++) {
     const g = await admin.post('/api/admin/cards/grant', { userId: p.user.id, cardId: 'pg-test-007' });
     assert.equal(g.status, 200, 'don ' + (i + 1) + ' : ' + JSON.stringify(g.body));
   }
   const r = await page(admin, { q: 'pg-test-007' });
   assert.equal(r.status, 200, JSON.stringify(r.body));
-  assert.deepEqual([r.body.cards[0]?.totalInstances, r.body.cards[0]?.owners], [2, 1], JSON.stringify(r.body));
+  assert.deepEqual([r.body.cards[0]?.totalInstances, r.body.cards[0]?.owners], [base.totalInstances + 2, base.owners + (hadIt ? 0 : 1)], JSON.stringify(r.body));
   const sr = await admin.get('/api/admin/cards/summary');
   assert.equal(sr.status, 200, JSON.stringify(sr.body));
   const s = sr.body;
