@@ -44,6 +44,7 @@ Chaque fichier crée une base jetable `fv_test_…`, démarre son propre serveur
 | `tasks.test.js` | Tâches quotidiennes et hebdomadaires en base : reprise à l'identique, droits, identifiant généré, récupération par un joueur, modification en cours de période sans double récompense, validation, désactivation (dernière tâche active protégée), conservation au redémarrage |
 | `admin-cards.test.js` | Catalogue admin paginé : droits, pages de 50 cartes sans doublon ni oubli, page bornée, filtres combinés, recherche sans accents, caractères spéciaux, exemplaires et détenteurs, résumé, cartes désactivées exclues |
 | `notifications.test.js` | Notifications : surenchère (le joueur dépassé seulement), enchère remportée, vendue, invendue (une seule fois), récompenses disponibles, lecture partielle puis totale, cloisonnement entre joueurs |
+| `profile.test.js` | Profil joueur : accès connecté, identité et niveau, collection recoupée avec la base, historique lisible (bienvenue, pack, bonus, vente, achat) sans référence technique ni donnée privée, cloisonnement |
 | `ledger.test.js` | Journal des FOOTCOINS : inscription, packs, bonus, ajustement admin, enchère réglée ; rien en cas de refus ; journal toujours égal au solde, même en rafale. Statistiques admin : droits, période bornée, chiffres recoupés avec la base |
 | `game-config.test.js` | Cohérence de la configuration du jeu : chaîne des missions, packs, tâches, succès |
 
