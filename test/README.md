@@ -36,7 +36,7 @@ Chaque fichier crée une base jetable `fv_test_…`, démarre son propre serveur
 | `admin.test.js` | Console admin : accès refusé aux joueurs, lectures, ajout de FC et don de carte tracés, bannissement, modification d'un pack |
 | `routes.test.js` | Tour de toutes les routes de l'API : réponses attendues, accès refusés, import interne protégé, chemin inconnu |
 | `missions.test.js` | Missions en base (reprise à l'identique), éditeur admin : droits, identifiant généré sans doublon, modification, validation (boucle, prérequis inconnu, récompense nulle), désactivation, chaîne jamais bloquée |
-| `static.test.js` | Fichiers servis : l'interface et les polices (`fonts/*.woff2`) oui ; code serveur, `lib/`, `data/`, configuration et `.git/` jamais, même avec `..` dans le chemin |
+| `static.test.js` | Fichiers servis : l'interface et les polices (`fonts/*.woff2`) oui ; code serveur, `lib/`, `data/`, configuration et `.git/` jamais, même avec `..` dans le chemin ; compression gzip, ETag et 304, cache long des fichiers versionnés, page d'accueil revalidée |
 | `achievements.test.js` | Éditeur de succès : droits, identifiant généré sans écrasement, modification, nom en double, validation par champ, désactivation, suppression tracée, récompenses conservées |
 | `shop.test.js` | Pack sans carte éligible : message clair (409), rien débité ; éditeur refusant un pack ou un pool impossible à tirer ; composition des pools manuels respectée au tirage |
 | `nations.test.js` | Nationalités en français : correspondance, import européen, migration au redémarrage (catalogue et exemplaires), saisie admin normalisée |
