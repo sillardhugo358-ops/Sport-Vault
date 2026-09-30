@@ -6,7 +6,7 @@
 <meta name="description" content="FOOTVAULT — le TCG football où tu collectionnes, ouvres des packs et construis ton Vault.">
 <meta name="theme-color" content="#070808"><link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="fonts.css?v=20260930-fonts">
-<link rel="stylesheet" href="styles.css?v=20260929-rarity-scale">
+<link rel="stylesheet" href="styles.css?v=20260930-notifs">
 <link rel="stylesheet" href="cards-v4.css?v=20260930-v4">
 </head>
 <body>
@@ -17,13 +17,15 @@
     <a data-route="home" href="#home">Accueil</a><a data-route="collection" href="#collection">Collection</a><a data-route="album" href="#album">Album</a><a data-route="packs" href="#packs">Packs</a><a data-route="vault" href="#vault">Mon Vault</a><a data-route="successes" href="#successes">Succès</a><a data-route="market" href="#market">Market</a><a data-route="admin" href="#admin" id="adminNav" hidden>Admin</a>
   </nav>
   <div class="header-user" id="headerUser"></div>
+  <div class="header-bell" id="headerBell"></div>
   <button class="menu" id="menu" aria-label="Ouvrir le menu">☰</button>
 </header>
 <main id="app"></main>
 <footer class="footer"><span>FOOTVAULT / SPORT VAULT</span><span>COLLECT THE GAME. · SAISON 2026</span></footer>
 <div id="toast" class="toast" role="status"></div>
 <div id="modal" class="modal" aria-hidden="true"></div>
-<script src="app.js?v=20260930-tasks"></script>
+<script src="app.js?v=20260930-notifs"></script>
+<script src="notifications-bell.js?v=20260930-notifs"></script>
 <script src="admin-stats.js?v=20260930-stats"></script>
 <script src="achievement-admin-editor.js?v=20260930-achievements"></script>
 <script src="mission-admin-editor.js?v=20260930-missions"></script>
