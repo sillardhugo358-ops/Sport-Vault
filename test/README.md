@@ -38,6 +38,8 @@ Chaque fichier crée une base jetable `fv_test_…`, démarre son propre serveur
 | `missions.test.js` | Missions en base (reprise à l'identique), éditeur admin : droits, identifiant généré sans doublon, modification, validation (boucle, prérequis inconnu, récompense nulle), désactivation, chaîne jamais bloquée |
 | `static.test.js` | Fichiers servis : l'interface oui ; code serveur, `lib/`, `data/`, configuration et `.git/` jamais, même avec `..` dans le chemin |
 | `achievements.test.js` | Éditeur de succès : droits, identifiant généré sans écrasement, modification, nom en double, validation par champ, désactivation, suppression tracée, récompenses conservées |
+| `shop.test.js` | Pack sans carte éligible : message clair (409), rien débité ; éditeur refusant un pack ou un pool impossible à tirer ; composition des pools manuels respectée au tirage |
+| `nations.test.js` | Nationalités en français : correspondance, import européen, migration au redémarrage (catalogue et exemplaires), saisie admin normalisée |
 | `game-config.test.js` | Cohérence de la configuration du jeu : chaîne des missions, packs, tâches, succès |
 
 ## Fichiers techniques
