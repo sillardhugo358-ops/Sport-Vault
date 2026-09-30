@@ -13,7 +13,7 @@ Production : https://sport-vault.onrender.com
 - Catalogue : Ligue 1 (2010-2011 à 2026-2027), Premier League, LaLiga, Serie A et Bundesliga (2010-2011 à 2026-2027) — **50 719 cartes**, 5 raretés (Common, Rare, Epic, Legendary, Icon)
 - Collection personnelle et album par club, avec récompense d'album
 - Packs Starter, Pro et Legend, packs par compétition (Ligue 1, Premier League, La Liga, Serie A, Bundesliga) et par décennie (années 2010, années 2020) : tirages et garanties de rareté côté serveur ; pools de cartes
-- Missions déverrouillables (éditables dans la console admin), tâches quotidiennes et hebdomadaires (heure de Paris), bonus quotidien
+- Missions déverrouillables, tâches quotidiennes et hebdomadaires (heure de Paris), toutes éditables dans la console admin ; bonus quotidien
 - Succès et progression (XP, niveaux)
 - Market : enchères avec palier minimal de +10 % et prolongation d'une minute pour une enchère dans les 30 dernières secondes
 - Console d'administration : tableau de bord statistique (joueurs actifs, inscriptions, packs ouverts, flux de FOOTCOINS, marché, raretés tirées), utilisateurs, cartes, compétitions et clubs, packs, marché, journaux, succès
@@ -24,7 +24,7 @@ Production : https://sport-vault.onrender.com
 | Élément | Détail |
 |---|---|
 | Serveur | Node.js ≥ 18, module `http` natif, sans framework — `server.js` (démarrage, fichiers statiques), `lib/routes/` (routes de l'API par domaine), `lib/` (configuration du jeu, périodes, règles d'enchères, barème des raretés, IP client, schéma de la base, comptes et sessions, cartes et packs, récompenses et progression, enchères, administration, journal des FOOTCOINS, statistiques, réponses HTTP) |
-| Interface | SPA en JavaScript vanilla, navigation par hash — `index.html`, `app.js`, `styles.css`, tableau de bord admin (`admin-stats.js`), cartes v4 (`cards-v4.css`), polices hébergées par le site (`fonts.css`, `fonts/`) |
+| Interface | SPA en JavaScript vanilla, navigation par hash — `index.html`, `app.js`, `styles.css`, tableau de bord admin (`admin-stats.js`), éditeurs admin (`mission-admin-editor.js`, `task-admin-editor.js`, `achievement-admin-editor.js`), cartes v4 (`cards-v4.css`), polices hébergées par le site (`fonts.css`, `fonts/`) |
 | Base | PostgreSQL hébergé sur Aiven (voir [SAUVEGARDE.md](docs/SAUVEGARDE.md)). Tables, données de départ et migrations au démarrage : `lib/schema.js` (`initDb`) |
 | Démarrage | `ligue1-launcher.js` lance `server.js` puis synchronise le catalogue : Ligue 1 2026-2027 (`scripts/import-ligue1-2026-27.js`), puis les 4 championnats européens (`scripts/import-europe.js`, sauté si déjà à jour) |
 
@@ -52,7 +52,7 @@ Variables d'environnement utiles :
 
 ## Contrôles
 
-La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, signale tout identifiant non déclaré (`npm run check`), puis lance `npm test` : 115 tests sur une base PostgreSQL jetable (comptes, packs et pools, récompenses, enchères, périodes, import du catalogue, administration, sécurité). Mode d'emploi : [test/README.md](test/README.md).
+La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, signale tout identifiant non déclaré (`npm run check`), puis lance `npm test` : 121 tests sur une base PostgreSQL jetable (comptes, packs et pools, récompenses, enchères, périodes, import du catalogue, administration, sécurité). Mode d'emploi : [test/README.md](test/README.md).
 
 ## Documentation
 
