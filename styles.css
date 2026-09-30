@@ -2020,3 +2020,50 @@ hr{border-color:#1d3d63}
 .header-bell:empty{display:none}
 @media(max-width:760px){.header-bell{margin-left:auto;margin-right:8px}}
 @media(max-width:760px){.header-bell:not(:empty)+.menu{margin-left:0}}
+
+/* Profil joueur (#profil, app.js profile()). */
+.profile-page{display:grid;gap:18px}
+.profile-hero{display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:center;padding:24px;border:1px solid rgba(55,113,174,.32);border-radius:16px;background:linear-gradient(135deg,rgba(12,32,62,.9),rgba(6,14,28,.9))}
+.profile-avatar{width:88px;height:88px;border-radius:22px;display:grid;place-items:center;background:linear-gradient(135deg,var(--gold2),var(--gold));color:#111;font:900 34px var(--head)}
+.profile-id h1{margin:4px 0 2px;font:900 clamp(30px,5vw,48px)/1 var(--head);text-transform:uppercase;overflow-wrap:anywhere}
+.profile-id>span{color:var(--muted);font-size:13px}
+.profile-level{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
+.profile-level .progress{width:min(320px,100%);flex:0 1 320px}
+.profile-level b{color:var(--gold2);font:800 14px var(--head);letter-spacing:.6px}
+.profile-level small{color:var(--muted);font-size:12px}
+.profile-actions{display:flex;flex-direction:column;gap:8px}
+.profile-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.profile-kpi{padding:14px 16px;border:1px solid rgba(55,113,174,.32);border-radius:12px;background:rgba(6,20,40,.68)}
+.profile-kpi span{display:block;color:#83a4c7;font-size:10px;letter-spacing:.8px;font-weight:800}
+.profile-kpi strong{display:block;margin-top:6px;color:#f4d56d;font:850 26px var(--head)}
+.profile-kpi small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.profile-panel{padding:16px 18px;border:1px solid rgba(55,113,174,.32);border-radius:14px;background:rgba(6,20,40,.68);min-width:0}
+.profile-panel h2{margin:2px 0 12px;font:850 22px var(--head)}
+.profile-panel h3{margin:18px 0 8px;font:800 13px var(--head);letter-spacing:.8px;color:#83a4c7}
+.profile-history{grid-column:1/-1}
+.profile-bars{display:grid;gap:8px}
+.profile-bar{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font-size:13px}
+.profile-track{grid-column:1/-1;height:6px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden}
+.profile-track i{display:block;height:100%;border-radius:99px}
+.profile-page .r-common{background:#9a9d97}.profile-page .r-rare{background:#6fa8d6}.profile-page .r-epic{background:#b98fe0}.profile-page .r-legendary{background:#f0cf7c}.profile-page .r-icon{background:linear-gradient(90deg,#7fe0ff,#f3a6ff,#ffe38a)}
+.profile-list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.profile-list li,.profile-list li>a{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.profile-list li{padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.03)}
+.profile-list li>a{flex:1;color:inherit;text-decoration:none;min-width:0}
+.profile-list strong{display:block;font-size:13px;overflow-wrap:anywhere}
+.profile-list li{font-size:13px}
+.profile-list li>span,.profile-list li>b{font-size:13px}
+.profile-li-main{min-width:0;display:block;text-align:left}
+.profile-li-main small,.profile-list time{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.profile-list b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.profile-list b.pos{color:var(--green)}.profile-list b.neg{color:var(--danger)}
+.profile-ovr{min-width:38px;text-align:center;padding:4px 6px;border-radius:8px;color:#111}
+.profile-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.profile-stats div{padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.03);display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.profile-stats b{color:var(--gold2)}
+.profile-more{margin-top:12px}
+.profile-note,.profile-empty{color:var(--muted);font-size:12px;margin:10px 0 0}
+.vault-profile-link{align-self:center;white-space:nowrap}
+@media(max-width:900px){.profile-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.profile-grid{grid-template-columns:1fr}.profile-hero{grid-template-columns:auto 1fr}.profile-actions{grid-column:1/-1;flex-direction:row;flex-wrap:wrap}}
+@media(max-width:520px){.profile-hero{grid-template-columns:1fr;padding:18px}.profile-avatar{width:64px;height:64px;font-size:26px;border-radius:16px}.profile-stats{grid-template-columns:1fr}.profile-kpi strong{font-size:22px}}

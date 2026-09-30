@@ -123,4 +123,6 @@ Rapport complet du 30/09/2026 : `docs/FOOTVAULT_Rapport_30_septembre_2026.pdf` (
 
 **Plan, étape 4 — expérience joueur (1/3) : notifications.** Table `notifications` (`lib/notifications.js`), écrite dans la même transaction que l'événement : surenchère (joueur dépassé), enchère remportée, carte vendue, enchère terminée sans offre. Cloche dans l'en-tête, ordinateur et mobile (`notifications-bell.js`) : compteur, liste des 30 dernières (60 jours), « tout marquer lu », nombre de récompenses à récupérer (bonus, tâches, missions) calculé à la lecture ; actualisée toutes les 60 s quand l'onglet est visible.
 
+**Plan, étape 4 — expérience joueur (2/3) : profil.** Page `#profil` (`lib/profile.js`, `GET /api/profile`, lien depuis le Vault et le menu mobile) : identité, date d'inscription, niveau et XP, cartes, clubs, packs ouverts, FOOTCOINS ; raretés, 3 meilleures cartes, saisons ; parcours (succès, missions, tâches, albums, enchères) ; 30 derniers mouvements de FOOTCOINS avec libellés lisibles (journal tenu depuis le 30/09/2026).
+
 Suite du plan : étape 3 (tableau de bord, tâches éditables, pagination admin), étape 4 (mobile, profil, notifications), étape 5 (exploitation). Sauvegarde manuelle chaque semaine en attendant son automatisation.
