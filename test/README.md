@@ -42,6 +42,7 @@ Chaque fichier crée une base jetable `fv_test_…`, démarre son propre serveur
 | `nations.test.js` | Nationalités en français : correspondance, import européen, migration au redémarrage (catalogue et exemplaires), saisie admin normalisée |
 | `competitions.test.js` | Compétitions, saisons et clubs : droits du Créateur, création, doublons, modification persistée, logo, rattachement aux saisons, renommage répercuté sur les cartes, suppressions tracées |
 | `tasks.test.js` | Tâches quotidiennes et hebdomadaires en base : reprise à l'identique, droits, identifiant généré, récupération par un joueur, modification en cours de période sans double récompense, validation, désactivation (dernière tâche active protégée), conservation au redémarrage |
+| `admin-cards.test.js` | Catalogue admin paginé : droits, pages de 50 cartes sans doublon ni oubli, page bornée, filtres combinés, recherche sans accents, caractères spéciaux, exemplaires et détenteurs, résumé, cartes désactivées exclues |
 | `ledger.test.js` | Journal des FOOTCOINS : inscription, packs, bonus, ajustement admin, enchère réglée ; rien en cas de refus ; journal toujours égal au solde, même en rafale. Statistiques admin : droits, période bornée, chiffres recoupés avec la base |
 | `game-config.test.js` | Cohérence de la configuration du jeu : chaîne des missions, packs, tâches, succès |
 

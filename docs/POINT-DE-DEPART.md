@@ -119,4 +119,6 @@ Rapport complet du 30/09/2026 : `docs/FOOTVAULT_Rapport_30_septembre_2026.pdf` (
 
 **Plan, étape 3 — pilotage (2/3).** Tâches quotidiennes et hebdomadaires en base (table `period_tasks`, migration `period-tasks-2026-09-30` qui reprend les 8 tâches avec leurs identifiants) et éditeur admin (`lib/tasks.js`, `task-admin-editor.js`, onglet « Succès & missions ») : création, modification, activation, aperçu joueur, nombre de récupérations. L'identifiant ne change jamais : une tâche modifiée en cours de période ne peut pas être récupérée deux fois.
 
+**Plan, étape 3 — pilotage (3/3).** Catalogue admin paginé côté serveur (`/api/admin/cards/page`, 50 cartes par page, filtres et recherche sans accents en SQL) et résumé (`/api/admin/cards/summary` : chiffres et listes des filtres). L'ouverture de la console ne télécharge plus les 50 719 cartes (environ 30 Ko au lieu du catalogue complet) ; le catalogue complet n'est chargé qu'à l'ouverture de l'éditeur de pools, qui affiche au plus 200 cartes à la fois.
+
 Suite du plan : étape 3 (tableau de bord, tâches éditables, pagination admin), étape 4 (mobile, profil, notifications), étape 5 (exploitation). Sauvegarde manuelle chaque semaine en attendant son automatisation.
