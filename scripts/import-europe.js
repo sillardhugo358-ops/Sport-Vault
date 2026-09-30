@@ -15,6 +15,7 @@ const path = require('node:path');
 const zlib = require('node:zlib');
 const crypto = require('node:crypto');
 const { rarityFromOvr } = require('../lib/rarity');
+const { frenchNation } = require('../lib/nations');
 
 const DATA_FILE = path.join(__dirname, '..', 'data', 'europe-2010-2027.json.gz');
 const IMPORT_ID = 'europe-2010-2027';
@@ -45,7 +46,7 @@ function loadCards(buffer = fs.readFileSync(DATA_FILE)) {
     if (!name || !clubName || !COMPETITIONS[competitionId] || stats.some(v => !Number.isInteger(v) || v < 1 || v > 99)) throw new Error('Ligne invalide n°' + (i + 1));
     return {
       id: 'fv-e-' + crypto.createHash('sha1').update(key).digest('hex').slice(0, 16),
-      competitionId, season, club: clubName, name, nation: doc.nations[nation] || '', position,
+      competitionId, season, club: clubName, name, nation: frenchNation(doc.nations[nation]), position,
       rarity: rarityFromOvr(stats[0]), ovr: stats[0], pace: stats[1], shooting: stats[2], passing: stats[3],
       dribbling: stats[4], defending: stats[5], physical: stats[6],
       // Ordre : saison, puis ordre du classeur (club, poste).

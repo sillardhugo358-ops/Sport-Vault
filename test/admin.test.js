@@ -56,7 +56,9 @@ test('admin : bannissement coupe la session ; on ne se bannit pas soi-même', as
 
 test('admin : modification d\'un pack enregistrée (conditions comprises)', async () => {
   const conditions = { competitions: ['ligue-1'], decades: [], rarities: [], standardOnly: true };
-  const r = await creator.post('/api/admin/packs', { action: 'pack_update', id: 'pack-ligue-1', name: 'PACK LIGUE 1', price: 350, cards: 6, badge: 'FRANCE', description: 'test', guarantee: 'rare', guaranteeCount: 1, conditions, active: true });
+  // Inactif : dans la base de test, aucune carte n'est rattachée aux saisons de la Ligue 1
+  // (un pack actif sans carte éligible est refusé, voir test/shop.test.js).
+  const r = await creator.post('/api/admin/packs', { action: 'pack_update', id: 'pack-ligue-1', name: 'PACK LIGUE 1', price: 350, cards: 6, badge: 'FRANCE', description: 'test', guarantee: 'rare', guaranteeCount: 1, conditions, active: false });
   assert.equal(r.status, 200, JSON.stringify(r.body));
   const row = (await server.db.query("SELECT price,conditions FROM pack_definitions WHERE id='pack-ligue-1'")).rows[0];
   assert.equal(Number(row.price), 350);

@@ -109,4 +109,8 @@ Hors phase, le 30/09/2026 : catalogue étendu à Premier League, La Liga, Serie 
 
 Étape 2 : éditeur de succès refait sur le modèle des missions (`lib/achievements.js`, `achievement-admin-editor.js`) : identifiant créé par le serveur (plus d'écrasement possible), erreurs par champ, aperçu joueur, filtres (statut, catégorie, condition), activation, suppression confirmée et tracée ; ancien `success-admin-editor.js` retiré.
 
-Prochaine étape : **phase 4, étape 3 — tâches quotidiennes et hebdomadaires éditables** (ou passage à la phase 5 selon priorité). Sauvegarde manuelle chaque semaine en attendant son automatisation.
+Rapport complet du 30/09/2026 : `docs/FOOTVAULT_Rapport_30_septembre_2026.pdf` (état de départ, travaux, reste à faire, plan en 5 étapes, propositions).
+
+**Plan, étape 1 — fiabilité de la boutique (P0).** Pack ou pool sans carte éligible : message clair (409), transaction annulée, rien débité ; l'éditeur refuse un pack ou un pool actif impossible à tirer. Pools manuels : tirage uniforme parmi les cartes sélectionnées, la composition (spéciales / rares / communes) est donc respectée. Nationalités en français partout (`lib/nations.js`, migration `nations-fr-2026-09-30` sur le catalogue et les exemplaires, import et saisie admin normalisés).
+
+Suite du plan : étape 2 (cartes v4, polices et logos servis par le site), étape 3 (tableau de bord, tâches éditables, pagination admin), étape 4 (mobile, profil, notifications), étape 5 (exploitation). Sauvegarde manuelle chaque semaine en attendant son automatisation.

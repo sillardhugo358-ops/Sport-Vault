@@ -51,7 +51,7 @@ Variables d'environnement utiles :
 
 ## Contrôles
 
-La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, signale tout identifiant non déclaré (`npm run check`), puis lance `npm test` : 98 tests sur une base PostgreSQL jetable (comptes, packs, récompenses, enchères, périodes, import du catalogue). Mode d'emploi : [test/README.md](test/README.md).
+La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, signale tout identifiant non déclaré (`npm run check`), puis lance `npm test` : 105 tests sur une base PostgreSQL jetable (comptes, packs et pools, récompenses, enchères, périodes, import du catalogue, administration, sécurité). Mode d'emploi : [test/README.md](test/README.md).
 
 ## Documentation
 
