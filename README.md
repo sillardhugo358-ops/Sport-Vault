@@ -17,6 +17,7 @@ Production : https://sport-vault.onrender.com
 - Succès et progression (XP, niveaux)
 - Market : enchères avec palier minimal de +10 % et prolongation d'une minute pour une enchère dans les 30 dernières secondes
 - Console d'administration : tableau de bord statistique (joueurs actifs, inscriptions, packs ouverts, flux de FOOTCOINS, marché, raretés tirées), utilisateurs, cartes, compétitions et clubs, packs, marché, journaux, succès
+- Classement des collectionneurs (#classement) : score des cartes différentes pondéré par rareté (Common 1, Rare 3, Epic 8, Legendary 20, Icon 50), général et de la semaine
 - Profil joueur (#profil) : identité, niveau, collection (raretés, meilleures cartes, saisons), parcours (succès, missions, tâches, enchères), historique des FOOTCOINS
 - Notifications (cloche de l'en-tête) : surenchère, enchère remportée, carte vendue ou invendue, récompenses à récupérer
 - Journal des FOOTCOINS : chaque gain ou dépense est enregistré (`coin_ledger`) dans la même transaction que le mouvement
@@ -55,7 +56,7 @@ Variables d'environnement utiles :
 
 ## Contrôles
 
-La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, signale tout identifiant non déclaré (`npm run check`), puis lance `npm test` : 139 tests sur une base PostgreSQL jetable (comptes, packs et pools, récompenses, enchères, périodes, import du catalogue, administration, sécurité). Elle lance ensuite `npm run test:browser` : tests navigateur (Chromium via `playwright-core`) sur ordinateur, tablette et mobile — chaque page sans erreur JavaScript ni débordement horizontal, menu mobile, cloche, pages privées. Mode d'emploi : [test/README.md](test/README.md).
+La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, signale tout identifiant non déclaré (`npm run check`), puis lance `npm test` : 143 tests sur une base PostgreSQL jetable (comptes, packs et pools, récompenses, enchères, périodes, import du catalogue, administration, sécurité). Elle lance ensuite `npm run test:browser` : tests navigateur (Chromium via `playwright-core`) sur ordinateur, tablette et mobile — chaque page sans erreur JavaScript ni débordement horizontal, menu mobile, cloche, pages privées. Mode d'emploi : [test/README.md](test/README.md).
 
 ## Documentation
 

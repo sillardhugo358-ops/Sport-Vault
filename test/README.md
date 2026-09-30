@@ -46,6 +46,7 @@ Chaque fichier crée une base jetable `fv_test_…`, démarre son propre serveur
 | `notifications.test.js` | Notifications : surenchère (le joueur dépassé seulement), enchère remportée, vendue, invendue (une seule fois), récompenses disponibles, lecture partielle puis totale, cloisonnement entre joueurs |
 | `profile.test.js` | Profil joueur : accès connecté, identité et niveau, collection recoupée avec la base, historique lisible (bienvenue, pack, bonus, vente, achat) sans référence technique ni donnée privée, cloisonnement |
 | `health.test.js` | `/api/health` : version déployée, démarrage, base joignable, aucune adresse exposée ; durée de session lue dans `SESSION_TTL_DAYS` (cookie et base), bornes |
+| `leaderboard.test.js` | Classement : barème par rareté, doublons ignorés, dons de l'admin et comptes bannis exclus, classement de la semaine, égalités, accès public sans identifiant ni e-mail |
 | `ledger.test.js` | Journal des FOOTCOINS : inscription, packs, bonus, ajustement admin, enchère réglée ; rien en cas de refus ; journal toujours égal au solde, même en rafale. Statistiques admin : droits, période bornée, chiffres recoupés avec la base |
 | `game-config.test.js` | Cohérence de la configuration du jeu : chaîne des missions, packs, tâches, succès |
 
@@ -55,7 +56,7 @@ Chaque fichier crée une base jetable `fv_test_…`, démarre son propre serveur
 TEST_DATABASE_URL=postgresql://postgres:motdepasse@localhost:5432/postgres npm run test:browser
 ```
 
-`test/browser/ui.test.js` ouvre le site dans Chromium (`playwright-core`) à 1280, 900 et 390 px de large : les 9 pages (accueil, collection, album, packs, Vault, profil, succès, market, admin) s'affichent sans erreur JavaScript ni débordement horizontal ; le menu mobile, la cloche de notifications et le renvoi vers la connexion des pages privées sont vérifiés. Chromium : variable `CHROMIUM_PATH`, sinon `npx playwright-core install chromium` (fait par la CI).
+`test/browser/ui.test.js` ouvre le site dans Chromium (`playwright-core`) à 1280, 900 et 390 px de large : les 10 pages (accueil, collection, album, packs, Vault, profil, succès, market, classement, admin) s'affichent sans erreur JavaScript ni débordement horizontal ; le menu mobile, la cloche de notifications et le renvoi vers la connexion des pages privées sont vérifiés. Chromium : variable `CHROMIUM_PATH`, sinon `npx playwright-core install chromium` (fait par la CI).
 
 ## Fichiers techniques
 

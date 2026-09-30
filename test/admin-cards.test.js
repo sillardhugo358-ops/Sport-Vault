@@ -65,10 +65,16 @@ test('filtres combinés : recherche, rareté, poste ; caractères spéciaux sans
 test('exemplaires et détenteurs par carte ; résumé du catalogue', async () => {
   const before = (await admin.get('/api/admin/cards/summary')).body;
   const p = await newPlayer(server, 'Detenteur');
-  for (let i = 0; i < 2; i++) assert.equal((await admin.post('/api/admin/cards/grant', { userId: p.user.id, cardId: 'pg-test-007' })).status, 200);
+  for (let i = 0; i < 2; i++) {
+    const g = await admin.post('/api/admin/cards/grant', { userId: p.user.id, cardId: 'pg-test-007' });
+    assert.equal(g.status, 200, 'don ' + (i + 1) + ' : ' + JSON.stringify(g.body));
+  }
   const r = await page(admin, { q: 'pg-test-007' });
-  assert.deepEqual([r.body.cards[0].totalInstances, r.body.cards[0].owners], [2, 1]);
-  const s = (await admin.get('/api/admin/cards/summary')).body;
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  assert.deepEqual([r.body.cards[0]?.totalInstances, r.body.cards[0]?.owners], [2, 1], JSON.stringify(r.body));
+  const sr = await admin.get('/api/admin/cards/summary');
+  assert.equal(sr.status, 200, JSON.stringify(sr.body));
+  const s = sr.body;
   assert.equal(s.cards, (await server.db.query('SELECT count(*)::int AS n FROM catalog_cards WHERE is_active')).rows[0].n);
   assert.ok(s.instances > before.instances);
   assert.ok(s.clubs.some(c => c.name === 'FC Pagination' && c.cards === 120));
