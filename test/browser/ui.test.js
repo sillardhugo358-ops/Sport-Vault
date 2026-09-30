@@ -118,3 +118,26 @@ test('déconnecté : les pages privées renvoient vers la connexion', async () =
   assert.deepEqual(errs, []);
   await anon.close();
 });
+
+test('marché : prix de marché sur la fiche carte, ventes récentes et alertes de prix', async () => {
+  const card = (await server.db.query('SELECT id,name FROM catalog_cards ORDER BY id LIMIT 1')).rows[0];
+  for (const vp of [VIEWPORTS[0], VIEWPORTS[2]]) {
+    await page.setViewportSize({ width: vp.width, height: vp.height });
+    await visit('card?id=' + encodeURIComponent(card.id));
+    await page.waitForSelector('#cardMarketPanel .card-market-figures');
+    assert.match(await page.textContent('#cardMarketPanel'), /pas encore de vente/);
+    assert.deepEqual(errors, [], vp.name + ' : erreur JavaScript');
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth) <= 1, vp.name + ' : débordement');
+  }
+  await page.click('#cardMarketPanel [data-market-alert-edit]');
+  await page.fill('#auctionDialogValue', '321');
+  await page.click('#auctionDialogConfirm');
+  await page.waitForFunction(() => /321 FC/.test(document.querySelector('#cardMarketPanel')?.innerText || ''));
+  await visit('market');
+  await page.click('[data-auction-tab="alerts"]');
+  await page.waitForSelector('#auctionAlerts [data-alert-delete]');
+  assert.match(await page.textContent('#auctionAlerts'), new RegExp(card.name.split(' ')[0]));
+  await page.click('[data-auction-tab="sales"]');
+  await page.waitForFunction(() => !/Chargement/.test(document.querySelector('#auctionSales').innerText));
+  assert.deepEqual(errors, []);
+});

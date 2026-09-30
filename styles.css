@@ -2140,3 +2140,40 @@ hr{border-color:#1d3d63}
 .challenge-admin-block{margin-top:22px}
 .task-admin-table td small{display:block;opacity:.7;margin-top:2px}
 .mission-editor-form [hidden]{display:none}
+/* Marché plus lisible (market-insights.js) : référence, ventes récentes, alertes de prix. */
+.auction-reference.is-below strong{color:#8fd19e}.auction-reference.is-none strong{color:var(--muted)}
+.auction-alert-link{margin-top:8px;font-size:8px;letter-spacing:1px}
+.auction-card.is-focused{outline:2px solid var(--gold2);outline-offset:3px}
+.card-market-panel{margin-top:12px}
+.card-market-loading,.card-market-empty{margin:10px 0 0;font-size:11px;color:var(--muted)}
+.card-market-figures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
+.card-market-figures div{border:1px solid var(--line);padding:10px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.card-market-figures span,.card-market-sub{font-size:8px;letter-spacing:1.5px;color:var(--muted)}
+.card-market-figures strong{font:900 20px var(--head);color:var(--gold2);overflow-wrap:anywhere}
+.card-market-figures small{font-size:9px;color:var(--muted)}
+.card-market-figures a{color:var(--gold2)}
+.card-market-sub{margin:14px 0 6px}
+.card-market-sales{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.card-market-sales li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:11px}
+.card-market-sales li span{color:var(--muted)}
+.card-market-alert{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;font-size:11px}
+.card-market-alert div{display:flex;gap:8px}
+.card-market-panel>.btn{margin-top:14px;width:100%}
+.market-insights{display:block}
+.market-insights-note{font-size:11px;color:var(--muted);margin:0 0 12px}
+.market-table{display:grid;border:1px solid var(--line)}
+.market-row{display:grid;grid-template-columns:minmax(0,2.2fr) 1fr 1fr 1.2fr;gap:12px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);font-size:12px}
+.market-row:last-child{border-bottom:0}
+.market-row span{min-width:0;display:flex;flex-direction:column;gap:2px}
+.market-row a{color:inherit;text-decoration:none}.market-row a:hover strong{color:var(--gold2)}
+.market-row small{font-size:9px;color:var(--muted)}
+.market-row small.is-above{color:#e4a0a0}.market-row small.is-below{color:#8fd19e}
+.market-head{font-size:8px;letter-spacing:1.5px;color:var(--muted);background:rgba(255,255,255,.02)}
+.market-row-actions{flex-direction:row!important;gap:10px!important;justify-content:flex-end}
+@media (max-width:640px){
+ .card-market-figures{grid-template-columns:1fr}
+ .market-head{display:none}
+ .market-row{grid-template-columns:1fr 1fr;gap:6px 12px}
+ .market-row span:first-child{grid-column:1/-1}
+ .market-row-actions{justify-content:flex-start}
+}
