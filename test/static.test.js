@@ -50,3 +50,27 @@ test("polices : fonts/*.woff2 servies (cache long), rien d'autre dans fonts/", a
   assert.ok(files.length >= 26);
   for (const f of new Set(files)) assert.equal((await fetch(server.base + '/fonts/' + f)).status, 200, f);
 });
+
+test('cache et compression : gzip, ETag et 304, cache long des fichiers versionnés', async () => {
+  const raw = await fetch(server.base + '/app.js', { headers: { 'accept-encoding': 'identity' } });
+  const size = Number(raw.headers.get('content-length'));
+  assert.ok(size > 100000, 'app.js brut');
+  // http.get : fetch décompresse et masque la taille réellement transférée.
+  const gz = await new Promise((resolve, reject) => {
+    const u = new URL(server.base);
+    http.get({ host: u.hostname, port: u.port, path: '/app.js?v=test', headers: { 'accept-encoding': 'gzip' } }, res => {
+      let n = 0; res.on('data', d => { n += d.length; }); res.on('end', () => resolve({ headers: res.headers, n }));
+    }).on('error', reject);
+  });
+  assert.equal(gz.headers['content-encoding'], 'gzip');
+  assert.ok(gz.n < size / 3, `gzip ${gz.n} octets pour ${size}`);
+  assert.match(gz.headers['cache-control'], /immutable/);
+  assert.equal(gz.headers.vary, 'Accept-Encoding');
+  const etag = raw.headers.get('etag');
+  assert.ok(etag);
+  assert.equal((await fetch(server.base + '/app.js', { headers: { 'if-none-match': etag } })).status, 304);
+  const html = await fetch(server.base + '/');
+  assert.equal(html.headers.get('cache-control'), 'no-cache');
+  assert.match(await html.text(), /FOOTVAULT/);
+  assert.equal((await fetch(server.base + '/server.js')).status, 404);
+});
