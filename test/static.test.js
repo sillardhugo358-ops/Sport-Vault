@@ -37,3 +37,16 @@ test('refusé : code serveur, bibliothèques, données, configuration, dépôt g
   for (const p of ['/..%2fserver.js', '/lib/../server.js', '/%2e%2e/etc/passwd', '/../../etc/passwd']) assert.equal(await rawGet(p), 404, p);
   assert.equal(await rawGet('/%E0%A4%A'), 400);
 });
+
+test("polices : fonts/*.woff2 servies (cache long), rien d'autre dans fonts/", async () => {
+  const r = await fetch(server.base + '/fonts/inter-latin-400-normal.woff2');
+  assert.equal(r.status, 200);
+  assert.equal(r.headers.get('content-type'), 'font/woff2');
+  assert.match(r.headers.get('cache-control') || '', /immutable/);
+  assert.equal(await rawGet('/fonts/LICENCES.md'), 404);
+  assert.equal(await rawGet('/fonts/../server.js'), 404);
+  const css = await (await fetch(server.base + '/fonts.css')).text();
+  const files = [...css.matchAll(/url\(fonts\/([^)]+)\)/g)].map(m => m[1]);
+  assert.ok(files.length >= 26);
+  for (const f of new Set(files)) assert.equal((await fetch(server.base + '/fonts/' + f)).status, 200, f);
+});

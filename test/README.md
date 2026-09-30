@@ -36,10 +36,11 @@ Chaque fichier crée une base jetable `fv_test_…`, démarre son propre serveur
 | `admin.test.js` | Console admin : accès refusé aux joueurs, lectures, ajout de FC et don de carte tracés, bannissement, modification d'un pack |
 | `routes.test.js` | Tour de toutes les routes de l'API : réponses attendues, accès refusés, import interne protégé, chemin inconnu |
 | `missions.test.js` | Missions en base (reprise à l'identique), éditeur admin : droits, identifiant généré sans doublon, modification, validation (boucle, prérequis inconnu, récompense nulle), désactivation, chaîne jamais bloquée |
-| `static.test.js` | Fichiers servis : l'interface oui ; code serveur, `lib/`, `data/`, configuration et `.git/` jamais, même avec `..` dans le chemin |
+| `static.test.js` | Fichiers servis : l'interface et les polices (`fonts/*.woff2`) oui ; code serveur, `lib/`, `data/`, configuration et `.git/` jamais, même avec `..` dans le chemin |
 | `achievements.test.js` | Éditeur de succès : droits, identifiant généré sans écrasement, modification, nom en double, validation par champ, désactivation, suppression tracée, récompenses conservées |
 | `shop.test.js` | Pack sans carte éligible : message clair (409), rien débité ; éditeur refusant un pack ou un pool impossible à tirer ; composition des pools manuels respectée au tirage |
 | `nations.test.js` | Nationalités en français : correspondance, import européen, migration au redémarrage (catalogue et exemplaires), saisie admin normalisée |
+| `competitions.test.js` | Compétitions, saisons et clubs : droits du Créateur, création, doublons, modification persistée, logo, rattachement aux saisons, renommage répercuté sur les cartes, suppressions tracées |
 | `game-config.test.js` | Cohérence de la configuration du jeu : chaîne des missions, packs, tâches, succès |
 
 ## Fichiers techniques
