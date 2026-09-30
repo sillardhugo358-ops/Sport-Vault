@@ -48,6 +48,14 @@ Chaque fichier crée une base jetable `fv_test_…`, démarre son propre serveur
 | `ledger.test.js` | Journal des FOOTCOINS : inscription, packs, bonus, ajustement admin, enchère réglée ; rien en cas de refus ; journal toujours égal au solde, même en rafale. Statistiques admin : droits, période bornée, chiffres recoupés avec la base |
 | `game-config.test.js` | Cohérence de la configuration du jeu : chaîne des missions, packs, tâches, succès |
 
+## Tests navigateur
+
+```bash
+TEST_DATABASE_URL=postgresql://postgres:motdepasse@localhost:5432/postgres npm run test:browser
+```
+
+`test/browser/ui.test.js` ouvre le site dans Chromium (`playwright-core`) à 1280, 900 et 390 px de large : les 9 pages (accueil, collection, album, packs, Vault, profil, succès, market, admin) s'affichent sans erreur JavaScript ni débordement horizontal ; le menu mobile, la cloche de notifications et le renvoi vers la connexion des pages privées sont vérifiés. Chromium : variable `CHROMIUM_PATH`, sinon `npx playwright-core install chromium` (fait par la CI).
+
 ## Fichiers techniques
 
 - `helpers.js` : base jetable, démarrage et redémarrage du serveur, client HTTP avec cookie de session. Chaque joueur de test a sa propre IP (en-tête `X-Forwarded-For`), car le serveur limite les inscriptions par IP.

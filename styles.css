@@ -2067,3 +2067,16 @@ hr{border-color:#1d3d63}
 .vault-profile-link{align-self:center;white-space:nowrap}
 @media(max-width:900px){.profile-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.profile-grid{grid-template-columns:1fr}.profile-hero{grid-template-columns:auto 1fr}.profile-actions{grid-column:1/-1;flex-direction:row;flex-wrap:wrap}}
 @media(max-width:520px){.profile-hero{grid-template-columns:1fr;padding:18px}.profile-avatar{width:64px;height:64px;font-size:26px;border-radius:16px}.profile-stats{grid-template-columns:1fr}.profile-kpi strong{font-size:22px}}
+
+/* Tablettes et petits écrans (761-1240 px) : l'en-tête complet ne tient pas ; le logo seul reste,
+   la navigation défile horizontalement au lieu de pousser la page hors de l'écran. */
+@media(min-width:761px) and (max-width:1240px){
+ .header{gap:14px}
+ .brand-copy{display:none}
+ .nav{flex:1 1 auto;min-width:0;overflow-x:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 92%,transparent);mask-image:linear-gradient(90deg,#000 92%,transparent)}
+ .nav::-webkit-scrollbar{display:none}
+ .nav a{flex:0 0 auto}
+ .header-user{flex:0 0 auto}
+ .header-wallet-copy span{display:none}
+ .header-bell{margin-left:0}
+}
