@@ -2008,3 +2008,9 @@ hr{border-color:#1d3d63}
 .catalog-rarity-lock{grid-column:1/-1;display:flex!important;flex-direction:row!important;align-items:center;gap:10px;font-size:12px!important;text-transform:none!important;letter-spacing:0!important;color:var(--text)}
 .catalog-rarity-lock input[type=checkbox]{flex:none;width:18px!important;height:18px!important;min-height:0!important;padding:0!important;margin:0;accent-color:var(--gold,#e3b54f)}
 #catalogRarity:disabled{opacity:.7;cursor:not-allowed}
+
+/* Pagination du catalogue admin (app.js, /api/admin/cards/page). */
+.admin-card-pager{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+.admin-card-pager[hidden]{display:none}
+.admin-card-pager span{color:var(--muted);font-weight:700;font-size:13px}
+.admin-card-pager .btn:disabled{opacity:.4;cursor:default}
