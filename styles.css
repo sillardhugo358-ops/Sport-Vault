@@ -2014,3 +2014,9 @@ hr{border-color:#1d3d63}
 .admin-card-pager[hidden]{display:none}
 .admin-card-pager span{color:var(--muted);font-weight:700;font-size:13px}
 .admin-card-pager .btn:disabled{opacity:.4;cursor:default}
+
+/* Cloche de notifications (notifications-bell.js) : visible aussi sur mobile, à côté du menu. */
+.header-bell{display:flex;align-items:center;margin-left:-16px}
+.header-bell:empty{display:none}
+@media(max-width:760px){.header-bell{margin-left:auto;margin-right:8px}}
+@media(max-width:760px){.header-bell:not(:empty)+.menu{margin-left:0}}

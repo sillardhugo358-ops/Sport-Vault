@@ -17,6 +17,7 @@ Production : https://sport-vault.onrender.com
 - Succès et progression (XP, niveaux)
 - Market : enchères avec palier minimal de +10 % et prolongation d'une minute pour une enchère dans les 30 dernières secondes
 - Console d'administration : tableau de bord statistique (joueurs actifs, inscriptions, packs ouverts, flux de FOOTCOINS, marché, raretés tirées), utilisateurs, cartes, compétitions et clubs, packs, marché, journaux, succès
+- Notifications (cloche de l'en-tête) : surenchère, enchère remportée, carte vendue ou invendue, récompenses à récupérer
 - Journal des FOOTCOINS : chaque gain ou dépense est enregistré (`coin_ledger`) dans la même transaction que le mouvement
 
 ## Architecture
@@ -24,7 +25,7 @@ Production : https://sport-vault.onrender.com
 | Élément | Détail |
 |---|---|
 | Serveur | Node.js ≥ 18, module `http` natif, sans framework — `server.js` (démarrage, fichiers statiques), `lib/routes/` (routes de l'API par domaine), `lib/` (configuration du jeu, périodes, règles d'enchères, barème des raretés, IP client, schéma de la base, comptes et sessions, cartes et packs, récompenses et progression, enchères, administration, journal des FOOTCOINS, statistiques, réponses HTTP) |
-| Interface | SPA en JavaScript vanilla, navigation par hash — `index.html`, `app.js`, `styles.css`, tableau de bord admin (`admin-stats.js`), éditeurs admin (`mission-admin-editor.js`, `task-admin-editor.js`, `achievement-admin-editor.js`), cartes v4 (`cards-v4.css`), polices hébergées par le site (`fonts.css`, `fonts/`) |
+| Interface | SPA en JavaScript vanilla, navigation par hash — `index.html`, `app.js`, `styles.css`, cloche de notifications (`notifications-bell.js`), tableau de bord admin (`admin-stats.js`), éditeurs admin (`mission-admin-editor.js`, `task-admin-editor.js`, `achievement-admin-editor.js`), cartes v4 (`cards-v4.css`), polices hébergées par le site (`fonts.css`, `fonts/`) |
 | Base | PostgreSQL hébergé sur Aiven (voir [SAUVEGARDE.md](docs/SAUVEGARDE.md)). Tables, données de départ et migrations au démarrage : `lib/schema.js` (`initDb`) |
 | Démarrage | `ligue1-launcher.js` lance `server.js` puis synchronise le catalogue : Ligue 1 2026-2027 (`scripts/import-ligue1-2026-27.js`), puis les 4 championnats européens (`scripts/import-europe.js`, sauté si déjà à jour) |
 
@@ -52,7 +53,7 @@ Variables d'environnement utiles :
 
 ## Contrôles
 
-La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, signale tout identifiant non déclaré (`npm run check`), puis lance `npm test` : 126 tests sur une base PostgreSQL jetable (comptes, packs et pools, récompenses, enchères, périodes, import du catalogue, administration, sécurité). Mode d'emploi : [test/README.md](test/README.md).
+La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, signale tout identifiant non déclaré (`npm run check`), puis lance `npm test` : 132 tests sur une base PostgreSQL jetable (comptes, packs et pools, récompenses, enchères, périodes, import du catalogue, administration, sécurité). Mode d'emploi : [test/README.md](test/README.md).
 
 ## Documentation
 
