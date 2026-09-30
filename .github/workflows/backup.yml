@@ -1,6 +1,7 @@
 name: Sauvegarde de la base
 # Sauvegarde hebdomadaire (lundi 04:17 UTC) et à la demande de la base de production (Aiven).
-# Lecture seule sur la base. L'archive est chiffrée (AES-256, gpg) AVANT d'être déposée dans
+# Lecture seule sur la base ; chaque archive est restaurée dans une base jetable pour vérifier qu'elle est
+# utilisable. L'archive est chiffrée (AES-256, gpg) AVANT d'être déposée dans
 # GitHub : elle contient des e-mails et des hachages de mots de passe.
 #
 # À configurer une fois (Settings > Secrets and variables > Actions > New repository secret) :
@@ -40,7 +41,25 @@ jobs:
           tables=$(docker run --rm -v "$PWD/out:/out" postgres:18 pg_restore --list "/out/$name.dump" | grep -c ' TABLE DATA ' || true)
           echo "Archive : $(du -h "out/$name.dump" | cut -f1), $tables tables avec données."
           [ "$tables" -ge 20 ] || { echo "::error::Archive incomplète ($tables tables)."; exit 1; }
-          docker run --rm postgres:18 psql "$url" -Atc "SELECT 'users', count(*) FROM users UNION ALL SELECT 'card_instances', count(*) FROM card_instances UNION ALL SELECT 'catalog_cards', count(*) FROM catalog_cards" | sed 's/|/ : /'
+          docker run --rm postgres:18 psql "$url" -Atc "SELECT 'users', count(*) FROM users UNION ALL SELECT 'card_instances', count(*) FROM card_instances UNION ALL SELECT 'catalog_cards', count(*) FROM catalog_cards" | tee out/counts-prod.txt | sed 's/|/ : /'
+      - name: Test de restauration (base jetable)
+        if: steps.cfg.outputs.skip != 'true'
+        run: |
+          # L'archive est restaurée dans un PostgreSQL 18 temporaire, détruit ensuite ; les comptages
+          # doivent être ceux de la production au moment de la sauvegarde (à quelques inscriptions près).
+          docker network create restore-net > /dev/null
+          docker run -d --name restore-db --network restore-net -e POSTGRES_PASSWORD=restore postgres:18 > /dev/null
+          for i in $(seq 1 30); do docker exec restore-db pg_isready -U postgres > /dev/null 2>&1 && break; sleep 2; done
+          docker run --rm --network restore-net -v "$PWD/out:/out" -e PGPASSWORD=restore postgres:18 \
+            pg_restore --no-owner --no-privileges --exit-on-error -h restore-db -U postgres -d postgres "/out/$NAME.dump"
+          docker exec restore-db psql -U postgres -Atc "SELECT 'users', count(*) FROM users UNION ALL SELECT 'card_instances', count(*) FROM card_instances UNION ALL SELECT 'catalog_cards', count(*) FROM catalog_cards" > out/counts-restore.txt
+          docker rm -f restore-db > /dev/null; docker network rm restore-net > /dev/null
+          echo "Production :"; cat out/counts-prod.txt; echo "Restaurée :"; cat out/counts-restore.txt
+          # catalog_cards doit être identique ; users et card_instances peuvent avoir bougé pendant la sauvegarde.
+          [ "$(grep catalog_cards out/counts-prod.txt)" = "$(grep catalog_cards out/counts-restore.txt)" ] || { echo "::error::Catalogue restauré différent de la production."; exit 1; }
+          awk -F'|' 'NR==FNR{p[$1]=$2;next} $2+0<=0||$2<p[$1]*0.95{print "::error::Table "$1" restaurée incomplète ("$2" lignes contre "p[$1]")."; bad=1} END{exit bad}' out/counts-prod.txt out/counts-restore.txt
+          rm -f out/counts-*.txt
+          echo "Restauration vérifiée."
       - name: Chiffrement
         if: steps.cfg.outputs.skip != 'true'
         run: |

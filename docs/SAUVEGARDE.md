@@ -54,7 +54,7 @@ Le script ne fait que lire la base. Il affiche à la fin le nombre de tables sau
 
 ## Sauvegarde automatique (GitHub Actions)
 
-Le workflow `.github/workflows/backup.yml` sauvegarde la base **chaque lundi à 06:17 (heure de Paris, été)** et à la demande (onglet *Actions* > *Sauvegarde de la base* > *Run workflow*). Il ne fait que lire la base. L'archive est **chiffrée (AES-256) avant d'être déposée** dans GitHub, conservée 90 jours.
+Le workflow `.github/workflows/backup.yml` sauvegarde la base **chaque lundi à 06:17 (heure de Paris, été)** et à la demande (onglet *Actions* > *Sauvegarde de la base* > *Run workflow*). Il ne fait que lire la base. Chaque archive est ensuite **restaurée dans une base PostgreSQL 18 jetable** (détruite aussitôt) : l'exécution échoue si la restauration échoue, si le catalogue restauré diffère de la production ou si une table essentielle (`users`, `card_instances`) est vide ou incomplète. L'archive est enfin **chiffrée (AES-256) avant d'être déposée** dans GitHub, conservée 90 jours.
 
 ### À faire une fois
 
