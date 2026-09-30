@@ -895,6 +895,9 @@ body:has(.home-dashboard) .header-wallet{background:#0d2039;border:1px solid rgb
 :root{
  --bg:#050b16;--panel:#0a1b32;--panel2:#0d2340;--text:#f4f7ff;--muted:#91a8c7;
  --line:rgba(91,151,222,.20);--gold:#f0c94b;--gold2:#ffdf72;--green:#65d5ad;--danger:#ff7c8c;
+ /* Couleurs de rareté (barres, pastilles, badges) : une seule source. */
+ --r-common:#9aa3ad;--r-rare:#5aa9f0;--r-epic:#b98fe0;--r-legendary:#f0cf7c;--r-icon:linear-gradient(90deg,#7fe0ff,#f3a6ff,#ffe38a);
+ --radius:12px;--focus:0 0 0 2px #050b16,0 0 0 4px #ffdf72;
 }
 body{background:radial-gradient(ellipse at 85% -10%,rgba(18,83,160,.20),transparent 40%),radial-gradient(ellipse at -10% 80%,rgba(16,60,120,.16),transparent 42%),var(--bg);color:var(--text)}
 .ambient-a{background:#1265c7;opacity:.12}.ambient-b{background:#123f8d;opacity:.13}
@@ -2177,3 +2180,49 @@ hr{border-color:#1d3d63}
  .market-row span:first-child{grid-column:1/-1}
  .market-row-actions{justify-content:flex-start}
 }
+
+/* ===== Visuels : fondations et corrections (2026-09-30) ===== */
+/* L'attribut hidden l'emporte toujours (onglets du marché, panneaux masqués). */
+[hidden]{display:none!important}
+/* Focus clavier visible partout, sans cadre au clic souris. */
+:is(a,button,input,select,textarea,[tabindex]):focus-visible{outline:none;box-shadow:var(--focus);border-radius:8px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* Bouton de déconnexion : icône seule quand la place manque (761-1520 px). */
+.header-logout svg{display:none;width:18px;height:18px}
+@media(min-width:761px) and (max-width:1520px){
+ .header-logout{display:grid;place-items:center;width:42px;height:42px;padding:0}
+ .header-logout svg{display:block}
+ .header-logout span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+ .header-wallet{min-width:0}
+ .nav{gap:0}
+ .nav a{padding:10px 11px;font-size:11px}
+}
+@media(min-width:761px) and (max-width:1100px){.nav a{padding:9px 8px;font-size:10px}}
+
+/* Répartition des raretés (Collection) : couleur de chaque rareté. */
+.collection-rarity-mini{border-left:3px solid var(--rc,#1a3b60)}
+.collection-rarity-mini em{background:var(--rc,#62baff)}
+.collection-rarity-mini.is-common{--rc:var(--r-common)}.collection-rarity-mini.is-rare{--rc:var(--r-rare)}.collection-rarity-mini.is-epic{--rc:var(--r-epic)}.collection-rarity-mini.is-legendary{--rc:var(--r-legendary)}
+.collection-rarity-mini.is-icon{border-left-color:#f3a6ff}.collection-rarity-mini.is-icon em{background:var(--r-icon)}
+
+/* Mon Vault sur mobile : le pseudo garde sa largeur (plus de « MON VAU LT »). */
+@media(max-width:560px){
+ .vault-profile-main{flex-wrap:wrap;gap:12px 14px;padding:18px 16px 14px}
+ .vault-profile-badge{display:none}
+ .vault-profile-copy h1{font-size:28px;overflow-wrap:normal;word-break:normal}
+ .vault-profile-link{order:3;flex:1 1 100%;justify-content:center;text-align:center}
+}
+
+/* États vides illustrés, avec une action. */
+.empty.empty-rich,.dash-empty-rich{display:grid;justify-items:center;gap:8px;text-align:center;padding:34px 20px}
+.empty-rich>span,.dash-empty-rich>span{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:rgba(240,201,75,.10);border:1px solid rgba(240,201,75,.30);color:var(--gold2);font-size:22px}
+.empty-rich strong,.dash-empty-rich strong{font:900 22px var(--head);letter-spacing:.5px;color:var(--text);text-transform:uppercase}
+.empty-rich p,.dash-empty-rich p{margin:0 0 6px;max-width:420px;color:var(--muted);font-size:13px;text-transform:none;letter-spacing:0}
+.dash-empty-rich{padding:28px 10px;height:100%;align-content:center}
+.dash-empty-rich strong{font-size:18px}
+
+/* Marché : recherche et tris sur une ligne (ordinateur), en grille compacte (mobile). */
+@media(min-width:701px){.auction-toolbar .auction-tools{flex-wrap:nowrap;align-items:center}.auction-tools .auction-search{width:220px;height:40px;padding:0 14px;border-radius:9px}}
+@media(max-width:700px){.auction-toolbar .auction-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px}.auction-tools .auction-search{grid-column:1/-1}}
+.dash-auction-grid>.dash-empty-rich{grid-column:1/-1}
