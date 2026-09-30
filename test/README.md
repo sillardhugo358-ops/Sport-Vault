@@ -49,6 +49,7 @@ Chaque fichier crée une base jetable `fv_test_…`, démarre son propre serveur
 | `leaderboard.test.js` | Classement : barème par rareté, doublons ignorés, dons de l'admin et comptes bannis exclus, classement de la semaine, égalités, accès public sans identifiant ni e-mail |
 | `album-rewards.test.js` | Albums par championnat : complétion par saison et par championnat (clubs sans cartes ignorés), récompenses refusées si incomplet, versées une seule fois même en rafale, journalisées, visibles au profil |
 | `ligue1-history.test.js` | Saisons historiques de Ligue 1 : migration au démarrage (saisons créées, clubs existants réutilisés via les alias, clubs manquants créés, aucun doublon), idempotence, visibles dans l'album et tirables dans le Pack Ligue 1 |
+| `challenges.test.js` | Défis thématiques et packs limités : droits et validation de l'éditeur, progression limitée à la période (cartes de bienvenue, dons admin et cartes antérieures exclus), récompense unique en rafale et journalisée, défi « ouvrir un pack », défis à venir et terminés, pack limité invisible et non ouvrable hors période sans débit, premier défi « Semaine Serie A » |
 | `ledger.test.js` | Journal des FOOTCOINS : inscription, packs, bonus, ajustement admin, enchère réglée ; rien en cas de refus ; journal toujours égal au solde, même en rafale. Statistiques admin : droits, période bornée, chiffres recoupés avec la base |
 | `game-config.test.js` | Cohérence de la configuration du jeu : chaîne des missions, packs, tâches, succès |
 
