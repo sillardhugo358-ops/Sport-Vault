@@ -2267,3 +2267,11 @@ hr{border-color:#1d3d63}
 .album-reward-prize b{font:900 22px var(--head);color:var(--gold2)}
 .album-reward-prize span{font-size:11px;font-weight:800;color:#8fd19e}
 @media(max-width:520px){.album-reward-prize{justify-items:start;border-left:0;padding:0}}
+
+/* Squelette de chargement (changement de page lent). */
+.page-loading{display:grid;gap:16px;padding-top:24px}
+.sk{border-radius:14px;background:linear-gradient(90deg,rgba(91,151,222,.08) 25%,rgba(91,151,222,.16) 50%,rgba(91,151,222,.08) 75%);background-size:200% 100%;animation:sk-shine 1.2s linear infinite;min-height:84px}
+.sk-hero{min-height:220px}.sk-block{min-height:320px}
+.sk-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media(max-width:600px){.sk-row{grid-template-columns:repeat(2,minmax(0,1fr))}.sk-hero{min-height:160px}}
+@keyframes sk-shine{from{background-position:200% 0}to{background-position:-200% 0}}
