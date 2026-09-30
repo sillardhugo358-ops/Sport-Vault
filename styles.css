@@ -2131,3 +2131,12 @@ hr{border-color:#1d3d63}
 .album-season-reward small{color:var(--muted);font-size:12px}
 .album-claim-big{width:100%;margin-top:12px}
 .album-claim-note{color:var(--green);font-size:12px;margin:10px 0 0}
+
+/* Packs à durée limitée (boutique). */
+.shop-pack-until{color:var(--gold2);font-weight:800}
+
+/* Défis thématiques (Vault, app.js ; éditeur : challenge-admin-editor.js). */
+.challenge-card .challenge-scope{color:#83a4c7;font-size:12px;font-weight:700;margin:-4px 0 8px}
+.challenge-admin-block{margin-top:22px}
+.task-admin-table td small{display:block;opacity:.7;margin-top:2px}
+.mission-editor-form [hidden]{display:none}
