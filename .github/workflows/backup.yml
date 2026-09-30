@@ -1,0 +1,60 @@
+name: Sauvegarde de la base
+# Sauvegarde hebdomadaire (lundi 04:17 UTC) et à la demande de la base de production (Aiven).
+# Lecture seule sur la base. L'archive est chiffrée (AES-256, gpg) AVANT d'être déposée dans
+# GitHub : elle contient des e-mails et des hachages de mots de passe.
+#
+# À configurer une fois (Settings > Secrets and variables > Actions > New repository secret) :
+#   BACKUP_DATABASE_URL  : Service URI Aiven (sslmode=require ou no-verify)
+#   BACKUP_PASSPHRASE    : phrase de passe longue, gardée hors de GitHub (gestionnaire de mots de passe)
+# Sans ces secrets, le workflow s'arrête sans erreur. Restauration : docs/SAUVEGARDE.md.
+on:
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sauvegarde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+      PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - name: Secrets présents ?
+        id: cfg
+        run: |
+          if [ -z "$DATABASE_URL" ] || [ -z "$PASSPHRASE" ]; then
+            echo "::warning::Secrets BACKUP_DATABASE_URL et BACKUP_PASSPHRASE non configurés : aucune sauvegarde faite (voir docs/SAUVEGARDE.md)."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Sauvegarde (pg_dump 18)
+        if: steps.cfg.outputs.skip != 'true'
+        run: |
+          # Les outils PostgreSQL attendent sslmode=require (no-verify est propre à node-postgres).
+          url="${DATABASE_URL/sslmode=no-verify/sslmode=require}"
+          name="footvault-$(date -u +%Y%m%d-%H%M%S)"
+          echo "NAME=$name" >> "$GITHUB_ENV"
+          mkdir -p out
+          docker run --rm -v "$PWD/out:/out" postgres:18 pg_dump "$url" --format=custom --no-owner --no-privileges --file="/out/$name.dump"
+          tables=$(docker run --rm -v "$PWD/out:/out" postgres:18 pg_restore --list "/out/$name.dump" | grep -c ' TABLE DATA ' || true)
+          echo "Archive : $(du -h "out/$name.dump" | cut -f1), $tables tables avec données."
+          [ "$tables" -ge 20 ] || { echo "::error::Archive incomplète ($tables tables)."; exit 1; }
+          docker run --rm postgres:18 psql "$url" -Atc "SELECT 'users', count(*) FROM users UNION ALL SELECT 'card_instances', count(*) FROM card_instances UNION ALL SELECT 'catalog_cards', count(*) FROM catalog_cards" | sed 's/|/ : /'
+      - name: Chiffrement
+        if: steps.cfg.outputs.skip != 'true'
+        run: |
+          gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --symmetric --cipher-algo AES256 \
+            --output "out/$NAME.dump.gpg" "out/$NAME.dump" <<< "$PASSPHRASE"
+          shred -u "out/$NAME.dump"
+          # Contrôle : l'archive chiffrée se déchiffre avec la phrase de passe.
+          gpg --batch --pinentry-mode loopback --passphrase-fd 0 --decrypt "out/$NAME.dump.gpg" <<< "$PASSPHRASE" | head -c 5 | grep -q PGDMP
+          ls -l out
+      - name: Dépôt de l'archive chiffrée (conservée 90 jours)
+        if: steps.cfg.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.NAME }}
+          path: out/*.gpg
+          retention-days: 90
+          if-no-files-found: error

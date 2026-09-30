@@ -1,0 +1,46 @@
+name: Production (surveillance)
+# Contrôle du site en ligne toutes les 6 heures (et à la demande) : santé du serveur et de la base,
+# pages servies, fichiers serveur protégés, version déployée égale au dernier commit de main.
+# En cas d'échec, GitHub prévient par e-mail. Adresse : variable de dépôt PRODUCTION_URL si définie.
+# Coût : environ 1 minute par contrôle (120 minutes GitHub Actions par mois).
+on:
+  schedule:
+    - cron: '41 */6 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sante:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      URL: ${{ vars.PRODUCTION_URL || 'https://sport-vault.onrender.com' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Santé du serveur et de la base
+        run: |
+          # L'offre gratuite de Render met le service en veille : le premier appel peut prendre une minute.
+          curl -fsS --retry 6 --retry-delay 20 --retry-all-errors --max-time 90 "$URL/api/health" -o health.json
+          jq . health.json
+          jq -e '.ok == true and .storage == "postgres"' health.json > /dev/null || { echo "::error::Serveur démarré sans base PostgreSQL prête."; exit 1; }
+          jq -e '.database.ok == true' health.json > /dev/null || { echo "::error::Base de données injoignable : $(jq -r '.database.error // "inconnu"' health.json)"; exit 1; }
+          echo "Base : $(jq -r '.database.latencyMs' health.json) ms, catalogue : $(jq -r '.cards' health.json) cartes."
+      - name: Pages et fichiers protégés
+        run: |
+          curl -fsS --max-time 60 "$URL/" | grep -q 'FOOTVAULT' || { echo "::error::La page d'accueil ne répond pas correctement."; exit 1; }
+          for f in app.js styles.css fonts.css; do curl -fsS -o /dev/null --max-time 60 "$URL/$f" || { echo "::error::$f introuvable."; exit 1; }; done
+          for f in server.js package.json lib/auth.js .env; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 "$URL/$f")
+            [ "$code" = "404" ] || { echo "::error::$f est accessible (HTTP $code)."; exit 1; }
+          done
+      - name: Version déployée
+        run: |
+          deployed=$(jq -r '.commit // empty' health.json)
+          if [ -z "$deployed" ]; then echo "::warning::Le serveur n'indique pas sa version (RENDER_GIT_COMMIT absent)."; exit 0; fi
+          echo "En ligne : $deployed — main : ${GITHUB_SHA:0:12}"
+          if [ "${GITHUB_SHA:0:${#deployed}}" != "$deployed" ]; then
+            age=$(( $(date +%s) - $(git log -1 --format=%ct) ))
+            # Un déploiement Render prend quelques minutes : au-delà de 30 minutes, il a échoué ou n'a pas été lancé.
+            if [ "$age" -gt 1800 ]; then echo "::error::Le dernier commit de main (${GITHUB_SHA:0:12}, il y a $((age/60)) min) n'est pas en ligne : vérifier le déploiement dans Render."; exit 1; fi
+            echo "::notice::Déploiement du dernier commit probablement en cours (commit de il y a $((age/60)) min)."
+          fi
