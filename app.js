@@ -125,6 +125,29 @@ async function vault(){
  '<section class="section vault-missions-section"><div class="section-head vault-section-head"><div><p class="eyebrow">05 / MISSIONS ACTIVES</p><h2>MISSIONS FOOTVAULT</h2></div><p>Les objectifs permanents se débloquent progressivement. Termine une mission pour accéder à la suivante.</p></div><div class="mission-grid vault-mission-grid">'+(missionHtml||'<div class="empty">Aucune mission active pour le moment.</div>')+'</div></section>'+(completedMissions.length?'<section class="section vault-missions-section mission-completed-section"><div class="section-head vault-section-head"><div><p class="eyebrow">06 / HISTORIQUE</p><h2>MISSIONS TERMINÉES</h2></div><p>Retrouve ici les missions permanentes dont la récompense a déjà été récupérée.</p></div><div class="mission-grid vault-mission-grid">'+completedMissionHtml+'</div></section>':'')+'</div>';
 }
 
+// Classement des collectionneurs (#classement) : score pondéré par rareté, général ou de la semaine.
+async function ranking(q){
+ const period=q?.get('periode')==='semaine'?'week':'all';
+ const d=await api('/api/leaderboard?period='+period);
+ const pts=d.points||{},RL={common:'Common',rare:'Rare',epic:'Epic',legendary:'Legendary',icon:'Icon'};
+ const top=d.top||[],podium=top.slice(0,3),rest=top.slice(3);
+ const week=d.week?new Date(d.week.start).toLocaleDateString('fr-FR',{day:'numeric',month:'long'}):'';
+ const row=p=>'<tr class="'+(p.me?'is-me':'')+'"><td class="rank-pos">'+p.rank+'</td><td class="rank-name">'+esc(p.name)+(p.me?' <span class="rank-you">TOI</span>':'')+'</td><td>'+money(p.uniqueCards)+'</td><td>'+money(p.topCards)+'</td><td class="rank-score">'+money(p.score)+'</td></tr>';
+ const medal=['🥇','🥈','🥉'];
+ const me=d.me;
+ return '<div class="page ranking-page">'
+ +'<section class="ranking-hero"><div><p class="eyebrow">FOOTVAULT / CLASSEMENT</p><h1>LES <span>COLLECTIONNEURS.</span></h1><p class="lead">Chaque joueur différent de ta collection rapporte des points selon sa rareté. Les doublons ne comptent pas.</p>'
+ +'<ul class="ranking-points">'+Object.entries(pts).map(([r,v])=>'<li class="rp-'+esc(r)+'"><b>'+esc(RL[r]||r)+'</b><span>'+v+' pt'+(v>1?'s':'')+'</span></li>').join('')+'</ul></div>'
+ +'<div class="ranking-tabs" role="tablist"><a role="tab" aria-selected="'+(period==='all')+'" class="'+(period==='all'?'active':'')+'" href="#classement">GÉNÉRAL</a><a role="tab" aria-selected="'+(period==='week')+'" class="'+(period==='week'?'active':'')+'" href="#classement?periode=semaine">CETTE SEMAINE</a></div></section>'
+ +(me?'<section class="ranking-me"><span>TON RANG</span><strong>'+(me.rank?me.rank+'<small>/'+money(d.players)+'</small>':'—')+'</strong><div><b>'+money(me.score)+' pts</b><small>'+money(me.uniqueCards)+' joueurs différents'+(period==='week'?' obtenus cette semaine':'')+'</small></div>'+(me.rank?'':'<a class="btn btn-gold" href="#packs">OUVRIR UN PACK</a>')+'</section>':'<section class="ranking-me"><span>TON RANG</span><strong>—</strong><div><small>Connecte-toi pour apparaître au classement.</small></div><a class="btn btn-gold" href="#auth?mode=login&next=classement">SE CONNECTER</a></section>')
+ +(period==='week'?'<p class="ranking-note">Cartes obtenues depuis le lundi '+esc(week)+' à minuit (heure de Paris). Nouveau classement chaque lundi.</p>':'')
+ +(top.length?'<section class="ranking-podium">'+podium.map((p,i)=>'<article class="podium-'+(i+1)+(p.me?' is-me':'')+'"><span class="podium-medal" aria-hidden="true">'+medal[i]+'</span><b>'+esc(p.name)+'</b><strong>'+money(p.score)+' pts</strong><small>'+money(p.uniqueCards)+' joueurs · '+money(p.topCards)+' Legendary/Icon</small></article>').join('')+'</section>'
+ +(rest.length?'<div class="ranking-table-wrap"><table class="ranking-table"><thead><tr><th>#</th><th>COLLECTIONNEUR</th><th>JOUEURS</th><th>LEG./ICON</th><th>POINTS</th></tr></thead><tbody>'+rest.map(row).join('')+'</tbody></table></div>':'')
+ :'<div class="empty">'+(period==='week'?'Personne n’a encore obtenu de carte cette semaine : ouvre un pack pour prendre la tête !':'Aucun collectionneur classé pour le moment.')+'</div>')
+ +'<p class="ranking-note">'+money(d.players)+' collectionneur'+(d.players>1?'s':'')+' classé'+(d.players>1?'s':'')+'. Les 50 premiers sont affichés ; les cartes offertes par l’équipe ne comptent pas. Mise à jour toutes les minutes.</p>'
+ +'</div>';
+}
+
 // Profil joueur (#profil) : identité, collection, progression et historique (GET /api/profile).
 async function profile(){
  let d;try{d=await api('/api/profile')}catch(e){if(e.status===401)return authView('login','profil');throw e}
@@ -682,7 +705,7 @@ async function market(){
 <section id="auctionHistory" class="auction-grid" hidden><div class="empty">L’historique sera chargé à l’ouverture de cet onglet.</div></section>
  </div>`
 }
-async function render(){shell();const {r,q}=route();let html='';try{if(r==='home')html=await home();else if(r==='collection')html=await collection();else if(r==='packs')html=await packs();else if(r==='vault')html=await vault();else if(r==='profil')html=await profile();else if(r==='successes')html=await achievements();else if(r==='album')html=await album();else if(r==='card')html=await cardDetail(q.get('id'));else if(r==='auth')html=authView(q.get('mode')==='register'?'register':'login',q.get('next')||'vault');else if(r==='market')html=await market();else if(r==='admin')html=await admin();else html=home();app().innerHTML=html;bind();nav();}catch(e){app().innerHTML=`<div class="page"><div class="empty">${esc(e.message)}</div></div>`}}
+async function render(){shell();const {r,q}=route();let html='';try{if(r==='home')html=await home();else if(r==='collection')html=await collection();else if(r==='packs')html=await packs();else if(r==='vault')html=await vault();else if(r==='profil')html=await profile();else if(r==='classement')html=await ranking(q);else if(r==='successes')html=await achievements();else if(r==='album')html=await album();else if(r==='card')html=await cardDetail(q.get('id'));else if(r==='auth')html=authView(q.get('mode')==='register'?'register':'login',q.get('next')||'vault');else if(r==='market')html=await market();else if(r==='admin')html=await admin();else html=home();app().innerHTML=html;bind();nav();}catch(e){app().innerHTML=`<div class="page"><div class="empty">${esc(e.message)}</div></div>`}}
 async function loadAuctionHistory(){
  try{const d=await api('/api/auctions/history');state.auctionHistory=d.auctions||[];return state.auctionHistory}catch(e){toast(e.message);return[]}
 }

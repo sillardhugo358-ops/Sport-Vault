@@ -15,7 +15,7 @@ const VIEWPORTS = [
   { name: 'tablette', width: 900, height: 1000 },
   { name: 'mobile', width: 390, height: 844 }
 ];
-const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'admin'];
+const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'classement', 'admin'];
 
 let server, browser, context, page;
 const errors = [];
