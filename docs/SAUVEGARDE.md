@@ -1,6 +1,6 @@
 # Sauvegarde et restauration de la base FOOTVAULT
 
-La base de production est un PostgreSQL hébergé sur **Aiven** (offre gratuite, sans date d'expiration, 1 Go, 20 connexions max) depuis le 29/09/2026. **Aiven gratuit ne fait aucune sauvegarde automatique** : cette procédure est à lancer manuellement, idéalement chaque semaine.
+La base de production est un PostgreSQL hébergé sur **Aiven** (offre gratuite, sans date d'expiration, 1 Go, 20 connexions max) depuis le 29/09/2026. **Aiven gratuit ne fait aucune sauvegarde automatique.** Depuis le 30/09/2026, le dépôt en fait une chaque lundi (GitHub Actions, voir « Sauvegarde automatique » ci-dessous) une fois deux secrets configurés ; la procédure manuelle reste valable.
 
 ## Connexion à la base
 
@@ -51,6 +51,32 @@ Le script ne fait que lire la base. Il affiche à la fin le nombre de tables sau
    La dernière commande doit compter **23** tables.
 
    Adresse de connexion : le *Service URI* Aiven (avec `sslmode=require`).
+
+## Sauvegarde automatique (GitHub Actions)
+
+Le workflow `.github/workflows/backup.yml` sauvegarde la base **chaque lundi à 06:17 (heure de Paris, été)** et à la demande (onglet *Actions* > *Sauvegarde de la base* > *Run workflow*). Il ne fait que lire la base. L'archive est **chiffrée (AES-256) avant d'être déposée** dans GitHub, conservée 90 jours.
+
+### À faire une fois
+
+Dans GitHub : *Settings* > *Secrets and variables* > *Actions* > *New repository secret* :
+
+| Secret | Valeur |
+|---|---|
+| `BACKUP_DATABASE_URL` | le *Service URI* Aiven (tel quel) |
+| `BACKUP_PASSPHRASE` | une longue phrase de passe **gardée hors de GitHub** (gestionnaire de mots de passe). Sans elle, les archives sont illisibles |
+
+Tant que ces secrets manquent, le workflow s'arrête avec un avertissement, sans erreur. Lancer ensuite une première sauvegarde à la main et vérifier qu'elle est verte.
+
+### Récupérer et déchiffrer une archive
+
+1. *Actions* > *Sauvegarde de la base* > l'exécution voulue > *Artifacts* : télécharger `footvault-AAAAMMJJ-HHMMSS` (zip contenant le `.dump.gpg`).
+2. Déchiffrer (gpg est fourni avec Git pour Windows, ou Gpg4win) :
+
+   ```bash
+   gpg --output footvault.dump --decrypt footvault-AAAAMMJJ-HHMMSS.dump.gpg
+   ```
+
+3. Le fichier `footvault.dump` se restaure comme une sauvegarde manuelle (sections suivantes).
 
 ## Vérifier qu'une sauvegarde est restaurable
 

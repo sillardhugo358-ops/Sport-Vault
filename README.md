@@ -50,15 +50,17 @@ Variables d'environnement utiles :
 | `ADMIN_EMAILS` | E-mails des comptes administrateurs, séparés par des virgules |
 | `ADMIN_BOOTSTRAP_NAME`, `ADMIN_BOOTSTRAP_PASSWORD` | Création du premier compte administrateur |
 | `HISTORICAL_IMPORT_TOKEN` | Jeton de la route d'import de l'historique Ligue 1 |
+| `SESSION_TTL_DAYS` | Durée des sessions en jours (2 heures par défaut ; `0.0833333333` en production), bornée entre 5 minutes et 30 jours |
 | `CLIENT_IP_HEADER`, `TRUSTED_PROXY_HOPS` | Détermination de l'IP réelle du joueur derrière le proxy (limites d'inscription et de débit). En production : `CLIENT_IP_HEADER=cf-connecting-ip` (Cloudflare devant Render). Sans réglage, un client peut falsifier son IP. Voir `lib/client-ip.js` et la route admin `/api/admin/ip-debug` |
 
 ## Contrôles
 
-La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, signale tout identifiant non déclaré (`npm run check`), puis lance `npm test` : 136 tests sur une base PostgreSQL jetable (comptes, packs et pools, récompenses, enchères, périodes, import du catalogue, administration, sécurité). Elle lance ensuite `npm run test:browser` : tests navigateur (Chromium via `playwright-core`) sur ordinateur, tablette et mobile — chaque page sans erreur JavaScript ni débordement horizontal, menu mobile, cloche, pages privées. Mode d'emploi : [test/README.md](test/README.md).
+La CI GitHub (`.github/workflows/check.yml`) vérifie la syntaxe de `server.js` et `app.js`, signale tout identifiant non déclaré (`npm run check`), puis lance `npm test` : 139 tests sur une base PostgreSQL jetable (comptes, packs et pools, récompenses, enchères, périodes, import du catalogue, administration, sécurité). Elle lance ensuite `npm run test:browser` : tests navigateur (Chromium via `playwright-core`) sur ordinateur, tablette et mobile — chaque page sans erreur JavaScript ni débordement horizontal, menu mobile, cloche, pages privées. Mode d'emploi : [test/README.md](test/README.md).
 
 ## Documentation
 
 - [Point de départ et feuille de route](docs/POINT-DE-DEPART.md)
+- [Exploitation : surveillance, déploiement, hébergement](docs/EXPLOITATION.md)
 - [Sauvegarde et restauration de la base](docs/SAUVEGARDE.md)
 - [Inventaire du dossier data/](data/README.md)
 - [Qualité des données du catalogue](docs/QUALITE-DONNEES.md)
