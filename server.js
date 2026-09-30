@@ -14,6 +14,7 @@ const memory = { users: new Map(), sessions: new Map(), cards: new Map(), claims
 const { hashPassword, verifyPassword, validPassword, safeUser, sessionCookie, expiryDate, findUserByEmail, getUserById, cleanupSessions, canManage, requireAdmin, currentUser, createSession, destroySession, registrationAllowed, markRegistration, loginStatus, loginFailure, loginSuccess } = require('./lib/auth').createAuth({ db: () => pool, memory });
 const { publicCard, configuredPackCards, buildInstance, listPacks, createCardInstance, getUserCards, grantWelcomeCards, openPackForUser, openPoolForUser } = require('./lib/cards').createCards({ getPool: () => pool, memory, catalog: () => CARD_CATALOG, getUserById, safeUser, securityEvent });
 const { listMissions, isUnlocked: isMissionUnlocked, adminMissions, adminSaveMission } = require('./lib/missions').createMissions({ getPool: () => pool, adminLog: (...args) => adminLog(...args) });
+const { adminStats } = require('./lib/stats').createStats({ getPool: () => pool });
 const { adminAchievements, adminSaveAchievement } = require('./lib/achievements').createAchievements({ getPool: () => pool, adminLog: (...args) => adminLog(...args) });
 const { levelProgressFromXp, applyReward, claimExists, addClaim, missionProgress, periodActivity, taskProgress, claimTask, claimDaily, claimMission, albumData } = require('./lib/rewards').createRewards({ getPool: () => pool, memory, catalog: () => CARD_CATALOG, getUserById, getUserCards, publicCard, safeUser, securityEvent, listMissions });
 const { settleExpiredAuctions, auctionData, withdrawAuctionParticipation, auctionHistory, createAuction, placeAuctionBid, cancelAuction, auctionBidHistory } = require('./lib/auctions').createAuctions({ getPool: () => pool, publicCard, securityEvent });
@@ -24,7 +25,7 @@ const apiRoutes = [
  require('./lib/routes/cards').createCardsRoutes({ catalog: () => CARD_CATALOG, currentUser, getPool: () => pool, getUserCards, listPacks, openPackForUser, openPoolForUser, safeUser }),
  require('./lib/routes/rewards').createRewardsRoutes({ listMissions, isMissionUnlocked, addClaim, albumData, applyReward, claimDaily, claimExists, claimMission, claimTask, currentUser, getPool: () => pool, getUserById, getUserCards, levelProgressFromXp, missionProgress, periodActivity, safeUser, securityEvent, taskProgress }),
  require('./lib/routes/auctions').createAuctionsRoutes({ auctionBidHistory, auctionData, auctionHistory, cancelAuction, createAuction, currentUser, placeAuctionBid, safeUser, withdrawAuctionParticipation }),
- require('./lib/routes/admin').createAdminRoutes({ adminAchievements, adminSaveAchievement, adminMissions, adminSaveMission, adminAdjustResources, adminAuctions, adminCards, adminCollections, adminCompetitions, adminCreateCatalogCard, adminDeleteCatalogCard, adminGrantCard, adminLog, adminLogs, adminOverview, adminPacks, adminRemoveCard, adminSetAccountStatus, adminSetCollection, adminSetCompetition, adminSetPack, adminSetRole, adminTransferCard, adminUpdateCatalogCard, adminUserDetail, adminUsers, getPool: () => pool, requireAdmin, safeUser }),
+ require('./lib/routes/admin').createAdminRoutes({ adminStats, adminAchievements, adminSaveAchievement, adminMissions, adminSaveMission, adminAdjustResources, adminAuctions, adminCards, adminCollections, adminCompetitions, adminCreateCatalogCard, adminDeleteCatalogCard, adminGrantCard, adminLog, adminLogs, adminOverview, adminPacks, adminRemoveCard, adminSetAccountStatus, adminSetCollection, adminSetCompetition, adminSetPack, adminSetRole, adminTransferCard, adminUpdateCatalogCard, adminUserDetail, adminUsers, getPool: () => pool, requireAdmin, safeUser }),
  require('./lib/routes/internal').createInternalRoutes({ getPool: () => pool })
 ];
 
@@ -54,7 +55,7 @@ async function securityEvent(userId,ip,event,details={},client=null){const db=cl
 
 // Fichiers publics : uniquement à la racine du dépôt, pages, styles et images, plus les
 // scripts de l'interface listés ci-dessous. Jamais le code serveur, lib/, data/, .git/ ni la configuration.
-const PUBLIC_SCRIPTS=new Set(['app.js','achievement-admin-editor.js','mission-admin-editor.js','manifest.json']);
+const PUBLIC_SCRIPTS=new Set(['app.js','admin-stats.js','achievement-admin-editor.js','mission-admin-editor.js','manifest.json']);
 const PUBLIC_EXTENSIONS=new Set(['.html','.css','.svg','.png','.ico','.webp']);
 function isPublicFile(name){return !name.startsWith('.')&&(PUBLIC_SCRIPTS.has(name)||PUBLIC_EXTENSIONS.has(path.extname(name)));}
 // Polices hébergées par le site : fonts/*.woff2 uniquement.

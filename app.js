@@ -484,6 +484,7 @@ async function admin(){
     <article class="admin-highlight admin-highlight-purple"><div class="admin-highlight-icon">♢</div><div><span>ENCHÈRES ACTIVES</span><strong>${Number(s.activeAuctions||0).toLocaleString('fr-FR')}</strong><small>Enchères en cours</small></div></article>
     <article class="admin-highlight admin-highlight-gold"><div class="admin-highlight-icon">🏆</div><div><span>ENCHÈRES TERMINÉES</span><strong>${Number(s.completedAuctions||0).toLocaleString('fr-FR')}</strong><small>Enchères clôturées</small></div></article>
    </div>
+   <section class="admin-stats" id="adminStatsMount" aria-live="polite"></section>
    <div class="admin-dashboard-section-head"><div><p class="eyebrow">PILOTAGE RAPIDE</p><h3>Actions rapides</h3></div><span>Accès direct aux outils</span></div>
    <div class="admin-quick-actions">
     <button type="button" data-admin-tab="players"><span class="admin-quick-icon blue">♙</span><span><strong>Gérer les joueurs</strong><small>Comptes, rôles et activité</small></span><b>→</b></button>
@@ -854,6 +855,7 @@ function applyShopFilters(){
  const empty=$('#shopNoResults');if(empty)empty.hidden=visible.length>0;
 }
 function bind(){
+ if(typeof window.mountAdminStats==='function')window.mountAdminStats({api});
  if(typeof window.mountMissionAdmin==='function')window.mountMissionAdmin({api,setModal,closeModal,toast,siteConfirmDialog});
  if(typeof window.mountAchievementAdmin==='function')window.mountAchievementAdmin({api,setModal,closeModal,toast,siteConfirmDialog});
  const seasonSortSelect=$('#seasonSortSelect');
