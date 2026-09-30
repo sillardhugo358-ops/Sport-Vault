@@ -141,3 +141,15 @@ test('marché : prix de marché sur la fiche carte, ventes récentes et alertes 
   await page.waitForFunction(() => !/Chargement/.test(document.querySelector('#auctionSales').innerText));
   assert.deepEqual(errors, []);
 });
+
+test('mobile : filtres des packs repliés, dépliables ; onglets du marché exclusifs', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await visit('packs');
+  assert.equal(await page.isVisible('.shop-filter-group'), false);
+  await page.click('[data-shop-toggle]');
+  assert.equal(await page.isVisible('.shop-filter-group'), true);
+  await visit('market');
+  const visible = await page.evaluate(() => ['auctionLive', 'auctionSell', 'auctionHistory', 'auctionSales', 'auctionAlerts'].filter(id => { const el = document.getElementById(id); return el && el.getBoundingClientRect().height > 0; }));
+  assert.deepEqual(visible, ['auctionLive']);
+  assert.deepEqual(errors, []);
+});

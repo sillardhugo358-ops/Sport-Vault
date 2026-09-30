@@ -2226,3 +2226,44 @@ hr{border-color:#1d3d63}
 @media(min-width:701px){.auction-toolbar .auction-tools{flex-wrap:nowrap;align-items:center}.auction-tools .auction-search{width:220px;height:40px;padding:0 14px;border-radius:9px}}
 @media(max-width:700px){.auction-toolbar .auction-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px}.auction-tools .auction-search{grid-column:1/-1}}
 .dash-auction-grid>.dash-empty-rich{grid-column:1/-1}
+
+/* Classement : vrai podium à trois marches, places libres affichées. */
+.ranking-podium article{position:relative;padding-bottom:0;overflow:hidden}
+.ranking-podium .podium-step{display:grid;place-items:center;align-self:end;width:calc(100% + 24px);margin:12px -12px 0;height:34px;font:900 22px var(--head);font-style:normal;color:rgba(255,255,255,.35);background:linear-gradient(180deg,rgba(91,151,222,.16),rgba(91,151,222,.04));border-top:1px solid rgba(91,151,222,.28)}
+.ranking-podium .podium-1 .podium-step{height:64px;color:rgba(240,207,124,.8);background:linear-gradient(180deg,rgba(240,207,124,.24),rgba(240,207,124,.05));border-top-color:rgba(240,207,124,.5)}
+.ranking-podium .podium-2 .podium-step{height:46px}
+.ranking-podium .podium-medal{font-size:30px}
+.ranking-podium .podium-empty{border-style:dashed;background:rgba(6,20,40,.35)}
+.ranking-podium .podium-empty .podium-medal{filter:grayscale(1);opacity:.35}
+.ranking-podium .podium-empty b{color:var(--muted)}
+@media(max-width:620px){.ranking-podium .podium-step{display:none}.ranking-podium article{padding-bottom:16px}.ranking-podium .podium-empty{display:none}}
+
+/* Profil : Parcours et Historique empilés à droite, face à la Collection (plus de colonne à moitié vide). */
+.profile-side{display:grid;gap:14px;align-content:start;min-width:0}
+.profile-side .profile-history{grid-column:auto}
+.profile-side .profile-history .profile-list{max-height:430px;overflow:auto}
+
+/* Mon Vault : sections Défis et Objectifs moins espacées (≈110 px de vide auparavant). */
+.vault-page .vault-missions-section{padding-top:40px}
+@media(max-width:760px){.vault-page .vault-missions-section{padding-top:28px}}
+
+/* Packs (≤ 850 px) : filtres repliés derrière « AFFICHER », les packs apparaissent dès le premier écran. */
+.shop-filter-toggle{display:none}
+@media(max-width:850px){
+ .shop-filters:not(.is-open) .shop-filter-group{display:none}
+ .shop-filters:not(.is-open) .shop-filter-head{border-bottom:0}
+ .shop-filter-head{gap:12px}
+ .shop-filter-head h2{margin-right:auto}
+ .shop-filter-head .shop-filter-toggle{display:inline-flex;padding:8px 12px;border:1px solid #2a4d75!important;border-radius:8px;background:#0d2039!important;color:#eaf3ff!important;font-weight:800;letter-spacing:.5px}
+}
+@media(max-width:600px){.shop-filters.is-open{grid-template-columns:1fr}}
+
+/* Album : récompense de saison avec barre de progression et gain mis en avant. */
+.album-season-reward>div:first-child{flex:1 1 260px;min-width:0}
+.album-reward-track{height:6px;margin-top:9px;border-radius:99px;background:rgba(91,151,222,.16);overflow:hidden;max-width:520px}
+.album-reward-track i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#3b8cf0,#65d5ad)}
+.album-season-reward.is-complete .album-reward-track i{background:linear-gradient(90deg,#f0c94b,#ffdf72)}
+.album-reward-prize{display:grid;justify-items:end;gap:2px;padding:6px 14px;border-left:1px solid var(--line)}
+.album-reward-prize b{font:900 22px var(--head);color:var(--gold2)}
+.album-reward-prize span{font-size:11px;font-weight:800;color:#8fd19e}
+@media(max-width:520px){.album-reward-prize{justify-items:start;border-left:0;padding:0}}
