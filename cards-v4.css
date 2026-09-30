@@ -1,0 +1,117 @@
+/* Cartes joueur v4 — spec « FOOTVAULT · Refonte des cartes joueur v4 » (dev handoff).
+   Chargée après styles.css ; ne s'applique qu'aux cartes générées par cardMarkup() (classe .v4).
+   Tailles relatives à la largeur de la carte (unités cqw) : même rendu en grille et en détail. */
+
+:root{--num:'Oswald','Barlow Condensed',Impact,sans-serif}
+.tcg-card.v4{
+  --rarity-accent:#9a9d97;
+  position:relative;isolation:isolate;container-type:inline-size;
+  aspect-ratio:.685;padding:0;border-radius:16px;overflow:visible;
+  background:none!important;box-shadow:none;
+  filter:drop-shadow(0 14px 26px rgba(0,0,0,.5));
+  font-family:var(--body,'Inter',system-ui,sans-serif);color:#f2f0e9
+}
+.tcg-card.v4:before,.tcg-card.v4:after{display:none!important}
+.tcg-card.v4.rarity-rare{--rarity-accent:#6fa8d6}
+.tcg-card.v4.rarity-epic{--rarity-accent:#b98fe0}
+.tcg-card.v4.rarity-legendary{--rarity-accent:#f0cf7c}
+.tcg-card.v4.rarity-icon{--rarity-accent:#ffffff}
+
+/* ---------- cadre et couches de fond ---------- */
+.v4-frame{position:absolute;inset:0;border-radius:16px;overflow:hidden;background:linear-gradient(165deg,#2a2c2b,#111312 70%)}
+.v4-frame:after{content:"";position:absolute;inset:0;border-radius:16px;pointer-events:none;z-index:7;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),inset 0 1px 0 rgba(255,255,255,.12),inset 0 -12px 24px rgba(0,0,0,.45)}
+.v4-layer{position:absolute;inset:0}
+.v4-inner{position:absolute;inset:3.2cqw;border-radius:9px;z-index:6;pointer-events:none;border:1px solid rgba(255,255,255,.13)}
+.v4-inner:after{content:"";position:absolute;inset:2px;border-radius:7px;border:1px solid rgba(0,0,0,.35)}
+.v4-vignette{background:radial-gradient(120% 90% at 50% 8%,transparent 25%,rgba(0,0,0,.72) 100%)}
+
+/* Common : métal brossé + rivets */
+.rarity-common .v4-frame{background:linear-gradient(165deg,#3a3c3a,#1a1b1a 70%)}
+.rarity-common .v4-pattern{background:repeating-linear-gradient(0deg,rgba(255,255,255,.045) 0 1px,transparent 1px 3px)}
+/* Rare : grille circuit + bande diagonale */
+.rarity-rare .v4-frame{background:linear-gradient(165deg,#15314d,#0a1522 70%)}
+.rarity-rare .v4-pattern{background:
+  linear-gradient(120deg,transparent 38%,rgba(111,168,214,.16) 38% 52%,transparent 52%),
+  repeating-linear-gradient(0deg,rgba(111,168,214,.10) 0 1px,transparent 1px 14px),
+  repeating-linear-gradient(90deg,rgba(111,168,214,.10) 0 1px,transparent 1px 14px)}
+.rarity-common .v4-rivets,.rarity-rare .v4-rivets{background:
+  radial-gradient(circle at 4.2cqw 4.2cqw,rgba(255,255,255,.5) 0 1cqw,transparent 1.2cqw),
+  radial-gradient(circle at calc(100% - 4.2cqw) 4.2cqw,rgba(255,255,255,.5) 0 1cqw,transparent 1.2cqw),
+  radial-gradient(circle at 4.2cqw calc(100% - 4.2cqw),rgba(255,255,255,.5) 0 1cqw,transparent 1.2cqw),
+  radial-gradient(circle at calc(100% - 4.2cqw) calc(100% - 4.2cqw),rgba(255,255,255,.5) 0 1cqw,transparent 1.2cqw)}
+/* Epic : éclats de cristal + reflet au survol */
+.rarity-epic .v4-frame{background:linear-gradient(165deg,#2c1a42,#120a1c 70%)}
+.rarity-epic .v4-pattern{background:
+  linear-gradient(115deg,transparent 30%,rgba(185,143,224,.18) 30% 33%,transparent 33%),
+  linear-gradient(65deg,transparent 55%,rgba(185,143,224,.14) 55% 58%,transparent 58%),
+  linear-gradient(150deg,transparent 68%,rgba(185,143,224,.16) 68% 71%,transparent 71%)}
+.rarity-epic .v4-sheen{background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);transform:translateX(-120%);transition:transform .7s ease}
+.tcg-card.v4.rarity-epic:hover .v4-sheen{transform:translateX(120%)}
+/* Legendary : dégradé conique, halo, coins ouvragés */
+.rarity-legendary .v4-frame{background:conic-gradient(from 210deg at 50% 38%,#3b2a0c,#1a1206,#4a360f,#1a1206,#3b2a0c)}
+.rarity-legendary .v4-pattern{background:radial-gradient(60% 45% at 50% 34%,rgba(240,207,124,.26),transparent 70%)}
+.rarity-legendary .v4-inner{border-color:rgba(240,207,124,.55)}
+.rarity-legendary .v4-inner:before{content:"";position:absolute;inset:-1px;border-radius:9px;
+  background:
+    linear-gradient(var(--rarity-accent),var(--rarity-accent)) top left/9cqw 2px no-repeat,
+    linear-gradient(var(--rarity-accent),var(--rarity-accent)) top left/2px 9cqw no-repeat,
+    linear-gradient(var(--rarity-accent),var(--rarity-accent)) top right/9cqw 2px no-repeat,
+    linear-gradient(var(--rarity-accent),var(--rarity-accent)) top right/2px 9cqw no-repeat,
+    linear-gradient(var(--rarity-accent),var(--rarity-accent)) bottom left/9cqw 2px no-repeat,
+    linear-gradient(var(--rarity-accent),var(--rarity-accent)) bottom left/2px 9cqw no-repeat,
+    linear-gradient(var(--rarity-accent),var(--rarity-accent)) bottom right/9cqw 2px no-repeat,
+    linear-gradient(var(--rarity-accent),var(--rarity-accent)) bottom right/2px 9cqw no-repeat}
+/* Icon : foil holographique animé, grain, bordure en mouvement */
+.rarity-icon .v4-frame{background:linear-gradient(165deg,#0a0a0a,#000 70%)}
+.rarity-icon .v4-holo{background:linear-gradient(120deg,#ff7ad9 0%,#ffb37a 9%,#fff37a 18%,#a3ff7a 27%,#7affd4 36%,#7ab8ff 45%,#b87aff 54%,#ff7ad9 63%,#ffb37a 72%,#fff37a 81%,#a3ff7a 90%,#7affd4 100%);
+  background-size:280% 280%;mix-blend-mode:color-dodge;opacity:.62;animation:v4holo 6s ease-in-out infinite}
+.tcg-card.v4.rarity-icon:hover .v4-holo{opacity:.9;animation-duration:1.6s}
+.rarity-icon .v4-grain{background-image:repeating-linear-gradient(115deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px);mix-blend-mode:overlay;opacity:.7}
+.v4-icon-border{position:absolute;inset:0;z-index:8;border-radius:16px;pointer-events:none;padding:2px;
+  background:linear-gradient(120deg,#fff,#ffe9c2,#fff,#c9d9ff,#fff) border-box;background-size:260% 260%;
+  -webkit-mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
+  animation:v4border 5s linear infinite}
+.tcg-card.v4.rarity-icon:hover .v4-icon-border{animation-duration:1.4s}
+@keyframes v4holo{0%{background-position:15% 20%}50%{background-position:85% 80%}100%{background-position:15% 20%}}
+@keyframes v4border{to{background-position:260% 0}}
+@media (prefers-reduced-motion:reduce){.v4-holo,.v4-icon-border{animation:none}}
+
+/* ---------- filigrane du numéro (masqué sans numéro) ---------- */
+.v4-wm{position:absolute;z-index:1;right:-7cqw;bottom:4cqw;font:900 58cqw/1 var(--num,'Oswald','Barlow Condensed',Impact,sans-serif);
+  letter-spacing:-3cqw;color:rgba(255,255,255,.07);pointer-events:none;user-select:none}
+.rarity-rare .v4-wm{color:rgba(111,168,214,.10)}
+.rarity-epic .v4-wm{color:rgba(185,143,224,.11)}
+.rarity-legendary .v4-wm{color:rgba(240,207,124,.13)}
+
+/* ---------- face ---------- */
+.v4-face{position:relative;z-index:6;height:100%;padding:5cqw 4.7cqw;display:flex;flex-direction:column}
+.v4-top{display:flex;justify-content:space-between;align-items:flex-start;gap:4px;font:800 3cqw var(--body,'Inter',sans-serif);letter-spacing:.35cqw;opacity:.9}
+.v4-top span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v4-pos{flex:none;padding:1cqw 3cqw;border-radius:3px;font-weight:900;font-size:3cqw;letter-spacing:.25cqw;color:#0b0c0c;
+  background:var(--rarity-accent);box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 2px 4px rgba(0,0,0,.3)}
+.rarity-icon .v4-pos{background:linear-gradient(160deg,#fff,#c9c9c9);border:1px solid #fff}
+.v4-ovr{margin-top:1.5cqw;font:900 13.3cqw/.72 var(--num,'Oswald','Barlow Condensed',Impact,sans-serif);color:var(--rarity-accent);letter-spacing:-.3cqw}
+.v4-ovr small{display:block;font:800 3cqw var(--body,'Inter',sans-serif);letter-spacing:.5cqw;margin-top:2cqw;opacity:.75;color:#f2f0e9}
+.rarity-icon .v4-ovr{font-size:19cqw;color:#fff;text-shadow:0 0 34px rgba(255,255,255,.6)}
+.v4-name-zone{margin-top:auto;min-width:0}
+.v4-club{display:block;font:700 3cqw var(--body,'Inter',sans-serif);margin-bottom:1cqw;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tcg-card.v4 .v4-name{margin:0 0 3.3cqw;font:900 7.3cqw/.95 var(--head,'Barlow Condensed',sans-serif);text-transform:uppercase;letter-spacing:.03cqw;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rarity-legendary .v4-name{background:linear-gradient(90deg,#fff3c4,#f0cf7c,#c9973a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.rarity-icon .v4-name{font-size:7.7cqw;text-shadow:0 0 20px rgba(255,255,255,.4)}
+.v4-stats{display:grid;grid-template-columns:1fr 1fr;column-gap:3.3cqw;row-gap:1.7cqw;padding-top:3.3cqw;border-top:1px solid rgba(255,255,255,.16);margin-bottom:3cqw}
+.v4-stats div{display:flex;align-items:baseline;justify-content:space-between;gap:2cqw}
+.v4-stats b{font:900 5cqw/1 var(--num,'Oswald','Barlow Condensed',Impact,sans-serif);color:#fff;text-shadow:0 0 10px rgba(255,255,255,.35)}
+.v4-stats span{font:700 2.7cqw var(--body,'Inter',sans-serif);letter-spacing:.33cqw;opacity:.68}
+.v4-foot{display:flex;justify-content:space-between;align-items:center;gap:4px;padding-top:3cqw;border-top:1px solid rgba(255,255,255,.14);
+  font:800 3cqw var(--head,'Barlow Condensed',sans-serif);letter-spacing:.66cqw}
+.v4-rarity{color:var(--rarity-accent);white-space:nowrap}
+.rarity-icon .v4-rarity{letter-spacing:1cqw;text-shadow:0 0 14px rgba(255,255,255,.7)}
+.v4-nation{font:600 2.7cqw var(--body,'Inter',sans-serif);letter-spacing:.15cqw;opacity:.65;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Grille dense : sous ~160 px de large, attributs masqués (spec §5) ; OVR, rareté et motif restent. */
+@container (max-width:160px){
+  .tcg-card.v4 .v4-stats{display:none}
+  .tcg-card.v4 .v4-name{margin-bottom:2cqw}
+}

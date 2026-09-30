@@ -64,7 +64,7 @@ function applySecurityHeaders(req, res) {
   };
 
   originalSetHeader('X-Content-Type-Options', 'nosniff');
-  originalSetHeader('Content-Security-Policy', "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self';");
+  originalSetHeader('Content-Security-Policy', "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self';");
   originalSetHeader('Cross-Origin-Resource-Policy', 'same-origin');
   originalSetHeader('Origin-Agent-Cluster', '?1');
   originalSetHeader('X-Permitted-Cross-Domain-Policies', 'none');
