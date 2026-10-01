@@ -16,6 +16,7 @@ const zlib = require('node:zlib');
 const crypto = require('node:crypto');
 const { rarityFromOvr } = require('../lib/rarity');
 const { frenchNation } = require('../lib/nations');
+const { clubKey } = require('../lib/club-key');
 
 const DATA_FILE = path.join(__dirname, '..', 'data', 'europe-2010-2027.json.gz');
 const IMPORT_ID = 'europe-2010-2027';
@@ -56,6 +57,17 @@ function loadCards(buffer = fs.readFileSync(DATA_FILE)) {
   const ids = new Set(cards.map(c => c.id));
   if (ids.size !== cards.length) throw new Error('Collision d\'identifiants.');
   return cards;
+}
+
+// Un club présent sous plusieurs noms (même clé, lib/club-key.js) garde un seul nom : celui du club
+// déjà en base, sinon le nom le plus porté dans le fichier. Évite de recréer un doublon fusionné.
+async function unifyClubNames(client, cards) {
+  const byKey = new Map();
+  for (const r of (await client.query('SELECT name FROM clubs ORDER BY sort_order, id')).rows) if (!byKey.has(clubKey(r.name))) byKey.set(clubKey(r.name), r.name);
+  const counts = new Map();
+  for (const c of cards) counts.set(c.club, (counts.get(c.club) || 0) + 1);
+  for (const [name] of [...counts].sort((a, b) => b[1] - a[1])) if (!byKey.has(clubKey(name))) byKey.set(clubKey(name), name);
+  for (const c of cards) c.club = byKey.get(clubKey(c.club));
 }
 
 async function ensureStructure(client, cards) {
@@ -124,6 +136,7 @@ async function importEurope(pool, { force = false, log = console.log } = {}) {
     await client.query('BEGIN');
     // Un seul import à la fois (plusieurs instances au démarrage).
     await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [IMPORT_ID]);
+    await unifyClubNames(client, cards);
     const structure = await ensureStructure(client, cards);
     await upsertCards(client, cards);
     // Cartes retirées du fichier depuis l'import précédent : désactivées, jamais supprimées.
