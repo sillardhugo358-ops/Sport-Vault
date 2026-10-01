@@ -22,9 +22,7 @@ jobs:
             curl -fsS -A "$UA" -o "competition-$id.png" "$url" && echo "$id : $file -> $url" >> logos.txt
             sleep 1
           done <<'LIST'
-          ligue-des-champions UEFA_Champions_League.svg
-          coupe-du-monde FIFA_World_Cup_wordmark_(2023).svg
-          ligue-des-nations UEFA_Nations_League.svg
+          coupe-du-monde 2026_FIFA_World_Cup_emblem.svg
           LIST
           file competition-*.png
       - name: Commit
@@ -32,5 +30,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add competition-*.png logos.txt
-          git commit -m "Logos : compétitions internationales (temporaire)" || exit 0
+          git commit -m "Logos : emblème Coupe du Monde 2026 (temporaire)" || exit 0
           git push
