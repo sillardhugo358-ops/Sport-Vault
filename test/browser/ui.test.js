@@ -209,3 +209,21 @@ test('éditeur de succès : filtres (numéro, secrets, tri), aperçu joueur mult
   }
   assert.deepEqual(errors, []);
 });
+
+test('packs : logo de la compétition sur les packs de compétition, pas sur les packs standard', async () => {
+  for (const vp of [VIEWPORTS[0], VIEWPORTS[2]]) {
+    await page.setViewportSize({ width: vp.width, height: vp.height });
+    const r = await visit('packs');
+    assert.ok(r.overflow <= 1, vp.name + ' : débordement');
+    await page.waitForSelector('[data-shop-pack]');
+    const info = await page.evaluate(() => [...document.querySelectorAll('[data-shop-pack]')].map(card => ({
+      title: card.querySelector('h3')?.textContent.trim(),
+      logos: [...card.querySelectorAll('.pack-logos img')].map(i => ({ src: i.getAttribute('src'), ok: i.complete && i.naturalWidth > 0 }))
+    })));
+    const ligue1 = info.find(p => /ligue 1/i.test(p.title));
+    assert.deepEqual(ligue1.logos.map(l => l.src), ['competition-ligue-1.png'], vp.name);
+    assert.ok(ligue1.logos.every(l => l.ok), vp.name + ' : image chargée');
+    assert.equal(info.find(p => /^starter/i.test(p.title)).logos.length, 0, vp.name + ' : pas de logo sur un pack standard');
+  }
+  assert.deepEqual(errors, []);
+});

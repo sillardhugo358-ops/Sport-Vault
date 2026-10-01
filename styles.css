@@ -2372,7 +2372,7 @@ hr{border-color:#1d3d63}
 .fvh-pack{display:grid;gap:10px;color:var(--fv-white);text-decoration:none}
 .fvh-pack-art{position:relative;display:grid;place-items:center;aspect-ratio:3/4;border-radius:14px;background:radial-gradient(circle at 50% 35%,rgba(239,207,124,.14),transparent 65%),var(--fv-bg);border:1px solid var(--fv-line);overflow:hidden;transition:border-color .2s,transform .2s}
 .fvh-pack:hover .fvh-pack-art{border-color:var(--fv-gold);transform:translateY(-3px)}
-.fvh-pack-art img{width:46%;opacity:.95}
+.fvh-pack-art>img{width:46%;opacity:.95}
 .fvh-pack-art b{position:absolute;left:10px;right:10px;bottom:30px;text-align:center;font:900 18px/1 var(--head);letter-spacing:.5px}
 .fvh-pack-art small{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:var(--fv-grey);font-size:10px;letter-spacing:2px}
 .fvh-pack-info{display:grid;gap:3px}
@@ -2443,3 +2443,12 @@ hr{border-color:#1d3d63}
 .ranking-rewards li b{display:block;color:var(--gold);font:900 16px var(--head)}
 .ranking-rewards li span{font-size:12px;color:var(--text)}
 @media(max-width:760px){.ranking-rewards{grid-template-columns:1fr}}
+
+/* Packs : logo(s) de la compétition (competition-<id>.png) sur une pastille claire, à la place du symbole. */
+.pack-logos{z-index:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;min-width:76px;height:76px;border-radius:18px;background:#fff;box-shadow:0 10px 26px rgba(0,0,0,.4)}
+.pack-logos img{display:block;max-width:60px;max-height:60px;width:auto;height:auto;object-fit:contain}
+.pack-logos-multi{height:60px;padding:6px 10px;border-radius:14px}
+.pack-logos-multi img{max-width:38px;max-height:42px}
+.shop-pack-art:has(.pack-logos) .shop-pack-symbol{display:none}
+.fvh-pack-art>.pack-logos{position:absolute;top:12px;left:50%;transform:translateX(-50%);min-width:0;height:48px;padding:5px 8px;border-radius:12px}
+.fvh-pack-art>.pack-logos img{width:auto;max-width:34px;max-height:36px;opacity:1}
