@@ -6,48 +6,75 @@
   const CSS=`
     .success-admin-head-actions{display:flex;gap:10px;flex-wrap:wrap}
     .success-admin-catalog-tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .success-admin-catalog-tools select{min-height:40px}
+    .success-admin-catalog-tools select{min-height:40px;flex:1 1 170px;max-width:240px;min-width:0}
+    .success-admin-catalog-tools .success-admin-search{flex:2 1 260px;min-width:220px;max-width:none}
+    @media(max-width:760px){.success-admin-catalog-tools select,.success-admin-catalog-tools .success-admin-search{flex:1 1 100%;max-width:none}}
     .achievement-editor-modal{max-width:900px;width:100%}
     .achievement-editor-layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:22px;margin-top:14px}
     .achievement-editor-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .achievement-editor-form label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:700}
     .achievement-editor-form .wide{grid-column:1/-1}
+    .achievement-editor-form label{min-width:0}
+    .achievement-editor-form input:not([type=checkbox]),.achievement-editor-form select,.achievement-editor-form textarea{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+    .achievement-editor-layout>*{min-width:0}
     .achievement-editor-form .field-error{color:#ff6b6b;font-weight:600;font-size:12px}
     .achievement-editor-form .has-error input,.achievement-editor-form .has-error select,.achievement-editor-form .has-error textarea{border-color:#ff6b6b}
     .achievement-editor-form .checkbox-label{flex-direction:row;align-items:center}
     .achievement-editor-note{font-size:12px;opacity:.75;margin-top:10px}
     .achievement-editor-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;flex-wrap:wrap}
+    .achievement-preview-states{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px}
+    .achievement-preview-states button{padding:6px 10px;border-radius:999px;border:1px solid rgba(121,151,190,.3);background:transparent;color:inherit;font-size:11px;font-weight:800;cursor:pointer}
+    .achievement-preview-states button.active{background:var(--gold,#efcf7c);border-color:var(--gold,#efcf7c);color:#08111f}
+    .achievement-preview-box .success-card{margin:0;max-width:360px}
+    .achievement-preview-facts{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:4px;font-size:12px;opacity:.85}
+    .achievement-more{display:flex;justify-content:center;padding:6px 0 4px}
     @media(max-width:760px){.achievement-editor-layout{grid-template-columns:1fr}.achievement-editor-form{grid-template-columns:1fr}}
   `;
   const style=()=>{if(document.getElementById(STYLE_ID))return;const s=document.createElement('style');s.id=STYLE_ID;s.textContent=CSS;document.head.appendChild(s)};
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fr=n=>Number(n||0).toLocaleString('fr-FR');
-  const state={items:[],types:{}};
+  const norm=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const state={items:[],types:{},limit:40};
+  // Filtres gardés pendant la session (rechargement de la console compris).
+  const FILTERS=['adminAchievementSearch','adminAchievementStatus','adminAchievementCategory','adminAchievementType','adminAchievementSort'];
+  const KEY='fv-admin-achievement-filters';
+  const saveFilters=()=>{try{sessionStorage.setItem(KEY,JSON.stringify(Object.fromEntries(FILTERS.map(id=>[id,document.getElementById(id)?.value||'']))))}catch{}};
+  const savedFilters=()=>{try{return JSON.parse(sessionStorage.getItem(KEY)||'{}')||{}}catch{return{}}};
   let api,setModal,closeModal,toast,siteConfirmDialog;
 
   async function load(box){
-    try{const d=await api('/api/admin/achievements');state.items=d.achievements||[];state.types=d.types||{};fillFilters();render(box);}
+    try{const d=await api('/api/admin/achievements');state.items=d.achievements||[];state.types=d.types||{};fillFilters();restoreFilters();render(box);}
     catch(e){box.innerHTML='<div class="success-admin-empty"><strong>Impossible de charger les succès</strong><p>'+esc(e.message)+'</p><button class="btn btn-outline" type="button" data-achievements-retry>RÉESSAYER</button></div>';const b=box.querySelector('[data-achievements-retry]');if(b)b.onclick=()=>load(box);}
   }
 
   // Listes des filtres : catégories existantes et conditions connues (valeur choisie conservée).
   function fillFilters(){
     const fill=(id,values)=>{const el=document.getElementById(id);if(!el)return;const cur=el.value,first=el.options[0].outerHTML;el.innerHTML=first+values.map(([v,l])=>'<option value="'+esc(v)+'">'+esc(l)+'</option>').join('');el.value=values.some(([v])=>v===cur)?cur:'';};
-    fill('adminAchievementCategory',[...new Set(state.items.map(x=>x.category))].sort((a,b)=>a.localeCompare(b,'fr')).map(c=>[c,c]));
-    fill('adminAchievementType',Object.entries(state.types));
+    const count=key=>{const m=new Map();for(const x of state.items)m.set(x[key],(m.get(x[key])||0)+1);return m;};
+    const cats=count('category'),types=count('type');
+    fill('adminAchievementCategory',[...cats.keys()].sort((a,b)=>a.localeCompare(b,'fr')).map(c=>[c,c+' ('+cats.get(c)+')']));
+    fill('adminAchievementType',Object.entries(state.types).filter(([k])=>types.has(k)).map(([k,v])=>[k,v+' ('+types.get(k)+')']));
   }
+  function restoreFilters(){const saved=savedFilters();for(const id of FILTERS){const el=document.getElementById(id);if(el&&saved[id]!=null&&[...(el.options||[{value:saved[id]}])].some(o=>o.value===saved[id]))el.value=saved[id];}}
 
   function render(box){
     const total=document.getElementById('adminAchievementTotal'),active=document.getElementById('adminAchievementActive'),count=document.getElementById('adminAchievementCount');
     if(total)total.textContent=fr(state.items.length);
     if(active)active.textContent=fr(state.items.filter(x=>x.active).length);
-    const q=String(document.getElementById('adminAchievementSearch')?.value||'').trim().toLowerCase();
-    const st=document.getElementById('adminAchievementStatus')?.value||'',cat=document.getElementById('adminAchievementCategory')?.value||'',type=document.getElementById('adminAchievementType')?.value||'';
-    const shown=state.items.filter(x=>(!q||(x.name+' '+x.id+' '+x.category+' '+x.description).toLowerCase().includes(q))&&(!st||(st==='pending'?x.type==='pending':st==='secret'?Boolean(x.hidden):(st==='active')===Boolean(x.active)))&&(!cat||x.category===cat)&&(!type||x.type===type));
-    if(count)count.textContent=shown.length+' / '+state.items.length+' SUCCÈS';
-    box.innerHTML=shown.map(x=>'<article class="admin-achievement-row '+(x.active?'is-active':'is-inactive')+'"><div class="admin-achievement-emblem">'+esc(x.icon||'✦')+'</div><div class="admin-achievement-content"><div class="admin-achievement-heading"><strong>'+esc(x.name)+'</strong><span class="admin-achievement-state '+(x.active?'active':'inactive')+'"><i></i>'+(x.active?'ACTIF':'INACTIF')+'</span></div><small class="admin-achievement-meta">'+(x.code?'N° '+String(x.code).padStart(3,'0')+' <b>·</b> ':'')+esc(x.id)+' <b>·</b> '+esc(x.category)+(x.hidden?' <b>·</b> SECRET':'')+(x.type==='pending'?' <b>·</b> À VENIR (mesure non disponible)':'')+'</small><p>'+esc(x.description)+'</p><div class="admin-achievement-chips"><span>◈ '+esc(state.types[x.type]||x.type)+' : <b>'+fr(x.target)+'</b></span><span>◉ <b>'+fr(x.coins)+' FC</b></span><span>✦ <b>'+fr(x.xp)+' XP</b></span><span>♙ <b>'+fr(x.claims)+'</b> récompensé(s)</span></div></div><div class="admin-achievement-actions"><button class="btn btn-outline" type="button" data-edit-achievement="'+esc(x.id)+'">✎ MODIFIER</button><button class="btn btn-outline" type="button" data-toggle-achievement="'+esc(x.id)+'">'+(x.active?'DÉSACTIVER':'ACTIVER')+'</button><button class="btn btn-danger" type="button" data-delete-achievement="'+esc(x.id)+'">⌫ SUPPRIMER</button></div></article>').join('')
+    const q=norm(document.getElementById('adminAchievementSearch')?.value||'').trim(),qNum=(q.match(/^(?:n[°o]?\s*)?0*(\d{1,3})$/)||[])[1];
+    const st=document.getElementById('adminAchievementStatus')?.value||'',cat=document.getElementById('adminAchievementCategory')?.value||'',type=document.getElementById('adminAchievementType')?.value||'',sort=document.getElementById('adminAchievementSort')?.value||'code';
+    const statusOk=x=>!st||(st==='pending'?x.type==='pending':st==='secret'?Boolean(x.hidden):st==='claimed'?x.claims>0:st==='unclaimed'?!x.claims:(st==='active')===Boolean(x.active));
+    const searchOk=x=>!q||(qNum?Number(x.code)===Number(qNum):norm(x.name+' '+x.id+' '+x.category+' '+x.description).includes(q));
+    const byCode=(a,b)=>(a.code??1e9)-(b.code??1e9)||a.name.localeCompare(b.name,'fr');
+    const sorters={code:byCode,name:(a,b)=>a.name.localeCompare(b.name,'fr'),reward:(a,b)=>Number(b.coins)-Number(a.coins)||byCode(a,b),claims:(a,b)=>Number(b.claims)-Number(a.claims)||byCode(a,b),target:(a,b)=>Number(a.target)-Number(b.target)||byCode(a,b)};
+    const matched=state.items.filter(x=>searchOk(x)&&statusOk(x)&&(!cat||x.category===cat)&&(!type||x.type===type)).sort(sorters[sort]||byCode);
+    const shown=matched.slice(0,state.limit);
+    if(count)count.textContent=matched.length+' / '+state.items.length+' SUCCÈS';
+    box.innerHTML=shown.map(x=>'<article class="admin-achievement-row '+(x.active?'is-active':'is-inactive')+'"><div class="admin-achievement-emblem">'+esc(x.icon||'✦')+'</div><div class="admin-achievement-content"><div class="admin-achievement-heading"><strong>'+esc(x.name)+'</strong><span class="admin-achievement-state '+(x.active?'active':'inactive')+'"><i></i>'+(x.active?'ACTIF':'INACTIF')+'</span></div><small class="admin-achievement-meta">'+(x.code?'N° '+String(x.code).padStart(3,'0')+' <b>·</b> ':'')+esc(x.id)+' <b>·</b> '+esc(x.category)+(x.hidden?' <b>·</b> SECRET':'')+(x.type==='pending'?' <b>·</b> À VENIR (mesure non disponible)':'')+'</small><p>'+esc(x.description)+'</p><div class="admin-achievement-chips"><span>◈ '+esc(state.types[x.type]||x.type)+' : <b>'+fr(x.target)+'</b></span><span>◉ <b>'+fr(x.coins)+' FC</b></span><span>✦ <b>'+fr(x.xp)+' XP</b></span><span>♙ <b>'+fr(x.claims)+'</b> récompensé(s)</span></div></div><div class="admin-achievement-actions"><button class="btn btn-outline" type="button" data-preview-achievement="'+esc(x.id)+'">👁 APERÇU</button><button class="btn btn-outline" type="button" data-edit-achievement="'+esc(x.id)+'">✎ MODIFIER</button><button class="btn btn-outline" type="button" data-toggle-achievement="'+esc(x.id)+'">'+(x.active?'DÉSACTIVER':'ACTIVER')+'</button><button class="btn btn-danger" type="button" data-delete-achievement="'+esc(x.id)+'">⌫ SUPPRIMER</button></div></article>').join('')+(matched.length>shown.length?'<div class="achievement-more"><button class="btn btn-outline" type="button" data-more-achievements>AFFICHER PLUS ('+(matched.length-shown.length)+' RESTANTS)</button></div>':'')
       ||'<div class="success-admin-empty"><span>✦</span><strong>'+(state.items.length?'Aucun succès ne correspond aux filtres':'Aucun succès configuré')+'</strong><p>'+(state.items.length?'Modifiez la recherche ou les filtres.':'Créez le premier défi avec « Créer un succès ».')+'</p></div>';
     const byId=new Map(state.items.map(x=>[x.id,x]));
+    box.querySelectorAll('[data-preview-achievement]').forEach(b=>b.onclick=()=>openPreview(byId.get(b.dataset.previewAchievement)));
+    const more=box.querySelector('[data-more-achievements]');if(more)more.onclick=()=>{state.limit+=40;render(box);};
     box.querySelectorAll('[data-edit-achievement]').forEach(b=>b.onclick=()=>openEditor(byId.get(b.dataset.editAchievement),box));
     box.querySelectorAll('[data-toggle-achievement]').forEach(b=>b.onclick=()=>act(byId.get(b.dataset.toggleAchievement),'toggle',b,box));
     box.querySelectorAll('[data-delete-achievement]').forEach(b=>b.onclick=()=>act(byId.get(b.dataset.deleteAchievement),'delete',b,box));
@@ -62,10 +89,34 @@
     catch(e){toast(e.message);button.disabled=false;}
   }
 
-  // Aperçu : carte telle que le joueur la voit sur la page des succès.
-  function preview(f){
-    const target=Math.max(1,Number(f.target.value||1));
-    return '<article class="success-card"><div class="success-card-top"><span class="success-icon">'+esc(f.icon.value||'✦')+'</span><span class="success-status">EN COURS</span></div><p class="eyebrow">'+esc((f.category.value||'Catégorie').toUpperCase())+'</p><h3>'+esc(f.name.value||'Nom du succès')+'</h3><p class="success-description">'+esc(f.description.value||'Description du défi.')+'</p><div class="success-progress"><div class="success-track"><i style="width:0%"></i></div><span>0 / '+fr(target)+'</span></div><div class="success-reward"><span>RÉCOMPENSE</span><b><span>◉ '+fr(f.coins.value)+' FC</span><span>✦ '+fr(f.xp.value)+' XP</span></b></div></article>';
+  // Aperçu : la vraie carte de la page Succès (window.fvSuccessCard, app.js) dans l'état choisi.
+  const PREVIEW_STATES=[['progress','EN COURS'],['ready','À RÉCUPÉRER'],['claimed','RÉCUPÉRÉ'],['secret','VU AVANT RÉUSSITE']];
+  let previewState='progress';
+  function previewCard(x,mode){
+    const target=Math.max(1,Number(x.target)||1),secret=mode==='secret'&&x.hidden;
+    const card={code:x.code,icon:x.icon||'✦',category:x.category||'Catégorie',hidden:!!x.hidden,coins:Number(x.coins)||0,xp:Number(x.xp)||0,target,
+      name:secret&&x.name==='???'?'???':(x.name||'Nom du succès'),
+      description:secret?'Succès secret : la condition se dévoile quand tu le réussis.':(x.description||'Description du défi.'),
+      type:secret?'secret':x.type,progress:mode==='progress'?Math.floor(target*0.4):target,completed:mode==='ready'||mode==='claimed',claimed:mode==='claimed'};
+    const html=window.fvSuccessCard?window.fvSuccessCard(card):'<article class="success-card"><h3>'+esc(card.name)+'</h3><p>'+esc(card.description)+'</p></article>';
+    return html.replace(/data-claim-achievement="[^"]*"/g,'disabled');
+  }
+  function previewHtml(x){
+    const states=PREVIEW_STATES.filter(([k])=>k!=='secret'||x.hidden);
+    if(!states.some(([k])=>k===previewState))previewState='progress';
+    return '<div class="achievement-preview-states" role="group" aria-label="État affiché">'+states.map(([k,l])=>'<button type="button" data-preview-state="'+k+'" class="'+(k===previewState?'active':'')+'" aria-pressed="'+(k===previewState)+'">'+l+'</button>').join('')+'</div>'
+      +'<div class="achievement-preview-box">'+previewCard(x,previewState)+'</div>'
+      +'<ul class="achievement-preview-facts"><li>Condition : <b>'+esc(state.types[x.type]||x.type)+'</b> · objectif <b>'+fr(x.target)+'</b></li>'
+      +(x.id?'<li>Récupéré par <b>'+fr(x.claims)+'</b> joueur(s)</li>':'')+(x.type==='pending'?'<li>Mesure non disponible : ce succès ne peut pas être activé.</li>':'')+'</ul>';
+  }
+  const bindStates=(root,draw)=>root.querySelectorAll('[data-preview-state]').forEach(b=>b.onclick=()=>{previewState=b.dataset.previewState;draw();});
+  // Aperçu en lecture seule depuis la liste.
+  function openPreview(x){
+    if(!x)return;
+    setModal('<div class="modal-box achievement-editor-modal"><button class="modal-close" type="button" data-preview-close aria-label="Fermer">×</button><p class="eyebrow">ADMIN / SUCCÈS / APERÇU JOUEUR</p><h2>'+esc(x.name)+'</h2><div data-preview-root></div><div class="achievement-editor-footer"><button class="btn btn-ghost" type="button" data-preview-close>FERMER</button></div></div>');
+    const modal=document.getElementById('modal'),root=modal.querySelector('[data-preview-root]');
+    const draw=()=>{root.innerHTML=previewHtml(x);bindStates(root,draw);};draw();
+    modal.querySelectorAll('[data-preview-close]').forEach(b=>b.onclick=()=>closeModal());
   }
 
   function openEditor(item,box){
@@ -92,8 +143,9 @@
       +'<div class="achievement-editor-footer"><button class="btn btn-ghost" type="button" data-achievement-cancel>ANNULER</button><button class="btn btn-gold" type="button" data-achievement-save>ENREGISTRER</button></div></div>');
     const modal=document.getElementById('modal'),f=modal.querySelector('form'),save=modal.querySelector('[data-achievement-save]');
     const snapshot=()=>JSON.stringify(Object.fromEntries(new FormData(f)));const initial=snapshot();
-    const refresh=()=>{modal.querySelector('[data-achievement-preview]').innerHTML=preview(f.elements);};
-    f.addEventListener('input',ev=>{const l=ev.target.closest('[data-field]');if(l){l.classList.remove('has-error');l.querySelector('[data-error]').textContent='';}refresh();});refresh();
+    const formItem=()=>{const e=f.elements;return{...x,name:e.name.value.trim(),category:e.category.value.trim(),icon:e.icon.value.trim(),description:e.description.value.trim(),type:e.type.value,target:Number(e.target.value)||1,coins:Number(e.coins.value)||0,xp:Number(e.xp.value)||0,hidden:e.hidden.checked};};
+    const refresh=()=>{const root=modal.querySelector('[data-achievement-preview]');root.innerHTML=previewHtml(formItem());bindStates(root,refresh);};
+    f.addEventListener('change',()=>refresh());f.addEventListener('input',ev=>{const l=ev.target.closest('[data-field]');if(l){l.classList.remove('has-error');l.querySelector('[data-error]').textContent='';}refresh();});refresh();
     modal.querySelectorAll('[data-achievement-cancel]').forEach(b=>b.onclick=async()=>{
       if(snapshot()!==initial){const ok=await siteConfirmDialog({title:'ABANDONNER LES MODIFICATIONS ?',subtitle:'Les changements non enregistrés seront perdus.',confirm:'ABANDONNER'});if(ok===null)return;}
       closeModal();
@@ -122,7 +174,9 @@
     box.dataset.ready='1';style();
     const create=document.querySelector('[data-new-achievement]');if(create)create.onclick=()=>openEditor(null,box);
     const refresh=document.querySelector('[data-refresh-achievements]');if(refresh)refresh.onclick=()=>load(box);
-    ['adminAchievementSearch','adminAchievementStatus','adminAchievementCategory','adminAchievementType'].forEach(id=>{const el=document.getElementById(id);if(el){el.oninput=()=>render(box);el.onchange=()=>render(box);}});
+    const update=()=>{state.limit=40;saveFilters();render(box);};
+    FILTERS.forEach(id=>{const el=document.getElementById(id);if(el){el.oninput=update;el.onchange=update;}});
+    const reset=document.querySelector('[data-reset-achievement-filters]');if(reset)reset.onclick=()=>{FILTERS.forEach(id=>{const el=document.getElementById(id);if(el)el.value=id==='adminAchievementSort'?'code':'';});update();};
     load(box);
   };
 })();
