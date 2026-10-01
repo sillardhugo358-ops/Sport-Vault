@@ -153,3 +153,25 @@ test('mobile : filtres des packs repliés, dépliables ; onglets du marché excl
   assert.deepEqual(visible, ['auctionLive']);
   assert.deepEqual(errors, []);
 });
+
+test('favorites : ajout depuis la fiche carte, vitrine du profil, étoile de la collection', async () => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await visit('collection');
+  const id = await page.evaluate(async () => ((await (await fetch('/api/collection')).json()).cards || [])[0]?.instanceId);
+  assert.ok(id, 'le joueur doit posséder une carte');
+  await visit('card?id=' + encodeURIComponent(id));
+  await page.click('[data-fav-toggle]');
+  await page.waitForSelector('[data-fav-toggle][data-fav="1"]');
+  for (const vp of [VIEWPORTS[0], VIEWPORTS[2]]) {
+    await page.setViewportSize({ width: vp.width, height: vp.height });
+    const r = await visit('profil');
+    assert.equal(await page.locator('.profile-fav-card').count(), 1, vp.name);
+    assert.ok(r.overflow <= 1, vp.name + ' : débordement');
+  }
+  await visit('collection');
+  assert.equal(await page.locator('.collection-fav').count(), 1);
+  await visit('profil');
+  await page.click('[data-fav-remove]');
+  await page.waitForFunction(() => document.querySelectorAll('.profile-fav-card').length === 0);
+  assert.deepEqual(errors, []);
+});
