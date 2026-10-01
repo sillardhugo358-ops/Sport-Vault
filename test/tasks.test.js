@@ -1,11 +1,12 @@
 'use strict';
 
-// Tâches quotidiennes et hebdomadaires en base et éditeur admin (lib/tasks.js, /api/admin/tasks).
+// Missions quotidiennes, hebdomadaires et mensuelles en base et éditeur admin (lib/tasks.js, /api/admin/tasks).
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { startServer, newPlayer } = require('./helpers');
+const { startServer, newPlayer, forceRotation, missionId } = require('./helpers');
 const { DAILY_TASKS, WEEKLY_TASKS } = require('../lib/game-config');
+const { MISSION_CATALOG } = require('../lib/missions-catalog');
 
 let server, creator;
 test.before(async () => {
@@ -19,18 +20,23 @@ const base = { kind: 'daily', title: 'Tâche test', description: 'Ouvre 2 packs 
 const save = body => creator.post('/api/admin/tasks', body);
 const q = async (sql, params) => (await server.db.query(sql, params)).rows;
 
-test('reprise en base : mêmes identifiants, récompenses et ordre que la configuration', async () => {
+test('missions du document : 40 / 45 / 15, les 8 tâches d’origine désactivées et sauvegardées, tirage 3 / 5 / 5', async () => {
   const r = await creator.get('/api/admin/tasks');
   assert.equal(r.status, 200);
-  for (const [kind, list] of [['daily', DAILY_TASKS], ['weekly', WEEKLY_TASKS]]) {
-    const got = r.body.tasks.filter(t => t.kind === kind);
-    assert.deepEqual(got.map(t => [t.id, t.target, t.reward.coins, t.reward.xp]), list.map(t => [t.id, t.target, t.reward.coins, t.reward.xp]));
-  }
-  // Un joueur voit les mêmes tâches qu'avant.
-  const p = await newPlayer(server, 'Joueur');
-  const prog = (await p.get('/api/progression')).body;
-  assert.deepEqual(prog.dailyTasks.map(t => t.id), DAILY_TASKS.map(t => t.id));
-  assert.deepEqual(prog.weeklyTasks.map(t => t.id), WEEKLY_TASKS.map(t => t.id));
+  const coded = r.body.tasks.filter(t => t.code != null);
+  for (const [kind, n] of [['daily', 40], ['weekly', 45], ['monthly', 15]]) assert.equal(coded.filter(t => t.kind === kind).length, n, kind);
+  const old = r.body.tasks.filter(t => [...DAILY_TASKS, ...WEEKLY_TASKS].some(o => o.id === t.id));
+  assert.equal(old.length, 8);
+  assert.ok(old.every(t => !t.active));
+  assert.equal((await q("SELECT count(*)::int AS n FROM achievement_migration_backup WHERE migration_id='missions-pdf-2026-10-01'"))[0].n, 8);
+  assert.deepEqual(coded.filter(t => !t.active).map(t => t.id), MISSION_CATALOG.filter(m => m.pending).map(m => m.id), '« Partage » à venir');
+  // Même tirage pour tous les joueurs, parmi les missions actives.
+  const a = (await (await newPlayer(server, 'Joueur')).get('/api/progression')).body;
+  const b = (await (await newPlayer(server, 'Autre')).get('/api/progression')).body;
+  assert.deepEqual([a.dailyTasks.length, a.weeklyTasks.length, a.monthlyTasks.length], [3, 5, 5]);
+  for (const k of ['dailyTasks', 'weeklyTasks', 'monthlyTasks']) assert.deepEqual(a[k].map(t => t.id), b[k].map(t => t.id));
+  assert.ok(a.dailyTasks.every(t => t.reward.coins >= 100 && !t.completed));
+  assert.ok(new Date(a.periodEnds.monthly) > new Date(a.periodEnds.weekly) || new Date(a.periodEnds.monthly) > new Date(a.periodEnds.daily));
 });
 
 test('droits : un joueur ne lit ni ne modifie les tâches', async () => {
@@ -51,7 +57,11 @@ test('création : identifiant généré, visible et récupérable par les joueur
   assert.equal(weekly.status, 200);
   assert.equal(weekly.body.task.id, 'tache-test');
 
+  // Le tirage du jour est déjà fixé : la nouvelle mission entre dans le tirage suivant (ici forcé).
   const p = await newPlayer(server, 'Ouvreur');
+  const drawn = (await p.get('/api/progression')).body.dailyTasks.map(t => t.id);
+  assert.ok(!drawn.includes('tache-test'));
+  await forceRotation(server, 'daily', [...drawn.slice(0, 2), 'tache-test']);
   assert.ok((await p.get('/api/progression')).body.dailyTasks.some(t => t.id === 'tache-test' && t.target === 2));
   assert.equal((await p.post('/api/tasks/claim', { kind: 'daily', taskId: 'tache-test' })).status, 400);
   await p.post('/api/packs/open', { packId: 'starter' });
@@ -75,20 +85,24 @@ test('validation : erreurs par champ, période et action inconnues', async () =>
   const r = await save({ action: 'create', kind: 'daily', title: 'x', description: '', type: 'inconnu', target: 0, coins: 0, xp: 0, order: -1 });
   assert.equal(r.status, 400);
   for (const f of ['title', 'description', 'type', 'target', 'coins', 'order']) assert.ok(r.body.errors[f], f);
-  assert.equal((await save({ ...base, action: 'create', kind: 'monthly' })).status, 400);
+  assert.equal((await save({ ...base, action: 'create', kind: 'yearly' })).status, 400);
   assert.equal((await save({ ...base, action: 'delete' })).status, 400);
   assert.equal((await save({ ...base, action: 'update', id: 'inexistante' })).status, 404);
 });
 
 test('désactivation : masquée aux joueurs, non récupérable, dernière tâche active protégée, tracée', async () => {
-  assert.equal((await save({ action: 'toggle', kind: 'daily', id: 'open-1', active: false })).status, 200);
+  const open1 = missionId('daily', 3);
+  await forceRotation(server, 'daily', [open1, missionId('daily', 1)]);
+  assert.equal((await save({ action: 'toggle', kind: 'daily', id: open1, active: false })).status, 200);
   const p = await newPlayer(server, 'Retardataire');
-  assert.ok(!(await p.get('/api/progression')).body.dailyTasks.some(t => t.id === 'open-1'));
+  assert.deepEqual((await p.get('/api/progression')).body.dailyTasks.map(t => t.id), [missionId('daily', 1)]);
   await p.post('/api/packs/open', { packId: 'starter' });
-  assert.equal((await p.post('/api/tasks/claim', { kind: 'daily', taskId: 'open-1' })).status, 404);
-  assert.equal((await save({ action: 'toggle', kind: 'daily', id: 'open-1', active: true })).status, 200);
+  assert.equal((await p.post('/api/tasks/claim', { kind: 'daily', taskId: open1 })).status, 404);
+  assert.equal((await save({ action: 'toggle', kind: 'daily', id: open1, active: true })).status, 200);
+  // Une mission « à venir » ne s'active pas.
+  assert.equal((await save({ action: 'toggle', kind: 'daily', id: missionId('daily', 37), active: true })).status, 400);
 
-  const weekly = (await creator.get('/api/admin/tasks')).body.tasks.filter(t => t.kind === 'weekly');
+  const weekly = (await creator.get('/api/admin/tasks')).body.tasks.filter(t => t.kind === 'weekly' && t.active);
   for (const t of weekly.slice(1)) assert.equal((await save({ action: 'toggle', kind: 'weekly', id: t.id, active: false })).status, 200);
   const last = await save({ action: 'toggle', kind: 'weekly', id: weekly[0].id, active: false });
   assert.equal(last.status, 400);
@@ -100,5 +114,6 @@ test('redémarrage : les tâches modifiées ne sont pas écrasées par la config
   await server.restart();
   const t = (await creator.get('/api/admin/tasks')).body.tasks.find(x => x.kind === 'daily' && x.id === 'tache-test');
   assert.equal(t.title, 'Tâche test renommée');
-  assert.equal((await q("SELECT count(*)::int AS n FROM app_migrations WHERE id='period-tasks-2026-09-30'"))[0].n, 1);
+  assert.equal((await q("SELECT count(*)::int AS n FROM app_migrations WHERE id IN ('period-tasks-2026-09-30','missions-pdf-2026-10-01')"))[0].n, 2);
+  assert.equal((await q('SELECT count(*)::int AS n FROM period_tasks WHERE code IS NOT NULL'))[0].n, 100);
 });

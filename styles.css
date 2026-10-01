@@ -2418,3 +2418,6 @@ hr{border-color:#1d3d63}
 /* Retouches identité : menu et compétitions */
 .fvh-competitions{grid-template-columns:repeat(4,minmax(0,1fr))}
 @media(max-width:600px){.fvh-competitions{grid-template-columns:repeat(2,minmax(0,1fr))}.fvh-pack-art b{display:none}}
+
+/* Mon Vault : temps restant avant les prochaines missions de la période. */
+.vault-renew{display:block;margin-top:6px;color:var(--gold);font-weight:800;letter-spacing:.08em}

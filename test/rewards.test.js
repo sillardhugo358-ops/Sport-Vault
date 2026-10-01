@@ -4,7 +4,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { startServer, newPlayer, userRow, awayFromParisMidnight } = require('./helpers');
+const { startServer, newPlayer, userRow, awayFromParisMidnight, forceRotation, missionId } = require('./helpers');
 
 let server;
 test.before(async () => { await awayFromParisMidnight(); server = await startServer(); });
@@ -68,23 +68,37 @@ test('mission : verrouillée tant que la précédente n\'est pas récupérée', 
   assert.equal((await p.post('/api/missions/claim', { missionId: 'open-1' })).status, 200);
 });
 
-test('tâche quotidienne : accordée une fois par jour, même en rafale', async () => {
+test('mission quotidienne : accordée une fois par jour, même en rafale ; hors tirage refusée', async () => {
+  const open1 = missionId('daily', 3), open2 = missionId('daily', 4);
+  await forceRotation(server, 'daily', [open1, missionId('daily', 1), missionId('daily', 26)]);
   const p = await newPlayer(server, 'Tâcheron');
-  assert.equal((await p.post('/api/tasks/claim', { kind: 'daily', taskId: 'open-1' })).status, 400);
+  assert.equal((await p.post('/api/tasks/claim', { kind: 'daily', taskId: open1 })).status, 400);
   await p.post('/api/packs/open', { packId: 'starter' });
+  await p.post('/api/packs/open', { packId: 'starter' });
+  assert.equal((await p.post('/api/tasks/claim', { kind: 'daily', taskId: open2 })).status, 404, 'mission non tirée aujourd’hui');
   const before = await coinsOf(p);
-  const results = await Promise.all(Array.from({ length: 10 }, () => p.post('/api/tasks/claim', { kind: 'daily', taskId: 'open-1' })));
+  const results = await Promise.all(Array.from({ length: 10 }, () => p.post('/api/tasks/claim', { kind: 'daily', taskId: open1 })));
   assert.equal(results.filter(r => r.status === 200).length, 1);
   assert.equal(await coinsOf(p), before + 100);
 });
 
-test('tâche hebdomadaire : accordée une fois par semaine', async () => {
+test('mission hebdomadaire et mensuelle : accordées une fois par période', async () => {
+  const w = missionId('weekly', 3), m = missionId('monthly', 9);
+  await forceRotation(server, 'weekly', [w]);
+  await forceRotation(server, 'monthly', [m]);
   const p = await newPlayer(server, 'Semaine');
   for (let i = 0; i < 5; i++) await p.post('/api/packs/open', { packId: 'starter' });
   const before = await coinsOf(p);
-  assert.equal((await p.post('/api/tasks/claim', { kind: 'weekly', taskId: 'open-5' })).status, 200);
-  assert.equal((await p.post('/api/tasks/claim', { kind: 'weekly', taskId: 'open-5' })).status, 400);
+  assert.equal((await p.post('/api/tasks/claim', { kind: 'weekly', taskId: w })).status, 200);
+  assert.equal((await p.post('/api/tasks/claim', { kind: 'weekly', taskId: w })).status, 400);
   assert.equal(await coinsOf(p), before + 400);
+  // « Gagne un niveau » ce mois-ci : mesuré depuis la première consultation des missions.
+  assert.equal((await p.post('/api/tasks/claim', { kind: 'monthly', taskId: m })).status, 400);
+  await server.db.query('UPDATE users SET xp=xp+5000 WHERE id=$1', [p.user.id]);
+  const r = await p.post('/api/tasks/claim', { kind: 'monthly', taskId: m });
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  assert.equal(r.body.reward.coins, 1500);
+  assert.equal((await p.post('/api/tasks/claim', { kind: 'monthly', taskId: m })).status, 400);
 });
 
 test('journal de sécurité en échec : la récompense reste acquise', async () => {

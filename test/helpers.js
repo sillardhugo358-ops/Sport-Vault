@@ -177,4 +177,15 @@ async function userRow(server, userId) {
   return (await server.db.query('SELECT * FROM users WHERE id=$1', [userId])).rows[0];
 }
 
-module.exports = { startServer, client, newPlayer, setCoins, userRow, awayFromParisMidnight };
+// Fixe les missions tirées pour la période en cours (au lieu du tirage tournant), pour des tests déterministes.
+async function forceRotation(server, kind, ids) {
+  const { periodInfo } = require('../lib/periods');
+  await server.db.query('INSERT INTO period_rotations(kind,period_key,task_ids) VALUES($1,$2,$3) ON CONFLICT (kind,period_key) DO UPDATE SET task_ids=EXCLUDED.task_ids',
+    [kind, periodInfo(kind).key, JSON.stringify(ids)]);
+}
+// Identifiant d'une mission du document à partir de sa période et de son numéro.
+function missionId(kind, code) {
+  return require('../lib/missions-catalog').MISSION_CATALOG.find(m => m.kind === kind && m.code === code).id;
+}
+
+module.exports = { startServer, client, newPlayer, setCoins, userRow, awayFromParisMidnight, forceRotation, missionId };

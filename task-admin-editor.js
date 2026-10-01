@@ -17,10 +17,12 @@
     @media(max-width:700px){.task-admin-table tbody tr td:before{content:attr(data-label)!important}}
   `;
   const style=()=>{if(document.getElementById(STYLE_ID))return;const s=document.createElement('style');s.id=STYLE_ID;s.textContent=CSS;document.head.appendChild(s)};
-  const state={tasks:[],types:{},kinds:{daily:'Quotidienne',weekly:'Hebdomadaire'},kind:'daily'};
+  const state={tasks:[],types:{},kinds:{daily:'Quotidienne',weekly:'Hebdomadaire',monthly:'Mensuelle'},kind:'daily'};
   let api,setModal,closeModal,toast,siteConfirmDialog;
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const periodWord=k=>k==='weekly'?'cette semaine':'aujourd’hui';
+  const periodWord=k=>({weekly:'cette semaine',monthly:'ce mois-ci'})[k]||'aujourd’hui';
+  const LABEL={daily:'QUOTIDIENNE',weekly:'HEBDOMADAIRE',monthly:'MENSUELLE'},PLURAL={daily:'QUOTIDIENNES',weekly:'HEBDOMADAIRES',monthly:'MENSUELLES'};
+  const RESET={daily:'Remise à zéro chaque jour à minuit (heure de Paris).',weekly:'Remise à zéro chaque lundi à minuit (heure de Paris).',monthly:'Remise à zéro le 1er de chaque mois à minuit (heure de Paris).'};
 
   async function load(body){
     try{
@@ -36,11 +38,11 @@
     if(count)count.textContent=list.filter(t=>t.active).length+' active(s) sur '+list.length;
     document.querySelectorAll('[data-task-kind]').forEach(b=>{const on=b.dataset.taskKind===state.kind;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on));});
     body.innerHTML=list.map(t=>'<tr class="'+(t.active?'':'is-inactive')+'"><td data-label="ORDRE">'+String(t.order).padStart(2,'0')+'</td>'
-      +'<td data-label="TÂCHE"><strong>'+esc(t.title)+'</strong><small>'+esc(t.description)+'</small></td>'
+      +'<td data-label="TÂCHE"><strong>'+(t.code!=null?'n° '+String(t.code).padStart(2,'0')+' · ':'')+esc(t.title)+'</strong><small>'+esc(t.description)+'</small></td>'
       +'<td data-label="CONDITION">'+esc(state.types[t.type]||t.type)+' : '+Number(t.target)+'</td>'
       +'<td data-label="RÉCOMPENSE">+'+Number(t.reward.coins)+' FC<small>+'+Number(t.reward.xp)+' XP</small></td>'
       +'<td data-label="RÉCUPÉRÉE">'+Number(t.claims||0)+' fois</td>'
-      +'<td data-label="STATUT"><span class="mission-status '+(t.active?'on':'off')+'">'+(t.active?'ACTIVE':'INACTIVE')+'</span></td>'
+      +'<td data-label="STATUT"><span class="mission-status '+(t.active?'on':'off')+'">'+(t.type==='pending'?'À VENIR':t.active?'ACTIVE':'INACTIVE')+'</span></td>'
       +'<td data-label="GESTION"><div class="mission-admin-actions"><button class="btn btn-gold" type="button" data-edit-task="'+esc(t.id)+'">MODIFIER</button>'
       +'<button class="btn btn-outline" type="button" data-toggle-task="'+esc(t.id)+'">'+(t.active?'DÉSACTIVER':'ACTIVER')+'</button></div></td></tr>').join('')||'<tr><td colspan="7">Aucune tâche.</td></tr>';
     const byId=new Map(list.map(t=>[t.id,t]));
@@ -58,18 +60,18 @@
 
   function preview(f,kind){
     const coins=Number(f.coins.value||0),xp=Number(f.xp.value||0),target=Math.max(1,Number(f.target.value||1));
-    return '<article class="mission vault-mission"><div class="mission-head"><div><p class="eyebrow">'+(kind==='weekly'?'TÂCHE HEBDOMADAIRE':'TÂCHE QUOTIDIENNE')+'</p><h3>'+esc(f.title.value||'Titre de la tâche')+'</h3></div><b>+'+coins+' FC<br>+'+xp+' XP</b></div><p>'+esc(f.description.value||'Ce que le joueur doit accomplir '+periodWord(kind)+'.')+'</p><div class="vault-mission-progress"><div class="progress"><i style="width:0%"></i></div><span>0/'+target+'</span></div><button class="btn btn-outline" disabled>EN COURS</button></article>';
+    return '<article class="mission vault-mission"><div class="mission-head"><div><p class="eyebrow">'+'MISSION '+LABEL[kind]+'</p><h3>'+esc(f.title.value||'Titre de la tâche')+'</h3></div><b>+'+coins+' FC<br>+'+xp+' XP</b></div><p>'+esc(f.description.value||'Ce que le joueur doit accomplir '+periodWord(kind)+'.')+'</p><div class="vault-mission-progress"><div class="progress"><i style="width:0%"></i></div><span>0/'+target+'</span></div><button class="btn btn-outline" disabled>EN COURS</button></article>';
   }
 
   function openEditor(task,body){
     const isNew=!task,kind=task?task.kind:state.kind;
     const sameKind=state.tasks.filter(x=>x.kind===kind);
     const t=task||{title:'',description:'',type:'packsOpened',target:1,reward:{coins:100,xp:10},order:(Math.max(-1,...sameKind.map(x=>Number(x.order)||0))+1),active:true};
-    const typeOptions=Object.entries(state.types).map(([k,v])=>'<option value="'+esc(k)+'" '+(k===t.type?'selected':'')+'>'+esc(v)+'</option>').join('');
+    const typeOptions=Object.entries(state.types).filter(([k])=>k!=='pending'||k===t.type).map(([k,v])=>'<option value="'+esc(k)+'" '+(k===t.type?'selected':'')+'>'+esc(v)+'</option>').join('');
     const field=(name,label,input,wide)=>'<label class="'+(wide?'wide':'')+'" data-field="'+name+'">'+label+input+'<span class="field-error" data-error="'+name+'"></span></label>';
-    const kindLabel=kind==='weekly'?'HEBDOMADAIRE':'QUOTIDIENNE';
+    const kindLabel=LABEL[kind];
     setModal('<div class="modal-box mission-editor-modal"><button class="modal-close" type="button" data-task-cancel aria-label="Fermer">×</button>'
-      +'<p class="eyebrow">ADMIN / TÂCHES '+(kind==='weekly'?'HEBDOMADAIRES':'QUOTIDIENNES')+'</p><h2>'+(isNew?'CRÉER UNE TÂCHE '+kindLabel:'MODIFIER LA TÂCHE')+'</h2>'
+      +'<p class="eyebrow">ADMIN / MISSIONS '+PLURAL[kind]+'</p><h2>'+(isNew?'CRÉER UNE MISSION '+kindLabel:'MODIFIER LA TÂCHE')+'</h2>'
       +'<div class="mission-editor-layout"><form class="mission-editor-form" novalidate>'
       +field('title','Titre','<input name="title" maxlength="100" value="'+esc(t.title)+'" placeholder="Ex. OUVERTURE DU JOUR">',true)
       +field('description','Description','<textarea name="description" maxlength="300" rows="2" placeholder="Ce que le joueur doit accomplir '+periodWord(kind)+'">'+esc(t.description)+'</textarea>',true)
@@ -80,7 +82,7 @@
       +field('order','Ordre d\'affichage','<input name="order" type="number" min="0" step="1" value="'+Number(t.order)+'">')
       +(isNew?'<label class="checkbox-label"><input name="active" type="checkbox" checked> Tâche active</label>':'<span></span>')
       +'</form><div class="mission-editor-preview"><p class="eyebrow">APERÇU JOUEUR</p><div data-task-preview></div>'
-      +'<p class="mission-editor-note">'+(kind==='weekly'?'Remise à zéro chaque lundi à minuit (heure de Paris).':'Remise à zéro chaque jour à minuit (heure de Paris).')+' '+(isNew?'L\'identifiant est généré à partir du titre.':'Identifiant conservé : <code>'+esc(t.id)+'</code>. Une modification s\'applique tout de suite, y compris à la période en cours ; un joueur qui l\'a déjà récupérée ne peut pas la récupérer à nouveau.')+'</p></div></div>'
+      +'<p class="mission-editor-note">'+RESET[kind]+' Une nouvelle mission entre dans le tirage de la période suivante.'+' '+(isNew?'L\'identifiant est généré à partir du titre.':'Identifiant conservé : <code>'+esc(t.id)+'</code>. Une modification s\'applique tout de suite, y compris à la période en cours ; un joueur qui l\'a déjà récupérée ne peut pas la récupérer à nouveau.')+'</p></div></div>'
       +'<div class="mission-editor-footer"><button class="btn btn-ghost" type="button" data-task-cancel>ANNULER</button><button class="btn btn-gold" type="button" data-task-save>ENREGISTRER</button></div></div>');
     const modal=document.getElementById('modal'),f=modal.querySelector('form'),save=modal.querySelector('[data-task-save]');
     const snapshot=()=>JSON.stringify(Object.fromEntries(new FormData(f)));const initial=snapshot();
