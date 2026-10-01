@@ -2293,3 +2293,132 @@ hr{border-color:#1d3d63}
 .success-card.is-secret{border-style:dashed}
 .success-card.is-secret .success-icon{filter:grayscale(1);opacity:.6}
 .success-progress-secret span{color:var(--muted);letter-spacing:2px}
+
+/* ===== Identité FOOTVAULT (logo du 01/10/2026) : anthracite, or, blanc cassé, gris ===== */
+:root{--fv-bg:#0f1217;--fv-card:#161b21;--fv-card2:#1b2129;--fv-gold:#efcf7c;--fv-white:#f2f3ee;--fv-grey:#9a9c97;--fv-line:rgba(239,207,124,.18)}
+.header{background:rgba(15,18,23,.96)!important;border-bottom:1px solid var(--fv-line)!important}
+.brand-icon{background:none!important;box-shadow:none!important;filter:none!important;border-radius:10px;overflow:visible}
+.brand-icon:after{display:none}
+.brand-icon img{width:100%;height:100%;display:block}
+.brand-copy b,body:has(.home-dashboard) .brand-copy b{background:none!important;-webkit-background-clip:border-box;background-clip:border-box;color:var(--fv-white)!important;font-family:var(--head);font-weight:900;letter-spacing:.5px}
+.brand-copy b em{font-style:normal;color:var(--fv-gold)}
+.brand-copy small{color:var(--fv-grey)!important;letter-spacing:3px}
+
+/* Accueil */
+body:has(.fv-home){background:radial-gradient(ellipse at 80% -10%,rgba(239,207,124,.08),transparent 45%),var(--fv-bg)}
+body:has(.fv-home) .ambient{display:none}
+.fv-home{width:min(1240px,calc(100% - 40px));margin:0 auto;padding:28px 0 60px;display:grid;gap:22px;color:var(--fv-white)}
+.fvh-eyebrow{margin:0 0 4px;color:var(--fv-gold);font:800 11px var(--body);letter-spacing:3px}
+.fvh-muted{color:var(--fv-grey);font-size:13px;margin:0}
+.fvh-panel{background:linear-gradient(160deg,var(--fv-card2),var(--fv-card));border:1px solid var(--fv-line);border-radius:18px;padding:22px}
+.fvh-panel h2,.fvh-panel h3{margin:0;font:900 26px/1 var(--head);letter-spacing:.5px;color:var(--fv-white)}
+.fvh-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:16px}
+.fvh-head>a{color:var(--fv-gold);font:800 12px var(--body);letter-spacing:1px;text-decoration:none;white-space:nowrap}
+.fvh-bar{display:block;height:6px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.fvh-bar em{display:block;height:100%;border-radius:inherit;background:var(--fv-gold)}
+.fv-home .btn-gold{background:var(--fv-gold);color:#14110a;border-color:var(--fv-gold)}
+.fv-home .btn-outline{border-color:rgba(239,207,124,.45);color:var(--fv-white);background:transparent}
+
+.fvh-hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:30px;align-items:center;min-height:520px;padding:40px clamp(20px,4vw,52px);border:1px solid var(--fv-line);border-radius:26px;background:radial-gradient(circle at 78% 50%,rgba(239,207,124,.12),transparent 55%),linear-gradient(160deg,#141920,var(--fv-bg));overflow:hidden}
+.fvh-lockup{display:flex;align-items:center;gap:clamp(16px,2.5vw,30px)}
+.fvh-lockup-card{width:clamp(78px,9vw,118px);height:auto;filter:drop-shadow(0 12px 30px rgba(0,0,0,.45))}
+.fvh-wordmark{margin:0;font:900 clamp(54px,8.4vw,112px)/.86 var(--head);letter-spacing:1px;color:var(--fv-white)}
+.fvh-wordmark span{color:var(--fv-gold)}
+.fvh-tagline{margin:14px 0 0;color:var(--fv-grey);font:600 clamp(13px,1.6vw,20px) var(--head);letter-spacing:.55em}
+.fvh-lead{max-width:560px;margin:28px 0 0;color:#c9cbc4;font-size:16px;line-height:1.65}
+.fvh-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.fvh-metrics{display:flex;flex-wrap:wrap;gap:26px;list-style:none;margin:30px 0 0;padding:0}
+.fvh-metrics li{display:flex;align-items:baseline;gap:7px;color:var(--fv-grey);font-size:12px;letter-spacing:2px;text-transform:uppercase}
+.fvh-metrics b{font:900 26px var(--head);color:var(--fv-white);letter-spacing:0}
+.fvh-showcase{position:relative;height:440px;display:grid;place-items:center}
+.fvh-showcase-card{position:absolute;width:min(220px,40%);text-decoration:none;transition:transform .35s}
+.fvh-showcase-card .tcg-card{width:100%}
+.fvh-showcase-1{z-index:3;transform:translateY(-6px)}
+.fvh-showcase-2{z-index:2;transform:translateX(-62%) rotate(-9deg) translateY(28px) scale(.9)}
+.fvh-showcase-3{z-index:1;transform:translateX(62%) rotate(9deg) translateY(28px) scale(.9)}
+.fvh-showcase-card:hover{transform:translateY(-14px) scale(1.02);z-index:4}
+.fvh-showcase-empty{width:200px}
+
+.fvh-competitions{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px}
+.fvh-competitions a{display:flex;align-items:center;gap:10px;min-width:0;padding:12px 14px;border:1px solid var(--fv-line);border-radius:12px;background:var(--fv-card);color:var(--fv-white);text-decoration:none;font-size:12px;font-weight:700}
+.fvh-competitions a:hover{border-color:var(--fv-gold)}
+.fvh-competitions b{flex:none;display:grid;place-items:center;min-width:34px;height:26px;padding:0 4px;border-radius:7px;background:rgba(239,207,124,.12);color:var(--fv-gold);font:900 12px var(--head);letter-spacing:.5px}
+.fvh-competitions span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.fvh-today{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:22px}
+.fvh-player h2{margin-bottom:16px;overflow-wrap:anywhere}
+.fvh-level{display:flex;justify-content:space-between;margin-bottom:8px;color:var(--fv-grey);font-size:12px;letter-spacing:1px}
+.fvh-level b{color:var(--fv-gold);font:900 18px var(--head)}
+.fvh-player-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}
+.fvh-player-stats span{display:grid;gap:2px;padding:12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);color:var(--fv-grey);font-size:11px}
+.fvh-player-stats b{color:var(--fv-white);font:900 22px var(--head)}
+.fvh-player .btn{width:100%;justify-content:center}
+.fvh-task-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.fvh-task-list li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05)}
+.fvh-task-list li.is-ready{border-color:rgba(239,207,124,.5);background:rgba(239,207,124,.07)}
+.fvh-task-list li.is-done{opacity:.65}
+.fvh-task-check{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:1px solid var(--fv-line);color:var(--fv-gold);font-weight:900}
+.fvh-task-main{display:grid;gap:8px;min-width:0}
+.fvh-task-main b{font-size:13px;letter-spacing:.5px}
+.fvh-task-meta{display:grid;justify-items:end;font-weight:800;font-size:13px}
+.fvh-task-meta small{color:var(--fv-gold);font-size:11px}
+.fvh-reset{margin-top:12px;font-size:12px}
+
+.fvh-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.fvh-step span{color:var(--fv-gold);font:900 40px var(--head);opacity:.85}
+.fvh-step h3{margin:6px 0 8px}
+.fvh-step p{margin:0;color:var(--fv-grey);font-size:14px;line-height:1.6}
+
+.fvh-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:22px}
+.fvh-packs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.fvh-pack{display:grid;gap:10px;color:var(--fv-white);text-decoration:none}
+.fvh-pack-art{position:relative;display:grid;place-items:center;aspect-ratio:3/4;border-radius:14px;background:radial-gradient(circle at 50% 35%,rgba(239,207,124,.14),transparent 65%),var(--fv-bg);border:1px solid var(--fv-line);overflow:hidden;transition:border-color .2s,transform .2s}
+.fvh-pack:hover .fvh-pack-art{border-color:var(--fv-gold);transform:translateY(-3px)}
+.fvh-pack-art img{width:46%;opacity:.95}
+.fvh-pack-art b{position:absolute;left:10px;right:10px;bottom:30px;text-align:center;font:900 18px/1 var(--head);letter-spacing:.5px}
+.fvh-pack-art small{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:var(--fv-grey);font-size:10px;letter-spacing:2px}
+.fvh-pack-info{display:grid;gap:3px}
+.fvh-pack-info strong{font-size:14px}
+.fvh-pack-info small{color:var(--fv-grey);font-size:12px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fvh-pack-info b{color:var(--fv-gold);font:900 18px var(--head)}
+.fvh-auctions{display:grid;gap:10px}
+.fvh-auction{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);color:var(--fv-white);text-decoration:none}
+.fvh-auction:hover{border-color:var(--fv-line)}
+.fvh-auction-ovr{display:grid;place-items:center;width:44px;height:44px;border-radius:10px;background:rgba(239,207,124,.12);color:var(--fv-gold);font:900 20px var(--head)}
+.fvh-auction-main{display:grid;min-width:0}
+.fvh-auction-main strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fvh-auction-main small,.fvh-auction-price small{color:var(--fv-grey);font-size:11px}
+.fvh-auction-price{display:grid;justify-items:end}
+.fvh-auction-price b{color:var(--fv-gold)}
+.fvh-empty{display:grid;justify-items:center;text-align:center;gap:8px;padding:24px 10px}
+.fvh-empty img{width:56px;opacity:.9}
+.fvh-empty p{margin:0 0 6px;color:var(--fv-grey);font-size:13px}
+
+@media(max-width:1100px){.fvh-competitions{grid-template-columns:repeat(4,minmax(0,1fr))}.fvh-grid{grid-template-columns:1fr}}
+@media(max-width:900px){
+ .fvh-hero{grid-template-columns:1fr;min-height:0;padding:30px 22px}
+ .fvh-showcase{height:340px}
+ .fvh-today{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+ .fv-home{width:calc(100% - 24px);padding-top:14px;gap:16px}
+ .fvh-lockup-card{width:64px}
+ .fvh-wordmark{font-size:clamp(42px,13vw,60px)}
+ .fvh-tagline{letter-spacing:.35em;font-size:12px}
+ .fvh-lead{font-size:14px;margin-top:20px}
+ .fvh-actions .btn{flex:1 1 100%;justify-content:center}
+ .fvh-metrics{gap:16px}
+ .fvh-showcase{height:280px}
+ .fvh-showcase-card{width:46%}
+ .fvh-competitions{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .fvh-steps{grid-template-columns:1fr}
+ .fvh-packs{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+ .fvh-pack-art b{font-size:13px;bottom:24px}
+ .fvh-pack-info small{display:none}
+ .fvh-panel{padding:18px}
+}
+/* Retouches identité : menu et compétitions */
+.nav a.active,.nav a:hover{background:rgba(239,207,124,.12)!important;border-color:rgba(239,207,124,.35)!important;color:var(--fv-white)!important}
+.header-wallet{background:var(--fv-card)!important;border-color:var(--fv-line)!important}
+.fvh-competitions{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:600px){.fvh-competitions{grid-template-columns:repeat(2,minmax(0,1fr))}.fvh-pack-art b{display:none}}
