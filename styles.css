@@ -2269,3 +2269,22 @@ hr{border-color:#1d3d63}
 .sk-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 @media(max-width:600px){.sk-row{grid-template-columns:repeat(2,minmax(0,1fr))}.sk-hero{min-height:160px}}
 @keyframes sk-shine{from{background-position:200% 0}to{background-position:-200% 0}}
+
+/* Cartes favorites : vitrine du Profil, bouton de la fiche carte, étoile de la Collection. */
+.profile-favorites{margin-bottom:14px}
+.profile-favorites-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.profile-favorites-head h2{margin-bottom:0}
+.profile-favorites-head small{color:var(--muted);font-weight:800;letter-spacing:1px}
+.profile-fav-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-top:14px}
+.profile-fav-card{position:relative;min-width:0}
+.profile-fav-card>a{display:block;text-decoration:none;color:inherit}
+.profile-fav-remove{position:absolute;top:-10px;left:-10px;z-index:3;width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,124,140,.5);background:#1a0f18;color:#ff9aa8;font-size:16px;line-height:1;cursor:pointer;opacity:.85}
+.profile-fav-remove:hover{opacity:1;background:#2a121c}
+.profile-fav-empty{display:grid;place-items:center;align-content:center;gap:6px;min-height:220px;border:1px dashed rgba(91,151,222,.35);border-radius:14px;color:var(--muted);text-decoration:none;background:rgba(6,20,40,.35)}
+.profile-fav-empty span{font:900 34px var(--head);color:var(--gold2)}
+.profile-fav-empty small{font-size:11px;font-weight:700}
+.profile-fav-empty:hover{border-color:var(--gold);color:var(--text)}
+.detail-copy-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.card-fav-toggle{white-space:nowrap}
+.collection-fav{position:absolute;top:-6px;left:-6px;z-index:3;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--gold);color:#1a1300;font-size:14px;box-shadow:0 3px 10px rgba(0,0,0,.4);pointer-events:none}
+@media(max-width:900px){.profile-fav-row{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(150px,42%);overflow-x:auto;padding:10px 4px 6px;scroll-snap-type:x mandatory}.profile-fav-row>*{scroll-snap-align:start}.profile-fav-empty{min-height:200px}}
