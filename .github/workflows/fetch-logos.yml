@@ -1,0 +1,48 @@
+name: Logos des championnats (temporaire)
+# Télécharge une fois les logos des championnats depuis Wikipédia (infobox de chaque article)
+# et les ajoute au dépôt. Workflow supprimé après usage.
+on:
+  push:
+    branches: [claude/wizardly-goldberg-4wdxqm]
+    paths: ['.github/workflows/fetch-logos.yml']
+permissions:
+  contents: write
+jobs:
+  logos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Télécharger
+        env:
+          UA: "FOOTVAULT-logos/1.0 (https://sport-vault.onrender.com)"
+        run: |
+          set -u
+          api="https://en.wikipedia.org/w/api.php"
+          : > logos.txt
+          while read -r id page; do
+            imgs=$(curl -fsS -A "$UA" "$api?action=parse&page=$page&prop=images&format=json&redirects=1" | jq -r '.parse.images[]')
+            file=$(printf '%s\n' "$imgs" | grep -i 'logo' | grep -viE 'flag|commons|wiki|icon|ball|trophy|cup_of|nl_|kit' | head -1)
+            [ -n "$file" ] || { echo "$id : aucun logo trouvé" >> logos.txt; continue; }
+            info=$(curl -fsS -A "$UA" "$api?action=query&titles=File:$file&prop=imageinfo&iiprop=url&iiurlwidth=256&format=json")
+            url=$(printf '%s' "$info" | jq -r '.query.pages[].imageinfo[0].thumburl // .query.pages[].imageinfo[0].url')
+            curl -fsS -A "$UA" -o "competition-$id.png" "$url" && echo "$id : $file -> $url" >> logos.txt
+            sleep 1
+          done <<'LIST'
+          ligue-1 Ligue_1
+          premier-league Premier_League
+          la-liga La_Liga
+          serie-a Serie_A
+          bundesliga Bundesliga
+          ligue-des-champions UEFA_Champions_League
+          coupe-du-monde FIFA_World_Cup
+          ligue-des-nations UEFA_Nations_League
+          LIST
+          cat logos.txt
+          file competition-*.png || true
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add competition-*.png logos.txt
+          git commit -m "Logos des championnats téléchargés depuis Wikipédia (temporaire)" || exit 0
+          git push
