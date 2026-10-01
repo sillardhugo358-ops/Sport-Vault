@@ -2288,3 +2288,8 @@ hr{border-color:#1d3d63}
 .card-fav-toggle{white-space:nowrap}
 .collection-fav{position:absolute;top:-6px;left:-6px;z-index:3;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--gold);color:#1a1300;font-size:14px;box-shadow:0 3px 10px rgba(0,0,0,.4);pointer-events:none}
 @media(max-width:900px){.profile-fav-row{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(150px,42%);overflow-x:auto;padding:10px 4px 6px;scroll-snap-type:x mandatory}.profile-fav-row>*{scroll-snap-align:start}.profile-fav-empty{min-height:200px}}
+
+/* Succès : numéro du document, succès secrets (condition masquée tant qu'ils ne sont pas réussis). */
+.success-card.is-secret{border-style:dashed}
+.success-card.is-secret .success-icon{filter:grayscale(1);opacity:.6}
+.success-progress-secret span{color:var(--muted);letter-spacing:2px}
