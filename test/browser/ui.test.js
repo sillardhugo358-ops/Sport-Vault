@@ -175,3 +175,37 @@ test('favorites : ajout depuis la fiche carte, vitrine du profil, étoile de la 
   await page.waitForFunction(() => document.querySelectorAll('.profile-fav-card').length === 0);
   assert.deepEqual(errors, []);
 });
+
+test('éditeur de succès : filtres (numéro, secrets, tri), aperçu joueur multi-états, formulaire sans débordement', async () => {
+  for (const vp of [VIEWPORTS[0], VIEWPORTS[2]]) {
+    await page.setViewportSize({ width: vp.width, height: vp.height });
+    await visit('admin');
+    await page.click('[data-admin-tab="successes"]');
+    await page.waitForSelector('[data-preview-achievement]');
+    await page.click('[data-reset-achievement-filters]');
+    assert.equal(await page.locator('.admin-achievement-row').count(), 40, vp.name + ' : 40 premiers affichés');
+    await page.fill('#adminAchievementSearch', '187');
+    await page.waitForFunction(() => document.querySelectorAll('.admin-achievement-row').length === 1);
+    await page.fill('#adminAchievementSearch', '');
+    await page.selectOption('#adminAchievementStatus', 'secret');
+    assert.match(await page.textContent('#adminAchievementCount'), /^25 \//);
+    // Aperçu en lecture seule : carte réelle de la page Succès, condition masquée tant que non réussi.
+    await page.click('[data-preview-achievement]');
+    await page.click('[data-preview-state="secret"]');
+    assert.match(await page.textContent('[data-preview-root] .success-card'), /Succès secret/);
+    await page.click('[data-preview-state="ready"]');
+    assert.match(await page.textContent('[data-preview-root] .success-status'), /TERMINÉ/);
+    assert.equal(await page.locator('[data-preview-root] [data-claim-achievement]').count(), 0, 'bouton de récupération inactif');
+    await page.click('[data-preview-close]');
+    // Éditeur : l'aperçu suit le formulaire, aucun champ ne dépasse.
+    await page.click('[data-edit-achievement]');
+    await page.fill('form input[name="name"]', 'Nom de test aperçu');
+    await page.waitForFunction(() => document.querySelector('[data-achievement-preview] .success-card')?.textContent.includes('Nom de test aperçu'));
+    const overflow = await page.evaluate(() => [...document.querySelectorAll('.achievement-editor-form input:not([type=checkbox]),.achievement-editor-form select,.achievement-editor-form textarea')]
+      .filter(el => el.getBoundingClientRect().right > el.closest('label').getBoundingClientRect().right + 1).length);
+    assert.equal(overflow, 0, vp.name + ' : champ hors de sa colonne');
+    await page.click('[data-achievement-cancel]');
+    await page.click('#siteConfirmOk'); // modifications non enregistrées : abandon confirmé
+  }
+  assert.deepEqual(errors, []);
+});
