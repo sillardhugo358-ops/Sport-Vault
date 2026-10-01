@@ -1,4 +1,5 @@
-// Cloche de notifications (en-tête) : surenchères, fins d'enchère, récompenses à récupérer.
+// Cloche de notifications (en-tête) : surenchères, fins d'enchère, récompenses à récupérer,
+// succès et missions terminés (avec un bandeau d'annonce en haut de l'écran).
 // Reçoit de app.js (bind) sa fonction api. Serveur : GET /api/notifications, POST /api/notifications/read.
 // Actualisée toutes les 60 s quand l'onglet est visible ; le bouton est recréé à chaque rendu de l'en-tête.
 (()=>{
@@ -24,6 +25,12 @@
     .notif-item time{display:block;font-size:11px;color:var(--muted);margin-top:4px}
     .notif-empty{color:var(--muted);font-size:13px;padding:8px 2px}
     @media(max-width:760px){.notif-panel{top:68px;right:16px}}
+    .notif-banner{position:fixed;top:14px;left:50%;transform:translate(-50%,-140%);z-index:80;display:flex;align-items:center;gap:12px;width:min(460px,calc(100vw - 32px));padding:12px 14px;border-radius:14px;border:1px solid rgba(239,207,124,.55);background:linear-gradient(135deg,#0b1e38,#07162a);box-shadow:0 18px 50px rgba(0,0,0,.55);color:var(--text);text-decoration:none;transition:transform .35s ease}
+    .notif-banner.show{transform:translate(-50%,0)}
+    .notif-banner i{flex:0 0 auto;display:grid;place-items:center;width:38px;height:38px;border-radius:10px;background:rgba(239,207,124,.16);color:var(--gold2,#efcf7c);font-style:normal;font-size:20px}
+    .notif-banner strong{display:block;font-size:14px}
+    .notif-banner span{display:block;font-size:12px;color:var(--muted)}
+    @media(prefers-reduced-motion:reduce){.notif-banner{transition:none}}
   `;
   const style=()=>{if(document.getElementById(STYLE_ID))return;const s=document.createElement('style');s.id=STYLE_ID;s.textContent=CSS;document.head.appendChild(s)};
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -44,14 +51,33 @@
     const list=data?.notifications||[],ready=Number(data?.rewardsReady||0);
     panel.innerHTML='<header><h2>NOTIFICATIONS</h2>'+(data?.unread?'<button type="button" data-notif-read>TOUT MARQUER LU</button>':'')+'</header>'
       +(ready?'<a class="notif-ready" href="#vault"><span>'+(ready>1?ready+' récompenses t’attendent':'1 récompense t’attend')+' dans ton Vault</span><b>RÉCUPÉRER →</b></a>':'')
-      +(list.length?'<ul class="notif-list">'+list.map(n=>{const link=safeLink(n.link),inner='<strong>'+esc(n.title)+'</strong>'+(n.body?'<span>'+esc(n.body)+'</span>':'')+'<time datetime="'+esc(n.createdAt)+'">'+esc(ago(n.createdAt))+'</time>';return '<li class="notif-item'+(n.read?'':' unread')+'">'+(link?'<a href="'+esc(link)+'">'+inner+'</a>':'<div>'+inner+'</div>')+'</li>';}).join('')+'</ul>':(ready?'':'<p class="notif-empty">Aucune notification pour le moment. Tu seras prévenu ici des surenchères et des fins d’enchère.</p>'));
+      +(list.length?'<ul class="notif-list">'+list.map(n=>{const link=safeLink(n.link),inner='<strong>'+esc(n.title)+'</strong>'+(n.body?'<span>'+esc(n.body)+'</span>':'')+'<time datetime="'+esc(n.createdAt)+'">'+esc(ago(n.createdAt))+'</time>';return '<li class="notif-item'+(n.read?'':' unread')+'">'+(link?'<a href="'+esc(link)+'">'+inner+'</a>':'<div>'+inner+'</div>')+'</li>';}).join('')+'</ul>':(ready?'':'<p class="notif-empty">Aucune notification pour le moment. Tu seras prévenu ici des surenchères, des fins d’enchère, des succès et des missions terminés.</p>'));
     const b=panel.querySelector('[data-notif-read]');if(b)b.onclick=markRead;
     panel.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>close()));
   }
+  // Bandeau : succès ou mission terminé depuis moins de 2 minutes, jamais annoncé deux fois (dernier identifiant gardé).
+  const BANNER_KEY='fv-notif-banner';
+  let shownId=(()=>{try{return Number(localStorage.getItem(BANNER_KEY))||0}catch{return 0}})(),bannerTimer=null;
+  function banner(){
+    const fresh=(data?.notifications||[]).filter(n=>!n.read&&n.id>shownId&&['achievement_done','mission_done'].includes(n.kind)&&Date.now()-new Date(n.createdAt).getTime()<120000);
+    if(!fresh.length)return;
+    shownId=Math.max(...fresh.map(n=>n.id));try{localStorage.setItem(BANNER_KEY,String(shownId))}catch{}
+    const n=fresh[0],more=fresh.length-1,link=safeLink(n.link)||'#vault';
+    let el=document.getElementById('notifBanner');
+    if(!el){el=document.createElement('a');el.id='notifBanner';el.className='notif-banner';el.setAttribute('role','status');document.body.appendChild(el);}
+    el.href=link;
+    el.innerHTML='<i aria-hidden="true">'+(n.kind==='achievement_done'?'♛':'✓')+'</i><div><strong>'+esc(n.title)+'</strong><span>'+esc(n.body||'')+(more?' · +'+more+' autre'+(more>1?'s':''):'')+'</span></div>';
+    el.onclick=()=>el.classList.remove('show');
+    requestAnimationFrame(()=>el.classList.add('show'));
+    clearTimeout(bannerTimer);bannerTimer=setTimeout(()=>el.classList.remove('show'),6000);
+  }
+  // Appelé par app.js après une action : nouvelle vérification tout de suite, puis après la limite de 10 s du serveur.
+  let refreshTimers=[];
+  window.fvNotifRefresh=function(){refreshTimers.forEach(clearTimeout);refreshTimers=[1500,11500].map(ms=>setTimeout(()=>{if(!document.hidden)load();},ms));};
   async function load(){
     if(loading||!document.getElementById('notifBell'))return;loading=true;
     lastLoad=Date.now();
-    try{data=await api('/api/notifications');paint();}catch{/* la cloche reste en l'état ; nouvel essai au prochain passage */}
+    try{data=await api('/api/notifications');paint();banner();}catch{/* la cloche reste en l'état ; nouvel essai au prochain passage */}
     finally{loading=false;}
   }
   async function markRead(){
