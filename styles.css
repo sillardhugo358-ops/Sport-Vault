@@ -2421,3 +2421,11 @@ hr{border-color:#1d3d63}
 
 /* Mon Vault : temps restant avant les prochaines missions de la période. */
 .vault-renew{display:block;margin-top:6px;color:var(--gold);font-weight:800;letter-spacing:.08em}
+
+/* Logos des championnats (competition-<id>.png) : vraies couleurs sur une pastille claire, lisibles sur le bleu nuit. */
+.album-comp-art .album-comp-logo{width:96px;height:96px;padding:10px;border-radius:18px;background:#fff;filter:none;opacity:1;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.season-art-crest{background:#fff}
+.season-art-crest img{width:50px;height:56px;filter:none;opacity:1}
+.fvh-competitions .fvh-comp-logo:has(img){display:flex;align-items:center;justify-content:center;font-size:0;width:44px;min-width:44px;height:40px;padding:4px;overflow:hidden;background:#fff}
+.fvh-comp-logo img{display:block;max-width:36px;max-height:32px;width:auto;height:auto;object-fit:contain}
+.admin-competition-identity img{background:#fff;border-radius:8px;padding:3px;object-fit:contain}

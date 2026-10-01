@@ -44,7 +44,7 @@ async function home(){
  const daily=progressData?.dailyTasks||[];
  const ready=progressData?[(progressData.daily&&!progressData.daily.claimed)?1:0,...daily.map(t=>t.completed&&!t.claimed?1:0),...(progressData.weeklyTasks||[]).map(t=>t.completed&&!t.claimed?1:0),...(progressData.monthlyTasks||[]).map(t=>t.completed&&!t.claimed?1:0),...(progressData.missions||[]).map(m=>m.completed&&!m.claimed?1:0)].reduce((a,b)=>a+b,0):0;
  const taskRows=daily.slice(0,3).map(t=>{const pct=Math.min(100,t.target?Math.round(Number(t.progress||0)/t.target*100):0);return `<li class="${t.claimed?'is-done':t.completed?'is-ready':''}"><span class="fvh-task-check" aria-hidden="true">${t.claimed||t.completed?'✓':''}</span><span class="fvh-task-main"><b>${esc(t.title)}</b><i class="fvh-bar"><em style="width:${pct}%"></em></i></span><span class="fvh-task-meta">${Number(t.progress||0)}/${Number(t.target||0)}<small>+${money(t.reward?.coins||0)} FC</small></span></li>`}).join('');
- const competitions=[['L1','Ligue 1'],['PL','Premier League'],['LL','La Liga'],['SA','Serie A'],['BL','Bundesliga'],['LDC','Ligue des Champions'],['CDM','Coupe du Monde'],['LN','Ligue des Nations']];
+ const competitions=[['L1','Ligue 1','ligue-1'],['PL','Premier League','premier-league'],['LL','La Liga','la-liga'],['SA','Serie A','serie-a'],['BL','Bundesliga','bundesliga'],['LDC','Ligue des Champions','ligue-des-champions'],['CDM','Coupe du Monde','coupe-du-monde'],['LN','Ligue des Nations','ligue-des-nations']];
  const today=user?`<section class="fvh-today" aria-label="Ton programme du jour">
    <div class="fvh-panel fvh-player"><p class="fvh-eyebrow">TON VAULT</p><h2>${esc(user.name||'Joueur')}</h2>
     <div class="fvh-level"><span>NIVEAU <b>${String(lv.level).padStart(2,'0')}</b></span><span>${money(lv.currentXp)} / ${money(lv.xpToNext)} XP</span></div><i class="fvh-bar"><em style="width:${Math.round(lv.currentXp/lv.xpToNext*100)}%"></em></i>
@@ -66,7 +66,7 @@ async function home(){
    </div>
    <div class="fvh-showcase">${showcase||'<img class="fvh-showcase-empty" src="footvault-card.svg" alt="">'}</div>
   </section>
-  <nav class="fvh-competitions" aria-label="Compétitions">${competitions.map(([t,n])=>`<a href="#album"><b>${t}</b><span>${n}</span></a>`).join('')}</nav>
+  <nav class="fvh-competitions" aria-label="Compétitions">${competitions.map(([t,n,id],i)=>`<a href="${i<5?'#album?competition='+id:'#album'}"><b class="fvh-comp-logo"><img src="competition-${id}.png" alt="" loading="lazy" onerror="this.remove()">${t}</b><span>${n}</span></a>`).join('')}</nav>
   ${today}
   <section class="fvh-grid">
    <div class="fvh-panel"><div class="fvh-head"><div><p class="fvh-eyebrow">BOUTIQUE</p><h2>PACKS À LA UNE</h2></div><a href="#packs">TOUS LES PACKS ›</a></div><div class="fvh-packs">${packCards||'<p class="fvh-muted">Aucun pack disponible pour le moment.</p>'}</div></div>
