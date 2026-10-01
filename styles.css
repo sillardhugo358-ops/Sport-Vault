@@ -2429,3 +2429,17 @@ hr{border-color:#1d3d63}
 .fvh-competitions .fvh-comp-logo:has(img){display:flex;align-items:center;justify-content:center;font-size:0;width:44px;min-width:44px;height:40px;padding:4px;overflow:hidden;background:#fff}
 .fvh-comp-logo img{display:block;max-width:36px;max-height:32px;width:auto;height:auto;object-fit:contain}
 .admin-competition-identity img{background:#fff;border-radius:8px;padding:3px;object-fit:contain}
+
+/* Classement : récompenses de la semaine (barème) et récompense du joueur à récupérer. */
+.ranking-claim{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:16px 20px;border:1px solid var(--gold);border-radius:14px;background:linear-gradient(135deg,rgba(239,207,124,.18),rgba(239,207,124,.05))}
+.ranking-claim span{display:block;color:var(--gold);font-size:11px;font-weight:800;letter-spacing:.12em}
+.ranking-claim strong{display:block;font:900 24px var(--head);margin:4px 0}
+.ranking-claim small{color:var(--muted)}
+.ranking-rewards{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px;align-items:center;padding:20px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+.ranking-rewards h2{margin:4px 0 8px;font:900 24px var(--head)}
+.ranking-rewards p{margin:0;color:var(--muted);font-size:13px}
+.ranking-rewards ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.ranking-rewards li{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.03)}
+.ranking-rewards li b{display:block;color:var(--gold);font:900 16px var(--head)}
+.ranking-rewards li span{font-size:12px;color:var(--text)}
+@media(max-width:760px){.ranking-rewards{grid-template-columns:1fr}}

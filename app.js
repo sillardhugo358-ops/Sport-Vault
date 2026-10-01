@@ -156,16 +156,22 @@ async function ranking(q){
  const row=p=>'<tr class="'+(p.me?'is-me':'')+'"><td class="rank-pos">'+p.rank+'</td><td class="rank-name">'+esc(p.name)+(p.me?' <span class="rank-you">TOI</span>':'')+'</td><td>'+money(p.uniqueCards)+'</td><td>'+money(p.topCards)+'</td><td class="rank-score">'+money(p.score)+'</td></tr>';
  const medal=['🥇','🥈','🥉'];
  const me=d.me;
+ // Récompenses du classement de la semaine : barème et récompenses du joueur à récupérer.
+ const weekLabel=k=>new Date(k+'T12:00:00Z').toLocaleDateString('fr-FR',{day:'numeric',month:'long'});
+ const ord=n=>n+(n===1?'er':'e');
+ const claimable=(d.myRewards||[]).filter(r=>!r.claimed);
+ const rewardsHtml='<section class="ranking-rewards"><div><p class="eyebrow">CHAQUE LUNDI À MINUIT</p><h2>RÉCOMPENSES DE LA SEMAINE</h2><p>Le classement de la semaine est figé chaque lundi : les 50 premiers gagnent des FOOTCOINS et de l’XP (ex æquo : même récompense).</p></div><ul>'+(d.rewards||[]).map(t=>'<li><b>'+(t.from===t.to?ord(t.from):t.from+'e – '+t.to+'e')+'</b><span>'+money(t.coins)+' FC · '+money(t.xp)+' XP</span></li>').join('')+'</ul></section>';
+ const claimHtml=claimable.map(r=>'<section class="ranking-claim"><div><span>SEMAINE DU '+esc(weekLabel(r.week).toUpperCase())+'</span><strong>Tu as fini '+ord(r.rank)+' !</strong><small>'+money(r.score)+' pts · +'+money(r.reward.coins)+' FC · +'+money(r.reward.xp)+' XP</small></div><button class="btn btn-gold" type="button" data-lb-claim="'+esc(r.week)+'">RÉCUPÉRER</button></section>').join('');
  return '<div class="page ranking-page">'
  +'<section class="ranking-hero"><div><p class="eyebrow">FOOTVAULT / CLASSEMENT</p><h1>LES <span>COLLECTIONNEURS.</span></h1><p class="lead">Chaque joueur différent de ta collection rapporte des points selon sa rareté. Les doublons ne comptent pas.</p>'
  +'<ul class="ranking-points">'+Object.entries(pts).map(([r,v])=>'<li class="rp-'+esc(r)+'"><b>'+esc(RL[r]||r)+'</b><span>'+v+' pt'+(v>1?'s':'')+'</span></li>').join('')+'</ul></div>'
  +'<div class="ranking-tabs" role="tablist"><a role="tab" aria-selected="'+(period==='all')+'" class="'+(period==='all'?'active':'')+'" href="#classement">GÉNÉRAL</a><a role="tab" aria-selected="'+(period==='week')+'" class="'+(period==='week'?'active':'')+'" href="#classement?periode=semaine">CETTE SEMAINE</a></div></section>'
  +(me?'<section class="ranking-me"><span>TON RANG</span><strong>'+(me.rank?me.rank+'<small>/'+money(d.players)+'</small>':'—')+'</strong><div><b>'+money(me.score)+' pts</b><small>'+money(me.uniqueCards)+' joueurs différents'+(period==='week'?' obtenus cette semaine':'')+'</small></div>'+(me.rank?'':'<a class="btn btn-gold" href="#packs">OUVRIR UN PACK</a>')+'</section>':'<section class="ranking-me"><span>TON RANG</span><strong>—</strong><div><small>Connecte-toi pour apparaître au classement.</small></div><a class="btn btn-gold" href="#auth?mode=login&next=classement">SE CONNECTER</a></section>')
- +(period==='week'?'<p class="ranking-note">Cartes obtenues depuis le lundi '+esc(week)+' à minuit (heure de Paris). Nouveau classement chaque lundi.</p>':'')
+ +claimHtml+(period==='week'?'<p class="ranking-note">Cartes obtenues depuis le lundi '+esc(week)+' à minuit (heure de Paris). Nouveau classement chaque lundi.</p>':'')
  +(top.length?'<section class="ranking-podium">'+[0,1,2].map(i=>{const p=podium[i];return p?'<article class="podium-'+(i+1)+(p.me?' is-me':'')+'"><span class="podium-medal" aria-hidden="true">'+medal[i]+'</span><b>'+esc(p.name)+'</b><strong>'+money(p.score)+' pts</strong><small>'+money(p.uniqueCards)+' joueurs · '+money(p.topCards)+' Legendary/Icon</small><i class="podium-step" aria-hidden="true">'+(i+1)+'</i></article>':'<article class="podium-'+(i+1)+' podium-empty"><span class="podium-medal" aria-hidden="true">'+medal[i]+'</span><b>Place libre</b><small>Ouvre des packs pour la prendre !</small><i class="podium-step" aria-hidden="true">'+(i+1)+'</i></article>';}).join('')+'</section>'
  +(rest.length?'<div class="ranking-table-wrap"><table class="ranking-table"><thead><tr><th>#</th><th>COLLECTIONNEUR</th><th>JOUEURS</th><th>LEG./ICON</th><th>POINTS</th></tr></thead><tbody>'+rest.map(row).join('')+'</tbody></table></div>':'')
  :'<div class="empty">'+(period==='week'?'Personne n’a encore obtenu de carte cette semaine : ouvre un pack pour prendre la tête !':'Aucun collectionneur classé pour le moment.')+'</div>')
- +'<p class="ranking-note">'+money(d.players)+' collectionneur'+(d.players>1?'s':'')+' classé'+(d.players>1?'s':'')+'. Les 50 premiers sont affichés ; les cartes offertes par l’équipe ne comptent pas. Mise à jour toutes les minutes.</p>'
+ +rewardsHtml+'<p class="ranking-note">'+money(d.players)+' collectionneur'+(d.players>1?'s':'')+' classé'+(d.players>1?'s':'')+'. Les 50 premiers sont affichés ; les cartes offertes par l’équipe ne comptent pas. Mise à jour toutes les minutes.</p>'
  +'</div>';
 }
 
@@ -1032,7 +1038,7 @@ document.querySelectorAll('[data-new-competition]').forEach(x=>x.onclick=()=>sho
  document.querySelectorAll('[data-pack]').forEach(b=>b.onclick=()=>openPack(b.dataset.pack));
  const dailyBtn=$('#daily');if(dailyBtn)dailyBtn.onclick=daily;
  document.querySelectorAll('[data-challenge]').forEach(b=>b.onclick=()=>{b.disabled=true;claimChallengeUi(b.dataset.challenge)});
- document.querySelectorAll('[data-mission]').forEach(b=>b.onclick=()=>mission(b.dataset.mission));document.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>task(b.dataset.taskKind,b.dataset.task));
+ document.querySelectorAll('[data-mission]').forEach(b=>b.onclick=()=>mission(b.dataset.mission));document.querySelectorAll('[data-lb-claim]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{const r=await api('/api/leaderboard/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({week:b.dataset.lbClaim})});if(r.user)state.user=r.user;toast(`+${money(r.reward.coins)} FOOTCOINS · +${money(r.reward.xp)} XP`);render()}catch(e){toast(e.message);b.disabled=false}});document.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>task(b.dataset.taskKind,b.dataset.task));
  document.querySelectorAll('[data-album-season]').forEach(b=>b.onclick=()=>claimAlbum(b.dataset.albumSeason,b.dataset.albumClub));
  document.querySelectorAll('[data-album-claim-level]').forEach(b=>b.onclick=()=>{b.disabled=true;claimAlbum(b.dataset.seasonId||'','',b.dataset.albumClaimLevel,b.dataset.competitionId||'')});
  document.querySelectorAll('[data-bid]').forEach(b=>b.onclick=()=>bidAuction(b.dataset.bid,Number(b.dataset.min)));
