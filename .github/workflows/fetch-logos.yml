@@ -12,22 +12,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Lister les images des articles sans logo
+      - name: Télécharger les logos choisis
         env:
           UA: "FOOTVAULT-logos/1.0 (https://sport-vault.onrender.com)"
         run: |
           api="https://en.wikipedia.org/w/api.php"
-          : > logos-candidats.txt
-          for page in UEFA_Champions_League FIFA_World_Cup UEFA_Nations_League 2026_FIFA_World_Cup; do
-            echo "== $page" >> logos-candidats.txt
-            curl -fsS -A "$UA" "$api?action=parse&page=$page&prop=images&format=json&redirects=1" | jq -r '.parse.images[]' | head -40 >> logos-candidats.txt
+          while read -r id file; do
+            url=$(curl -fsS -A "$UA" "$api?action=query&titles=File:$file&prop=imageinfo&iiprop=url&iiurlwidth=330&format=json" | jq -r '.query.pages[].imageinfo[0].thumburl')
+            curl -fsS -A "$UA" -o "competition-$id.png" "$url" && echo "$id : $file -> $url" >> logos.txt
             sleep 1
-          done
-          cat logos-candidats.txt
+          done <<'LIST'
+          ligue-des-champions UEFA_Champions_League.svg
+          coupe-du-monde FIFA_World_Cup_wordmark_(2023).svg
+          ligue-des-nations UEFA_Nations_League.svg
+          LIST
+          file competition-*.png
       - name: Commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add logos-candidats.txt
-          git commit -m "Logos : images candidates (temporaire)" || exit 0
+          git add competition-*.png logos.txt
+          git commit -m "Logos : compétitions internationales (temporaire)" || exit 0
           git push
