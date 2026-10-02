@@ -2,7 +2,7 @@
 
 // Import de la Coupe du monde (1930-2026) et de la Ligue des Nations (phases finales 2019-2025)
 // depuis data/international-2026.json.gz, généré par scripts/build-international-data.py
-// à partir des deux classeurs fournis (notes importées telles quelles, max 99).
+// à partir des deux classeurs fournis (notes de la Coupe du monde relevées par la courbe LIFT, Ligue des Nations inchangée).
 //
 // - Identifiants stables « fv-w-… » (Coupe du monde) et « fv-n-… » (Ligue des Nations) : relancer
 //   l'import met à jour les mêmes cartes, sans doublon.

@@ -5,7 +5,11 @@
 Usage :
   python3 scripts/build-international-data.py coupes_du_monde_effectifs_notes.xlsx ligue_des_nations_effectifs_notes.xlsx
 
-Les notes des classeurs sont importées telles quelles (le jeu n'a pas de plafond : note maximale 99).
+Notes : Ligue des Nations importée telle quelle (le jeu n'a pas de plafond : note maximale 99).
+Coupe du monde : les notes du classeur sont trop basses (médiane 66, 89 % de Common) ; elles sont relevées
+par la courbe LIFT ci-dessous (croissante : l'ordre des joueurs est conservé, les notes >= 92 ne bougent
+pas, donc Messi, Pelé, Mbappé... restent à 98). Les six statistiques sont mises à l'échelle (nouvelle note /
+ancienne) pour rester cohérentes avec la note affichée.
 Nettoyages : âge négatif -> valeur absolue ; numéro ou âge absents -> vides ; gardiens rangés dans les
 colonnes communes ; postes DF/MF/FW -> CB/DM-CM-AM/ST.
 Le fichier JSON est lu par scripts/import-international.js (identifiants stables, import sans doublon).
@@ -16,6 +20,21 @@ import os
 import sys
 
 import openpyxl
+
+# Relèvement des notes de la Coupe du monde (points d'ancrage note du classeur -> note retenue).
+LIFT = [(54, 64), (66, 75), (78, 84), (88, 90), (92, 92)]
+
+
+def lift(ovr):
+    """Interpolation linéaire entre les points d'ancrage ; inchangé au-delà de 92."""
+    if ovr >= LIFT[-1][0]:
+        return ovr
+    if ovr <= LIFT[0][0]:
+        return ovr + LIFT[0][1] - LIFT[0][0]
+    for (x0, y0), (x1, y1) in zip(LIFT, LIFT[1:]):
+        if x0 <= ovr <= x1:
+            return round(y0 + (y1 - y0) * (ovr - x0) / (x1 - x0))
+
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'data', 'international-2026.json.gz')
@@ -56,16 +75,18 @@ def build(cdm_path, nl_path):
     # 1930-2022 : Édition, Sélection, N°, Joueur, Poste, Âge, Matchs, Buts, Général, 6 stats, Rareté
     for r in wb['Hommes 1930-2022'].iter_rows(min_row=2, values_only=True):
         edition, team, number, name, pos, age, ovr = r[0], r[1], r[2], r[3], r[4], r[5], r[8]
-        new = int(ovr)
-        s = stats(r[9:15], pos, 1)
+        new = lift(int(ovr))
+        s = stats(r[9:15], pos, new / int(ovr))
+        s0 = stats(r[9:15], pos, 1)   # poste déduit des statistiques d'origine (le relèvement ne change pas le poste)
         age = abs(int(age)) if age is not None else None
-        rows.append(['coupe-du-monde', str(edition), team_index(team), name, sub_position(pos, s), number, age, new] + s)
+        rows.append(['coupe-du-monde', str(edition), team_index(team), name, sub_position(pos, s0), number, age, new] + s)
     # 2026 : Édition, Sélection, N°, Joueur, Poste, Âge, Sél., Buts int., Club, Général, 6 stats, Rareté
     for r in wb['Coupe du monde 2026'].iter_rows(min_row=2, values_only=True):
         edition, team, number, name, pos, age, ovr = r[0], r[1], r[2], r[3], r[4], r[5], r[9]
-        new = int(ovr)
-        s = stats(r[10:16], pos, 1)
-        rows.append(['coupe-du-monde', str(edition), team_index(team), name, sub_position(pos, s), number,
+        new = lift(int(ovr))
+        s = stats(r[10:16], pos, new / int(ovr))
+        s0 = stats(r[10:16], pos, 1)
+        rows.append(['coupe-du-monde', str(edition), team_index(team), name, sub_position(pos, s0), number,
                      int(age) if age is not None else None, new] + s)
 
     wl = openpyxl.load_workbook(nl_path, read_only=True, data_only=True)
