@@ -297,3 +297,28 @@ test('packs : visiteur non connecté = un seul appel /api/packs ; serveur qui d�
   assert.equal(calls, 101);
   await ctx.close();
 });
+
+test('cartes : pastille du club quand il a un logo, rien sinon', async () => {
+  const collection = await page.evaluate(async () => (await (await fetch('/api/collection')).json()).cards || []);
+  assert.ok(collection.length > 0);
+  const norm = v => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const key = norm(collection[0].club);
+  const withLogo = await browser.newContext({ extraHTTPHeaders: { 'X-Forwarded-For': server.newIp() } });
+  const a = await withLogo.newPage();
+  await a.route('**/api/club-logos', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ logos: { [key]: 'competition-ligue-1.png' }, aliases: {} }) }));
+  await a.goto(server.base + '/#home');
+  await a.evaluate(async () => { await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'navigateur@test.fr', password: 'motdepasse123' }) }); });
+  await a.goto(server.base + '/#collection');
+  await a.reload();
+  await a.waitForSelector('.tcg-card.v4');
+  await a.waitForSelector('.v4-club-badge');
+  const expected = collection.filter(c => norm(c.club) === key).length;
+  assert.ok((await a.$$('.v4-club-badge')).length >= 1 && (await a.$$('.v4-club-badge')).length <= Math.max(expected, 1) * 2, 'pastilles seulement sur les cartes du club');
+  assert.equal(await a.$eval('.v4-club-badge', e => e.getAttribute('src')), 'competition-ligue-1.png');
+  await withLogo.close();
+  // Aucun logo connu : aucune pastille, cartes inchangées.
+  await page.goto(server.base + '/#collection');
+  await page.reload();
+  await page.waitForSelector('.tcg-card.v4');
+  assert.equal((await page.$$('.v4-club-badge')).length, 0);
+});
