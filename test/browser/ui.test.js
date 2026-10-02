@@ -265,3 +265,13 @@ test('accueil déconnecté : serveur qui démarre (503) → « — » et message
   assert.deepEqual(anonErrors, []);
   await ctx.close();
 });
+
+test('accueil : les 8 tuiles de compétitions mènent chacune à leur album', async () => {
+  const ctx = await browser.newContext({ extraHTTPHeaders: { 'X-Forwarded-For': server.newIp() } });
+  const anon = await ctx.newPage();
+  await anon.goto(server.base + '/#home');
+  await anon.waitForSelector('.fvh-competitions a');
+  const hrefs = await anon.$$eval('.fvh-competitions a', els => els.map(a => a.getAttribute('href')));
+  assert.deepEqual(hrefs, ['ligue-1', 'premier-league', 'la-liga', 'serie-a', 'bundesliga', 'ligue-des-champions', 'coupe-du-monde', 'ligue-des-nations'].map(id => '#album?competition=' + id));
+  await ctx.close();
+});
