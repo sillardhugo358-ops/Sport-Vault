@@ -227,3 +227,21 @@ test('packs : logo de la compétition sur les packs de compétition, pas sur les
   }
   assert.deepEqual(errors, []);
 });
+
+test('tableau de bord : panneaux de progression, classement et export CSV, sans débordement', async () => {
+  for (const vp of [VIEWPORTS[0], VIEWPORTS[2]]) {
+    await page.setViewportSize({ width: vp.width, height: vp.height });
+    const r = await visit('admin');
+    assert.ok(r.overflow <= 1, vp.name + ' : débordement');
+    await page.waitForSelector('.admin-stats-panel');
+    const titles = await page.$$eval('.admin-stats-panel h4', els => els.map(e => e.textContent.trim()));
+    for (const t of ['Récompenses récupérées par jour', 'Succès les plus récupérés', 'Missions les plus récupérées', 'Classement de la semaine : récompenses']) {
+      assert.ok(titles.includes(t), vp.name + ' : panneau « ' + t + ' »');
+    }
+    const kpis = await page.$$eval('.admin-stats-kpi span', els => els.map(e => e.textContent.trim()));
+    for (const k of ['Récompenses récupérées', 'Retour à 7 jours', 'FC en circulation']) assert.ok(kpis.includes(k), k);
+    const [download] = await Promise.all([page.waitForEvent('download'), page.click('[data-stats-csv]')]);
+    assert.match(download.suggestedFilename(), /^footvault-statistiques-\d+j\.csv$/);
+  }
+  assert.deepEqual(errors, []);
+});
