@@ -10,6 +10,10 @@
 
 | `europe-2010-2027.json.gz` | Premier League, LaLiga, Serie A, Bundesliga, saisons 2010-2011 à 2026-2027 : **43 781 cartes**, JSON compressé gzip. Généré depuis le classeur `cartes_FIFA_2010-11_a_2026-27.xlsx` (postes convertis en codes officiels, statistiques des gardiens rangées dans les colonnes communes, codes pays convertis en noms, première nationalité seulement) | `scripts/import-europe.js`, lancé au démarrage par `ligue1-launcher.js` |
 
+| `international-2026.json.gz` | Coupe du monde 1930-2026 (12 210 cartes) et Ligue des Nations, phases finales 2019-2025 (376 cartes) : **12 586 cartes**, JSON gzip. Généré par `scripts/build-international-data.py` depuis `coupes_du_monde_effectifs_notes.xlsx` et `ligue_des_nations_effectifs_notes.xlsx` (notes conservées telles quelles, max 98 ; gardiens rangés dans les colonnes communes ; DF/MF/FW → CB/DM-CM-AM/ST ; âge négatif → valeur absolue) | `scripts/import-international.js`, lancé au démarrage par `ligue1-launcher.js` après l'import Europe |
+
+Import international : identifiants stables `fv-w-…` (Coupe du monde) et `fv-n-…` (Ligue des Nations), même mécanisme que l'import Europe. Ces cartes sont réservées à leurs packs dédiés et aux pools manuels (jamais dans les packs génériques, ni en cadeau de bienvenue, ni dans les cartes à la une de l'accueil). Annulation : `UPDATE catalog_cards SET is_active=false WHERE id LIKE 'fv-w-%' OR id LIKE 'fv-n-%';`
+
 **Ne pas supprimer ni renommer** : si le chargement échoue, le serveur retombe sur 24 cartes fictives.
 
 Import Europe : identifiants stables `fv-e-…`, relance sans doublon, import sauté tant que le fichier ne change pas (table `data_imports`). Pour publier une nouvelle version du classeur : régénérer ce fichier, pousser, redéployer.

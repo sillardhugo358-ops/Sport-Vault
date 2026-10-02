@@ -70,3 +70,25 @@ test('anti-dilution : packs génériques et cadeau de bienvenue sans cartes inte
   assert.equal(r.body.cards.length, 5);
   assert.ok(r.body.cards.every(c => /^fv-w-/.test(c.cardId)), 'pack Coupe du monde : seulement des cartes Coupe du monde');
 });
+
+test('packs dédiés : créés une seule fois, tirent dans leur compétition, Rare garanti ; accueil sans cartes internationales', async () => {
+  const packs = (await server.db.query("SELECT id,price,cards,guarantee,conditions FROM pack_definitions WHERE id IN ('pack-coupe-du-monde','pack-ligue-des-nations') ORDER BY id")).rows;
+  assert.deepEqual(packs.map(p => [p.id, Number(p.price), Number(p.cards), p.guarantee]), [['pack-coupe-du-monde', 300, 6, 'rare'], ['pack-ligue-des-nations', 300, 6, 'rare']]);
+  await server.restart();
+  assert.equal((await server.db.query("SELECT count(*)::int AS n FROM pack_definitions WHERE id IN ('pack-coupe-du-monde','pack-ligue-des-nations')")).rows[0].n, 2, 'pas recréés au redémarrage');
+  const p = await newPlayer(server, 'Supporter');
+  await setCoins(server, p.user.id, 10000);
+  for (const [packId, prefix] of [['pack-coupe-du-monde', /^fv-w-/], ['pack-ligue-des-nations', /^fv-n-/]]) {
+    for (let i = 0; i < 5; i++) {
+      const r = await p.post('/api/packs/open', { packId });
+      assert.equal(r.status, 200, packId + ' ' + JSON.stringify(r.body));
+      assert.equal(r.body.cards.length, 6);
+      assert.ok(r.body.cards.every(c => prefix.test(c.cardId)), packId);
+      assert.ok(r.body.cards.some(c => c.rarity !== 'common'), 'Rare garanti');
+    }
+  }
+  const summaryRes = await fetch(server.base + '/api/catalog/summary');
+  const summary = await summaryRes.json();
+  assert.equal(summaryRes.status, 200, JSON.stringify(summary));
+  assert.ok(summary.featured.every(c => !/^fv-[wn]-/.test(c.id)), 'accueil : cartes de championnat');
+});
