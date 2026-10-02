@@ -262,7 +262,7 @@ async function album(){
  if(!seasonId){
   const seasonsRaw=comp.seasons||[];
   const seasonSort=route().q.get('sort')||'recent';
-  const seasonMetrics=s=>{const clubs=s.clubs||[],total=clubs.reduce((n,cl)=>n+Number(cl.total||0),0),owned=clubs.reduce((n,cl)=>n+Number(cl.owned||0),0);return{year:Number(String(s.season||'').slice(0,4))||0,total,owned,pct:Math.round(owned/Math.max(1,total)*100),clubs:clubs.length};};
+  const seasonMetrics=s=>{const clubs=s.clubs||[],total=clubs.reduce((n,cl)=>n+Number(cl.total||0),0),owned=clubs.reduce((n,cl)=>n+Number(cl.owned||0),0);return{year:Number((String(s.season||'').match(/\d{4}/)||[])[0])||0,total,owned,pct:Math.round(owned/Math.max(1,total)*100),clubs:clubs.length};};
   const seasons=[...seasonsRaw].sort((a,b)=>{const A=seasonMetrics(a),B=seasonMetrics(b);switch(seasonSort){case'old':return A.year-B.year;case'pct-desc':return B.pct-A.pct||B.year-A.year;case'pct-asc':return A.pct-B.pct||B.year-A.year;case'cards-desc':return B.total-A.total||B.year-A.year;case'clubs-desc':return B.clubs-A.clubs||B.year-A.year;default:return B.year-A.year;}});
   const compTotal=seasons.reduce((n,s)=>n+(s.clubs||[]).reduce((m,cl)=>m+Number(cl.total||0),0),0);
   const compOwned=seasons.reduce((n,s)=>n+(s.clubs||[]).reduce((m,cl)=>m+Number(cl.owned||0),0),0);

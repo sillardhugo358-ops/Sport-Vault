@@ -14,6 +14,10 @@
 
 Import international : identifiants stables `fv-w-…` (Coupe du monde) et `fv-n-…` (Ligue des Nations), même mécanisme que l'import Europe. Ces cartes sont réservées à leurs packs dédiés et aux pools manuels (jamais dans les packs génériques, ni en cadeau de bienvenue, ni dans les cartes à la une de l'accueil). Annulation : `UPDATE catalog_cards SET is_active=false WHERE id LIKE 'fv-w-%' OR id LIKE 'fv-n-%';`
 
+| `ldc-1991-2026.json.gz` | Ligue des Champions, saisons 1991-92 à 2025-26 : **21 446 cartes**, 160 clubs, JSON gzip. Généré par `scripts/build-ldc-data.py` depuis `LDC_Joueurs_cartes_1991-92_2023-24.xlsx` (onglets Participations et Clubs-Saisons ; notes et statistiques du classeur conservées, max 97 ; gardiens rangés dans les colonnes communes ; DF/MF/FW → CB/DM-CM-AM/ST selon le premier poste listé ; noms de clubs ramenés à un nom unique ; nationalité reprise des championnats quand le nom du joueur n'en a qu'une, sinon vide : 49 % des cartes) | `scripts/import-ldc.js`, lancé au démarrage par `ligue1-launcher.js` après l'import international |
+
+Import Ligue des Champions : identifiants stables `fv-c-…`, saison des cartes « LDC 1991-92 » (distincte des saisons de championnat pour que l'album ne mélange pas la carte de Ligue des Champions et la carte de championnat d'un même joueur et d'un même club), rareté par le barème officiel (pas celle du classeur). Même exclusion que la Coupe du monde : ni packs génériques, ni cadeau de bienvenue, ni cartes à la une de l'accueil ; seulement le pack dédié et les pools manuels. Annulation : `UPDATE catalog_cards SET is_active=false WHERE id LIKE 'fv-c-%';`
+
 **Ne pas supprimer ni renommer** : si le chargement échoue, le serveur retombe sur 24 cartes fictives.
 
 Import Europe : identifiants stables `fv-e-…`, relance sans doublon, import sauté tant que le fichier ne change pas (table `data_imports`). Pour publier une nouvelle version du classeur : régénérer ce fichier, pousser, redéployer.
