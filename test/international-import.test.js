@@ -11,7 +11,7 @@ const { rarityFromOvr } = require('../lib/rarity');
 const POSITIONS = ['GK', 'CB', 'DM', 'CM', 'AM', 'ST'];
 const quiet = () => {};
 
-test('fichier : 12 586 cartes valides, raretés du barème, notes du classeur conservées, doublon conservé', () => {
+test('fichier : 12 586 cartes valides, raretés du barème, relèvement des notes CDM, doublon conservé', () => {
   const cards = loadCards();
   assert.equal(cards.length, EXPECTED_CARDS);
   assert.equal(new Set(cards.map(c => c.id)).size, cards.length);
@@ -26,7 +26,13 @@ test('fichier : 12 586 cartes valides, raretés du barème, notes du classeur co
   }
   assert.deepEqual([...new Set(nl.map(c => c.season))].sort(), ['2018-2019', '2020-2021', '2022-2023', '2024-2025']);
   assert.ok(!cards.some(c => /Germany|Ivory Coast|Soviet|Yugoslavia/.test(c.nation)), 'noms de sélections en français');
-  assert.equal(Math.max(...cards.map(c => c.ovr)), 98, 'aucune note plafonnée');
+  assert.equal(Math.max(...cards.map(c => c.ovr)), 98, 'les stars gardent 98');
+  const median = list => list.map(c => c.ovr).sort((a, b) => a - b)[Math.floor(list.length / 2)];
+  assert.equal(median(wc), 75, 'notes de la Coupe du monde relevées (classeur : 66)');
+  assert.ok(wc.filter(c => c.rarity === 'common').length / wc.length < 0.7, 'moins de 70 % de Common (classeur : 89 %)');
+  assert.equal(median(nl), 79, 'Ligue des Nations inchangée');
+  const messi = wc.find(c => c.name === 'Lionel Messi' && c.season === '2022');
+  assert.equal(messi.ovr, 98, 'notes >= 92 inchangées');
   const stevens = cards.filter(c => c.name === 'Gary Stevens' && c.season === '1986');
   assert.equal(stevens.length, 2, 'deux joueurs homonymes, deux cartes');
 });
