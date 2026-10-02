@@ -30,6 +30,12 @@ async function syncWhenReady(){
             if(stdout3)process.stdout.write(stdout3);
             if(stderr3)process.stderr.write(stderr3);
             if(error3)console.error('[FOOTVAULT] International import process failed:',error3.message);
+            // Puis la Ligue des Champions (sauté si déjà à jour).
+            execFile(process.execPath,[path.join(__dirname,'scripts','import-ldc.js')],{env:process.env,maxBuffer:4*1024*1024},(error4,stdout4,stderr4)=>{
+              if(stdout4)process.stdout.write(stdout4);
+              if(stderr4)process.stderr.write(stderr4);
+              if(error4)console.error('[FOOTVAULT] Champions League import process failed:',error4.message);
+            });
           });
         });
       });
