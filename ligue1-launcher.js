@@ -25,6 +25,12 @@ async function syncWhenReady(){
           if(stdout2)process.stdout.write(stdout2);
           if(stderr2)process.stderr.write(stderr2);
           if(error2)console.error('[FOOTVAULT] Europe import process failed:',error2.message);
+          // Puis Coupe du monde et Ligue des Nations (sauté si déjà à jour).
+          execFile(process.execPath,[path.join(__dirname,'scripts','import-international.js')],{env:process.env,maxBuffer:4*1024*1024},(error3,stdout3,stderr3)=>{
+            if(stdout3)process.stdout.write(stdout3);
+            if(stderr3)process.stderr.write(stderr3);
+            if(error3)console.error('[FOOTVAULT] International import process failed:',error3.message);
+          });
         });
       });
     }
