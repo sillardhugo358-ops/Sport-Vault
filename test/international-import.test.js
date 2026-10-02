@@ -11,7 +11,7 @@ const { rarityFromOvr } = require('../lib/rarity');
 const POSITIONS = ['GK', 'CB', 'DM', 'CM', 'AM', 'ST'];
 const quiet = () => {};
 
-test('fichier : 12 586 cartes valides, raretés du barème, plafonds appliqués, doublon conservé', () => {
+test('fichier : 12 586 cartes valides, raretés du barème, notes du classeur conservées, doublon conservé', () => {
   const cards = loadCards();
   assert.equal(cards.length, EXPECTED_CARDS);
   assert.equal(new Set(cards.map(c => c.id)).size, cards.length);
@@ -21,14 +21,12 @@ test('fichier : 12 586 cartes valides, raretés du barème, plafonds appliqués,
   for (const c of cards) {
     assert.ok(POSITIONS.includes(c.position), c.position);
     assert.equal(c.rarity, rarityFromOvr(c.ovr));
-    assert.ok(c.ovr <= 94, c.name + ' ' + c.ovr);
+    assert.ok(c.ovr <= 99, c.name + ' ' + c.ovr);
     assert.ok(c.nation && c.nation === c.club);
   }
   assert.deepEqual([...new Set(nl.map(c => c.season))].sort(), ['2018-2019', '2020-2021', '2022-2023', '2024-2025']);
   assert.ok(!cards.some(c => /Germany|Ivory Coast|Soviet|Yugoslavia/.test(c.nation)), 'noms de sélections en français');
-  // Hors légendes, la Coupe du monde historique plafonne à 91.
-  const legends = new Set(['Pelé', 'Diego Maradona', 'Lionel Messi']);
-  assert.ok(wc.filter(c => Number(c.season) < 2026 && !legends.has(c.name) && c.ovr > 91).every(c => ['Zinedine Zidane', 'Ronaldo', 'Johan Cruyff', 'Franz Beckenbauer', 'Cristiano Ronaldo', 'Gerd Müller', 'Ferenc Puskás', 'Eusébio', 'Lev Yashin', 'Michel Platini', 'Marco van Basten', 'Roberto Baggio', 'Kylian Mbappé', 'Andrés Iniesta', 'Manuel Neuer', 'Paolo Maldini', 'Lothar Matthäus', 'Gianluigi Buffon', 'Ronaldinho', 'Romário'].includes(c.name)));
+  assert.equal(Math.max(...cards.map(c => c.ovr)), 98, 'aucune note plafonnée');
   const stevens = cards.filter(c => c.name === 'Gary Stevens' && c.season === '1986');
   assert.equal(stevens.length, 2, 'deux joueurs homonymes, deux cartes');
 });
