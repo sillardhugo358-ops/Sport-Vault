@@ -10,6 +10,14 @@ const route=()=>{const h=location.hash.replace(/^#/,'')||'home';const [r,q]=h.sp
 async function api(path,opt={}){const r=await fetch(path,{credentials:'same-origin',cache:'no-store',...opt});let d={};try{d=await r.json()}catch{};if(!r.ok){const e=new Error(d.error||'Une erreur est survenue.');e.status=r.status;e.data=d;throw e}
  // Après une action (pack, enchère, récompense…), la cloche vérifie les succès et missions terminés (notifications-bell.js).
  if(opt.method==='POST'&&!/^\/api\/(activity|notifications)/.test(path))window.fvNotifRefresh?.();return d}
+// Comme api(), avec de nouvelles tentatives (2 s, 4 s, 8 s) quand le serveur démarre (503) ou que le réseau échoue ;
+// les autres erreurs (401 non connecté, 404…) sont renvoyées tout de suite.
+async function apiRetry(path,opt={},delays=[2000,4000,8000]){
+ for(let i=0;;i++){
+  try{return await api(path,opt)}
+  catch(e){if((e.status&&e.status!==503)||i>=delays.length)throw e;await new Promise(r=>setTimeout(r,delays[i]))}
+ }
+}
 function toast(msg){const t=$('#toast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),3200)}
 function setModal(html){const m=$('#modal');m.innerHTML=html;m.classList.add('show');m.setAttribute('aria-hidden','false');m.querySelectorAll('[data-close]').forEach(x=>x.onclick=closeModal);if(typeof bind==='function')bind()}
 function closeModal(){const m=$('#modal');m.classList.remove('show');m.setAttribute('aria-hidden','true');m.innerHTML=''}
@@ -105,9 +113,12 @@ async function collection(){
 const COMPETITION_LOGOS=new Set(['ligue-1','premier-league','la-liga','serie-a','bundesliga','ligue-des-champions','coupe-du-monde','ligue-des-nations']);
 function packLogos(p,max=3){const ids=(Array.isArray(p?.conditions?.competitions)?p.conditions.competitions:[]).map(String).filter(id=>COMPETITION_LOGOS.has(id)).slice(0,max);return ids.length?'<span class="pack-logos'+(ids.length>1?' pack-logos-multi':'')+'" aria-hidden="true">'+ids.map(id=>'<img src="competition-'+esc(id)+'.png" alt="" loading="lazy" onerror="this.remove()">').join('')+'</span>':''}
 async function packs(){
- let poolOffers=[];
- try{const [m,p]=await Promise.all([api('/api/me'),api('/api/packs')]);state.user=m.user;state.packs=p.packs||[];poolOffers=p.pools||[];nav()}
- catch(e){state.user=null;const p=await api('/api/packs');state.packs=p.packs||[];poolOffers=p.pools||[];nav()}
+ // Joueur et packs demandés en parallèle, une seule fois chacun (avant : visiteur non connecté = deuxième appel
+ // des packs en série). Serveur qui démarre (503) ou réseau coupé : nouvelles tentatives au lieu d'une erreur.
+ const [meRes,packsRes]=await Promise.allSettled([apiRetry('/api/me'),apiRetry('/api/packs')]);
+ state.user=meRes.status==='fulfilled'?meRes.value.user:null;
+ if(packsRes.status!=='fulfilled')throw packsRes.reason;
+ const p=packsRes.value;state.packs=p.packs||[];let poolOffers=p.pools||[];nav();
  const packsList=state.packs;
  const categories=[['all','Tous les packs'],['standard','Standard'],['premium','Premium'],['special','Spécial'],['limited','Édition limitée']];
  const inferType=p=>{const s=(String(p.badge||'')+' '+String(p.name||'')).toLowerCase();if(p.availableUntil||/limit|édition|limited/.test(s))return'limited';if(/spécial|special|icône|hero|héros|légende/.test(s))return'special';if(/premium|champion|pro/.test(s))return'premium';return'standard'};
