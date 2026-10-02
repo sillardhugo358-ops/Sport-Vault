@@ -245,3 +245,23 @@ test('tableau de bord : panneaux de progression, classement et export CSV, sans 
   }
   assert.deepEqual(errors, []);
 });
+
+test('accueil déconnecté : serveur qui démarre (503) → « — » et message, puis chiffres affichés sans recharger', async () => {
+  const ctx = await browser.newContext({ extraHTTPHeaders: { 'X-Forwarded-For': server.newIp() } });
+  const anon = await ctx.newPage();
+  const anonErrors = [];
+  anon.on('pageerror', e => anonErrors.push(e.message));
+  let summaryCalls = 0;
+  await anon.route('**/api/catalog/summary', route => ++summaryCalls <= 2
+    ? route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Base de données en cours de démarrage.' }) })
+    : route.continue());
+  await anon.goto(server.base + '/#home');
+  await anon.waitForSelector('.fvh-metrics');
+  assert.equal(await anon.$eval('.fvh-metrics li b', e => e.textContent.trim()), '—', 'pas de faux zéro');
+  assert.match(await anon.$eval('.fvh-notice', e => e.textContent), /serveur démarre/);
+  await anon.waitForFunction(() => /\d/.test(document.querySelector('.fvh-metrics li b')?.textContent || ''), null, { timeout: 20000 });
+  assert.equal(await anon.$('.fvh-notice'), null, 'message retiré une fois les chiffres reçus');
+  assert.ok(summaryCalls >= 3, 'nouvelles tentatives automatiques : ' + summaryCalls);
+  assert.deepEqual(anonErrors, []);
+  await ctx.close();
+});

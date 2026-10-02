@@ -21,14 +21,29 @@ const CARD_V4_STATS={field:[['VIT','pace'],['DEF','defending'],['TIR','shooting'
 function cardMarkup(c,small=false){const rarity=['common','rare','epic','legendary','icon'].includes(String(c.rarity))?String(c.rarity):'common',limited=Boolean(c.isLimited),num=c.jerseyNumber==null||c.jerseyNumber===''?'':String(c.jerseyNumber),stats=CARD_V4_STATS[String(c.position).toUpperCase()==='GK'?'gk':'field'].map(([k,f])=>`<div><span>${k}</span><b>${Number(c[f]||0)||'—'}</b></div>`).join(''),icon=rarity==='icon';return `<article class="tcg-card v4 rarity-${rarity}"><div class="v4-frame">${icon?'<div class="v4-layer v4-holo"></div><div class="v4-layer v4-grain"></div>':'<div class="v4-layer v4-pattern"></div><div class="v4-layer v4-rivets"></div><div class="v4-layer v4-sheen"></div>'}<div class="v4-layer v4-vignette"></div>${num?`<div class="v4-wm" aria-hidden="true">${esc(num)}</div>`:''}<div class="v4-inner"></div></div>${icon?'<div class="v4-icon-border"></div>':''}<div class="v4-face"><div class="v4-top"><span>FOOTVAULT · ${esc(c.season)}</span><span class="v4-pos">${esc(c.position)}</span></div><div class="v4-ovr">${Number(c.ovr||0)||'—'}<small>OVR</small></div><div class="v4-name-zone"><span class="v4-club">${esc(c.club)}</span><h3 class="v4-name">${esc(c.name)}</h3><div class="v4-stats">${stats}</div></div><div class="v4-foot"><span class="v4-rarity">${esc(c.rarityLabel||rarity.toUpperCase())}${limited?' · '+esc(c.serialLabel||'LIMITED'):''}</span><span class="v4-nation">${esc(c.nation)}</span></div></div></article>`}
 function cardLink(c){const search=[c.name,c.club,c.nation,c.position,c.rarityLabel].filter(Boolean).join(" ").toLowerCase();return `<a class="card-link" data-collection-card-search="${esc(search)}" href="#card?id=${encodeURIComponent(c.instanceId)}">${cardMarkup(c)}</a>`}
 function viewHero(kicker,title,sub,stat='',statLabel=''){return `<section class="view-hero"><div><p class="eyebrow">${esc(kicker)}</p><h1>${title}</h1>${sub?`<p class="lead">${esc(sub)}</p>`:''}</div>${stat?`<div class="hero-stat"><strong>${esc(stat)}</strong><span>${esc(statLabel)}</span></div>`:''}</section>`}
+// Accueil : réessaie en arrière-plan (2 s, 4 s, 8 s, 15 s, 30 s) tant que l'utilisateur y reste, quand le
+// serveur ne répond pas encore (démarrage à froid de l'hébergeur gratuit). Au plus 4 séries de tentatives.
+function scheduleHomeRetry(){
+ if(state.homeRetry||(state.homeRetryRuns=(state.homeRetryRuns||0)+1)>4)return;
+ const delays=[2000,4000,8000,15000,30000];let i=0;
+ const step=()=>{state.homeRetry=setTimeout(async()=>{
+  state.homeRetry=null;
+  if(route().r!=='home')return;
+  try{await api('/api/catalog/summary');await render()}catch{if(++i<delays.length)step()}
+ },delays[i])};
+ step();
+}
 async function home(){
- const homeFetch=(path,fallback)=>Promise.race([
+ // Données publiques de l'accueil indisponibles (serveur qui démarre : 503, délai dépassé…) : on affiche
+ // « — » au lieu de zéros et on réessaie en arrière-plan (démarrage à froid de l'hébergeur gratuit).
+ let homeDown=false;
+ const homeFetch=(path,fallback,pub=false)=>Promise.race([
   api(path),
-  new Promise(resolve=>setTimeout(()=>resolve(fallback),7000))
- ]).catch(()=>fallback);
+  new Promise((resolve,reject)=>setTimeout(()=>reject(new Error('timeout')),7000))
+ ]).catch(e=>{if(pub&&e.status!==401)homeDown=true;return fallback});
  const [catalogData,packsData,auctionData,meData,progressData]=await Promise.all([
-  homeFetch('/api/catalog/summary',{cards:0,clubs:0,featured:[]}),
-  homeFetch('/api/packs',{packs:[]}),
+  homeFetch('/api/catalog/summary',{cards:null,clubs:null,featured:[]},true),
+  homeFetch('/api/packs',{packs:[]},true),
   homeFetch('/api/auctions',{auctions:[]}),
   homeFetch('/api/me',{user:null}),
   homeFetch('/api/progression',null)
@@ -45,6 +60,7 @@ async function home(){
  const ready=progressData?[(progressData.daily&&!progressData.daily.claimed)?1:0,...daily.map(t=>t.completed&&!t.claimed?1:0),...(progressData.weeklyTasks||[]).map(t=>t.completed&&!t.claimed?1:0),...(progressData.monthlyTasks||[]).map(t=>t.completed&&!t.claimed?1:0),...(progressData.missions||[]).map(m=>m.completed&&!m.claimed?1:0)].reduce((a,b)=>a+b,0):0;
  const taskRows=daily.slice(0,3).map(t=>{const pct=Math.min(100,t.target?Math.round(Number(t.progress||0)/t.target*100):0);return `<li class="${t.claimed?'is-done':t.completed?'is-ready':''}"><span class="fvh-task-check" aria-hidden="true">${t.claimed||t.completed?'✓':''}</span><span class="fvh-task-main"><b>${esc(t.title)}</b><i class="fvh-bar"><em style="width:${pct}%"></em></i></span><span class="fvh-task-meta">${Number(t.progress||0)}/${Number(t.target||0)}<small>+${money(t.reward?.coins||0)} FC</small></span></li>`}).join('');
  const competitions=[['L1','Ligue 1','ligue-1'],['PL','Premier League','premier-league'],['LL','La Liga','la-liga'],['SA','Serie A','serie-a'],['BL','Bundesliga','bundesliga'],['LDC','Ligue des Champions','ligue-des-champions'],['CDM','Coupe du Monde','coupe-du-monde'],['LN','Ligue des Nations','ligue-des-nations']];
+ if(homeDown)scheduleHomeRetry();else state.homeRetryRuns=0;
  const today=user?`<section class="fvh-today" aria-label="Ton programme du jour">
    <div class="fvh-panel fvh-player"><p class="fvh-eyebrow">TON VAULT</p><h2>${esc(user.name||'Joueur')}</h2>
     <div class="fvh-level"><span>NIVEAU <b>${String(lv.level).padStart(2,'0')}</b></span><span>${money(lv.currentXp)} / ${money(lv.xpToNext)} XP</span></div><i class="fvh-bar"><em style="width:${Math.round(lv.currentXp/lv.xpToNext*100)}%"></em></i>
@@ -54,7 +70,7 @@ async function home(){
     ${taskRows?`<ul class="fvh-task-list">${taskRows}</ul>`:'<p class="fvh-muted">Aucune mission pour le moment.</p>'}
     <p class="fvh-muted fvh-reset">Nouvelles missions chaque jour à minuit.</p></div>
   </section>`:`<section class="fvh-steps" aria-label="Comment ça marche">
-   ${[['01','OUVRE','Des packs de 5 à 8 cartes, du Common à l’Icon.'],['02','COLLECTIONNE','Plus de '+money(catalogData.cards||0)+' cartes de joueurs, saison après saison.'],['03','ÉCHANGE','Achète et vends tes cartes aux enchères avec les autres joueurs.']].map(([n,t,d])=>`<div class="fvh-panel fvh-step"><span>${n}</span><h3>${t}</h3><p>${d}</p></div>`).join('')}
+   ${[['01','OUVRE','Des packs de 5 à 8 cartes, du Common à l’Icon.'],['02','COLLECTIONNE',(catalogData.cards==null?'Des dizaines de milliers de':'Plus de '+money(catalogData.cards))+' cartes de joueurs, saison après saison.'],['03','ÉCHANGE','Achète et vends tes cartes aux enchères avec les autres joueurs.']].map(([n,t,d])=>`<div class="fvh-panel fvh-step"><span>${n}</span><h3>${t}</h3><p>${d}</p></div>`).join('')}
   </section>`;
  return `<div class="home-page fv-home">
   <section class="fvh-hero">
@@ -62,7 +78,7 @@ async function home(){
     <div class="fvh-lockup"><img class="fvh-lockup-card" src="footvault-card.svg" alt=""><div><h1 class="fvh-wordmark">FOOT<span>VAULT</span></h1><p class="fvh-tagline">COLLECT THE GAME</p></div></div>
     <p class="fvh-lead">Le jeu de cartes des passionnés de football. Ouvre des packs, collectionne les joueurs de chaque saison, complète tes albums et affronte les autres collectionneurs au marché.</p>
     <div class="fvh-actions">${user?'<a class="btn btn-gold btn-large" href="#packs">OUVRIR UN PACK</a><a class="btn btn-outline btn-large" href="#collection">MA COLLECTION</a>':'<a class="btn btn-gold btn-large" href="#auth?mode=register">CRÉER MON VAULT</a><a class="btn btn-outline btn-large" href="#auth?mode=login">SE CONNECTER</a>'}</div>
-    <ul class="fvh-metrics"><li><b>${money(catalogData.cards||0)}</b>cartes</li><li><b>${money(catalogData.clubs||0)}</b>clubs</li><li><b>5</b>raretés</li></ul>
+    <ul class="fvh-metrics"><li><b>${catalogData.cards==null?'—':money(catalogData.cards)}</b>cartes</li><li><b>${catalogData.clubs==null?'—':money(catalogData.clubs)}</b>clubs</li><li><b>5</b>raretés</li></ul>${homeDown?'<p class="fvh-notice" role="status">Le serveur démarre : les chiffres, les packs et les cartes à la une s’affichent dans un instant.</p>':''}
    </div>
    <div class="fvh-showcase">${showcase||'<img class="fvh-showcase-empty" src="footvault-card.svg" alt="">'}</div>
   </section>
