@@ -275,3 +275,25 @@ test('accueil : les 8 tuiles de compétitions mènent chacune à leur album', as
   assert.deepEqual(hrefs, ['ligue-1', 'premier-league', 'la-liga', 'serie-a', 'bundesliga', 'ligue-des-champions', 'coupe-du-monde', 'ligue-des-nations'].map(id => '#album?competition=' + id));
   await ctx.close();
 });
+
+test('packs : visiteur non connecté = un seul appel /api/packs ; serveur qui démarre (503) → réessai, packs affichés', async () => {
+  const ctx = await browser.newContext({ extraHTTPHeaders: { 'X-Forwarded-For': server.newIp() } });
+  const anon = await ctx.newPage();
+  const anonErrors = [];
+  anon.on('pageerror', e => anonErrors.push(e.message));
+  let calls = 0;
+  await anon.route('**/api/packs', route => ++calls === 1
+    ? route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Base de données en cours de démarrage.' }) })
+    : route.continue());
+  await anon.goto(server.base + '/#packs');
+  await anon.waitForSelector('[data-shop-pack]', { timeout: 20000 });
+  assert.equal(calls, 2, 'un 503 puis une seule nouvelle tentative réussie : ' + calls);
+  assert.ok((await anon.$$('[data-shop-pack]')).length >= 5);
+  assert.deepEqual(anonErrors, []);
+  // Rechargement normal : exactement un appel (plus de doublon pour les visiteurs non connectés).
+  calls = 100;
+  await anon.reload();
+  await anon.waitForSelector('[data-shop-pack]');
+  assert.equal(calls, 101);
+  await ctx.close();
+});
