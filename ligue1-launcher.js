@@ -35,6 +35,12 @@ async function syncWhenReady(){
               if(stdout4)process.stdout.write(stdout4);
               if(stderr4)process.stderr.write(stderr4);
               if(error4)console.error('[FOOTVAULT] Champions League import process failed:',error4.message);
+              // Puis les logos de clubs du dossier club-logos/ (sans fichier, aucun effet).
+              execFile(process.execPath,[path.join(__dirname,'scripts','sync-club-logos.js')],{env:process.env},(error5,stdout5,stderr5)=>{
+                if(stdout5)process.stdout.write(stdout5);
+                if(stderr5)process.stderr.write(stderr5);
+                if(error5)console.error('[FOOTVAULT] Club logos sync process failed:',error5.message);
+              });
             });
           });
         });

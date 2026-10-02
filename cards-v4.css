@@ -115,3 +115,8 @@
   .tcg-card.v4 .v4-stats{display:none}
   .tcg-card.v4 .v4-name{margin-bottom:2cqw}
 }
+
+/* Pastille du club (logo fourni par le propriétaire) : à droite de la note, sous le poste ; absente si le club n'a pas de logo. */
+.v4-club-badge{position:absolute;right:6.2cqw;top:17.5cqw;width:17cqw;height:17cqw;box-sizing:border-box;padding:1.6cqw;border-radius:50%;
+  object-fit:contain;background:#fff;box-shadow:0 0 0 .8cqw rgba(0,0,0,.28),0 1.2cqw 3cqw rgba(0,0,0,.45);z-index:3}
+.rarity-icon .v4-club-badge{box-shadow:0 0 0 .8cqw rgba(255,255,255,.65),0 1.2cqw 3cqw rgba(0,0,0,.45)}
