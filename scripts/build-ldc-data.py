@@ -28,6 +28,7 @@ OUT = os.path.join(ROOT, 'data', 'ldc-1991-2026.json.gz')
 EUROPE = os.path.join(ROOT, 'data', 'europe-2010-2027.json.gz')
 
 ALIAS = {
+    'FC Kosicee': 'FC Košice',   # faute de frappe du classeur (identifiants de cartes inchangés : voir LEGACY_CLUB_NAMES dans import-ldc.js)
     'AC Parma': 'Parma Calcio 1913', 'AFC Ajax': 'Ajax', 'Ajax Amsterdam': 'Ajax',
     'Aston Villa F.C.': 'Aston Villa', 'Athletic Club': 'Athletic Bilbao', 'Atletico Madrid': 'Atlético de Madrid',
     'Bayer Leverkusen': 'Bayer 04 Leverkusen', 'Celta Vigo': 'Celta de Vigo',

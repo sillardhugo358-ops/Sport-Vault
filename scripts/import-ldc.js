@@ -29,6 +29,10 @@ const BASE_ORDER = 40000000;
 const BATCH = 1000;
 const POSITIONS = ['GK', 'RB', 'CB', 'LB', 'DM', 'CM', 'AM', 'RW', 'ST', 'LW'];
 
+// Noms corrigés depuis la première version du fichier : l'identifiant d'une carte reste calculé avec l'ancien nom (identifiants stables,
+// exemplaires et albums intacts) et le club déjà en base est renommé sur place (voir ensureStructure).
+const LEGACY_CLUB_NAMES = { 'FC Košice': 'FC Kosicee' };
+
 const slug = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 // « LDC 1991-92 » (11 caractères : competition_seasons.season est limité à 12).
 const seasonOf = key => 'LDC ' + key.slice(0, 4) + '-' + key.slice(7);
@@ -40,7 +44,7 @@ function loadData(buffer = fs.readFileSync(DATA_FILE)) {
     const club = doc.clubs[clubIndex];
     const stats = [ovr, pace, shooting, passing, dribbling, defending, physical];
     if (!/^\d{4}-\d{4}$/.test(season) || !club || !name || !POSITIONS.includes(position) || stats.some(v => !Number.isInteger(v) || v < 1 || v > 99)) throw new Error('Ligne invalide n°' + (i + 1));
-    const key = [season, club, name, playerId || ''].join('|');
+    const key = [season, LEGACY_CLUB_NAMES[club] || club, name, playerId || ''].join('|');
     return {
       id: 'fv-c-' + crypto.createHash('sha1').update(n > 1 ? key + '|' + n : key).digest('hex').slice(0, 16),
       season: seasonOf(season), seasonKey: season, club, name, nation: nation || '', position,
@@ -54,6 +58,10 @@ function loadData(buffer = fs.readFileSync(DATA_FILE)) {
 
 async function ensureStructure(client, { cards, clubs, seasons }) {
   await client.query("UPDATE competitions SET status='available',updated_at=now() WHERE id=$1", [COMPETITION]);
+  // Club corrigé : la ligne existante est renommée (même identifiant, même logo) au lieu d'en créer une seconde.
+  for (const [name, legacy] of Object.entries(LEGACY_CLUB_NAMES)) {
+    await client.query('UPDATE clubs SET name=$1,updated_at=now() WHERE name=$2 AND NOT EXISTS (SELECT 1 FROM clubs WHERE name=$1)', [name, legacy]);
+  }
   const existing = new Map();
   for (const r of (await client.query('SELECT id,name FROM clubs ORDER BY sort_order,id')).rows) if (!existing.has(normName(r.name))) existing.set(normName(r.name), r);
   const clubIds = new Map();
@@ -125,7 +133,7 @@ async function importLdc(pool, { force = false, log = console.log } = {}) {
   finally { client.release(); }
 }
 
-module.exports = { loadData, importLdc, EXPECTED_CARDS };
+module.exports = { loadData, importLdc, EXPECTED_CARDS, LEGACY_CLUB_NAMES };
 
 if (require.main === module) {
   if (!process.env.DATABASE_URL) { console.error('DATABASE_URL manquante.'); process.exit(1); }

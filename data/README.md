@@ -18,6 +18,8 @@ Import international : identifiants stables `fv-w-…` (Coupe du monde) et `fv-n
 
 Import Ligue des Champions : identifiants stables `fv-c-…`, saison des cartes « LDC 1991-92 » (distincte des saisons de championnat pour que l'album ne mélange pas la carte de Ligue des Champions et la carte de championnat d'un même joueur et d'un même club), rareté par le barème officiel (pas celle du classeur). Même exclusion que la Coupe du monde : ni packs génériques, ni cadeau de bienvenue, ni cartes à la une de l'accueil ; seulement le pack dédié et les pools manuels. Annulation : `UPDATE catalog_cards SET is_active=false WHERE id LIKE 'fv-c-%';`
 
+Club corrigé (04/10/2026) : « FC Kosicee » (faute du classeur) est devenu « FC Košice ». L'identifiant d'une carte reste calculé avec l'ancien nom (`LEGACY_CLUB_NAMES` dans `scripts/import-ldc.js`, et `ALIAS` dans `scripts/build-ldc-data.py` pour une régénération) : les 17 cartes gardent leur identifiant, et le club déjà en base est renommé sur place par l'import (même identifiant, même logo, exemplaires resynchronisés). Annulation : `UPDATE clubs SET name='FC Kosicee' WHERE name='FC Košice';` puis `UPDATE catalog_cards SET club='FC Kosicee' WHERE club='FC Košice';` et la même chose pour `card_instances`.
+
 **Ne pas supprimer ni renommer** : si le chargement échoue, le serveur retombe sur 24 cartes fictives.
 
 Import Europe : identifiants stables `fv-e-…`, relance sans doublon, import sauté tant que le fichier ne change pas (table `data_imports`). Pour publier une nouvelle version du classeur : régénérer ce fichier, pousser, redéployer.
