@@ -5,7 +5,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { startServer, newPlayer, setCoins } = require('./helpers');
-const { loadData, importLdc, EXPECTED_CARDS } = require('../scripts/import-ldc');
+const { loadData, importLdc, EXPECTED_CARDS, LEGACY_CLUB_NAMES } = require('../scripts/import-ldc');
 const { rarityFromOvr } = require('../lib/rarity');
 
 const quiet = () => {};
@@ -49,6 +49,28 @@ test('import : cartes, clubs, saisons ; relance sans doublon ; album sans mélan
   await importLdc(server.db, { force: true, log: quiet });
   assert.equal(await count(), EXPECTED_CARDS - 1, 'une carte désactivée par un admin reste désactivée');
   assert.equal(Number((await server.db.query("SELECT count(*) FROM catalog_cards WHERE id LIKE 'fv-c-%'")).rows[0].count), EXPECTED_CARDS);
+});
+
+test('club corrigé (« FC Kosicee » → « FC Košice ») : renommé sur place, identifiants des cartes et exemplaires intacts, pas de doublon', async () => {
+  assert.deepEqual(LEGACY_CLUB_NAMES, { 'FC Košice': 'FC Kosicee' });
+  const db = server.db, q = async (sql, params) => (await db.query(sql, params)).rows;
+  const koscards = loadData().cards.filter(c => c.club === 'FC Košice');
+  assert.equal(koscards.length, 17);
+  // État d'avant la correction : l'ancien nom partout, un logo posé sur le club, un exemplaire possédé.
+  await q("UPDATE clubs SET name='FC Kosicee',logo_url='club-logos/ldc-fc-kosicee.png' WHERE name='FC Košice'");
+  await q("UPDATE catalog_cards SET club='FC Kosicee' WHERE club='FC Košice'");
+  const owner = await newPlayer(server, 'Proprio');
+  await q(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,source)
+    SELECT gen_random_uuid(),id,$1,season,name,position,club,nation,rarity,'test' FROM catalog_cards WHERE id=$2`, [owner.user.id, koscards[0].id]);
+  const clubsBefore = Number((await q('SELECT count(*) AS n FROM clubs'))[0].n);
+  const idBefore = (await q("SELECT id FROM clubs WHERE name='FC Kosicee'"))[0].id;
+  await importLdc(db, { force: true, log: quiet });
+  const clubs = await q("SELECT id,name,logo_url FROM clubs WHERE name ILIKE 'FC Ko%ice%'");
+  assert.deepEqual(clubs.map(c => [c.id, c.name, c.logo_url]), [[idBefore, 'FC Košice', 'club-logos/ldc-fc-kosicee.png']], 'même ligne, même logo');
+  assert.equal(Number((await q('SELECT count(*) AS n FROM clubs'))[0].n), clubsBefore, 'aucun club créé');
+  assert.equal(Number((await q("SELECT count(*) AS n FROM catalog_cards WHERE club='FC Kosicee'"))[0].n), 0);
+  assert.equal(Number((await q("SELECT count(*) AS n FROM catalog_cards WHERE club='FC Košice' AND is_active"))[0].n), 17, 'mêmes 17 cartes (identifiants stables)');
+  assert.equal((await q('SELECT club FROM card_instances WHERE owner_id=$1 AND card_id=$2', [owner.user.id, koscards[0].id]))[0].club, 'FC Košice', 'exemplaire resynchronisé');
 });
 
 test('anti-dilution : packs génériques sans cartes LDC ; pack dédié = cartes LDC ; accueil sans LDC', async () => {
