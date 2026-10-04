@@ -4,7 +4,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { startServer, newPlayer } = require('./helpers');
+const { startServer, newPlayer, ensureTestClubs } = require('./helpers');
 const { frenchNation } = require('../lib/nations');
 const { loadCards } = require('../scripts/import-europe');
 
@@ -41,6 +41,7 @@ test('migration : catalogue et exemplaires convertis au redémarrage ; saisie ad
   assert.deepEqual(inst, ['Angleterre']);
   const creator = await newPlayer(server, 'Createur');
   await server.db.query("UPDATE users SET role='creator' WHERE id=$1", [creator.user.id]);
+  await ensureTestClubs(server);
   const ctx = (await server.db.query(`SELECT cs.id AS season_id, cs.competition_id, cs.season, c.name AS club FROM competition_seasons cs
     JOIN season_clubs sc ON sc.season_id=cs.id JOIN clubs c ON c.id=sc.club_id WHERE cs.status='available' LIMIT 1`)).rows[0];
   const r = await creator.post('/api/admin/cards/create', { name: 'Joueur Brésilien', position: 'ST', jerseyNumber: 10, club: ctx.club, nation: 'Brazil',

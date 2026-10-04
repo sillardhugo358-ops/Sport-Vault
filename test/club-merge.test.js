@@ -6,7 +6,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { startServer, newPlayer } = require('./helpers');
+const { startServer, newPlayer, ensureTestClubs } = require('./helpers');
 
 let server;
 const q = async (sql, params) => (await server.db.query(sql, params)).rows;
@@ -57,6 +57,7 @@ test('doublons fusionnés une fois, rien de perdu, plus de doublon possible', as
   await q("UPDATE users SET role='creator' WHERE id=$1", [creator.user.id]);
   const created = await creator.post('/api/admin/competitions', { action: 'club_create', clubName: 'LOSC Lille', competitionIds: ['ligue-1'] });
   assert.equal(created.status, 409, JSON.stringify(created.body));
+  await ensureTestClubs(server);
   const other = (await q("SELECT id FROM clubs WHERE id<>'lille-osc' LIMIT 1"))[0].id;
   const renamed = await creator.post('/api/admin/competitions', { action: 'club_update', id: other, clubName: 'lille osc', competitionIds: ['ligue-1'] });
   assert.equal(renamed.status, 409, JSON.stringify(renamed.body));

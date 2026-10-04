@@ -188,4 +188,14 @@ function missionId(kind, code) {
   return require('../lib/missions-catalog').MISSION_CATALOG.find(m => m.kind === kind && m.code === code).id;
 }
 
-module.exports = { startServer, client, newPlayer, setCoins, userRow, awayFromParisMidnight, forceRotation, missionId };
+
+// Deux clubs de test rattachés à la Ligue 1 (saison 2026) : les tests qui ont besoin d'un club existant n'en dépendent plus
+// des clubs fictifs d'origine, retirés du jeu le 04/10/2026.
+async function ensureTestClubs(server) {
+  const db = server.db;
+  await db.query("INSERT INTO clubs(id,name,tag,country,sort_order) VALUES('club-test-a','FC Test Alpha','FTA','France',900),('club-test-b','FC Test Beta','FTB','France',901) ON CONFLICT(id) DO NOTHING");
+  await db.query("INSERT INTO competition_clubs(competition_id,club_id,position) VALUES('ligue-1','club-test-a',900),('ligue-1','club-test-b',901) ON CONFLICT DO NOTHING");
+  await db.query("INSERT INTO season_clubs(season_id,club_id,position) VALUES('ligue-1-2026','club-test-a',900),('ligue-1-2026','club-test-b',901) ON CONFLICT DO NOTHING");
+}
+
+module.exports = { ensureTestClubs, startServer, client, newPlayer, setCoins, userRow, awayFromParisMidnight, forceRotation, missionId };

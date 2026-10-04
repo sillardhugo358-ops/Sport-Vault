@@ -89,6 +89,27 @@ test('pools mal réglés refusés ; jamais de tirage dans tout le catalogue', as
   assert.equal(await coinsOf(p), 1000);
 });
 
+test('cadeau de bienvenue : jamais de carte LIMITED (même épuisée), l\'inscription n\'échoue pas', async () => {
+  // Seules des cartes LIMITED épuisées (rare/epic) et des communes restent actives : avant le correctif, ~1 inscription sur 2 échouait (500).
+  await limitedCard('lim-cadeau-rare', 1, 1);
+  await q("UPDATE catalog_cards SET rarity='rare' WHERE id='lim-cadeau-rare'");
+  await limitedCard('lim-cadeau-epic', 1, 1);
+  const active = (await q("SELECT id FROM catalog_cards WHERE is_active=true AND id NOT LIKE 'lim-cadeau-%'")).map(r => r.id);
+  await q("UPDATE catalog_cards SET is_active=false WHERE id=ANY($1::text[]) AND rarity<>'common'", [active]);
+  try {
+    for (let i = 0; i < 12; i++) {
+      const p = await newPlayer(server, 'Cadeau' + i);
+      const cards = (await p.get('/api/collection')).body.cards;
+      assert.equal(cards.length, 3);
+      assert.ok(cards.every(c => !String(c.cardId || c.id).startsWith('lim-')), 'aucune carte LIMITED offerte');
+    }
+  } finally {
+    await q("UPDATE catalog_cards SET is_active=true WHERE id=ANY($1::text[])", [active]);
+    await q("DELETE FROM card_instances WHERE card_id LIKE 'lim-cadeau-%'");
+    await q("DELETE FROM catalog_cards WHERE id LIKE 'lim-cadeau-%'");
+  }
+});
+
 test('suppression d\'un pool utilisé : message clair (409) ; libre : supprimé', async () => {
   const pool = await creator.post('/api/admin/packs', poolBody('rarity', { rarities: ['rare'] }, { name: 'Pool utilisé' }));
   const poolId = (await q("SELECT id FROM pack_pools WHERE name='Pool utilisé'"))[0].id;
