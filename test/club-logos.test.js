@@ -46,6 +46,15 @@ test('rattachement : logo posé seulement s\'il manque ; fichier sans club ignor
   assert.deepEqual(await syncClubLogos(server.db, { dir: path.join(dir, 'absent'), log: quiet }), { files: 0, linked: 0 });
 });
 
+test('rattachement : le fichier « <id>.png » vaut aussi pour le club « ldc-<id> » (Nantes, Bordeaux, Montpellier, Parma)', async () => {
+  await q("INSERT INTO clubs(id,name,tag,country,sort_order) VALUES('ldc-test-nantes','Test Nantes','TNA','France',902) ON CONFLICT (id) DO UPDATE SET logo_url=NULL");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'logos-'));
+  fs.writeFileSync(path.join(dir, 'test-nantes.png'), PNG);
+  assert.deepEqual(await syncClubLogos(server.db, { dir, log: () => {} }), { files: 1, linked: 1 });
+  assert.equal((await q("SELECT logo_url FROM clubs WHERE id='ldc-test-nantes'"))[0].logo_url, 'club-logos/test-nantes.png');
+  await q("DELETE FROM clubs WHERE id='ldc-test-nantes'");
+});
+
 test('GET /api/club-logos : carte par clé de club (alias compris), clubs sans logo absents', async () => {
   await ensureTestClubs(server);
   const club = (await q('SELECT id,name FROM clubs ORDER BY id LIMIT 1'))[0];

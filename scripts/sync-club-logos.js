@@ -2,7 +2,8 @@
 
 // Rattache les logos du dossier club-logos/ aux clubs : un fichier « <id du club>.jpg|png|webp » devient
 // clubs.logo_url = « club-logos/<fichier> » quand le club n'a pas encore de logo. Idempotent ; ne remplace jamais
-// un logo déjà renseigné (par un administrateur ou une exécution précédente) ; ne supprime rien.
+// un logo déjà renseigné (par un administrateur ou une exécution précédente) ; ne supprime rien. Le fichier
+// « fc-nantes.png » vaut aussi pour le club « ldc-fc-nantes » (identifiant préfixé par l'import Ligue des Champions).
 // Lancé au démarrage par ligue1-launcher.js (sans fichier, aucun effet).
 
 const fs = require('node:fs');
@@ -21,7 +22,8 @@ async function syncClubLogos(pool, { dir = DIR, log = console.log } = {}) {
   if (!files.length) return { files: 0, linked: 0 };
   let linked = 0;
   for (const { file, clubId } of files) {
-    const r = await pool.query("UPDATE clubs SET logo_url=$1,updated_at=now() WHERE id=$2 AND (logo_url IS NULL OR logo_url='')", ['club-logos/' + file, clubId]);
+    // Les clubs créés par l'import Ligue des Champions peuvent porter l'identifiant « ldc-<nom du fichier> ».
+    const r = await pool.query("UPDATE clubs SET logo_url=$1,updated_at=now() WHERE id=ANY($2) AND (logo_url IS NULL OR logo_url='')", ['club-logos/' + file, [clubId, 'ldc-' + clubId]]);
     linked += r.rowCount;
   }
   log(`[FOOTVAULT] Logos de clubs : ${files.length} fichier(s), ${linked} rattaché(s).`);
