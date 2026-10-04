@@ -2,7 +2,8 @@ name: Production (surveillance)
 # Contrôle du site en ligne toutes les 6 heures (et à la demande) : santé du serveur et de la base,
 # pages servies, fichiers serveur protégés, version déployée égale au dernier commit de main.
 # En cas d'échec, GitHub prévient par e-mail. Adresse : variable de dépôt PRODUCTION_URL si définie.
-# Coût : environ 1 minute par contrôle (120 minutes GitHub Actions par mois).
+# Le contrôle attend jusqu'à 5 minutes que le serveur et la base soient prêts (réveil de l'offre gratuite, déploiement en cours).
+# Coût : environ 1 minute par contrôle quand le serveur est éveillé (120 minutes GitHub Actions par mois).
 on:
   schedule:
     - cron: '41 */6 * * *'
@@ -12,19 +13,35 @@ permissions:
 jobs:
   sante:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     env:
       URL: ${{ vars.PRODUCTION_URL || 'https://sport-vault.onrender.com' }}
     steps:
       - uses: actions/checkout@v4
       - name: Santé du serveur et de la base
+        env:
+          WAIT_SECONDS: ${{ vars.PRODUCTION_WAIT_SECONDS || 300 }}
         run: |
-          # L'offre gratuite de Render met le service en veille : le premier appel peut prendre une minute.
-          curl -fsS --retry 6 --retry-delay 20 --retry-all-errors --max-time 90 "$URL/api/health" -o health.json
-          jq . health.json
-          jq -e '.ok == true and .storage == "postgres"' health.json > /dev/null || { echo "::error::Serveur démarré sans base PostgreSQL prête."; exit 1; }
-          jq -e '.database.ok == true' health.json > /dev/null || { echo "::error::Base de données injoignable : $(jq -r '.database.error // "inconnu"' health.json)"; exit 1; }
-          echo "Base : $(jq -r '.database.latencyMs' health.json) ms, catalogue : $(jq -r '.cards' health.json) cartes."
+          # L'offre gratuite de Render met le service en veille, et chaque déploiement le redémarre : pendant l'initialisation de la base
+          # (environ une minute), /api/health répond 200 avec ok:false. On attend donc que le serveur ET la base soient prêts
+          # (jusqu'à WAIT_SECONDS, 5 minutes par défaut) au lieu de juger la première réponse.
+          ready=0; tries=0; deadline=$((SECONDS + WAIT_SECONDS))
+          rm -f health.json
+          while :; do
+            tries=$((tries + 1))
+            if curl -fsS --max-time 60 "$URL/api/health" -o health.json 2>/dev/null \
+              && jq -e '.ok == true and .storage == "postgres" and .database.ok == true' health.json > /dev/null 2>&1; then ready=1; break; fi
+            [ "$SECONDS" -ge "$deadline" ] && break
+            echo "Serveur ou base pas encore prêts (tentative $tries), nouvel essai dans 15 s…"
+            sleep 15
+          done
+          [ -f health.json ] && jq . health.json || true
+          if [ "$ready" != 1 ]; then
+            [ -f health.json ] || { echo "::error::Serveur injoignable après $WAIT_SECONDS s."; exit 1; }
+            jq -e '.ok == true and .storage == "postgres"' health.json > /dev/null || { echo "::error::Serveur démarré sans base PostgreSQL prête (après $WAIT_SECONDS s)."; exit 1; }
+            echo "::error::Base de données injoignable : $(jq -r '.database.error // "inconnu"' health.json)"; exit 1
+          fi
+          echo "Prêt après $tries essai(s). Base : $(jq -r '.database.latencyMs' health.json) ms, catalogue : $(jq -r '.cards' health.json) cartes."
       - name: Pages et fichiers protégés
         run: |
           curl -fsS --max-time 60 "$URL/" | grep -q 'FOOTVAULT' || { echo "::error::La page d'accueil ne répond pas correctement."; exit 1; }
