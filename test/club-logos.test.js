@@ -63,9 +63,25 @@ test('GET /api/club-logos : carte par clé de club (alias compris), clubs sans l
   const r = await fetch(server.base + '/api/club-logos');
   const body = await r.json();
   assert.equal(r.status, 200);
-  assert.deepEqual(Object.keys(body.logos), [clubKey(club.name)]);
+  assert.ok(clubKey(club.name) in body.logos);
   assert.equal(body.logos[clubKey(club.name)], 'club-logos/test-a.png');
   assert.equal(body.aliases.angerssco, 'angers', 'les alias de l\'album sont fournis au navigateur');
+});
+
+test('GET /api/club-logos : un fichier du dossier sert de logo même sans club en base (Dijon FCO), la base reste prioritaire', async () => {
+  await q('UPDATE clubs SET logo_url=NULL');
+  await q("DELETE FROM clubs WHERE name ILIKE '%dijon%'");
+  const body = await (await fetch(server.base + '/api/club-logos')).json();
+  assert.equal(body.logos.dijonfco, 'club-logos/dijon-fco.png', 'fichier dijon-fco.png sans ligne en base');
+  assert.equal(body.fallback.dijonfco, 'club-logos/dijon-fco.png');
+  assert.equal(body.logos.fcnantes, 'club-logos/fc-nantes.png', 'préfixes ldc- ignorés dans la clé');
+  assert.ok(!Object.keys(body.logos).some(k => k.startsWith('selection') || k.startsWith('ldc')), 'clés sans préfixe de fichier');
+  assert.equal(body.logos.france, 'club-logos/selection-france.png', 'drapeau de sélection');
+  await q("INSERT INTO clubs(id,name,tag,country,sort_order,logo_url) VALUES('dijon-fco','Dijon FCO','DIJ','France',903,'https://exemple.test/choisi.png') ON CONFLICT (id) DO UPDATE SET logo_url=EXCLUDED.logo_url");
+  const again = await (await fetch(server.base + '/api/club-logos')).json();
+  assert.equal(again.logos.dijonfco, 'https://exemple.test/choisi.png', 'logo choisi en base prioritaire');
+  assert.equal(again.fallback.dijonfco, 'club-logos/dijon-fco.png', 'le fichier reste en repli');
+  await q("DELETE FROM clubs WHERE id='dijon-fco'");
 });
 
 test('images : seul le dossier club-logos/ est servi, formats image uniquement, pas de remontée de dossier', async () => {
