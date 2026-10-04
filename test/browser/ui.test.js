@@ -133,9 +133,11 @@ test('ouverture de pack : pack scellé, cartes distribuées sans retournement au
     await page.click('[data-pack="starter"]');
     await page.waitForSelector('.reveal-pack');
     assert.equal(await page.locator('.reveal-grid').isVisible(), false, vp.name + ' : cartes cachées avant ouverture');
+    assert.equal(await page.locator('.reveal-controls').isVisible(), false, vp.name + ' : boutons masqués tant que le pack est scellé');
     await page.click('[data-open-pack]');
     await page.waitForSelector('.reveal-card', { state: 'visible' });
     await page.waitForTimeout(900);
+    assert.equal(await page.locator('.reveal-controls').isVisible(), true, vp.name + ' : boutons visibles une fois le pack ouvert');
     assert.equal(await page.locator('.reveal-card').count(), 5);
     assert.equal(await page.locator('.reveal-card.flipped').count(), 0, vp.name + ' : aucune carte retournée automatiquement');
     await page.locator('.reveal-card').first().click();

@@ -2498,3 +2498,12 @@ hr{border-color:#1d3d63}
 .pack-reveal-modal .reveal-card{max-height:none;width:100%}
 .pack-reveal-modal .reveal-card-inner{will-change:transform}
 @media(max-width:800px){.pack-reveal-modal .reveal-grid{max-height:none}.pack-reveal-modal .reveal-card{max-height:none}}
+
+/* Ouverture de pack aux couleurs du site (bleu nuit, filets bleus, or pour les accents) ; boutons masqués tant que le pack est scellé */
+.pack-reveal-modal{background:radial-gradient(ellipse 80% 55% at 50% 0%,rgba(51,135,236,.20),transparent 70%),linear-gradient(160deg,#0d2340 0%,#081b32 52%,#061427 100%);border:1px solid #1b4169;box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 1px rgba(91,151,222,.08) inset}
+.pack-reveal-modal .reveal-controls{border-top-color:rgba(91,151,222,.22)}
+.pack-reveal-modal:not(.rv-opened) .reveal-controls{display:none}
+.pack-reveal-modal .reveal-stage{padding:10px 0 46px;min-height:min(54vh,430px)}
+.pack-reveal-modal .reveal-back{background:radial-gradient(circle at 50% 45%,rgba(51,135,236,.30),transparent 55%),linear-gradient(160deg,#10294a,#081b32);border-color:rgba(91,151,222,.45);box-shadow:inset 0 0 18px -6px rgba(91,151,222,.7)}
+.pack-reveal-modal .reveal-grid{scrollbar-color:rgba(91,151,222,.55) transparent}
+.reveal-pack-body{background:linear-gradient(135deg,rgba(255,255,255,.12),transparent 38%),linear-gradient(160deg,#143056,#081b32 70%)}
