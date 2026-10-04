@@ -8,7 +8,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { startServer } = require('./helpers');
+const { startServer, ensureTestClubs } = require('./helpers');
 const { matchLogoFiles, cleanBase } = require('../scripts/import-club-logos');
 const { syncClubLogos } = require('../scripts/sync-club-logos');
 const { clubKey } = require('../lib/club-key');
@@ -32,6 +32,7 @@ test.after(async () => { await server?.stop(); });
 const q = async (sql, params) => (await server.db.query(sql, params)).rows;
 
 test('rattachement : logo posé seulement s\'il manque ; fichier sans club ignoré ; relance sans effet', async () => {
+  await ensureTestClubs(server);
   const [a, b] = await q("SELECT id FROM clubs WHERE country<>'International' ORDER BY id LIMIT 2");
   await q("UPDATE clubs SET logo_url='https://exemple.test/choisi-par-un-admin.png' WHERE id=$1", [b.id]);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'logos-'));
@@ -46,6 +47,7 @@ test('rattachement : logo posé seulement s\'il manque ; fichier sans club ignor
 });
 
 test('GET /api/club-logos : carte par clé de club (alias compris), clubs sans logo absents', async () => {
+  await ensureTestClubs(server);
   const club = (await q('SELECT id,name FROM clubs ORDER BY id LIMIT 1'))[0];
   await q('UPDATE clubs SET logo_url=NULL');
   await q("UPDATE clubs SET logo_url='club-logos/test-a.png' WHERE id=$1", [club.id]);
