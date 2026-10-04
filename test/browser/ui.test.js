@@ -341,6 +341,28 @@ test('packs : visiteur non connecté = un seul appel /api/packs ; serveur qui d�
   await ctx.close();
 });
 
+test('cartes : logos indisponibles au démarrage (503) → page affichée, puis pastilles dès que le serveur répond', async () => {
+  const collection = await page.evaluate(async () => (await (await fetch('/api/collection')).json()).cards || []);
+  const norm = v => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const key = norm(collection[0].club);
+  const ctx = await browser.newContext({ extraHTTPHeaders: { 'X-Forwarded-For': server.newIp() } });
+  const a = await ctx.newPage();
+  let calls = 0;
+  await a.route('**/api/club-logos', r => ++calls === 1
+    ? r.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Base de données en cours de démarrage' }) })
+    : r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ logos: { [key]: 'competition-ligue-1.png' }, aliases: {} }) }));
+  await a.goto(server.base + '/#home');
+  await a.evaluate(async () => { await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'navigateur@test.fr', password: 'motdepasse123' }) }); });
+  calls = 0;
+  await a.goto(server.base + '/#collection');
+  await a.reload();
+  await a.waitForSelector('.tcg-card.v4');
+  assert.equal((await a.$$('.v4-club-badge')).length, 0, 'pas de pastille tant que les logos ne sont pas arrivés');
+  await a.waitForSelector('.v4-club-badge', { timeout: 8000 });
+  assert.ok(calls >= 2);
+  await ctx.close();
+});
+
 test('cartes : pastille du club quand il a un logo, rien sinon', async () => {
   const collection = await page.evaluate(async () => (await (await fetch('/api/collection')).json()).cards || []);
   assert.ok(collection.length > 0);
