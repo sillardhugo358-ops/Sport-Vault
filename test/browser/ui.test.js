@@ -363,6 +363,28 @@ test('cartes : logos indisponibles au démarrage (503) → page affichée, puis 
   await ctx.close();
 });
 
+test('cartes : logo de la base qui ne charge pas → repli sur le fichier du dossier, sinon pastille retirée', async () => {
+  const collection = await page.evaluate(async () => (await (await fetch('/api/collection')).json()).cards || []);
+  const norm = v => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const key = norm(collection[0].club);
+  for (const [fallback, expected] of [['competition-ligue-1.png', 'competition-ligue-1.png'], ['encore-inexistant.png', null]]) {
+    const ctx = await browser.newContext({ extraHTTPHeaders: { 'X-Forwarded-For': server.newIp() } });
+    const a = await ctx.newPage();
+    await a.route('**/api/club-logos', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ logos: { [key]: 'logo-casse.png' }, fallback: { [key]: fallback }, aliases: {} }) }));
+    await a.goto(server.base + '/#home');
+    await a.evaluate(async () => { await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'navigateur@test.fr', password: 'motdepasse123' }) }); });
+    await a.goto(server.base + '/#collection');
+    await a.reload();
+    await a.waitForSelector('.tcg-card.v4');
+    if (expected) {
+      await a.waitForFunction(e => [...document.querySelectorAll('.v4-club-badge')].some(i => (i.getAttribute('src') || '') === e), expected);
+    } else {
+      await a.waitForFunction(() => document.querySelectorAll('.v4-club-badge').length === 0);
+    }
+    await ctx.close();
+  }
+});
+
 test('cartes : pastille du club quand il a un logo, rien sinon', async () => {
   const collection = await page.evaluate(async () => (await (await fetch('/api/collection')).json()).cards || []);
   assert.ok(collection.length > 0);
@@ -382,8 +404,10 @@ test('cartes : pastille du club quand il a un logo, rien sinon', async () => {
   assert.equal(await a.$eval('.v4-club-badge', e => e.getAttribute('src')), 'competition-ligue-1.png');
   await withLogo.close();
   // Aucun logo connu : aucune pastille, cartes inchangées.
+  await page.route('**/api/club-logos', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ logos: {}, fallback: {}, aliases: {} }) }));
   await page.goto(server.base + '/#collection');
   await page.reload();
   await page.waitForSelector('.tcg-card.v4');
   assert.equal((await page.$$('.v4-club-badge')).length, 0);
+  await page.unroute('**/api/club-logos');
 });
