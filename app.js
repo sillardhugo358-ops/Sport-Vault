@@ -167,7 +167,8 @@ function showReveal(cards,pack){
  // Les images des cartes se chargent tout de suite : une carte ne doit jamais se retourner sur un logo manquant.
  grid.querySelectorAll('img[loading="lazy"]').forEach(i=>{i.loading='eager'});
  // Dimensionne la grille : le nombre de colonnes qui donne les plus grandes cartes entièrement visibles ; sous une taille minimale, la grille défile.
- const fit=()=>{if(!document.body.contains(grid)||grid.hidden)return;const cs0=getComputedStyle(grid),w=grid.clientWidth-(parseFloat(cs0.paddingLeft)||0)-(parseFloat(cs0.paddingRight)||0),h=grid.clientHeight-(parseFloat(cs0.paddingTop)||0)-(parseFloat(cs0.paddingBottom)||0);if(w<=0||h<=0)return;const n=revealCards.length,gap=parseFloat(cs0.columnGap)||10,minW=w<560?92:140;let best=null;for(let cols=1;cols<=Math.min(n,6);cols++){const rows=Math.ceil(n/cols),cw=(w-gap*(cols-1))/cols,ch=(h-gap*(rows-1))/rows,cardW=Math.min(cw,ch*2/2.85);if(!best||cardW>best.cardW+.5)best={cols,cardW}}
+ const fit=()=>{if(!document.body.contains(grid)||grid.hidden)return;const cs0=getComputedStyle(grid),w=grid.clientWidth-(parseFloat(cs0.paddingLeft)||0)-(parseFloat(cs0.paddingRight)||0),h=grid.clientHeight-(parseFloat(cs0.paddingTop)||0)-(parseFloat(cs0.paddingBottom)||0);if(w<=0||h<=0)return;const n=revealCards.length,gap=parseFloat(cs0.columnGap)||10,minW=w<560?92:140;const opts=[];for(let cols=1;cols<=Math.min(n,6);cols++){const rows=Math.ceil(n/cols),cw=(w-gap*(cols-1))/cols,ch=(h-gap*(rows-1))/rows;opts.push({cols,rows,cardW:Math.min(cw,ch*2/2.85)})}
+  const top=Math.max(...opts.map(o=>o.cardW));let best=opts.filter(o=>o.cardW>=top*.85).sort((x,y)=>x.rows-y.rows||y.cardW-x.cardW)[0];
   if(best.cardW<minW){const cols=Math.max(2,Math.min(n,Math.floor((w+gap)/(minW+gap))));best={cols,cardW:(w-gap*(cols-1))/cols}}
   grid.style.setProperty('--rv-cols',best.cols);grid.style.setProperty('--rv-w',Math.floor(best.cardW)+'px')};
  window.addEventListener('resize',fit);
