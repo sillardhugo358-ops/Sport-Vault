@@ -106,6 +106,26 @@ test('boutique : ouverture d\'un pack depuis l\'API, cartes visibles dans la col
   assert.ok(await page.$$eval('.tcg-card', c => c.length) >= 5);
 });
 
+test('Mon Vault : « Mes dernières cartes » montre les 4 dernières obtenues, la plus récente d\'abord', async () => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
+  const base = (await server.db.query('SELECT * FROM catalog_cards ORDER BY id LIMIT 1')).rows[0];
+  for (let i = 1; i <= 6; i++) {
+    await server.db.query(
+      `INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,is_limited,acquired_at,source,status)
+       VALUES(gen_random_uuid(),$1,$2,$3,$4,$5,$6,$7,$8,70,70,70,70,70,70,70,false,$9,'test','owned')`,
+      [base.id, uid, base.season, 'Recent' + i, base.position, base.club, base.nation, base.rarity, new Date(Date.UTC(2099, 0, i)).toISOString()]);
+  }
+  await visit('vault');
+  await page.waitForSelector('.vault-recent-cards .card-link');
+  const names = await page.$$eval('.vault-recent-cards .card-link', els => els.map(e => e.innerText));
+  assert.equal(names.length, 4);
+  ['Recent6', 'Recent5', 'Recent4', 'Recent3'].forEach((n, i) => assert.match(names[i].toLowerCase(), new RegExp(n.toLowerCase()), 'position ' + i));
+  assert.ok(!names.join(' ').toLowerCase().includes('recent1'));
+  await server.db.query("DELETE FROM card_instances WHERE source='test' AND name LIKE 'Recent%'");
+  assert.deepEqual(errors, []);
+});
+
 test('déconnecté : les pages privées renvoient vers la connexion', async () => {
   const anon = await browser.newPage({ viewport: { width: 390, height: 844 } });
   const errs = [];
