@@ -2453,3 +2453,41 @@ hr{border-color:#1d3d63}
 .shop-pack-art:has(.pack-logos) .shop-pack-symbol{display:none}
 .fvh-pack-art>.pack-logos{position:absolute;top:12px;left:50%;transform:translateX(-50%);min-width:0;height:48px;padding:5px 8px;border-radius:12px}
 .fvh-pack-art>.pack-logos img{width:auto;max-width:34px;max-height:36px;opacity:1}
+
+/* Ouverture de pack : pack scellé, distribution des cartes, retournement par le joueur, halo par rareté */
+.pack-reveal-modal{--rv:#9aa3ad;--rv-soft:rgba(154,163,173,.35)}
+.pack-reveal-modal [hidden]{display:none!important}
+.reveal-stage{display:grid;place-items:center;flex:1;min-height:min(46vh,380px);padding:10px 0}
+.reveal-pack{appearance:none;-webkit-appearance:none;position:relative;display:grid;place-items:center;width:min(220px,52vw);aspect-ratio:2/2.85;padding:0;border:0;background:none;color:inherit;cursor:pointer;--rv:#9aa3ad}
+.reveal-pack.rv-rare{--rv:var(--r-rare)}.reveal-pack.rv-epic{--rv:var(--r-epic)}.reveal-pack.rv-legendary{--rv:var(--r-legendary)}.reveal-pack.rv-icon{--rv:#7df3ff}
+.reveal-pack:focus-visible{outline:2px solid var(--gold2);outline-offset:8px;border-radius:14px}
+.reveal-pack-glow{position:absolute;inset:-26%;border-radius:50%;background:radial-gradient(circle,var(--rv) 0,transparent 62%);opacity:.38;filter:blur(18px);animation:rvPulse 1.8s ease-in-out infinite}
+.reveal-pack-body{position:relative;display:grid;place-content:center;gap:6px;width:100%;height:100%;border-radius:14px;border:1px solid var(--rv);text-align:center;background:linear-gradient(135deg,rgba(255,255,255,.14),transparent 38%),linear-gradient(160deg,#11233d,#070f1d 70%);box-shadow:0 18px 40px rgba(0,0,0,.5),inset 0 0 0 5px rgba(255,255,255,.03),0 0 26px -6px var(--rv);overflow:hidden;animation:rvFloat 2.6s ease-in-out infinite}
+.reveal-pack-body::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.28) 50%,transparent 65%);transform:translateX(-120%);animation:rvShine 3s ease-in-out infinite}
+.reveal-pack-body b{font:900 58px/1 var(--head);color:var(--gold2);letter-spacing:2px}
+.reveal-pack-body small{font:800 12px/1.2 var(--head);letter-spacing:2px;color:var(--muted);padding:0 12px;text-transform:uppercase}
+.reveal-pack-cta{position:absolute;left:50%;bottom:-34px;transform:translateX(-50%);white-space:nowrap;font:800 11px var(--head);letter-spacing:2px;color:var(--gold2)}
+.reveal-pack.opening{animation:rvShake .72s cubic-bezier(.3,.7,.4,1) forwards}
+.reveal-pack.opening .reveal-pack-glow{animation:rvBurst .72s ease-out forwards}
+.reveal-pack.opening .reveal-pack-cta{opacity:0}
+.pack-reveal-modal .reveal-grid[hidden]{display:none}
+.pack-reveal-modal.rv-opened .reveal-card{animation:rvDeal .55s cubic-bezier(.2,.8,.25,1) both;animation-delay:calc(var(--i)*90ms)}
+.pack-reveal-modal .reveal-back{border-color:var(--rv-soft);box-shadow:inset 0 0 18px -6px var(--rv)}
+.reveal-card.rv-rare{--rv:var(--r-rare)}.reveal-card.rv-epic{--rv:var(--r-epic)}.reveal-card.rv-legendary{--rv:var(--r-legendary)}.reveal-card.rv-icon{--rv:#7df3ff}
+.reveal-card.rv-common{--rv:#9aa3ad}
+.reveal-card:not(.flipped).rv-epic .reveal-back,.reveal-card:not(.flipped).rv-legendary .reveal-back,.reveal-card:not(.flipped).rv-icon .reveal-back{box-shadow:0 0 14px -2px var(--rv),inset 0 0 18px -6px var(--rv);animation:rvPulse 1.6s ease-in-out infinite}
+.reveal-card.flipped{z-index:2}
+.reveal-card.rv-burst .reveal-card-inner{filter:drop-shadow(0 0 14px var(--rv))}
+.reveal-card.rv-burst::after{content:"";position:absolute;inset:-6%;border-radius:12px;border:2px solid var(--rv);pointer-events:none;animation:rvRing .85s ease-out forwards}
+.reveal-card.rv-legendary.rv-burst .reveal-card-inner,.reveal-card.rv-icon.rv-burst .reveal-card-inner{animation:rvPop .9s ease-out}
+@keyframes rvFloat{0%,100%{transform:translateY(0) rotate(-1.2deg)}50%{transform:translateY(-8px) rotate(1.2deg)}}
+@keyframes rvPulse{0%,100%{opacity:.3}50%{opacity:.6}}
+@keyframes rvShine{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+@keyframes rvShake{0%{transform:scale(1)}15%{transform:scale(1.04) rotate(-3deg)}30%{transform:scale(1.06) rotate(3deg)}45%{transform:scale(1.08) rotate(-4deg)}60%{transform:scale(1.1) rotate(4deg)}100%{transform:scale(1.5);opacity:0}}
+@keyframes rvBurst{0%{opacity:.4;transform:scale(1)}100%{opacity:1;transform:scale(2.6)}}
+@keyframes rvDeal{0%{opacity:0;transform:translateY(46px) scale(.6) rotate(-6deg)}100%{opacity:1;transform:none}}
+@keyframes rvRing{0%{opacity:.95;transform:scale(.9)}100%{opacity:0;transform:scale(1.35)}}
+@keyframes rvPop{0%{transform:scale(1)}30%{transform:scale(1.08)}100%{transform:scale(1)}}
+@media(max-width:560px){.reveal-stage{min-height:min(40vh,320px)}.reveal-pack{width:min(170px,50vw)}.reveal-pack-body b{font-size:46px}}
+@media (prefers-reduced-motion:reduce){.reveal-pack-body,.reveal-pack-glow,.reveal-pack-body::after,.pack-reveal-modal.rv-opened .reveal-card,.reveal-card.rv-burst::after,.reveal-card:not(.flipped) .reveal-back{animation:none!important}.reveal-pack.opening{opacity:0}}
+.pack-reveal-modal .reveal-card{position:relative}

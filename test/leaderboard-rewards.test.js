@@ -13,8 +13,9 @@ const { LEADERBOARD_REWARDS } = require('../lib/game-config');
 
 let server, alice, bruno, chloe, david, emma;
 const q = async (sql, params) => (await server.db.query(sql, params)).rows;
-const lastWeek = periodInfo('weekly', new Date(periodInfo('weekly').start.getTime() - 1000));
-const inLastWeek = new Date(lastWeek.start.getTime() + 86400_000).toISOString();
+// Calculées dans before(), une fois la garde de minuit passée : sinon une exécution lancée juste avant
+// le passage de semaine (dimanche 22 h UTC) comparerait avec la semaine d'avant l'attente.
+let lastWeek, inLastWeek;
 
 async function give(player, cardId, rarity, acquiredAt = inLastWeek) {
   await q(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,source,acquired_at)
@@ -24,6 +25,8 @@ async function give(player, cardId, rarity, acquiredAt = inLastWeek) {
 
 test.before(async () => {
   await awayFromParisMidnight();
+  lastWeek = periodInfo('weekly', new Date(periodInfo('weekly').start.getTime() - 1000));
+  inLastWeek = new Date(lastWeek.start.getTime() + 86400_000).toISOString();
   server = await startServer({ env: { LEADERBOARD_CACHE_MS: '0', LEADERBOARD_FIRST_WEEK: '2000-01-03' } });
   [alice, bruno, chloe, david, emma] = [await newPlayer(server, 'Alice'), await newPlayer(server, 'Bruno'), await newPlayer(server, 'Chloe'), await newPlayer(server, 'David'), await newPlayer(server, 'Emma')];
   await give(alice, 'lr-icon', 'icon');          // 50 pts : 1re

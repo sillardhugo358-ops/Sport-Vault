@@ -106,6 +106,49 @@ test('boutique : ouverture d\'un pack depuis l\'API, cartes visibles dans la col
   assert.ok(await page.$$eval('.tcg-card', c => c.length) >= 5);
 });
 
+test('Mon Vault : « Mes dernières cartes » montre les 4 dernières obtenues, la plus récente d\'abord', async () => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
+  const base = (await server.db.query('SELECT * FROM catalog_cards ORDER BY id LIMIT 1')).rows[0];
+  for (let i = 1; i <= 6; i++) {
+    await server.db.query(
+      `INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,is_limited,acquired_at,source,status)
+       VALUES(gen_random_uuid(),$1,$2,$3,$4,$5,$6,$7,$8,70,70,70,70,70,70,70,false,$9,'test','owned')`,
+      [base.id, uid, base.season, 'Recent' + i, base.position, base.club, base.nation, base.rarity, new Date(Date.UTC(2099, 0, i)).toISOString()]);
+  }
+  await visit('vault');
+  await page.waitForSelector('.vault-recent-cards .card-link');
+  const names = await page.$$eval('.vault-recent-cards .card-link', els => els.map(e => e.innerText));
+  assert.equal(names.length, 4);
+  ['Recent6', 'Recent5', 'Recent4', 'Recent3'].forEach((n, i) => assert.match(names[i].toLowerCase(), new RegExp(n.toLowerCase()), 'position ' + i));
+  assert.ok(!names.join(' ').toLowerCase().includes('recent1'));
+  await server.db.query("DELETE FROM card_instances WHERE source='test' AND name LIKE 'Recent%'");
+  assert.deepEqual(errors, []);
+});
+
+test('ouverture de pack : pack scellé, cartes distribuées sans retournement automatique, retournement par le joueur, tout révéler', async () => {
+  for (const vp of [VIEWPORTS[0], VIEWPORTS[2]]) {
+    await page.setViewportSize({ width: vp.width, height: vp.height });
+    await visit('packs');
+    await page.click('[data-pack="starter"]');
+    await page.waitForSelector('.reveal-pack');
+    assert.equal(await page.locator('.reveal-grid').isVisible(), false, vp.name + ' : cartes cachées avant ouverture');
+    await page.click('[data-open-pack]');
+    await page.waitForSelector('.reveal-card', { state: 'visible' });
+    await page.waitForTimeout(900);
+    assert.equal(await page.locator('.reveal-card').count(), 5);
+    assert.equal(await page.locator('.reveal-card.flipped').count(), 0, vp.name + ' : aucune carte retournée automatiquement');
+    await page.locator('.reveal-card').first().click();
+    assert.equal(await page.locator('.reveal-card.flipped').count(), 1);
+    assert.match(await page.textContent('.reveal-result'), /1 \/ 5/);
+    await page.click('[data-skip-reveal]');
+    await page.waitForFunction(() => document.querySelectorAll('.reveal-card.flipped').length === 5);
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth) <= 1, vp.name + ' : débordement');
+    await page.click('.pack-reveal-modal .modal-close');
+  }
+  assert.deepEqual(errors, []);
+});
+
 test('déconnecté : les pages privées renvoient vers la connexion', async () => {
   const anon = await browser.newPage({ viewport: { width: 390, height: 844 } });
   const errs = [];
