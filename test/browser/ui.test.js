@@ -141,8 +141,14 @@ test('ouverture de pack : pack scellé, cartes distribuées sans retournement au
     await page.locator('.reveal-card').first().click();
     assert.equal(await page.locator('.reveal-card.flipped').count(), 1);
     assert.match(await page.textContent('.reveal-result'), /1 \/ 5/);
+    // Cadre : toutes les cartes dans la grille, sans défilement ni rognage.
+    const frame = await page.evaluate(() => { const g = document.querySelector('.reveal-grid'), r = g.getBoundingClientRect(); return { scroll: g.scrollHeight > g.clientHeight + 1, inside: [...g.querySelectorAll('.reveal-card')].every(c => { const q = c.getBoundingClientRect(); return q.top >= r.top - 1 && q.bottom <= r.bottom + 1 && q.left >= r.left - 1 && q.right <= r.right + 1; }), sized: !!g.style.getPropertyValue('--rv-w') }; });
+    assert.deepEqual(frame, { scroll: false, inside: true, sized: true }, vp.name + ' : cadre de la révélation');
     await page.click('[data-skip-reveal]');
     await page.waitForFunction(() => document.querySelectorAll('.reveal-card.flipped').length === 5);
+    await page.waitForTimeout(1500);
+    // Retournement 3D intact (pas de carte vue à l'envers : aucun filtre ni animation sur l'élément qui tourne).
+    assert.equal(await page.evaluate(() => [...document.querySelectorAll('.reveal-card.flipped .reveal-card-inner')].every(i => { const s = getComputedStyle(i); return s.transform.startsWith('matrix3d(-1') && s.filter === 'none' && s.animationName === 'none'; })), true, vp.name + ' : cartes retournées à l\'endroit (pas de filtre ni d\'animation sur l\'élément 3D)');
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth) <= 1, vp.name + ' : débordement');
     await page.click('.pack-reveal-modal .modal-close');
   }

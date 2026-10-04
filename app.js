@@ -166,15 +166,21 @@ function showReveal(cards,pack){
  const result=box.querySelector('.reveal-result');
  // Les images des cartes se chargent tout de suite : une carte ne doit jamais se retourner sur un logo manquant.
  grid.querySelectorAll('img[loading="lazy"]').forEach(i=>{i.loading='eager'});
+ // Dimensionne la grille : le nombre de colonnes qui donne les plus grandes cartes entièrement visibles ; sous une taille minimale, la grille défile.
+ const fit=()=>{if(!document.body.contains(grid)||grid.hidden)return;const cs0=getComputedStyle(grid),w=grid.clientWidth-(parseFloat(cs0.paddingLeft)||0)-(parseFloat(cs0.paddingRight)||0),h=grid.clientHeight-(parseFloat(cs0.paddingTop)||0)-(parseFloat(cs0.paddingBottom)||0);if(w<=0||h<=0)return;const n=revealCards.length,gap=parseFloat(cs0.columnGap)||10,minW=w<560?92:140;let best=null;for(let cols=1;cols<=Math.min(n,6);cols++){const rows=Math.ceil(n/cols),cw=(w-gap*(cols-1))/cols,ch=(h-gap*(rows-1))/rows,cardW=Math.min(cw,ch*2/2.85);if(!best||cardW>best.cardW+.5)best={cols,cardW}}
+  if(best.cardW<minW){const cols=Math.max(2,Math.min(n,Math.floor((w+gap)/(minW+gap))));best={cols,cardW:(w-gap*(cols-1))/cols}}
+  grid.style.setProperty('--rv-cols',best.cols);grid.style.setProperty('--rv-w',Math.floor(best.cardW)+'px')};
+ window.addEventListener('resize',fit);
  const update=()=>{const n=revealCards.filter(x=>x.classList.contains('flipped')).length;result.textContent=n<revealCards.length?`${n} / ${revealCards.length} cartes révélées`:`${cards.length} cartes ajoutées · +${cards.length*2} XP`;if(n===revealCards.length&&skip){skip.textContent='TOUTES LES CARTES RÉVÉLÉES';skip.disabled=true;skip.classList.add('reveal-skip-done')}};
  const revealOne=card=>{if(!card||card.classList.contains('flipped'))return;card.classList.add('flipped');card.setAttribute('aria-pressed','true');if(rank(cards[+card.dataset.revealCard])>=2)card.classList.add('rv-burst');update()};
  revealCards.forEach(card=>card.addEventListener('click',()=>revealOne(card)));
  skip?.addEventListener('click',()=>{revealCards.filter(x=>!x.classList.contains('flipped')).forEach((card,k)=>setTimeout(()=>revealOne(card),calm?0:k*110))});
  const openBtn=box.querySelector('[data-open-pack]');
  if(openBtn){
-  const open=()=>{if(openBtn.classList.contains('opening'))return;openBtn.classList.add('opening');setTimeout(()=>{box.querySelector('.reveal-stage')?.remove();box.classList.add('rv-opened');grid.hidden=false;skip.hidden=false;revealCards[0]?.focus({preventScroll:true})},calm?0:720)};
+  const open=()=>{if(openBtn.classList.contains('opening'))return;openBtn.classList.add('opening');setTimeout(()=>{box.querySelector('.reveal-stage')?.remove();box.classList.add('rv-opened');grid.hidden=false;skip.hidden=false;fit();requestAnimationFrame(fit);revealCards[0]?.focus({preventScroll:true})},calm?0:720)};
   openBtn.addEventListener('click',open);openBtn.focus({preventScroll:true});
  }
+ else{fit();requestAnimationFrame(fit)}
 }
 async function vault(){
  try{const d=await api('/api/progression');state.user=d.user;state.progress=d}catch(e){if(e.status===401)return authView('login','vault');throw e}

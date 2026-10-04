@@ -2477,9 +2477,9 @@ hr{border-color:#1d3d63}
 .reveal-card.rv-common{--rv:#9aa3ad}
 .reveal-card:not(.flipped).rv-epic .reveal-back,.reveal-card:not(.flipped).rv-legendary .reveal-back,.reveal-card:not(.flipped).rv-icon .reveal-back{box-shadow:0 0 14px -2px var(--rv),inset 0 0 18px -6px var(--rv);animation:rvPulse 1.6s ease-in-out infinite}
 .reveal-card.flipped{z-index:2}
-.reveal-card.rv-burst .reveal-card-inner{filter:drop-shadow(0 0 14px var(--rv))}
+.reveal-card.rv-burst::before{content:"";position:absolute;inset:-8%;border-radius:16px;background:radial-gradient(circle,var(--rv) 0,transparent 70%);opacity:.45;filter:blur(14px);pointer-events:none;z-index:-1}
 .reveal-card.rv-burst::after{content:"";position:absolute;inset:-6%;border-radius:12px;border:2px solid var(--rv);pointer-events:none;animation:rvRing .85s ease-out forwards}
-.reveal-card.rv-legendary.rv-burst .reveal-card-inner,.reveal-card.rv-icon.rv-burst .reveal-card-inner{animation:rvPop .9s ease-out}
+.reveal-card.rv-legendary.rv-burst,.reveal-card.rv-icon.rv-burst{animation:rvPop .9s ease-out}
 @keyframes rvFloat{0%,100%{transform:translateY(0) rotate(-1.2deg)}50%{transform:translateY(-8px) rotate(1.2deg)}}
 @keyframes rvPulse{0%,100%{opacity:.3}50%{opacity:.6}}
 @keyframes rvShine{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
@@ -2491,3 +2491,10 @@ hr{border-color:#1d3d63}
 @media(max-width:560px){.reveal-stage{min-height:min(40vh,320px)}.reveal-pack{width:min(170px,50vw)}.reveal-pack-body b{font-size:46px}}
 @media (prefers-reduced-motion:reduce){.reveal-pack-body,.reveal-pack-glow,.reveal-pack-body::after,.pack-reveal-modal.rv-opened .reveal-card,.reveal-card.rv-burst::after,.reveal-card:not(.flipped) .reveal-back{animation:none!important}.reveal-pack.opening{opacity:0}}
 .pack-reveal-modal .reveal-card{position:relative}
+
+/* Cadre de l'ouverture : hauteur fixe une fois le pack ouvert ; la grille se dimensionne (JS : --rv-cols, --rv-w) pour que toutes les cartes tiennent sans défilement quand c'est possible */
+.pack-reveal-modal.rv-opened{height:min(calc(100dvh - 24px),900px)}
+.pack-reveal-modal .reveal-grid{grid-template-columns:repeat(var(--rv-cols,5),var(--rv-w,minmax(0,1fr)));justify-content:center;align-content:center;flex:1 1 0;max-height:none;overflow-y:auto;overflow-x:hidden;padding:6px 4px;isolation:isolate}
+.pack-reveal-modal .reveal-card{max-height:none;width:100%}
+.pack-reveal-modal .reveal-card-inner{will-change:transform}
+@media(max-width:800px){.pack-reveal-modal .reveal-grid{max-height:none}.pack-reveal-modal .reveal-card{max-height:none}}
