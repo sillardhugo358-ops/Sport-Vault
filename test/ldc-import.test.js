@@ -7,6 +7,9 @@ const assert = require('node:assert/strict');
 const { startServer, newPlayer, setCoins } = require('./helpers');
 const { loadData, importLdc, EXPECTED_CARDS, LEGACY_CLUB_NAMES } = require('../scripts/import-ldc');
 const { rarityFromOvr } = require('../lib/rarity');
+const fs = require('node:fs');
+const path = require('node:path');
+const zlib = require('node:zlib');
 
 const quiet = () => {};
 
@@ -17,7 +20,7 @@ test('fichier : 21 446 cartes valides, raretés du barème, notes du classeur co
   assert.equal(seasons.length, 35);
   assert.ok(cards.every(c => c.id.startsWith('fv-c-') && /^LDC \d{4}-\d{2}$/.test(c.season) && c.season.length <= 12));
   for (const c of cards) assert.equal(c.rarity, rarityFromOvr(c.ovr));
-  assert.equal(Math.max(...cards.map(c => c.ovr)), 97, 'notes du classeur conservées');
+  assert.equal(Math.max(...cards.map(c => c.ovr)), 97, 'les notes >= 92 ne bougent pas');
   const messi = cards.find(c => c.name === 'Lionel Messi' && c.seasonKey === '2010-2011');
   assert.equal(messi.ovr, 97);
   assert.equal(messi.club, 'FC Barcelona');
@@ -25,7 +28,31 @@ test('fichier : 21 446 cartes valides, raretés du barème, notes du classeur co
   assert.ok(!clubs.includes('Club Brugge KV') && !clubs.includes('FC Bayern Munich') && clubs.includes('Bayern Munich'));
   // Gardien : colonnes PLO, ARR, JAP, RÉF, VIT, PLA -> shooting, passing, dribbling, defending, pace, physical.
   const gk = cards.find(c => c.name === 'Ihor Kutyepov' && c.seasonKey === '1991-1992');
-  assert.deepEqual([gk.position, gk.shooting, gk.passing, gk.dribbling, gk.defending, gk.pace, gk.physical], ['GK', 69, 68, 58, 71, 35, 65]);
+  assert.deepEqual([gk.position, gk.shooting, gk.passing, gk.dribbling, gk.defending, gk.pace, gk.physical], ['GK', 73, 72, 61, 75, 37, 69]);
+});
+
+test('relèvement léger des notes (scripts/lift-ldc-ratings.py) : courbe croissante, ordre conservé, notes >= 92 intactes, médiane ~76', () => {
+  const doc = JSON.parse(zlib.gunzipSync(fs.readFileSync(path.join(__dirname, '..', 'data', 'ldc-1991-2026.json.gz'))).toString('utf8'));
+  assert.equal(doc.lift.name, 'legere-2026-10-04');
+  const curve = doc.lift.curve, io = doc.columns.indexOf('ovr'), oo = doc.columns.indexOf('ovrOrig');
+  const lift = o => { if (o >= curve[curve.length - 1][0]) return o; if (o <= curve[0][0]) return o + curve[0][1] - curve[0][0];
+    for (let i = 0; i < curve.length - 1; i++) { const [x0, y0] = curve[i], [x1, y1] = curve[i + 1]; if (o >= x0 && o <= x1) return Math.round(y0 + (y1 - y0) * (o - x0) / (x1 - x0)); } return o; };
+  assert.ok(curve.every(([x, y], i) => i === 0 || (x > curve[i - 1][0] && y > curve[i - 1][1])), 'courbe strictement croissante');
+  for (const r of doc.rows) {
+    assert.equal(r[io], lift(r[oo]), 'note = courbe(note d\'origine)');
+    assert.ok(r[io] >= r[oo], 'aucune baisse');
+    if (r[oo] >= 92) assert.equal(r[io], r[oo], 'notes >= 92 intactes');
+  }
+  // Ordre conservé : une note d'origine plus haute n'est jamais passée sous une note d'origine plus basse.
+  const byOrig = new Map();
+  for (const r of doc.rows) byOrig.set(r[oo], r[io]);
+  const origs = [...byOrig.keys()].sort((a, b) => a - b);
+  for (let i = 1; i < origs.length; i++) assert.ok(byOrig.get(origs[i]) >= byOrig.get(origs[i - 1]));
+  const ovr = doc.rows.map(r => r[io]).sort((a, b) => a - b);
+  assert.ok(ovr[ovr.length >> 1] >= 75 && ovr[ovr.length >> 1] <= 77, 'médiane ~76 : ' + ovr[ovr.length >> 1]);
+  const common = ovr.filter(o => o < 78).length / ovr.length;
+  assert.ok(common > 0.5 && common < 0.6, 'Common ~55 % : ' + common);
+  for (const r of doc.rows) for (const c of ['pace', 'shooting', 'passing', 'dribbling', 'defending', 'physical']) assert.ok(r[doc.columns.indexOf(c)] >= 1 && r[doc.columns.indexOf(c)] <= 99);
 });
 
 let server;
