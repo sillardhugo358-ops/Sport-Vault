@@ -126,6 +126,29 @@ test('Mon Vault : « Mes dernières cartes » montre les 4 dernières obtenues, 
   assert.deepEqual(errors, []);
 });
 
+test('ouverture de pack : pack scellé, cartes distribuées sans retournement automatique, retournement par le joueur, tout révéler', async () => {
+  for (const vp of [VIEWPORTS[0], VIEWPORTS[2]]) {
+    await page.setViewportSize({ width: vp.width, height: vp.height });
+    await visit('packs');
+    await page.click('[data-pack="starter"]');
+    await page.waitForSelector('.reveal-pack');
+    assert.equal(await page.locator('.reveal-grid').isVisible(), false, vp.name + ' : cartes cachées avant ouverture');
+    await page.click('[data-open-pack]');
+    await page.waitForSelector('.reveal-card', { state: 'visible' });
+    await page.waitForTimeout(900);
+    assert.equal(await page.locator('.reveal-card').count(), 5);
+    assert.equal(await page.locator('.reveal-card.flipped').count(), 0, vp.name + ' : aucune carte retournée automatiquement');
+    await page.locator('.reveal-card').first().click();
+    assert.equal(await page.locator('.reveal-card.flipped').count(), 1);
+    assert.match(await page.textContent('.reveal-result'), /1 \/ 5/);
+    await page.click('[data-skip-reveal]');
+    await page.waitForFunction(() => document.querySelectorAll('.reveal-card.flipped').length === 5);
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth) <= 1, vp.name + ' : débordement');
+    await page.click('.pack-reveal-modal .modal-close');
+  }
+  assert.deepEqual(errors, []);
+});
+
 test('déconnecté : les pages privées renvoient vers la connexion', async () => {
   const anon = await browser.newPage({ viewport: { width: 390, height: 844 } });
   const errs = [];
