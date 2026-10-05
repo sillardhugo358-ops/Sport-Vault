@@ -47,3 +47,24 @@ test('routes : chemin inconnu servi comme fichier statique, pas comme erreur ser
   assert.notEqual(r.status, 500);
   assert.equal((await fetch(server.base + '/')).status, 200);
 });
+
+test('corps de requête : JSON invalide -> 400, trop volumineux -> 413 (jamais une erreur serveur)', async () => {
+  const post = body => fetch(server.base + '/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+  for (const bad of ['{pas du json', '[]', 'null', '"texte"']) {
+    const r = await post(bad);
+    assert.equal(r.status, 400, bad);
+    assert.match((await r.json()).error, /JSON invalide/);
+  }
+  const big = await post(JSON.stringify({ email: 'a@b.fr', password: 'x'.repeat(1_100_000) }));
+  assert.equal(big.status, 413);
+  assert.equal((await post('{}')).status, 401, 'un corps vide valide reste traité normalement');
+});
+
+test('import interne : jeton exigé et comparé sans tricher (absent, faux, de longueur différente, bon)', async () => {
+  const guarded = await startServer({ env: { HISTORICAL_IMPORT_TOKEN: 'jeton-de-test-0123456789' } });
+  try {
+    const call = token => fetch(guarded.base + '/api/internal/historical-import', { method: 'POST', headers: token === undefined ? {} : { 'x-historical-import-token': token }, body: '{}' });
+    for (const token of [undefined, '', 'faux', 'jeton-de-test-0123456780', 'jeton-de-test-0123456789-et-plus']) assert.equal((await call(token)).status, 401, String(token));
+    assert.equal((await call('jeton-de-test-0123456789')).status, 400, 'bon jeton : accepté, charge utile invalide refusée');
+  } finally { await guarded.stop(); }
+});

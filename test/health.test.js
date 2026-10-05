@@ -20,6 +20,17 @@ test('santé : version déployée, démarrage, base joignable', async () => {
   assert.equal(h.database.ok, true);
   assert.ok(h.database.latencyMs >= 0);
   assert.ok(!JSON.stringify(h).includes('postgresql://'), 'aucune adresse de base exposée');
+  for (const k of ['rss', 'heapUsed', 'heapTotal', 'external']) assert.ok(Number.isInteger(h.memory[k]) && h.memory[k] >= 0, 'mémoire ' + k);
+  assert.ok(h.memory.rss >= h.memory.heapUsed, 'la mémoire occupée couvre les données JavaScript');
+});
+
+test('page « état du site » : servie publiquement, lit /api/health', async () => {
+  const r = await fetch(server.base + '/etat.html');
+  assert.equal(r.status, 200);
+  const html = await r.text();
+  assert.match(html, /État du site/);
+  assert.match(html, /\/api\/health/);
+  assert.ok(!/postgres(ql)?:\/\//.test(html));
 });
 
 test('session : durée lue dans SESSION_TTL_DAYS, cookie en secondes entières', async () => {

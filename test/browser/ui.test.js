@@ -479,3 +479,32 @@ test('cartes : pastille du club quand il a un logo, rien sinon', async () => {
   assert.equal((await page.$$('.v4-club-badge')).length, 0);
   await page.unroute('**/api/club-logos');
 });
+
+test('état du site : page publique, serveur et base annoncés en ligne, mémoire affichée, serveur en panne signalé', async () => {
+  const ctx = await browser.newContext({ extraHTTPHeaders: { 'X-Forwarded-For': server.newIp() }, viewport: { width: 390, height: 844 } });
+  const p = await ctx.newPage();
+  const errs = [];
+  p.on('pageerror', e => errs.push(e.message));
+  await p.goto(server.base + '/etat.html');
+  await p.waitForFunction(() => /Tout fonctionne/.test(document.getElementById('statusText').textContent), null, { timeout: 15000 });
+  assert.equal(await p.$eval('#status', e => e.className.includes('ok')), true);
+  const tiles = await p.$$eval('.tile', els => els.map(e => e.textContent));
+  assert.equal(tiles.length, 6);
+  assert.ok(tiles.some(t => /Base de données.*OK/.test(t)), tiles.join(' | '));
+  assert.ok(tiles.some(t => /Mémoire du serveur\d+ Mo/.test(t)), tiles.join(' | '));
+  assert.equal(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'pas de défilement horizontal sur mobile');
+  assert.equal(await p.$('a[href="/"]') !== null, true);
+  // Serveur injoignable : message clair, page toujours là.
+  await p.route('**/api/health', route => route.abort());
+  await p.evaluate(() => new Promise(r => setTimeout(r, 0)));
+  await p.reload();
+  await p.waitForFunction(() => /ne répond pas/.test(document.getElementById('statusText').textContent), null, { timeout: 15000 });
+  assert.equal(await p.$eval('#status', e => e.className.includes('bad')), true);
+  assert.deepEqual(errs, []);
+  await ctx.close();
+});
+
+test('accueil : le pied de page renvoie vers la page « état du site »', async () => {
+  await page.goto(server.base + '/#home');
+  assert.equal(await page.$eval('.footer a[href="etat.html"]', e => e.textContent.trim()), 'ÉTAT DU SITE');
+});
