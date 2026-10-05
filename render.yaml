@@ -21,6 +21,10 @@ services:
       # ?sslmode=no-verify). Voir docs/SAUVEGARDE.md.
       - key: DATABASE_URL
         sync: false
+      # Certificat de l'autorité d'Aiven (public : « CA certificate » du service) : active la
+      # vérification complète du certificat de la base. Facultatif ; voir docs/SAUVEGARDE.md.
+      - key: DATABASE_CA_CERT
+        sync: false
 
 # Ancienne base Render, conservée pour retour arrière jusqu'à son
 # expiration le 15/10/2026. Plus utilisée par le service web.

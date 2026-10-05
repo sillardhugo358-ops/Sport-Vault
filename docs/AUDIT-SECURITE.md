@@ -21,7 +21,7 @@ Périmètre : `server.js`, `security-bootstrap.js`, `lib/auth.js`, `lib/routes/*
 | Priorité | Sujet | Détail |
 |---|---|---|
 | Haute | Mot de passe de la base | À changer côté Aiven puis dans `DATABASE_URL` (Render) : action du propriétaire. |
-| Moyenne | `sslmode=no-verify` | La connexion à Aiven est chiffrée mais le certificat n'est pas vérifié (voir `SAUVEGARDE.md`). Pour la vérifier : télécharger le certificat d'autorité d'Aiven, le fournir au serveur (`ssl.ca`) puis passer en `verify-full`. Demande une petite modification du code de connexion. |
+| Moyenne | `sslmode=no-verify` | La connexion à Aiven est chiffrée mais le certificat n'est pas vérifié. **Code prêt depuis le 05/10/2026** (`lib/db-ssl.js`) : il reste à fournir le *CA certificate* d'Aiven dans la variable Render `DATABASE_CA_CERT` (procédure et retour arrière dans `SAUVEGARDE.md`). |
 | Basse | CSP `script-src 'unsafe-inline'` | Nécessaire tant que l'interface contient des scripts et styles en ligne ; à retirer en les déplaçant dans des fichiers. |
 | Basse | Jetons de session en clair en base | Durée de vie de 2 h seulement ; les stocker hachés forcerait une reconnexion générale. |
 | Basse | Historique d'enchère public | `/api/auctions/:id/bids` expose le pseudo des enchérisseurs (comportement voulu pour un marché) : à confirmer. |
