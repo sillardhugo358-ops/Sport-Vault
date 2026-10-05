@@ -27,6 +27,8 @@ Depuis ce changement, la rareté de toute carte non spéciale est calculée par 
 
 Les saisons 2016-2017 à 2025-2026 sont complètes.
 
+**Ligue des Champions (mise à jour du 05/10/2026)** : nationalités complétées depuis le classeur fourni par le propriétaire (`scripts/apply-ldc-nationalities.py`) : 10 168 cartes remplies, 701 restent vides sur 21 446 (saisons 2024-25 et 2025-26 absentes du classeur, 297 lignes « à vérifier » vides dans le classeur). 154 cartes ont une nationalité différente de celle du classeur : elles sont **gardées** et listées dans `NATIONALITES-LDC-CONFLITS.csv` pour relecture.
+
 ### Statistiques factices : 296 cartes
 
 Suite de valeurs croissantes de 1 en 1 (ex. 74, 75, 76, 77, 78) sur les 5 premiers attributs : valeurs de remplissage, pas des statistiques réelles.

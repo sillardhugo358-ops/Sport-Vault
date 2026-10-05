@@ -123,3 +123,22 @@ test('anti-dilution : packs génériques sans cartes LDC ; pack dédié = cartes
   assert.equal(res.status, 200, JSON.stringify(summary));
   assert.ok(summary.featured.every(c => !c.id.startsWith('fv-c-')));
 });
+
+test('nationalités (scripts/apply-ldc-nationalities.py) : renseignées, en français, identifiants inchangés, drapeau pour chaque pays connu', () => {
+  const { cards } = loadData();
+  const { NATION_FR } = require('../lib/nations');
+  const known = new Set(Object.values(NATION_FR));
+  assert.equal(cards.length, EXPECTED_CARDS);
+  assert.equal(cards.filter(c => !c.nation).length, 701, 'restent vides : saisons 2024-25 / 2025-26 et joueurs « à vérifier »');
+  const english = cards.filter(c => c.nation && NATION_FR[c.nation] && NATION_FR[c.nation] !== c.nation);
+  assert.deepEqual(english.map(c => c.nation), [], 'aucune graphie anglaise ou code pays');
+  const unknown = [...new Set(cards.filter(c => c.nation && !known.has(c.nation)).map(c => c.nation))].sort();
+  assert.deepEqual(unknown, ['Antilles néerlandaises', 'Aruba', 'Bahreïn', 'Royaume-Uni']);
+  // Un joueur dont la nationalité manquait est maintenant renseigné ; une valeur déjà présente n'est pas écrasée.
+  assert.equal(cards.find(c => c.name === 'Akhrik Tsveiba' && c.seasonKey === '1991-1992').nation, 'Russie');
+  assert.equal(cards.find(c => c.name === 'Isaias' && c.seasonKey === '1991-1992').nation, 'Espagne', 'conflit gardé (rapport à relire)');
+  // Chaque pays a son drapeau (sauf les Antilles néerlandaises, sans drapeau libre).
+  const slug = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  const missing = [...new Set(cards.filter(c => c.nation).map(c => c.nation))].filter(n => !fs.existsSync(path.join(__dirname, '..', 'club-logos', 'selection-' + slug(n) + '.png')));
+  assert.deepEqual(missing, ['Antilles néerlandaises']);
+});
