@@ -8,7 +8,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const { chromium } = require('playwright-core');
-const { startServer } = require('../helpers');
+const { startServer, ensureTestClubs } = require('../helpers');
 
 const VIEWPORTS = [
   { name: 'ordinateur', width: 1280, height: 900 },
@@ -395,7 +395,6 @@ test('cartes : logo de la base qui ne charge pas → repli sur le fichier du dos
     await a.waitForSelector('.tcg-card.v4');
     // Les images sont chargées à la demande : selon la carte tirée, une pastille peut être hors écran et ne jamais se charger ;
     // on force le chargement pour que le test ne dépende pas de la position de la carte dans la page.
-    await a.waitForSelector('.v4-club-badge', { state: 'attached' });
     await a.evaluate(() => document.querySelectorAll('.v4-club-badge').forEach(i => { i.loading = 'eager'; }));
     if (expected) {
       await a.waitForFunction(e => [...document.querySelectorAll('.v4-club-badge')].some(i => (i.getAttribute('src') || '') === e), expected);
@@ -409,6 +408,7 @@ test('cartes : logo de la base qui ne charge pas → repli sur le fichier du dos
 test('cartes : bandeau compétition + saison en grand, drapeau rond du pays, ni numéro en filigrane ni texte de nationalité', async () => {
   const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
   const base = (await server.db.query('SELECT * FROM catalog_cards ORDER BY id LIMIT 1')).rows[0];
+  await ensureTestClubs(server);
   const lg = (await server.db.query("SELECT c.name,cs.competition_id,cs.season FROM season_clubs sc JOIN competition_seasons cs ON cs.id=sc.season_id JOIN clubs c ON c.id=sc.club_id WHERE cs.competition_id NOT IN ('ligue-des-champions','coupe-du-monde','ligue-des-nations') ORDER BY c.name LIMIT 1")).rows[0];
   const labels = { 'ligue-1': 'LIGUE 1', 'premier-league': 'PREMIER LEAGUE', 'serie-a': 'SERIE A', bundesliga: 'BUNDESLIGA', 'la-liga': 'LA LIGA' };
   const rows = [
