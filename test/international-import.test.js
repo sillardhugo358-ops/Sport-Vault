@@ -7,8 +7,9 @@ const assert = require('node:assert/strict');
 const { startServer, newPlayer, setCoins } = require('./helpers');
 const { loadCards, importInternational, EXPECTED_CARDS } = require('../scripts/import-international');
 const { rarityFromOvr } = require('../lib/rarity');
+const { refinePositions } = require('../scripts/refine-international-positions');
 
-const POSITIONS = ['GK', 'CB', 'DM', 'CM', 'AM', 'ST'];
+const POSITIONS = ['GK', 'RB', 'CB', 'LB', 'DM', 'CM', 'AM', 'RW', 'ST', 'LW'];
 const quiet = () => {};
 
 test('fichier : 12 586 cartes valides, raretés du barème, relèvement des notes CDM, doublon conservé', () => {
@@ -97,4 +98,25 @@ test('packs dédiés : créés une seule fois, tirent dans leur compétition, Ra
   const summary = await summaryRes.json();
   assert.equal(summaryRes.status, 200, JSON.stringify(summary));
   assert.ok(summary.featured.every(c => !/^fv-[wn]-/.test(c.id)), 'accueil : cartes de championnat');
+});
+
+test('postes affinés : côtés repris du catalogue seulement si la correspondance est unique', () => {
+  const cards = loadCards();
+  for (const p of ['RB', 'LB', 'RW', 'LW']) assert.ok(cards.some(c => c.position === p), p + ' présent');
+  const doc = { teams: ['France', 'Spain'], rows: [
+    ['coupe-du-monde', '2018', 0, 'Benjamin Pavard', 'CB', 2, 22, 80, 1, 1, 1, 1, 1, 1],
+    ['coupe-du-monde', '2018', 0, 'Joueur Ambigu', 'CB', 3, 22, 80, 1, 1, 1, 1, 1, 1],
+    ['coupe-du-monde', '2018', 1, 'Pavard', 'CB', 3, 22, 80, 1, 1, 1, 1, 1, 1],
+    ['coupe-du-monde', '2018', 0, 'Un Milieu', 'CM', 8, 22, 80, 1, 1, 1, 1, 1, 1],
+    ['coupe-du-monde', '2018', 1, 'Ansu Fati', 'ST', 9, 22, 80, 1, 1, 1, 1, 1, 1],
+  ] };
+  const refs = [
+    { name: 'Benjamin Pavard', nation: 'France', position: 'RB' },
+    { name: 'Joueur Ambigu', nation: 'France', position: 'RB' }, { name: 'Joueur Ambigu', nation: 'France', position: 'LB' },
+    { name: 'Un Milieu', nation: 'France', position: 'RW' },
+    { name: 'Ansu Fati', nation: 'Spain', position: 'LW' },
+  ];
+  const changes = refinePositions(doc, refs);
+  assert.deepEqual(doc.rows.map(r => r[4]), ['RB', 'CB', 'CB', 'CM', 'LW']);
+  assert.equal(changes.length, 2);
 });

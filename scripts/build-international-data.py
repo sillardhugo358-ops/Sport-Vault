@@ -11,7 +11,8 @@ par la courbe LIFT ci-dessous (croissante : l'ordre des joueurs est conservé, l
 pas, donc Messi, Pelé, Mbappé... restent à 98). Les six statistiques sont mises à l'échelle (nouvelle note /
 ancienne) pour rester cohérentes avec la note affichée.
 Nettoyages : âge négatif -> valeur absolue ; numéro ou âge absents -> vides ; gardiens rangés dans les
-colonnes communes ; postes DF/MF/FW -> CB/DM-CM-AM/ST.
+colonnes communes ; postes DF/MF/FW -> CB/DM-CM-AM/ST
+(les côtés RB/LB/RW/LW sont ajoutés ensuite par scripts/refine-international-positions.js).
 Le fichier JSON est lu par scripts/import-international.js (identifiants stables, import sans doublon).
 """
 import gzip
