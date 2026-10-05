@@ -137,8 +137,8 @@ test('nationalités (scripts/apply-ldc-nationalities.py) : renseignées, en fran
   // Un joueur dont la nationalité manquait est maintenant renseigné ; une valeur déjà présente n'est pas écrasée.
   assert.equal(cards.find(c => c.name === 'Akhrik Tsveiba' && c.seasonKey === '1991-1992').nation, 'Russie');
   assert.equal(cards.find(c => c.name === 'Isaias' && c.seasonKey === '1991-1992').nation, 'Espagne', 'conflit gardé (rapport à relire)');
-  // Chaque pays a son drapeau (sauf les Antilles néerlandaises, sans drapeau libre).
+  // Chaque pays de la Ligue des Champions a son drapeau.
   const slug = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   const missing = [...new Set(cards.filter(c => c.nation).map(c => c.nation))].filter(n => !fs.existsSync(path.join(__dirname, '..', 'club-logos', 'selection-' + slug(n) + '.png')));
-  assert.deepEqual(missing, ['Antilles néerlandaises']);
+  assert.deepEqual(missing, []);
 });
