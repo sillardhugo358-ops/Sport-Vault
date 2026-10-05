@@ -77,23 +77,21 @@
 @keyframes v4border{to{background-position:260% 0}}
 @media (prefers-reduced-motion:reduce){.v4-holo,.v4-icon-border{animation:none}}
 
-/* ---------- filigrane du numéro (masqué sans numéro) ---------- */
-.v4-wm{position:absolute;z-index:1;right:-7cqw;bottom:4cqw;font:900 58cqw/1 var(--num,'Oswald','Barlow Condensed',Impact,sans-serif);
-  letter-spacing:-3cqw;color:rgba(255,255,255,.07);pointer-events:none;user-select:none}
-.rarity-rare .v4-wm{color:rgba(111,168,214,.10)}
-.rarity-epic .v4-wm{color:rgba(185,143,224,.11)}
-.rarity-legendary .v4-wm{color:rgba(240,207,124,.13)}
-
 /* ---------- face ---------- */
 .v4-face{position:relative;z-index:6;height:100%;padding:5cqw 4.7cqw;display:flex;flex-direction:column}
-.v4-top{display:flex;justify-content:space-between;align-items:flex-start;gap:4px;font:800 3cqw var(--body,'Inter',sans-serif);letter-spacing:.35cqw;opacity:.9}
-.v4-top span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v4-banner{display:flex;justify-content:space-between;align-items:flex-start;gap:3cqw}
+.v4-banner-text{min-width:0;display:flex;flex-direction:column;gap:1.2cqw}
+.v4-comp{font:900 7.6cqw/1 var(--head,'Barlow Condensed',sans-serif);letter-spacing:.35cqw;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v4-comp.long{font-size:6cqw;letter-spacing:.2cqw}
+.v4-season{font:800 6.6cqw/1 var(--head,'Barlow Condensed',sans-serif);letter-spacing:.5cqw;color:var(--rarity-accent);white-space:nowrap}
 .v4-pos{flex:none;padding:1cqw 3cqw;border-radius:3px;font-weight:900;font-size:3cqw;letter-spacing:.25cqw;color:#0b0c0c;
   background:var(--rarity-accent);box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 2px 4px rgba(0,0,0,.3)}
 .rarity-icon .v4-pos{background:linear-gradient(160deg,#fff,#c9c9c9);border:1px solid #fff}
-.v4-ovr{margin-top:1.5cqw;font:900 13.3cqw/.72 var(--num,'Oswald','Barlow Condensed',Impact,sans-serif);color:var(--rarity-accent);letter-spacing:-.3cqw}
+.v4-hero{display:flex;align-items:center;justify-content:space-between;gap:2cqw;margin-top:5cqw}
+.v4-slot{flex:none;width:19cqw;height:19cqw;display:block}
+.v4-ovr{margin:0;text-align:center;font:900 15.5cqw/.72 var(--num,'Oswald','Barlow Condensed',Impact,sans-serif);color:var(--rarity-accent);letter-spacing:-.3cqw}
 .v4-ovr small{display:block;font:800 3cqw var(--body,'Inter',sans-serif);letter-spacing:.5cqw;margin-top:2cqw;opacity:.75;color:#f2f0e9}
-.rarity-icon .v4-ovr{font-size:19cqw;color:#fff;text-shadow:0 0 34px rgba(255,255,255,.6)}
+.rarity-icon .v4-ovr{font-size:20cqw;color:#fff;text-shadow:0 0 34px rgba(255,255,255,.6)}
 .v4-name-zone{margin-top:auto;min-width:0}
 .v4-club{display:block;font:700 3cqw var(--body,'Inter',sans-serif);margin-bottom:1cqw;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tcg-card.v4 .v4-name{margin:0 0 3.3cqw;font:900 7.3cqw/.95 var(--head,'Barlow Condensed',sans-serif);text-transform:uppercase;letter-spacing:.03cqw;color:#fff;
@@ -108,7 +106,7 @@
   font:800 3cqw var(--head,'Barlow Condensed',sans-serif);letter-spacing:.66cqw}
 .v4-rarity{color:var(--rarity-accent);white-space:nowrap}
 .rarity-icon .v4-rarity{letter-spacing:1cqw;text-shadow:0 0 14px rgba(255,255,255,.7)}
-.v4-nation{font:600 2.7cqw var(--body,'Inter',sans-serif);letter-spacing:.15cqw;opacity:.65;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v4-brand{font:700 2.4cqw var(--body,'Inter',sans-serif);letter-spacing:.7cqw;opacity:.42;white-space:nowrap}
 
 /* Grille dense : sous ~160 px de large, attributs masqués (spec §5) ; OVR, rareté et motif restent. */
 @container (max-width:160px){
@@ -116,7 +114,9 @@
   .tcg-card.v4 .v4-name{margin-bottom:2cqw}
 }
 
-/* Pastille du club (logo fourni par le propriétaire) : à droite de la note, sous le poste ; absente si le club n'a pas de logo. */
-.v4-club-badge{position:absolute;right:6.2cqw;top:17.5cqw;width:17cqw;height:17cqw;box-sizing:border-box;padding:1.6cqw;border-radius:50%;
-  object-fit:contain;background:#fff;box-shadow:0 0 0 .8cqw rgba(0,0,0,.28),0 1.2cqw 3cqw rgba(0,0,0,.45);z-index:3}
-.rarity-icon .v4-club-badge{box-shadow:0 0 0 .8cqw rgba(255,255,255,.65),0 1.2cqw 3cqw rgba(0,0,0,.45)}
+/* Pastilles rondes : drapeau du pays à gauche de la note, logo du club à droite ; absentes quand l'image est inconnue (l'emplacement reste, la note reste centrée). */
+.v4-club-badge,.v4-flag-badge{display:block;width:100%;height:100%;box-sizing:border-box;border-radius:50%;
+  box-shadow:0 0 0 .8cqw rgba(0,0,0,.28),0 1.2cqw 3cqw rgba(0,0,0,.45)}
+.v4-club-badge{padding:1.8cqw;object-fit:contain;background:#fff}
+.v4-flag-badge{object-fit:cover}
+.rarity-icon .v4-club-badge,.rarity-icon .v4-flag-badge{box-shadow:0 0 0 .8cqw rgba(255,255,255,.65),0 1.2cqw 3cqw rgba(0,0,0,.45)}

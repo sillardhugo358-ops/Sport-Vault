@@ -84,6 +84,22 @@ test('GET /api/club-logos : un fichier du dossier sert de logo même sans club e
   await q("DELETE FROM clubs WHERE id='dijon-fco'");
 });
 
+test('GET /api/club-logos : drapeaux, noms de pays équivalents et compétition de chaque club de championnat', async () => {
+  const body = await (await fetch(server.base + '/api/club-logos')).json();
+  // Drapeaux : fichiers selection-<pays>, clé = nom français normalisé ; les pays ajoutés pour la pastille de nationalité sont présents.
+  assert.equal(body.flags.espagne, 'club-logos/selection-espagne.png');
+  assert.equal(body.flags.albanie, 'club-logos/selection-albanie.png');
+  // Noms anglais et codes ramenés au français (clés normalisées).
+  assert.equal(body.nations.spain, 'espagne');
+  assert.equal(body.nations.alb, 'albanie');
+  assert.ok(!('espagne' in body.nations), 'un nom déjà français n\'a pas d\'alias');
+  // Compétition des clubs de championnat : exactement celle de la table season_clubs, jamais Ligue des Champions ni sélections.
+  const rows = await q("SELECT DISTINCT c.name,cs.competition_id FROM season_clubs sc JOIN competition_seasons cs ON cs.id=sc.season_id JOIN clubs c ON c.id=sc.club_id WHERE cs.competition_id NOT IN ('ligue-des-champions','coupe-du-monde','ligue-des-nations')");
+  assert.ok(rows.length > 0, 'des clubs de championnat existent en base de test');
+  for (const r of rows) assert.equal(body.leagues[clubKey(r.name)], r.competition_id, r.name);
+  assert.ok(Object.values(body.leagues).every(v => !['ligue-des-champions', 'coupe-du-monde', 'ligue-des-nations'].includes(v)));
+});
+
 test('images : seul le dossier club-logos/ est servi, formats image uniquement, pas de remontée de dossier', async () => {
   fs.mkdirSync(LOGOS_DIR, { recursive: true });
   const names = ['_test-ci.png', '_test-ci.JPG', '_test-ci.txt'];
