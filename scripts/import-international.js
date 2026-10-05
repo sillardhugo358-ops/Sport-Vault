@@ -24,7 +24,7 @@ const DATA_FILE = path.join(__dirname, '..', 'data', 'international-2026.json.gz
 const IMPORT_ID = 'international-2026';
 const EXPECTED_CARDS = 12586;
 const BATCH = 1000;
-const POSITIONS = ['GK', 'CB', 'DM', 'CM', 'AM', 'ST'];
+const POSITIONS = ['GK', 'RB', 'CB', 'LB', 'DM', 'CM', 'AM', 'RW', 'ST', 'LW'];
 const COMPETITIONS = {
   'coupe-du-monde': { name: 'Coupe du Monde', tag: 'CDM', country: 'International', sort: 6, prefix: 'fv-w-', base: 20000000, first: 1930 },
   'ligue-des-nations': { name: 'Ligue des Nations', tag: 'LN', country: 'Europe', sort: 7, prefix: 'fv-n-', base: 30000000, first: 2018 },
