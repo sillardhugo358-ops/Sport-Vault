@@ -8,7 +8,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const { chromium } = require('playwright-core');
-const { startServer } = require('../helpers');
+const { startServer, ensureTestClubs } = require('../helpers');
 
 const VIEWPORTS = [
   { name: 'ordinateur', width: 1280, height: 900 },
@@ -393,6 +393,9 @@ test('cartes : logo de la base qui ne charge pas → repli sur le fichier du dos
     await a.goto(server.base + '/#collection');
     await a.reload();
     await a.waitForSelector('.tcg-card.v4');
+    // Les images sont chargées à la demande : selon la carte tirée, une pastille peut être hors écran et ne jamais se charger ;
+    // on force le chargement pour que le test ne dépende pas de la position de la carte dans la page.
+    await a.evaluate(() => document.querySelectorAll('.v4-club-badge').forEach(i => { i.loading = 'eager'; }));
     if (expected) {
       await a.waitForFunction(e => [...document.querySelectorAll('.v4-club-badge')].some(i => (i.getAttribute('src') || '') === e), expected);
     } else {
@@ -400,6 +403,54 @@ test('cartes : logo de la base qui ne charge pas → repli sur le fichier du dos
     }
     await ctx.close();
   }
+});
+
+test('cartes : bandeau compétition + saison en grand, drapeau rond du pays, ni numéro en filigrane ni texte de nationalité', async () => {
+  const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
+  // Trois cartes de catalogue différentes : la collection regroupe les exemplaires d'une même carte.
+  const bases = (await server.db.query('SELECT id FROM catalog_cards ORDER BY id LIMIT 3 OFFSET 5')).rows;
+  await ensureTestClubs(server);
+  const lg = (await server.db.query("SELECT c.name,cs.competition_id,cs.season FROM season_clubs sc JOIN competition_seasons cs ON cs.id=sc.season_id JOIN clubs c ON c.id=sc.club_id WHERE cs.competition_id NOT IN ('ligue-des-champions','coupe-du-monde','ligue-des-nations') ORDER BY c.name LIMIT 1")).rows[0];
+  const labels = { 'ligue-1': 'LIGUE 1', 'premier-league': 'PREMIER LEAGUE', 'serie-a': 'SERIE A', bundesliga: 'BUNDESLIGA', 'la-liga': 'LA LIGA' };
+  const rows = [
+    ['Cartetest Championnat', '2015-2016', lg.name, 'Spain'],   // nom anglais → drapeau d'Espagne
+    ['Cartetest LDC', 'LDC 2010-11', lg.name, ''],            // Ligue des Champions, nationalité inconnue → pas de drapeau
+    ['Cartetest Mondial', '1998', 'France', 'France']         // Coupe du monde : drapeau seul
+  ];
+  for (const [k, [name, season, club, nation]] of rows.entries()) {
+    await server.db.query(
+      `INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,is_limited,acquired_at,source,status,jersey_number)
+       VALUES(gen_random_uuid(),$1,$2,$3,$4,'ST',$5,$6,'rare',80,70,70,70,70,70,70,false,$7,'test','owned',9)`,
+      [bases[k].id, uid, season, name, club, nation, new Date(Date.UTC(2099, 0, 1)).toISOString()]);
+  }
+  try {
+    for (const vp of [VIEWPORTS[0], VIEWPORTS[2]]) {
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+      await visit('collection');
+      const card = name => page.locator('.card-link', { hasText: name.toUpperCase() }).first();
+      for (const name of rows.map(r => r[0])) await card(name).waitFor();
+      const read = async name => card(name).evaluate(el => ({
+        comp: el.querySelector('.v4-comp')?.textContent || '', season: el.querySelector('.v4-season')?.textContent || '',
+        flag: el.querySelector('.v4-flag-badge')?.getAttribute('src') || '', club: !!el.querySelector('.v4-club-badge'),
+        nationText: !!el.querySelector('.v4-nation'), watermark: !!el.querySelector('.v4-wm') }));
+      const a = await read('Cartetest Championnat'), b = await read('Cartetest LDC'), c = await read('Cartetest Mondial');
+      assert.equal(a.comp, labels[lg.competition_id], vp.name + ' : compétition du championnat');
+      assert.equal(a.season, '2015-2016', vp.name + ' : saison');
+      assert.equal(a.flag, 'club-logos/selection-espagne.png', vp.name + ' : « Spain » → drapeau d\'Espagne');
+      assert.equal(b.comp, 'LIGUE DES CHAMPIONS');
+      assert.equal(b.season, '2010-2011', 'préfixe LDC retiré, saison en forme longue');
+      assert.equal(b.flag, '', 'pas de drapeau sans nationalité');
+      assert.equal(c.comp, 'COUPE DU MONDE');
+      assert.equal(c.season, '1998');
+      assert.equal(c.flag, 'club-logos/selection-france.png');
+      assert.equal(c.club, false, 'sélection : le drapeau remplace la pastille du club');
+      for (const x of [a, b, c]) { assert.equal(x.nationText, false); assert.equal(x.watermark, false); }
+      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth) <= 1, vp.name + ' : débordement');
+    }
+  } finally {
+    await server.db.query("DELETE FROM card_instances WHERE source='test' AND name LIKE 'Cartetest%'");
+  }
+  assert.deepEqual(errors, []);
 });
 
 test('cartes : pastille du club quand il a un logo, rien sinon', async () => {

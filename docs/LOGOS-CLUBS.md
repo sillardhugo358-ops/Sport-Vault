@@ -3,6 +3,14 @@
 Les logos apparaissent **dans l'album** (à côté du nom du club) et **sur les cartes des joueurs** (pastille ronde à droite de la note).
 Un club sans logo s'affiche comme avant (aucun trou).
 
+## Carte (mise en page du 05/10/2026)
+- **Bandeau en haut** : la compétition (Ligue 1, Premier League, Serie A, Bundesliga, La Liga, Ligue des Champions, Coupe du monde, Ligue des Nations) et la saison, en grand ; le poste à droite.
+- **Rangée centrale** : **drapeau rond du pays à gauche**, note au centre, **logo rond du club à droite**. Un emplacement sans image reste vide (la note reste centrée).
+  Pour les sélections (Coupe du monde, Ligue des Nations), seul le drapeau est affiché.
+- Plus de numéro de maillot en filigrane ni de texte de nationalité ; « FOOTVAULT » reste en petit en bas à droite.
+- La compétition est **déduite** de la saison et du club (le serveur envoie dans `/api/club-logos` la table `leagues` : club → championnat ; saison « LDC … » = Ligue des Champions, année seule = Coupe du monde, AAAA-AAAA d'une sélection = Ligue des Nations). Un club inconnu n'affiche que la saison.
+- **Drapeaux** : fichiers `club-logos/selection-<pays en français>.png` (ronds, 128 × 128, source flag-icons, licence MIT), 162 au total. Le serveur envoie `flags` (pays → fichier) et `nations` (noms anglais et codes → nom français, d'après `lib/nations.js`). Un pays sans drapeau n'affiche rien (jamais de drapeau inventé). Pour en ajouter un : un fichier `selection-<pays>.png` suffit, et une ligne dans `docs/CLUBS-LOGOS.csv`.
+
 ## Procédure
 1. Réunir les images (JPG, PNG ou WEBP) dans un dossier. **Nom du fichier = nom du club** tel qu'il figure dans
    `docs/CLUBS-LOGOS.csv` (colonne « nom »), par exemple `Paris Saint-Germain.jpg`. L'accent, la casse et la ponctuation
