@@ -149,21 +149,23 @@ async function packs(){
   </div>`;
 }
 
-async function openPack(id){try{const d=await api('/api/packs/open',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({packId:id})});state.user=d.user;showReveal(d.cards||[],d.pack);toast(`Pack ouvert · ${d.cards.length} cartes · +${d.cards.length*2} XP`);nav();await render()}catch(e){if(e.status===401){location.hash='auth?next=packs';return}toast(e.message)}}
-async function openPool(id){try{const d=await api('/api/pools/open',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({poolId:id})});state.user=d.user;showReveal(d.cards||[],d.pack);toast(`Tirage effectué · ${d.cards.length} cartes · +${d.cards.length*2} XP`);nav();await render()}catch(e){if(e.status===401){location.hash='auth?next=packs';return}toast(e.message)}}
-function showReveal(cards,pack){
+async function openPack(id){try{const d=await api('/api/packs/open',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({packId:id})});state.user=d.user;showReveal(d.cards||[],d.pack,()=>openPack(id));toast(`Pack ouvert · ${d.cards.length} cartes · +${d.cards.length*2} XP`);nav();await render()}catch(e){if(e.status===401){location.hash='auth?next=packs';return}toast(e.message)}}
+async function openPool(id){try{const d=await api('/api/pools/open',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({poolId:id})});state.user=d.user;showReveal(d.cards||[],d.pack,()=>openPool(id));toast(`Tirage effectué · ${d.cards.length} cartes · +${d.cards.length*2} XP`);nav();await render()}catch(e){if(e.status===401){location.hash='auth?next=packs';return}toast(e.message)}}
+function showReveal(cards,pack,again){
  const RANK={common:0,rare:1,epic:2,legendary:3,icon:4};
  const rank=c=>RANK[c?.rarity]??0;
  const best=cards.reduce((m,c)=>rank(c)>rank(m)?c:m,cards[0]);
  const bestKey=Object.keys(RANK).find(k=>RANK[k]===rank(best))||'common';
  const calm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
  const faces=cards.map((c,i)=>`<button class="reveal-card rv-${esc(c.rarity||'common')}" style="--i:${i}" type="button" aria-label="Révéler la carte ${i+1} sur ${cards.length}" aria-pressed="false" data-reveal-card="${i}"><span class="reveal-card-inner"><span class="reveal-face reveal-back" aria-hidden="true">FV</span><span class="reveal-face reveal-front">${cardMarkup(c)}</span></span></button>`).join('');
- setModal(`<div class="modal-box pack-reveal-modal${calm?' rv-opened':''}" data-best="${bestKey}"><button class="modal-close" data-close aria-label="Fermer">×</button><p class="eyebrow">NOUVELLE OUVERTURE</p><h2 class="pack-reveal-title">${esc(pack?.name||'Pack ouvert')}</h2>${calm?'':`<div class="reveal-stage"><button class="reveal-pack rv-${bestKey}" type="button" data-open-pack aria-label="Ouvrir le pack"><span class="reveal-pack-glow" aria-hidden="true"></span><span class="reveal-pack-body" aria-hidden="true"><b>FV</b><small>${esc(pack?.name||'PACK')}</small></span><span class="reveal-pack-cta">TOUCHE POUR OUVRIR</span></button></div>`}<div class="reveal-grid" ${calm?'':'hidden'}>${faces}</div><div class="reveal-controls"><span class="reveal-result" aria-live="polite">${cards.length} cartes ajoutées · +${cards.length*2} XP</span><button class="btn btn-outline" type="button" data-skip-reveal${calm?'':' hidden'}>TOUT RÉVÉLER</button><a class="btn btn-gold" href="#collection" data-close>VOIR MA COLLECTION</a></div></div>`);
+ setModal(`<div class="modal-box pack-reveal-modal${calm?' rv-opened':''}" data-best="${bestKey}"><button class="modal-close" data-close aria-label="Fermer">×</button><p class="eyebrow">NOUVELLE OUVERTURE</p><h2 class="pack-reveal-title">${esc(pack?.name||'Pack ouvert')}</h2>${calm?'':`<div class="reveal-stage"><button class="reveal-pack rv-${bestKey}" type="button" data-open-pack aria-label="Ouvrir le pack"><span class="reveal-pack-glow" aria-hidden="true"></span><span class="reveal-pack-body" aria-hidden="true"><b>FV</b><small>${esc(pack?.name||'PACK')}</small></span><span class="reveal-pack-cta">TOUCHE POUR OUVRIR</span></button></div>`}<div class="reveal-grid" ${calm?'':'hidden'}>${faces}</div><div class="reveal-controls"><span class="reveal-result" aria-live="polite">${cards.length} cartes ajoutées · +${cards.length*2} XP</span><button class="btn btn-outline" type="button" data-skip-reveal${calm?'':' hidden'}>TOUT RÉVÉLER</button>${again&&Number(pack?.price)>0?`<button class="btn btn-gold" type="button" data-reveal-again hidden${Number(state.user?.coins)<Number(pack.price)?' disabled title="FOOTCOINS insuffisants"':''}>OUVRIR UN AUTRE PACK · ${Number(pack.price)} FC</button>`:''}<a class="btn btn-gold" href="#collection" data-close>VOIR MA COLLECTION</a></div></div>`);
  const box=document.querySelector('.pack-reveal-modal');
  const grid=box.querySelector('.reveal-grid');
  const revealCards=[...grid.querySelectorAll('.reveal-card')];
  const skip=box.querySelector('[data-skip-reveal]');
  const result=box.querySelector('.reveal-result');
+ const againBtn=box.querySelector('[data-reveal-again]');
+ againBtn?.addEventListener('click',()=>{closeModal();again()});
  // Les images des cartes se chargent tout de suite : une carte ne doit jamais se retourner sur un logo manquant.
  grid.querySelectorAll('img[loading="lazy"]').forEach(i=>{i.loading='eager'});
  // Dimensionne la grille : le nombre de colonnes qui donne les plus grandes cartes entièrement visibles ; sous une taille minimale, la grille défile.
@@ -172,7 +174,8 @@ function showReveal(cards,pack){
   if(best.cardW<minW){const cols=Math.max(2,Math.min(n,Math.floor((w+gap)/(minW+gap))));best={cols,cardW:(w-gap*(cols-1))/cols}}
   grid.style.setProperty('--rv-cols',best.cols);grid.style.setProperty('--rv-w',Math.floor(best.cardW)+'px')};
  window.addEventListener('resize',fit);
- const update=()=>{const n=revealCards.filter(x=>x.classList.contains('flipped')).length;result.textContent=n<revealCards.length?`${n} / ${revealCards.length} cartes révélées`:`${cards.length} cartes ajoutées · +${cards.length*2} XP`;if(n===revealCards.length&&skip){skip.textContent='TOUTES LES CARTES RÉVÉLÉES';skip.disabled=true;skip.classList.add('reveal-skip-done')}};
+ const update=()=>{const n=revealCards.filter(x=>x.classList.contains('flipped')).length;result.textContent=n<revealCards.length?`${n} / ${revealCards.length} cartes révélées`:`${cards.length} cartes ajoutées · +${cards.length*2} XP`;if(n===revealCards.length&&skip){skip.hidden=true}
+  if(n===revealCards.length&&againBtn){againBtn.hidden=false;box.querySelector('a[href="#collection"]')?.classList.replace('btn-gold','btn-outline')}};
  const revealOne=card=>{if(!card||card.classList.contains('flipped'))return;card.classList.add('flipped');card.setAttribute('aria-pressed','true');if(rank(cards[+card.dataset.revealCard])>=2)card.classList.add('rv-burst');update()};
  revealCards.forEach(card=>card.addEventListener('click',()=>revealOne(card)));
  skip?.addEventListener('click',()=>{revealCards.filter(x=>!x.classList.contains('flipped')).forEach((card,k)=>setTimeout(()=>revealOne(card),calm?0:k*110))});
