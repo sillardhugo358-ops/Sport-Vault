@@ -407,20 +407,21 @@ test('cartes : logo de la base qui ne charge pas → repli sur le fichier du dos
 
 test('cartes : bandeau compétition + saison en grand, drapeau rond du pays, ni numéro en filigrane ni texte de nationalité', async () => {
   const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
-  const base = (await server.db.query('SELECT * FROM catalog_cards ORDER BY id LIMIT 1')).rows[0];
+  // Trois cartes de catalogue différentes : la collection regroupe les exemplaires d'une même carte.
+  const bases = (await server.db.query('SELECT id FROM catalog_cards ORDER BY id LIMIT 3 OFFSET 5')).rows;
   await ensureTestClubs(server);
   const lg = (await server.db.query("SELECT c.name,cs.competition_id,cs.season FROM season_clubs sc JOIN competition_seasons cs ON cs.id=sc.season_id JOIN clubs c ON c.id=sc.club_id WHERE cs.competition_id NOT IN ('ligue-des-champions','coupe-du-monde','ligue-des-nations') ORDER BY c.name LIMIT 1")).rows[0];
   const labels = { 'ligue-1': 'LIGUE 1', 'premier-league': 'PREMIER LEAGUE', 'serie-a': 'SERIE A', bundesliga: 'BUNDESLIGA', 'la-liga': 'LA LIGA' };
   const rows = [
-    ['Cartetest Championnat', lg.season, lg.name, 'Spain'],   // nom anglais → drapeau d'Espagne
+    ['Cartetest Championnat', '2015-2016', lg.name, 'Spain'],   // nom anglais → drapeau d'Espagne
     ['Cartetest LDC', 'LDC 2010-11', lg.name, ''],            // Ligue des Champions, nationalité inconnue → pas de drapeau
     ['Cartetest Mondial', '1998', 'France', 'France']         // Coupe du monde : drapeau seul
   ];
-  for (const [name, season, club, nation] of rows) {
+  for (const [k, [name, season, club, nation]] of rows.entries()) {
     await server.db.query(
       `INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,is_limited,acquired_at,source,status,jersey_number)
        VALUES(gen_random_uuid(),$1,$2,$3,$4,'ST',$5,$6,'rare',80,70,70,70,70,70,70,false,$7,'test','owned',9)`,
-      [base.id, uid, season, name, club, nation, new Date(Date.UTC(2099, 0, 1)).toISOString()]);
+      [bases[k].id, uid, season, name, club, nation, new Date(Date.UTC(2099, 0, 1)).toISOString()]);
   }
   try {
     for (const vp of [VIEWPORTS[0], VIEWPORTS[2]]) {
@@ -434,7 +435,7 @@ test('cartes : bandeau compétition + saison en grand, drapeau rond du pays, ni 
         nationText: !!el.querySelector('.v4-nation'), watermark: !!el.querySelector('.v4-wm') }));
       const a = await read('Cartetest Championnat'), b = await read('Cartetest LDC'), c = await read('Cartetest Mondial');
       assert.equal(a.comp, labels[lg.competition_id], vp.name + ' : compétition du championnat');
-      assert.equal(a.season, lg.season, vp.name + ' : saison');
+      assert.equal(a.season, '2015-2016', vp.name + ' : saison');
       assert.equal(a.flag, 'club-logos/selection-espagne.png', vp.name + ' : « Spain » → drapeau d\'Espagne');
       assert.equal(b.comp, 'LIGUE DES CHAMPIONS');
       assert.equal(b.season, '2010-2011', 'préfixe LDC retiré, saison en forme longue');
