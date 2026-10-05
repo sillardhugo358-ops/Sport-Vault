@@ -1,6 +1,6 @@
 # Logos des clubs
 
-Les logos apparaissent **dans l'album** (à côté du nom du club) et **sur les cartes des joueurs** (pastille ronde à droite de la note).
+Les logos apparaissent **dans l'album** (à côté du nom du club) et **sur les cartes des joueurs** (pastilles rondes de part et d'autre de la note : drapeau à gauche, club à droite).
 Un club sans logo s'affiche comme avant (aucun trou).
 
 ## Carte (mise en page du 05/10/2026)

@@ -2,6 +2,8 @@
 
 *État des lieux établi à partir du dépôt au 29/09/2026 (commit `4a2c8e3`). Les points marqués « à vérifier » n'ont pas pu être confirmés depuis le code seul.*
 
+> **Mise à jour du 05/10/2026.** Ce document garde l'état du 29/09 pour l'historique (§ 1, 3, 4) ; l'inventaire du § 2 est à jour. Depuis : `server.js` est réduit à ~16 Ko (routes dans `lib/routes/`, logique dans `lib/`), 210 tests serveur et 24 tests navigateur (CI GitHub), cartes épurées avec drapeau du pays, logo du club, compétition et saison (voir [LOGOS-CLUBS.md](LOGOS-CLUBS.md)), page publique d'état du site `/etat.html` et mémoire dans `/api/health` (voir [EXPLOITATION.md](EXPLOITATION.md)), audit de sécurité ([AUDIT-SECURITE.md](AUDIT-SECURITE.md)).
+
 ## 1. Carte d'identité technique
 
 | Élément | Réalité dans le dépôt |
@@ -21,18 +23,18 @@
 | Domaine | Statut | Détail |
 |---|---|---|
 | Comptes & sessions | ✅ | Inscription, connexion, déconnexion, limites anti-abus (`login_limits`, `registration_limits`) |
-| Catalogue | ✅ | 478 cartes Ligue 1 2026-2027 (`data/footmercato_catalog_*.b64`), fallback de 24 cartes fictives |
+| Catalogue | ✅ | **84 751 cartes** au 05/10/2026 (`/api/health`) : Ligue 1, Premier League, La Liga, Serie A, Bundesliga (2010-11 à 2026-27), Ligue des Champions (1991-92 à 2025-26), Coupe du monde (1930-2026), Ligue des Nations (2019-2025). Fichiers dans `data/`, importés au démarrage (`scripts/import-*.js`, identifiants stables, sans doublon). Voir [data/README.md](../data/README.md) |
 | Collection & album | ✅ | Collection persistante, album par club avec récompense, logos de clubs |
-| Packs | ✅ | Starter / Pro / Legend, tirages côté serveur avec garanties de rareté |
-| Pools | 🟡 | Table `pack_pools` et route `/api/pools/open` présentes — fiabilité (stocks, répartition) à vérifier |
-| Missions | 🟡 | Chaîne de 12 missions déverrouillables + tâches quotidiennes/hebdomadaires (heure de Paris). Pas d'éditeur de missions en admin |
-| Succès / progression | 🟡 | Moteur en place, page Succès, éditeur admin récemment simplifié — ergonomie/aperçu/filtres à finaliser |
+| Packs | ✅ | Starter / Pro / Legend, packs par compétition et par décennie, packs Coupe du monde et Ligue des Nations ; tirages côté serveur avec garanties de rareté ; animation d'ouverture (retournement par le joueur, bouton « ouvrir un autre pack ») |
+| Pools | ✅ | Table `pack_pools`, route `/api/pools/open`, stocks et répartitions fiabilisés et testés (`test/packs-reliability.test.js`) |
+| Missions | ✅ | Catalogue de 100 missions et tirage tournant : 3 par jour, 5 par semaine, 5 par mois (heure de Paris), plus la chaîne de missions déverrouillables ; éditeur de missions en admin (`mission-admin-editor.js`) |
+| Succès / progression | ✅ | 200 succès (`lib/achievements-catalog.js`), moteur de mesure (`lib/achievement-stats.js`), page Succès, éditeur admin avec filtres et aperçu ; classement hebdomadaire et défis |
 | Enchères | ✅ | Création, enchère, annulation, retrait, historique ; palier +10 % et prolongation d'1 min si enchère dans les 30 dernières secondes |
 | Admin | ✅ | Utilisateurs, cartes, compétitions/clubs, packs, marché, journaux, succès |
 | Barème de rareté | ✅ | *Phase 2 :* rareté calculée depuis la note par `lib/rarity.js` (création, modification, import) ; cartes spéciales à rareté manuelle (`rarity_locked`) |
 | Attributs gardiens | ✅ | Affichés PLG, JEU, DÉG, RÉF, VIT, POS ; stockés dans les 6 colonnes communes (correspondance dans [QUALITE-DONNEES.md](QUALITE-DONNEES.md)). *Constat initial erroné corrigé en phase 2.* |
-| Historique Ligue 1 2010-2025 | 🟡 | Données présentes dans `data/` et route d'import protégée par jeton — état réel en production à vérifier |
-| Tableau de bord statistique | 🟡 | Vue d'ensemble admin (`/api/admin/overview`) à enrichir |
+| Historique Ligue 1 2010-2025 | ✅ | Intégré au catalogue et vérifié en production |
+| Tableau de bord statistique | ✅ | Console admin : progression, classement, export CSV (`admin-stats.js`) |
 
 ## 3. Dettes et risques (par priorité)
 
