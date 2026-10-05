@@ -11,7 +11,15 @@ Dans la console Aiven : service PostgreSQL → *Overview* → *Connection inform
 | Variable `DATABASE_URL` du service web Render | *Service URI* en remplaçant `?sslmode=require` par **`?sslmode=no-verify`** |
 | pgAdmin, `psql`, `pg_dump`, `scripts/backup-db.sh` | *Service URI* tel quel (`?sslmode=require`) ; le script accepte aussi `no-verify` |
 
-Pourquoi `no-verify` côté application : avec la version de `pg` utilisée, `sslmode=require` impose la vérification complète du certificat, et le certificat d'Aiven est signé par sa propre autorité, inconnue de Node.js (erreur `self-signed certificate in certificate chain`). `no-verify` garde la connexion chiffrée sans vérifier l'identité du serveur, comme c'était le cas avec la base Render. Amélioration prévue : fournir le *CA certificate* d'Aiven à l'application pour une vérification complète.
+Pourquoi `no-verify` côté application : avec la version de `pg` utilisée, `sslmode=require` impose la vérification complète du certificat, et le certificat d'Aiven est signé par sa propre autorité, inconnue de Node.js (erreur `self-signed certificate in certificate chain`). `no-verify` garde la connexion chiffrée sans vérifier l'identité du serveur, comme c'était le cas avec la base Render. Vérification complète du certificat (disponible depuis le 05/10/2026, `lib/db-ssl.js`) : fournir à l'application le *CA certificate* d'Aiven. **Ce certificat est public, ce n'est pas un secret.**
+
+1. Console Aiven > le service PostgreSQL > *Overview* > *CA certificate* > **Download** (fichier `ca.pem`).
+2. Render > le service web > *Environment* > ajouter la variable **`DATABASE_CA_CERT`** et y coller tout le contenu du fichier (de `-----BEGIN CERTIFICATE-----` à `-----END CERTIFICATE-----`). Les retours à la ligne peuvent être remplacés par `\n`.
+3. Laisser `DATABASE_URL` telle quelle : le paramètre `sslmode` y est ignoré dès que `DATABASE_CA_CERT` est présent (la vérification complète du certificat et du nom du serveur s'applique alors).
+4. Enregistrer : Render redéploie. Contrôle : `production.yml` doit rester vert (« Santé du serveur et de la base »).
+5. **Retour arrière** : supprimer la variable `DATABASE_CA_CERT` et redéployer (retour à `no-verify`).
+
+Si le certificat est faux ou périmé, l'application refuse de se connecter (le déploiement échoue, l'ancienne version reste en ligne) : c'est voulu, une connexion non vérifiée ne doit pas se faire en silence. Les scripts exécutés à la main (`scripts/*.js`) lisent les mêmes variables ; `scripts/backup-db.sh` et pgAdmin utilisent `sslmode=require` comme avant.
 
 Dans pgAdmin (Windows), si l'enregistrement du serveur plante avec `access violation writing 0x0000…`, ajouter dans l'onglet *Parameters* : **GSS encryption mode = disable** et **SSL mode = require**.
 

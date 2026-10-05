@@ -157,7 +157,7 @@ module.exports = { loadCards, importEurope };
 if (require.main === module) {
   if (!process.env.DATABASE_URL) { console.error('DATABASE_URL manquante.'); process.exit(1); }
   const { Pool } = require('pg');
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined, max: 1 });
+  const pool = new Pool(require('../lib/db-ssl').poolConfig({max: 1}));
   importEurope(pool, { force: process.argv.includes('--force') })
     .catch(e => { console.error('[FOOTVAULT] Import Europe error:', e); process.exitCode = 1; })
     .finally(() => pool.end());

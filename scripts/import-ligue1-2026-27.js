@@ -52,7 +52,7 @@ async function run(){
   if(!process.env.DATABASE_URL) throw new Error('DATABASE_URL manquante.');
   const cards=loadCards();
   if(cards.length!==478) throw new Error('Catalogue Ligue 1 Foot Mercato invalide: '+cards.length+' cartes.');
-  const db=new Pool({connectionString:process.env.DATABASE_URL,ssl:process.env.NODE_ENV==='production'?{rejectUnauthorized:false}:undefined,max:2});
+  const db=new Pool(require('../lib/db-ssl').poolConfig({max:2}));
   const client=await db.connect();
   try{
     await client.query('BEGIN');

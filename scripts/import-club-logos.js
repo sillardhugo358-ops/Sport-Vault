@@ -46,7 +46,7 @@ async function main() {
   const dir = args.find(a => !a.startsWith('--'));
   if (!process.env.DATABASE_URL) { console.error('DATABASE_URL manquante.'); process.exit(1); }
   const { Pool } = require('pg');
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined, max: 1 });
+  const pool = new Pool(require('../lib/db-ssl').poolConfig({max: 1}));
   try {
     const clubs = (await pool.query("SELECT id,name,country,COALESCE(logo_url,'') AS logo_url FROM clubs ORDER BY (country='International'),country,name")).rows;
     const have = new Set(fs.existsSync(OUT_DIR) ? fs.readdirSync(OUT_DIR).map(f => f.replace(IMAGE, '')) : []);
