@@ -7,7 +7,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { poolConfig, caCertificate, withoutSslParams } = require('../lib/db-ssl');
+const { poolConfig, caCertificate, withoutSslParams, tlsMode } = require('../lib/db-ssl');
 
 const PEM = '-----BEGIN CERTIFICATE-----\nMIIBszCCAVmgAwIBAgIUTESTTESTTESTTESTTESTTEST\n-----END CERTIFICATE-----\n';
 const URL_NO_VERIFY = 'postgresql://u:p%40ss@db.example.com:12345/app?sslmode=no-verify';
@@ -46,4 +46,10 @@ test('adresse : seuls les paramètres TLS sont retirés', () => {
   assert.equal(withoutSslParams('postgresql://u:p@h:1/d?application_name=fv&sslmode=no-verify'), 'postgresql://u:p@h:1/d?application_name=fv');
   assert.equal(withoutSslParams('postgresql://u:p@h:1/d?uselibpqcompat=true&sslmode=require&connect_timeout=5'), 'postgresql://u:p@h:1/d?connect_timeout=5');
   assert.equal(withoutSslParams('postgresql://u:p@h:1/d'), 'postgresql://u:p@h:1/d');
+});
+
+test('mode TLS annoncé : verified avec le certificat, unverified en production sans certificat, off ailleurs', () => {
+  assert.equal(tlsMode({ DATABASE_URL: URL_NO_VERIFY, DATABASE_CA_CERT: PEM, NODE_ENV: 'production' }), 'verified');
+  assert.equal(tlsMode({ DATABASE_URL: URL_NO_VERIFY, NODE_ENV: 'production' }), 'unverified');
+  assert.equal(tlsMode({ DATABASE_URL: 'postgresql://localhost/x' }), 'off');
 });
