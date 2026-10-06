@@ -2530,3 +2530,17 @@ hr{border-color:#1d3d63}
 .vault-streak{margin:10px 0 0;font:800 11px var(--body);letter-spacing:.06em;color:var(--gold2)}
 
 .empty h1{font:900 28px var(--head);margin:0 0 10px;text-transform:uppercase}
+
+/* Sets thématiques (Vault, app.js ; éditeur : set-admin-editor.js). */
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.set-card .set-cards{margin:4px 0 10px}
+.set-card .set-cards summary{display:flex;align-items:center;min-height:44px;cursor:pointer;color:var(--gold2);font:800 11px var(--body);letter-spacing:1px}
+.set-card .set-cards ul{list-style:none;margin:6px 0 0;padding:0;max-height:220px;overflow:auto;display:grid;gap:4px;font-size:12px}
+.set-card .set-cards li.is-missing{opacity:.6}
+.set-card .set-cards li small{color:var(--muted)}
+.set-card .set-cap-note{color:var(--gold2);font-size:12px;font-weight:700;margin:0 0 10px}
+.set-editor-results{display:grid;gap:6px;font-size:12px}
+.set-editor-result,.set-editor-chosen li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}
+.set-editor-chosen{list-style:none;margin:6px 0 0;padding:0;max-height:200px;overflow:auto}
+.set-editor-result small,.set-editor-chosen small{color:var(--muted)}
+.set-editor-modal .field-error{display:block}
