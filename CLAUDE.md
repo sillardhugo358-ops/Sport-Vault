@@ -232,7 +232,7 @@ schémas ou de résultats de test.
 
 Contexte détaillé : **`docs/REPRISE.md`** (état exact, décisions, pièges, reste à faire) et **`docs/PROMPT-REPRISE.md`** (message de démarrage). Rapports : `docs/FOOTVAULT_Rapport_*.pdf`. Ce qui suit est le résumé à toujours appliquer.
 
-**État.** `main` est à jour avec les PR #84 à #102 (accessibilité, mobile, série de connexion quotidienne, découpage de `app.js`, mode TLS annoncé). Dernière version prouvée en ligne : `2854355094c9` (#101). Point ouvert : le certificat Aiven n'est pas pris en compte (`/api/health` → `databaseTls: "unverified"`). **Cause trouvée (run n°65) : la variable a été créée sur Render sous le nom `DATABASE_CA_SERT` au lieu de `DATABASE_CA_CERT`** ; à renommer, puis relancer `production.yml` et confirmer `verified`.
+**État.** `main` est à jour avec les PR #84 à #103 (accessibilité, mobile, série de connexion quotidienne, découpage de `app.js`, diagnostic TLS, fichiers de reprise) ; PR #104 en cours (code d'erreur de connexion à la base au démarrage). Point ouvert : le certificat Aiven. La variable était mal nommée `DATABASE_CA_SERT` ; la renommer en `DATABASE_CA_CERT` a **fait tomber le site de 19 h 53 à 20 h 02 UTC le 06/10** (la vérification complète du certificat échoue au démarrage, cause exacte inconnue) ; retour arrière fait, site rétabli. **Ne jamais redemander ce renommage sans suivre la procédure sûre de `docs/REPRISE.md` §7** (certificat = « CA certificate » du service Aiven, test `openssl` préalable, surveillance de `/api/health`, retour arrière immédiat).
 
 **Règles de collaboration (consignes permanentes du propriétaire).**
 - Répondre en français, concis ; dire ce qui a été testé et ce qui ne l'a pas été.
