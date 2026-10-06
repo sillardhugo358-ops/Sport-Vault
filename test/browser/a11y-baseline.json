@@ -1,21 +1,12 @@
 {
  "mobile|admin|cible-tactile-44px": 8,
- "mobile|admin|clic-sans-semantique": 1,
  "mobile|album|cible-tactile-44px": 3,
  "mobile|classement|cible-tactile-44px": 5,
- "mobile|collection|champ-sans-etiquette": 2,
  "mobile|collection|cible-tactile-44px": 11,
  "mobile|home|cible-tactile-44px": 8,
- "mobile|market|champ-sans-etiquette": 3,
  "mobile|market|cible-tactile-44px": 12,
  "mobile|packs|cible-tactile-44px": 20,
  "mobile|profil|cible-tactile-44px": 9,
- "mobile|successes|cible-tactile-44px": 28,
- "mobile|vault|cible-tactile-44px": 20,
- "mobile|vault|h1-non-unique": 1,
- "ordinateur|admin|clic-sans-semantique": 1,
- "ordinateur|collection|champ-sans-etiquette": 2,
- "ordinateur|market|champ-sans-etiquette": 3,
- "ordinateur|packs|champ-sans-etiquette": 2,
- "ordinateur|vault|h1-non-unique": 1
+ "mobile|successes|cible-tactile-44px": 27,
+ "mobile|vault|cible-tactile-44px": 20
 }

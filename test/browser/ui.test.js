@@ -75,11 +75,15 @@ test('mobile : le menu s\'ouvre et mène aux pages', async () => {
   await page.setViewportSize({ width: 390, height: 844 });
   await visit('home');
   assert.equal(await page.isVisible('#nav a[data-route="packs"]'), false);
+  assert.equal(await page.getAttribute('#menu', 'aria-expanded'), 'false');
+  assert.equal(await page.getAttribute('#menu', 'aria-controls'), 'nav');
   await page.click('#menu');
   assert.equal(await page.isVisible('#nav a[data-route="packs"]'), true);
+  assert.equal(await page.getAttribute('#menu', 'aria-expanded'), 'true', 'menu ouvert annoncé');
   await page.click('#nav a[data-route="packs"]');
   await page.waitForFunction(() => location.hash === '#packs');
   assert.equal(await page.isVisible('#nav a[data-route="packs"]'), false);
+  assert.equal(await page.getAttribute('#menu', 'aria-expanded'), 'false', 'menu refermé annoncé');
 });
 
 test('cloche : visible sur mobile et ordinateur, panneau ouvert puis fermé', async () => {

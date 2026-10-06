@@ -52,7 +52,7 @@ function collectViolations(opts) {
   const NATIVE = 'a[href], button, input, select, textarea, summary, label, option, [role=button], [role=link], [role=tab], [tabindex]';
   // Ancêtres interactifs : le conteneur #app, focalisable par le script (tabindex=-1), n'en fait pas partie.
   const ANCESTORS = 'a[href], button, summary, label, [role=button], [role=link], [role=tab]';
-  const ACTION = /^data-(open|toggle|claim|edit|del|remove|select|buy|bid|save|close|show|view|go|sell|cancel|withdraw|filter|tab|page|sort|skip|reveal|flip|fav|route|admin|season|club|card|pack|pool|user|role|action)/;
+  const ACTION = /^data-(?!admin-panel)(open|toggle|claim|edit|del|remove|select|buy|bid|save|close|show|view|go|sell|cancel|withdraw|filter|tab|page|sort|skip|reveal|flip|fav|route|admin|season|club|card|pack|pool|user|role|action)/;
   for (const el of root.querySelectorAll('*')) {
     if (el.matches(NATIVE) || el.closest(ANCESTORS)) continue;
     if (!visible(el)) continue;

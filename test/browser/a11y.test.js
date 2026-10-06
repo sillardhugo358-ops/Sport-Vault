@@ -108,6 +108,8 @@ test('accessibilité : aucune régression par rapport à la base connue', () => 
   const total = {};
   for (const [key, n] of Object.entries(found)) { const rule = key.split('|')[2]; total[rule] = (total[rule] || 0) + n; }
   console.log('Défauts d\'accessibilité par règle (toutes pages et tailles) :', JSON.stringify(total));
+  const remaining = Object.keys(found).filter(k => !k.endsWith('|cible-tactile-44px')).sort().map(k => `${k} : ${found[k]} ex. ${(samples[k] || []).join(' ; ')}`);
+  if (remaining.length) console.log('Défauts restants (hors cibles tactiles) :\n  ' + remaining.join('\n  '));
   if (improved.length) console.log('En amélioration (relancer avec A11Y_UPDATE=1 pour resserrer la base) :\n  ' + improved.join('\n  '));
   assert.deepEqual(regressions, [], 'nouveaux défauts d\'accessibilité');
 });
