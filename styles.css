@@ -2519,6 +2519,7 @@ hr{border-color:#1d3d63}
 /* Mobile (A5) : cibles tactiles d'au moins 44 px et marges des écrans à encoches */
 @media(max-width:760px){
   .btn,.filter,.success-filter-btn,.shop-filter-toggle,.shop-all-link,.menu,.notif-bell,.brand,.nav a,button.active,a.active{min-height:44px;min-width:44px}
+  .auth-switch button{min-height:44px;padding:0 6px}
   a.btn,.btn-gold,.btn-outline,.btn-ghost{display:inline-flex;align-items:center;justify-content:center}
   .notif-bell,.menu{display:inline-flex;align-items:center;justify-content:center}
   .collection-search,.collection-sort,.auction-search,.auction-select,#shopSearch,#successSearch,#successSort{min-height:44px}
@@ -2527,3 +2528,5 @@ hr{border-color:#1d3d63}
 }
 
 .vault-streak{margin:10px 0 0;font:800 11px var(--body);letter-spacing:.06em;color:var(--gold2)}
+
+.empty h1{font:900 28px var(--head);margin:0 0 10px;text-transform:uppercase}

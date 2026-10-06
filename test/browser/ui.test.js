@@ -183,6 +183,18 @@ test('déconnecté : les pages privées renvoient vers la connexion', async () =
   await anon.close();
 });
 
+test('déconnecté : l\'administration refusée a un titre de page et un seul h1', async () => {
+  const anon = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await anon.goto(server.base + '/#admin');
+  await anon.waitForSelector('#app .empty h1', { timeout: 15000 });
+  assert.equal(await anon.evaluate(() => document.querySelectorAll('h1').length), 1);
+  assert.equal(await anon.title(), 'Administration — FOOTVAULT');
+  await anon.goto(server.base + '/#auth');
+  await anon.waitForSelector('#switchAuth');
+  assert.ok((await (await anon.$('#switchAuth')).boundingBox()).height >= 43.5, 'bouton « Créer un compte » assez haut');
+  await anon.close();
+});
+
 test('marché : prix de marché sur la fiche carte, ventes récentes et alertes de prix', async () => {
   const card = (await server.db.query('SELECT id,name FROM catalog_cards ORDER BY id LIMIT 1')).rows[0];
   for (const vp of [VIEWPORTS[0], VIEWPORTS[2]]) {
