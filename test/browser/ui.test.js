@@ -80,6 +80,11 @@ test('mobile : le menu s\'ouvre et mène aux pages', async () => {
   await page.click('#menu');
   assert.equal(await page.isVisible('#nav a[data-route="packs"]'), true);
   assert.equal(await page.getAttribute('#menu', 'aria-expanded'), 'true', 'menu ouvert annoncé');
+  // Habillage : fond bleu nuit opaque, lignes d'au moins 44 px, « Échanges » présent, page active repérée.
+  const menu = await page.evaluate(() => ({ bg: getComputedStyle(document.querySelector('#nav')).backgroundColor, links: [...document.querySelectorAll('#nav a')].filter(a => a.getClientRects().length).map(a => ({ t: a.textContent.trim(), h: a.getBoundingClientRect().height })) }));
+  assert.equal(menu.bg, 'rgb(7, 24, 46)');
+  assert.ok(menu.links.some(l => l.t === 'Échanges'), 'lien Échanges dans le menu');
+  assert.ok(menu.links.every(l => l.h >= 44), 'lignes du menu : ' + JSON.stringify(menu.links.filter(l => l.h < 44)));
   await page.click('#nav a[data-route="packs"]');
   await page.waitForFunction(() => location.hash === '#packs');
   assert.equal(await page.isVisible('#nav a[data-route="packs"]'), false);

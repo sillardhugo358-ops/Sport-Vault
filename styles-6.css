@@ -389,3 +389,21 @@
 .trade-offer-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .trade-empty{color:var(--muted);font-size:13px}
 @media(max-width:760px){.trade-columns{grid-template-columns:1fr}.trade-code{font-size:28px}}
+
+/* Menu mobile : retouche visuelle (≤ 760 px). Remplace le tiroir noir de « MOBILE MENU FIX » (styles-2.css, !important) par le bleu nuit du site :
+   lignes centrées de 48 px, page active repérée par un filet or, bloc compte en carte, boutons homogènes. Le fond reste opaque (rien ne transparaît). */
+@media(max-width:760px){
+  .nav,.nav::before{background:#07182e !important;background-color:#07182e !important}
+  .nav{top:76px !important;gap:4px !important;padding:10px !important;border:1px solid #1e4067 !important;border-radius:16px !important;max-height:calc(100dvh - 92px);box-shadow:0 24px 60px rgba(0,0,0,.6) !important}
+  .nav a{display:flex;align-items:center;min-height:48px;padding:0 16px;border:0;border-radius:12px;background:transparent;font-size:13px;letter-spacing:1px}
+  .nav a.active{background:#112747;color:#fff;box-shadow:inset 3px 0 0 var(--gold2)}
+  .nav .mobile-account{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 0;padding:14px;border:1px solid #1e4067;border-radius:14px;background:#0b2140 !important}
+  .nav .mobile-account>*{min-width:0}
+  .nav .mobile-account-balance{grid-column:1/-1;margin:0 0 4px}
+  .nav .mobile-account .btn{justify-content:center;min-height:48px;width:100%;padding:0 12px;border-radius:12px;font-size:12px;letter-spacing:1px;text-align:center}
+  .nav .mobile-account .mobile-profile{background:#112747;border:1px solid #2a578c}
+  .nav .mobile-account .mobile-profile:has(+ .mobile-logout){grid-column:1/-1}
+  .nav .mobile-account .mobile-admin{background:linear-gradient(135deg,#d5b06a,#f0d38a);border:1px solid #e2c47c;color:#111}
+  .nav .mobile-account .mobile-logout{grid-column:1/-1;background:transparent;border:1px solid var(--danger);color:var(--danger)}
+  .nav .mobile-account-guest .btn{width:100%}
+}
