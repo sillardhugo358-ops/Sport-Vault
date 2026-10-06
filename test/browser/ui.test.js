@@ -245,6 +245,41 @@ test('marché (fv-market.js) : créer une enchère puis l\'annuler par les fenê
   assert.deepEqual(errors, []);
 });
 
+test('sets thématiques : éditeur admin (recherche de cartes) puis récupération au Vault', async () => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const cards = (await server.db.query('SELECT id,name FROM catalog_cards ORDER BY id LIMIT 3')).rows;
+  await visit('admin');
+  await page.click('[data-admin-tab="successes"]');
+  await page.waitForSelector('#adminSetBody');
+  await page.waitForFunction(() => /Aucun set/.test(document.querySelector('#adminSetBody').innerText));
+  await page.click('[data-new-set]');
+  await page.click('[data-set-save]');
+  assert.match(await page.textContent('[data-error="name"]'), /Nom/);
+  assert.match(await page.textContent('[data-error="cardIds"]'), /2 à 100/);
+  await page.fill('input[name="name"]', 'Trio Test');
+  await page.fill('textarea[name="description"]', 'Trois cartes de test.');
+  for (const c of cards) {
+    await page.fill('input[name="search"]', c.name);
+    await page.waitForSelector('#setEditorResults [data-set-add]:not([disabled])', { timeout: 10000 });
+    await page.click('#setEditorResults [data-set-add]:not([disabled])');
+  }
+  assert.match(await page.textContent('#setEditorCount'), /3 cartes.*500 FC/);
+  await page.click('[data-set-save]');
+  await page.waitForFunction(() => /Trio Test/.test(document.querySelector('#adminSetBody')?.innerText || ''), null, { timeout: 15000 });
+  const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
+  for (const c of cards) {
+    await server.db.query(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,source,status)
+      SELECT gen_random_uuid(),id,$2,season,name,position,club,nation,rarity,'test','owned' FROM catalog_cards WHERE id=$1`, [c.id, uid]);
+  }
+  await visit('vault');
+  await page.waitForSelector('[data-set-claim]');
+  assert.match(await page.textContent('.set-section'), /Trio Test/);
+  assert.match(await page.textContent('.set-section'), /3\/3/);
+  await page.click('[data-set-claim]');
+  await page.waitForFunction(() => /RÉCUPÉRÉ/.test(document.querySelector('.set-section')?.innerText || ''), null, { timeout: 15000 });
+  assert.deepEqual(errors, []);
+});
+
 test('mobile : filtres des packs repliés, dépliables ; onglets du marché exclusifs', async () => {
   await page.setViewportSize({ width: 390, height: 844 });
   await visit('packs');
