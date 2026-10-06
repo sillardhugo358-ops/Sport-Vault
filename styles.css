@@ -1120,7 +1120,7 @@ hr{border-color:#1d3d63}
 .vault-avatar{display:grid;place-items:center;flex:none;width:62px;height:62px;border:2px solid #3e9dff;border-radius:50%;background:linear-gradient(145deg,#6c37d5,#172b7b);color:#fff;font:900 23px var(--head);box-shadow:0 0 24px rgba(58,143,255,.22)}
 .vault-profile-copy{min-width:0;flex:1}
 .vault-profile-copy .eyebrow{margin-bottom:5px;color:#80bdff}
-.vault-profile-copy h1{margin:0;color:#f3f7ff;font:900 34px var(--head);text-transform:uppercase;overflow-wrap:anywhere}
+.vault-profile-copy :is(h1,h2){margin:0;color:#f3f7ff;font:900 34px var(--head);text-transform:uppercase;overflow-wrap:anywhere}
 .vault-profile-copy>span{display:block;margin-top:5px;color:#8daed1;font-size:9px;font-weight:800;letter-spacing:1px}
 .vault-profile-badge{display:grid;place-items:center;width:72px;height:72px;border:2px solid #e8c24e;color:#f4d76a;font:900 28px var(--head);clip-path:polygon(10% 0,90% 0,83% 80%,50% 100%,17% 80%);background:linear-gradient(145deg,rgba(232,194,78,.16),rgba(7,25,48,.8))}
 .vault-profile-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;padding:13px 16px}
@@ -1140,7 +1140,7 @@ hr{border-color:#1d3d63}
 .vault-recent-cards .empty{grid-column:1/-1}
 @media(max-width:1050px){.album-competitions-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.album-showcase{grid-template-columns:minmax(0,1fr) 130px 250px}.album-showcase-trophy{width:125px;height:145px}.vault-recent-cards{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:760px){.collection-showcase{padding:26px 22px;min-height:180px}.collection-showcase-mark{margin-right:0}.collection-showcase-mark span{width:70px;height:90px;font-size:34px}.collection-showcase-mark b{display:none}.collection-rarity-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.album-showcase{grid-template-columns:minmax(0,1fr) 100px;gap:12px;padding:24px 20px}.album-showcase-trophy{width:95px;height:120px}.album-showcase-trophy span{font-size:48px}.album-global-progress{grid-column:1/-1}.album-competitions-grid{grid-template-columns:1fr}.album-comp-card{grid-template-columns:105px minmax(0,1fr)}.vault-profile-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.vault-profile-links{grid-template-columns:repeat(2,minmax(0,1fr))}.vault-recent-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:480px){.collection-showcase-mark{display:none}.collection-showcase h1,.album-showcase h1{font-size:48px}.collection-rarity-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.album-showcase{grid-template-columns:1fr}.album-showcase-trophy{display:none}.album-heading-row h2{font-size:28px}.album-comp-card{grid-template-columns:86px minmax(0,1fr)}.album-comp-body{padding:12px}.album-comp-body h2{font-size:22px}.vault-profile-main{padding:18px 15px}.vault-profile-badge{width:52px;height:55px;font-size:21px}.vault-profile-copy h1{font-size:26px}.vault-profile-stats{padding:10px}.vault-profile-stats strong{font-size:22px}.vault-profile-links{padding:0 10px 12px}.vault-recent-panel{padding:13px}.vault-recent-head h2{font-size:23px}.vault-recent-cards{gap:8px}}
+@media(max-width:480px){.collection-showcase-mark{display:none}.collection-showcase h1,.album-showcase h1{font-size:48px}.collection-rarity-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.album-showcase{grid-template-columns:1fr}.album-showcase-trophy{display:none}.album-heading-row h2{font-size:28px}.album-comp-card{grid-template-columns:86px minmax(0,1fr)}.album-comp-body{padding:12px}.album-comp-body h2{font-size:22px}.vault-profile-main{padding:18px 15px}.vault-profile-badge{width:52px;height:55px;font-size:21px}.vault-profile-copy :is(h1,h2){font-size:26px}.vault-profile-stats{padding:10px}.vault-profile-stats strong{font-size:22px}.vault-profile-links{padding:0 10px 12px}.vault-recent-panel{padding:13px}.vault-recent-head h2{font-size:23px}.vault-recent-cards{gap:8px}}
 
 
 /* ALBUM — saisons redesign */
@@ -2204,7 +2204,7 @@ hr{border-color:#1d3d63}
 @media(max-width:560px){
  .vault-profile-main{flex-wrap:wrap;gap:12px 14px;padding:18px 16px 14px}
  .vault-profile-badge{display:none}
- .vault-profile-copy h1{font-size:28px;overflow-wrap:normal;word-break:normal}
+ .vault-profile-copy :is(h1,h2){font-size:28px;overflow-wrap:normal;word-break:normal}
  .vault-profile-link{order:3;flex:1 1 100%;justify-content:center;text-align:center}
 }
 
