@@ -1,0 +1,33 @@
+// Cartes et logos (Q3) : rendu d'une carte (cardMarkup, cardLink), logos de clubs et drapeaux de pays, compétition et saison affichées, attributs.
+// Chargé après fv-core.js et AVANT app.js : publie ses éléments dans FVC.core.
+(()=>{
+const FVC=window.FVC=window.FVC||{};FVC.core=FVC.core||{};
+const {api,esc}=FVC.core;
+const render=(...a)=>FVC.core.render(...a);
+// Carte joueur v4 (spec « Refonte des cartes joueur v4 », styles dans cards-v4.css) : 6 attributs sur la
+// carte (libellés gardien pour GK), filigrane du numéro masqué s'il manque, effets par rareté.
+const CARD_V4_STATS={field:[['VIT','pace'],['DEF','defending'],['TIR','shooting'],['PHY','physical'],['PAS','passing'],['DRI','dribbling']],gk:[['PLG','shooting'],['RÉF','defending'],['JEU','passing'],['POS','physical'],['DÉG','dribbling'],['VIT','pace']]};
+// Logos des clubs (GET /api/club-logos, chargé une fois au démarrage) : pastille ronde sur la carte quand le club a un logo.
+let CLUB_LOGOS={logos:{},fallback:{},flags:{},nations:{},leagues:{},aliases:{}};
+// Logo qui ne charge pas : une seule tentative avec le fichier du dossier club-logos/, sinon la pastille disparaît (le drapeau n'a pas de repli).
+document.addEventListener('error',e=>{const img=e.target;if(!img||img.tagName!=='IMG')return;if(img.classList.contains('v4-flag-badge')){img.remove();return}if(!img.classList.contains('v4-club-badge'))return;const fb=CLUB_LOGOS.fallback[img.dataset.club||''];if(fb&&!img.dataset.fb&&img.getAttribute('src')!==fb){img.dataset.fb='1';img.src=fb}else img.remove()},true);
+function normText(name){return String(name||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'')}
+function clubLogoKey(name){const n=normText(name);return CLUB_LOGOS.aliases[n]||n}
+function clubLogoUrl(name){return CLUB_LOGOS.logos[clubLogoKey(name)]||''}
+// Nationalité : clé = nom français normalisé (les variantes anglaises et les codes sont ramenés par le serveur).
+function nationKey(name){const n=normText(name);return CLUB_LOGOS.nations[n]||n}
+function nationFlagUrl(name){return CLUB_LOGOS.flags[nationKey(name)]||''}
+const COMPETITION_LABELS={'ligue-1':'LIGUE 1','premier-league':'PREMIER LEAGUE','serie-a':'SERIE A','bundesliga':'BUNDESLIGA','la-liga':'LA LIGA','ligue-des-champions':'LIGUE DES CHAMPIONS','coupe-du-monde':'COUPE DU MONDE','ligue-des-nations':'LIGUE DES NATIONS'};
+// Compétition d'une carte, déduite de sa saison et de son club : « LDC … » = Ligue des Champions, année seule = Coupe du monde,
+// AAAA-AAAA avec club = nation = Ligue des Nations, sinon le championnat du club (table envoyée par le serveur). Vide si inconnue.
+function cardCompetition(c){const s=String(c.season||'');if(/^LDC\b/i.test(s))return'ligue-des-champions';if(/^\d{4}$/.test(s))return'coupe-du-monde';if(/^\d{4}-\d{4}$/.test(s)&&nationKey(c.club)===nationKey(c.nation))return'ligue-des-nations';return CLUB_LOGOS.leagues[clubLogoKey(c.club)]||''}
+// Saison affichée : sans le préfixe « LDC » (la compétition est écrite à côté) et en forme longue (1993-94 → 1993-1994).
+function cardSeasonLabel(season){let s=String(season||'').replace(/^LDC\s*/i,'').trim();const m=/^(\d{4})-(\d{2})$/.exec(s);if(m){const a=+m[1];let b=Math.floor(a/100)*100+(+m[2]);if(b<=a)b+=100;s=a+'-'+b}return s}
+async function loadClubLogos(){try{const d=await api('/api/club-logos');if(d&&d.logos){CLUB_LOGOS={logos:d.logos,fallback:d.fallback||{},flags:d.flags||{},nations:d.nations||{},leagues:d.leagues||{},aliases:d.aliases||{}};return true}}catch{}return false}
+// Serveur qui démarre (503) : la page s'affiche sans pastilles, puis réessaie 3 fois (2 s, 4 s, 8 s) et se redessine dès que les logos arrivent.
+function retryClubLogos(){let n=0;const go=async()=>{if(++n>3)return;await new Promise(r=>setTimeout(r,2000*2**(n-1)));if(await loadClubLogos())render();else go()};go()}
+function cardMarkup(c,small=false){const rarity=['common','rare','epic','legendary','icon'].includes(String(c.rarity))?String(c.rarity):'common',limited=Boolean(c.isLimited),stats=CARD_V4_STATS[String(c.position).toUpperCase()==='GK'?'gk':'field'].map(([k,f])=>`<div><span>${k}</span><b>${Number(c[f]||0)||'—'}</b></div>`).join(''),icon=rarity==='icon',comp=cardCompetition(c),compLabel=COMPETITION_LABELS[comp]||'',national=comp==='coupe-du-monde'||comp==='ligue-des-nations',flag=nationFlagUrl(c.nation),logo=national?'':clubLogoUrl(c.club);return `<article class="tcg-card v4 rarity-${rarity}"><div class="v4-frame">${icon?'<div class="v4-layer v4-holo"></div><div class="v4-layer v4-grain"></div>':'<div class="v4-layer v4-pattern"></div><div class="v4-layer v4-rivets"></div><div class="v4-layer v4-sheen"></div>'}<div class="v4-layer v4-vignette"></div><div class="v4-inner"></div></div>${icon?'<div class="v4-icon-border"></div>':''}<div class="v4-face"><div class="v4-banner"><div class="v4-banner-text">${compLabel?`<span class="v4-comp${compLabel.length>15?' long':''}">${esc(compLabel)}</span>`:''}<span class="v4-season">${esc(cardSeasonLabel(c.season))}</span></div><span class="v4-pos">${esc(c.position)}</span></div><div class="v4-hero"><span class="v4-slot">${flag?`<img class="v4-flag-badge" src="${esc(flag)}" alt="${esc(c.nation)}" title="${esc(c.nation)}" loading="lazy" decoding="async">`:''}</span><div class="v4-ovr">${Number(c.ovr||0)||'—'}<small>OVR</small></div><span class="v4-slot">${logo?`<img class="v4-club-badge" src="${esc(logo)}" data-club="${esc(clubLogoKey(c.club))}" alt="" loading="lazy" decoding="async">`:''}</span></div><div class="v4-name-zone"><span class="v4-club">${esc(c.club)}</span><h3 class="v4-name">${esc(c.name)}</h3><div class="v4-stats">${stats}</div></div><div class="v4-foot"><span class="v4-rarity">${esc(c.rarityLabel||rarity.toUpperCase())}${limited?' · '+esc(c.serialLabel||'LIMITED'):''}</span><span class="v4-brand">FOOTVAULT</span></div></div></article>`}
+function cardLink(c){const search=[c.name,c.club,c.nation,c.position,c.rarityLabel].filter(Boolean).join(" ").toLowerCase();return `<a class="card-link" data-collection-card-search="${esc(search)}" href="#card?id=${encodeURIComponent(c.instanceId)}">${cardMarkup(c)}</a>`}
+function cardStatDefinitions(position=''){return String(position).toUpperCase()==='GK'?[['Plongeon','shooting'],['Jeu à la main','passing'],['Dégagement','dribbling'],['Réflexes','defending'],['Vitesse','pace'],['Placement','physical']]:[['Vitesse','pace'],['Tir','shooting'],['Passe','passing'],['Dribble','dribbling'],['Défense','defending'],['Physique','physical']];}
+Object.assign(FVC.core,{cardLink,cardMarkup,cardStatDefinitions,loadClubLogos,retryClubLogos});
+})();
