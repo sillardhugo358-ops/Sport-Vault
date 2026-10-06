@@ -7,7 +7,8 @@
     "start": "node ligue1-launcher.js",
     "test": "node --test test/*.test.js",
     "test:browser": "node --test test/browser/*.test.js",
-    "check": "node scripts/check-identifiers.js server.js security-bootstrap.js ligue1-launcher.js scripts/*.js lib/*.js"
+    "check": "node scripts/check-identifiers.js server.js security-bootstrap.js ligue1-launcher.js scripts/*.js lib/*.js",
+    "test:a11y": "node --test test/browser/a11y.test.js"
   },
   "engines": {
     "node": ">=18"
