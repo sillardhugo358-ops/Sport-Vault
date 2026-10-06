@@ -37,6 +37,71 @@ test('bonus quotidien : de nouveau disponible le lendemain', async () => {
   assert.equal(await coinsOf(p), 1300);
 });
 
+// Série de connexion : +10 FC par jour de série (plafonné à +100), paliers 7 et 30 jours, remise à zéro après un jour manqué.
+const setStreak = (p, days, streak) => server.db.query(`UPDATE users SET daily_claimed_at=now()-interval '${days} days', daily_streak=$2, best_streak=$2 WHERE id=$1`, [p.user.id, streak]);
+const streakOf = async p => { const u = await userRow(server, p.user.id); return { streak: Number(u.daily_streak), best: Number(u.best_streak) }; };
+
+test('série de connexion : premier jour 150 FC, jour suivant +10 FC', async () => {
+  const p = await newPlayer(server, 'Serie1');
+  assert.equal((await p.post('/api/rewards/daily')).status, 200);
+  assert.deepEqual(await streakOf(p), { streak: 1, best: 1 });
+  await setStreak(p, 1, 3);
+  const r = await p.post('/api/rewards/daily');
+  assert.equal(r.status, 200);
+  assert.equal(r.body.reward.coins, 180);
+  assert.equal(r.body.streak, 4);
+  assert.equal(await coinsOf(p), 1000 + 150 + 180);
+  assert.deepEqual(await streakOf(p), { streak: 4, best: 4 });
+});
+
+test('série de connexion : bonus plafonné à +100 FC, palier de 7 jours à +500 FC', async () => {
+  const capped = await newPlayer(server, 'SerieMax');
+  await setStreak(capped, 1, 20);
+  assert.equal((await capped.post('/api/rewards/daily')).body.reward.coins, 250);
+  const seven = await newPlayer(server, 'SerieSept');
+  await setStreak(seven, 1, 6);
+  const r = await seven.post('/api/rewards/daily');
+  assert.equal(r.body.reward.coins, 150 + 60 + 500);
+  assert.equal(r.body.reward.milestone, 500);
+  const thirty = await newPlayer(server, 'SerieTrente');
+  await setStreak(thirty, 1, 29);
+  assert.equal((await thirty.post('/api/rewards/daily')).body.reward.coins, 150 + 100 + 2000);
+});
+
+test('série de connexion : remise à zéro après un jour manqué, record conservé', async () => {
+  const p = await newPlayer(server, 'SerieCoupee');
+  await setStreak(p, 2, 5);
+  const r = await p.post('/api/rewards/daily');
+  assert.equal(r.body.reward.coins, 150);
+  assert.deepEqual(await streakOf(p), { streak: 1, best: 5 });
+});
+
+test('série de connexion : 10 demandes simultanées, un seul palier accordé', async () => {
+  const p = await newPlayer(server, 'SerieRafale');
+  await setStreak(p, 1, 6);
+  const results = await Promise.all(Array.from({ length: 10 }, () => p.post('/api/rewards/daily')));
+  assert.equal(results.filter(r => r.status === 200).length, 1);
+  assert.equal(await coinsOf(p), 1000 + 710);
+  assert.equal((await streakOf(p)).streak, 7);
+});
+
+test('série de connexion : la progression annonce la série et la prochaine récompense', async () => {
+  const p = await newPlayer(server, 'SerieVue');
+  await setStreak(p, 1, 6);
+  let d = (await p.get('/api/progression')).body.daily;
+  assert.equal(d.claimed, false);
+  assert.equal(d.streak, 6);
+  assert.equal(d.reward.coins, 710);
+  await p.post('/api/rewards/daily');
+  d = (await p.get('/api/progression')).body.daily;
+  assert.equal(d.claimed, true);
+  assert.equal(d.streak, 7);
+  await setStreak(p, 3, 7);
+  d = (await p.get('/api/progression')).body.daily;
+  assert.equal(d.streak, 0, 'série interrompue');
+  assert.equal(d.reward.coins, 150);
+});
+
 test('mission : non terminée refusée, terminée accordée une fois', async () => {
   const p = await newPlayer(server, 'Missionnaire');
   // 3 cartes de bienvenue : « Première collection » (5 cartes) pas encore atteinte.
