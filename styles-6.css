@@ -1,0 +1,391 @@
+/* Corrections visuelles, identité FOOTVAULT, ouverture de pack, accessibilité, mobile, sets, échanges (6/6). L'ordre des fichiers (styles.css à styles-6.css) est celui de la cascade : ne pas l'inverser. */
+/* ===== Visuels : fondations et corrections (2026-09-30) ===== */
+/* L'attribut hidden l'emporte toujours (onglets du marché, panneaux masqués). */
+[hidden]{display:none!important}
+/* Focus clavier visible partout, sans cadre au clic souris. */
+:is(a,button,input,select,textarea,[tabindex]):focus-visible{outline:none;box-shadow:var(--focus);border-radius:8px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* Bouton de déconnexion : icône seule quand la place manque (761-1520 px). */
+.header-logout svg{display:none;width:18px;height:18px}
+@media(min-width:761px) and (max-width:1520px){
+ .header-logout{display:grid;place-items:center;width:42px;height:42px;padding:0}
+ .header-logout svg{display:block}
+ .header-logout span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+ .header-wallet{min-width:0}
+ .nav{gap:0}
+ .nav a{padding:10px 11px;font-size:11px}
+}
+@media(min-width:761px) and (max-width:1100px){.nav a{padding:9px 8px;font-size:10px}}
+
+/* Répartition des raretés (Collection) : couleur de chaque rareté. */
+.collection-rarity-mini{border-left:3px solid var(--rc,#1a3b60)}
+.collection-rarity-mini em{background:var(--rc,#62baff)}
+.collection-rarity-mini.is-common{--rc:var(--r-common)}.collection-rarity-mini.is-rare{--rc:var(--r-rare)}.collection-rarity-mini.is-epic{--rc:var(--r-epic)}.collection-rarity-mini.is-legendary{--rc:var(--r-legendary)}
+.collection-rarity-mini.is-icon{border-left-color:#f3a6ff}.collection-rarity-mini.is-icon em{background:var(--r-icon)}
+
+/* Mon Vault sur mobile : le pseudo garde sa largeur (plus de « MON VAU LT »). */
+@media(max-width:560px){
+ .vault-profile-main{flex-wrap:wrap;gap:12px 14px;padding:18px 16px 14px}
+ .vault-profile-badge{display:none}
+ .vault-profile-copy :is(h1,h2){font-size:28px;overflow-wrap:normal;word-break:normal}
+ .vault-profile-link{order:3;flex:1 1 100%;justify-content:center;text-align:center}
+}
+
+/* États vides illustrés, avec une action. */
+.empty.empty-rich,.dash-empty-rich{display:grid;justify-items:center;gap:8px;text-align:center;padding:34px 20px}
+.empty-rich>span,.dash-empty-rich>span{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:rgba(240,201,75,.10);border:1px solid rgba(240,201,75,.30);color:var(--gold2);font-size:22px}
+.empty-rich strong,.dash-empty-rich strong{font:900 22px var(--head);letter-spacing:.5px;color:var(--text);text-transform:uppercase}
+.empty-rich p,.dash-empty-rich p{margin:0 0 6px;max-width:420px;color:var(--muted);font-size:13px;text-transform:none;letter-spacing:0}
+.dash-empty-rich{padding:28px 10px;height:100%;align-content:center}
+.dash-empty-rich strong{font-size:18px}
+
+/* Marché : recherche et tris sur une ligne (ordinateur), en grille compacte (mobile). */
+@media(min-width:701px){.auction-toolbar .auction-tools{flex-wrap:nowrap;align-items:center}.auction-tools .auction-search{width:220px;height:40px;padding:0 14px;border-radius:9px}}
+@media(max-width:700px){.auction-toolbar .auction-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px}.auction-tools .auction-search{grid-column:1/-1}}
+.dash-auction-grid>.dash-empty-rich{grid-column:1/-1}
+
+/* Classement : vrai podium à trois marches, places libres affichées. */
+.ranking-podium article{position:relative;padding-bottom:0;overflow:hidden}
+.ranking-podium .podium-step{display:grid;place-items:center;align-self:end;width:calc(100% + 24px);margin:12px -12px 0;height:34px;font:900 22px var(--head);font-style:normal;color:rgba(255,255,255,.35);background:linear-gradient(180deg,rgba(91,151,222,.16),rgba(91,151,222,.04));border-top:1px solid rgba(91,151,222,.28)}
+.ranking-podium .podium-1 .podium-step{height:64px;color:rgba(240,207,124,.8);background:linear-gradient(180deg,rgba(240,207,124,.24),rgba(240,207,124,.05));border-top-color:rgba(240,207,124,.5)}
+.ranking-podium .podium-2 .podium-step{height:46px}
+.ranking-podium .podium-medal{font-size:30px}
+.ranking-podium .podium-empty{border-style:dashed;background:rgba(6,20,40,.35)}
+.ranking-podium .podium-empty .podium-medal{filter:grayscale(1);opacity:.35}
+.ranking-podium .podium-empty b{color:var(--muted)}
+@media(max-width:620px){.ranking-podium .podium-step{display:none}.ranking-podium article{padding-bottom:16px}.ranking-podium .podium-empty{display:none}}
+
+/* Profil : Parcours et Historique empilés à droite, face à la Collection (plus de colonne à moitié vide). */
+.profile-side{display:grid;gap:14px;align-content:start;min-width:0}
+.profile-side .profile-history{grid-column:auto}
+.profile-side .profile-history .profile-list{max-height:430px;overflow:auto}
+
+/* Mon Vault : sections Défis et Objectifs moins espacées (≈110 px de vide auparavant). */
+.vault-page .vault-missions-section{padding-top:40px}
+@media(max-width:760px){.vault-page .vault-missions-section{padding-top:28px}}
+
+/* Packs (≤ 850 px) : filtres repliés derrière « AFFICHER », les packs apparaissent dès le premier écran. */
+.shop-filter-toggle{display:none}
+@media(max-width:850px){
+ .shop-filters:not(.is-open) .shop-filter-group{display:none}
+ .shop-filters:not(.is-open) .shop-filter-head{border-bottom:0}
+ .shop-filter-head{gap:12px}
+ .shop-filter-head h2{margin-right:auto}
+ .shop-filter-head .shop-filter-toggle{display:inline-flex;padding:8px 12px;border:1px solid #2a4d75!important;border-radius:8px;background:#0d2039!important;color:#eaf3ff!important;font-weight:800;letter-spacing:.5px}
+}
+@media(max-width:600px){.shop-filters.is-open{grid-template-columns:1fr}}
+
+/* Album : récompense de saison avec barre de progression et gain mis en avant. */
+.album-season-reward>div:first-child{flex:1 1 260px;min-width:0}
+.album-reward-track{height:6px;margin-top:9px;border-radius:99px;background:rgba(91,151,222,.16);overflow:hidden;max-width:520px}
+.album-reward-track i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#3b8cf0,#65d5ad)}
+.album-season-reward.is-complete .album-reward-track i{background:linear-gradient(90deg,#f0c94b,#ffdf72)}
+.album-reward-prize{display:grid;justify-items:end;gap:2px;padding:6px 14px;border-left:1px solid var(--line)}
+.album-reward-prize b{font:900 22px var(--head);color:var(--gold2)}
+.album-reward-prize span{font-size:11px;font-weight:800;color:#8fd19e}
+@media(max-width:520px){.album-reward-prize{justify-items:start;border-left:0;padding:0}}
+
+/* Squelette de chargement (changement de page lent). */
+.page-loading{display:grid;gap:16px;padding-top:24px}
+.sk{border-radius:14px;background:linear-gradient(90deg,rgba(91,151,222,.08) 25%,rgba(91,151,222,.16) 50%,rgba(91,151,222,.08) 75%);background-size:200% 100%;animation:sk-shine 1.2s linear infinite;min-height:84px}
+.sk-hero{min-height:220px}.sk-block{min-height:320px}
+.sk-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media(max-width:600px){.sk-row{grid-template-columns:repeat(2,minmax(0,1fr))}.sk-hero{min-height:160px}}
+@keyframes sk-shine{from{background-position:200% 0}to{background-position:-200% 0}}
+
+/* Cartes favorites : vitrine du Profil, bouton de la fiche carte, étoile de la Collection. */
+.profile-favorites{margin-bottom:14px}
+.profile-favorites-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.profile-favorites-head h2{margin-bottom:0}
+.profile-favorites-head small{color:var(--muted);font-weight:800;letter-spacing:1px}
+.profile-fav-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-top:14px}
+.profile-fav-card{position:relative;min-width:0}
+.profile-fav-card>a{display:block;text-decoration:none;color:inherit}
+.profile-fav-remove{position:absolute;top:-10px;left:-10px;z-index:3;width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,124,140,.5);background:#1a0f18;color:#ff9aa8;font-size:16px;line-height:1;cursor:pointer;opacity:.85}
+.profile-fav-remove:hover{opacity:1;background:#2a121c}
+.profile-fav-empty{display:grid;place-items:center;align-content:center;gap:6px;min-height:220px;border:1px dashed rgba(91,151,222,.35);border-radius:14px;color:var(--muted);text-decoration:none;background:rgba(6,20,40,.35)}
+.profile-fav-empty span{font:900 34px var(--head);color:var(--gold2)}
+.profile-fav-empty small{font-size:11px;font-weight:700}
+.profile-fav-empty:hover{border-color:var(--gold);color:var(--text)}
+.detail-copy-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.card-fav-toggle{white-space:nowrap}
+.collection-fav{position:absolute;top:-6px;left:-6px;z-index:3;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--gold);color:#1a1300;font-size:14px;box-shadow:0 3px 10px rgba(0,0,0,.4);pointer-events:none}
+@media(max-width:900px){.profile-fav-row{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(150px,42%);overflow-x:auto;padding:10px 4px 6px;scroll-snap-type:x mandatory}.profile-fav-row>*{scroll-snap-align:start}.profile-fav-empty{min-height:200px}}
+
+/* Succès : numéro du document, succès secrets (condition masquée tant qu'ils ne sont pas réussis). */
+.success-card.is-secret{border-style:dashed}
+.success-card.is-secret .success-icon{filter:grayscale(1);opacity:.6}
+.success-progress-secret span{color:var(--muted);letter-spacing:2px}
+
+/* ===== Identité FOOTVAULT (logo du 01/10/2026) : anthracite, or, blanc cassé, gris ===== */
+/* Bleu nuit du site (retour demandé le 01/10) + or du logo. */
+:root{--fv-bg:#050b16;--fv-card:#07162a;--fv-card2:#0b1e38;--fv-gold:#efcf7c;--fv-white:#f4f7ff;--fv-grey:#91a8c7;--fv-line:rgba(91,151,222,.24)}
+.brand-icon{background:none!important;box-shadow:none!important;filter:none!important;border-radius:10px;overflow:visible}
+.brand-icon:after{display:none}
+.brand-icon img{width:100%;height:100%;display:block}
+.brand-copy b,body:has(.home-dashboard) .brand-copy b{background:none!important;-webkit-background-clip:border-box;background-clip:border-box;color:var(--fv-white)!important;font-family:var(--head);font-weight:900;letter-spacing:.5px}
+.brand-copy b em{font-style:normal;color:var(--fv-gold)}
+.brand-copy small{color:var(--fv-grey)!important;letter-spacing:3px}
+
+/* Accueil */
+.fv-home{width:min(1240px,calc(100% - 40px));margin:0 auto;padding:28px 0 60px;display:grid;gap:22px;color:var(--fv-white)}
+.fvh-eyebrow{margin:0 0 4px;color:var(--fv-gold);font:800 11px var(--body);letter-spacing:3px}
+.fvh-muted{color:var(--fv-grey);font-size:13px;margin:0}
+.fvh-panel{background:linear-gradient(160deg,var(--fv-card2),var(--fv-card));border:1px solid var(--fv-line);border-radius:18px;padding:22px}
+.fvh-panel h2,.fvh-panel h3{margin:0;font:900 26px/1 var(--head);letter-spacing:.5px;color:var(--fv-white)}
+.fvh-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:16px}
+.fvh-head>a{color:var(--fv-gold);font:800 12px var(--body);letter-spacing:1px;text-decoration:none;white-space:nowrap}
+.fvh-bar{display:block;height:6px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.fvh-bar em{display:block;height:100%;border-radius:inherit;background:var(--fv-gold)}
+.fv-home .btn-gold{background:var(--fv-gold);color:#14110a;border-color:var(--fv-gold)}
+.fv-home .btn-outline{border-color:rgba(239,207,124,.45);color:var(--fv-white);background:transparent}
+
+.fvh-hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:30px;align-items:center;min-height:520px;padding:40px clamp(20px,4vw,52px);border:1px solid var(--fv-line);border-radius:26px;background:radial-gradient(circle at 78% 50%,rgba(239,207,124,.12),transparent 55%),linear-gradient(135deg,rgba(12,32,62,.95),rgba(6,14,28,.95));overflow:hidden}
+.fvh-lockup{display:flex;align-items:center;gap:clamp(16px,2.5vw,30px)}
+.fvh-lockup-card{width:clamp(78px,9vw,118px);height:auto;filter:drop-shadow(0 12px 30px rgba(0,0,0,.45))}
+.fvh-wordmark{margin:0;font:900 clamp(54px,8.4vw,112px)/.86 var(--head);letter-spacing:1px;color:var(--fv-white)}
+.fvh-wordmark span{color:var(--fv-gold)}
+.fvh-tagline{margin:14px 0 0;color:var(--fv-grey);font:600 clamp(13px,1.6vw,20px) var(--head);letter-spacing:.55em}
+.fvh-lead{max-width:560px;margin:28px 0 0;color:#c3d2e6;font-size:16px;line-height:1.65}
+.fvh-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.fvh-metrics{display:flex;flex-wrap:wrap;gap:26px;list-style:none;margin:30px 0 0;padding:0}
+.fvh-metrics li{display:flex;align-items:baseline;gap:7px;color:var(--fv-grey);font-size:12px;letter-spacing:2px;text-transform:uppercase}
+.fvh-metrics b{font:900 26px var(--head);color:var(--fv-white);letter-spacing:0}
+.fvh-notice{margin:14px 0 0;max-width:520px;color:var(--fv-gold,#e8c872);font-size:13px;line-height:1.5}
+.fvh-showcase{position:relative;height:440px;display:grid;place-items:center}
+.fvh-showcase-card{position:absolute;width:min(220px,40%);text-decoration:none;transition:transform .35s}
+.fvh-showcase-card .tcg-card{width:100%}
+.fvh-showcase-1{z-index:3;transform:translateY(-6px)}
+.fvh-showcase-2{z-index:2;transform:translateX(-62%) rotate(-9deg) translateY(28px) scale(.9)}
+.fvh-showcase-3{z-index:1;transform:translateX(62%) rotate(9deg) translateY(28px) scale(.9)}
+.fvh-showcase-card:hover{transform:translateY(-14px) scale(1.02);z-index:4}
+.fvh-showcase-empty{width:200px}
+
+.fvh-competitions{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px}
+.fvh-competitions a{display:flex;align-items:center;gap:10px;min-width:0;padding:12px 14px;border:1px solid var(--fv-line);border-radius:12px;background:var(--fv-card);color:var(--fv-white);text-decoration:none;font-size:12px;font-weight:700}
+.fvh-competitions a:hover{border-color:var(--fv-gold)}
+.fvh-competitions b{flex:none;display:grid;place-items:center;min-width:34px;height:26px;padding:0 4px;border-radius:7px;background:rgba(239,207,124,.12);color:var(--fv-gold);font:900 12px var(--head);letter-spacing:.5px}
+.fvh-competitions span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.fvh-today{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:22px}
+.fvh-player h2{margin-bottom:16px;overflow-wrap:anywhere}
+.fvh-level{display:flex;justify-content:space-between;margin-bottom:8px;color:var(--fv-grey);font-size:12px;letter-spacing:1px}
+.fvh-level b{color:var(--fv-gold);font:900 18px var(--head)}
+.fvh-player-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}
+.fvh-player-stats span{display:grid;gap:2px;padding:12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);color:var(--fv-grey);font-size:11px}
+.fvh-player-stats b{color:var(--fv-white);font:900 22px var(--head)}
+.fvh-player .btn{width:100%;justify-content:center}
+.fvh-task-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.fvh-task-list li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05)}
+.fvh-task-list li.is-ready{border-color:rgba(239,207,124,.5);background:rgba(239,207,124,.07)}
+.fvh-task-list li.is-done{opacity:.65}
+.fvh-task-check{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:1px solid var(--fv-line);color:var(--fv-gold);font-weight:900}
+.fvh-task-main{display:grid;gap:8px;min-width:0}
+.fvh-task-main b{font-size:13px;letter-spacing:.5px}
+.fvh-task-meta{display:grid;justify-items:end;font-weight:800;font-size:13px}
+.fvh-task-meta small{color:var(--fv-gold);font-size:11px}
+.fvh-reset{margin-top:12px;font-size:12px}
+
+.fvh-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.fvh-step span{color:var(--fv-gold);font:900 40px var(--head);opacity:.85}
+.fvh-step h3{margin:6px 0 8px}
+.fvh-step p{margin:0;color:var(--fv-grey);font-size:14px;line-height:1.6}
+
+.fvh-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:22px}
+.fvh-packs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.fvh-pack{display:grid;gap:10px;color:var(--fv-white);text-decoration:none}
+.fvh-pack-art{position:relative;display:grid;place-items:center;aspect-ratio:3/4;border-radius:14px;background:radial-gradient(circle at 50% 35%,rgba(239,207,124,.14),transparent 65%),var(--fv-bg);border:1px solid var(--fv-line);overflow:hidden;transition:border-color .2s,transform .2s}
+.fvh-pack:hover .fvh-pack-art{border-color:var(--fv-gold);transform:translateY(-3px)}
+.fvh-pack-art>img{width:46%;opacity:.95}
+.fvh-pack-art b{position:absolute;left:10px;right:10px;bottom:30px;text-align:center;font:900 18px/1 var(--head);letter-spacing:.5px}
+.fvh-pack-art small{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:var(--fv-grey);font-size:10px;letter-spacing:2px}
+.fvh-pack-info{display:grid;gap:3px}
+.fvh-pack-info strong{font-size:14px}
+.fvh-pack-info small{color:var(--fv-grey);font-size:12px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fvh-pack-info b{color:var(--fv-gold);font:900 18px var(--head)}
+.fvh-auctions{display:grid;gap:10px}
+.fvh-auction{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);color:var(--fv-white);text-decoration:none}
+.fvh-auction:hover{border-color:var(--fv-line)}
+.fvh-auction-ovr{display:grid;place-items:center;width:44px;height:44px;border-radius:10px;background:rgba(239,207,124,.12);color:var(--fv-gold);font:900 20px var(--head)}
+.fvh-auction-main{display:grid;min-width:0}
+.fvh-auction-main strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fvh-auction-main small,.fvh-auction-price small{color:var(--fv-grey);font-size:11px}
+.fvh-auction-price{display:grid;justify-items:end}
+.fvh-auction-price b{color:var(--fv-gold)}
+.fvh-empty{display:grid;justify-items:center;text-align:center;gap:8px;padding:24px 10px}
+.fvh-empty img{width:56px;opacity:.9}
+.fvh-empty p{margin:0 0 6px;color:var(--fv-grey);font-size:13px}
+
+@media(max-width:1100px){.fvh-competitions{grid-template-columns:repeat(4,minmax(0,1fr))}.fvh-grid{grid-template-columns:1fr}}
+@media(max-width:900px){
+ .fvh-hero{grid-template-columns:1fr;min-height:0;padding:30px 22px}
+ .fvh-showcase{height:340px}
+ .fvh-today{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+ .fv-home{width:calc(100% - 24px);padding-top:14px;gap:16px}
+ .fvh-lockup-card{width:64px}
+ .fvh-wordmark{font-size:clamp(42px,13vw,60px)}
+ .fvh-tagline{letter-spacing:.35em;font-size:12px}
+ .fvh-lead{font-size:14px;margin-top:20px}
+ .fvh-actions .btn{flex:1 1 100%;justify-content:center}
+ .fvh-metrics{gap:16px}
+ .fvh-showcase{height:280px}
+ .fvh-showcase-card{width:46%}
+ .fvh-competitions{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .fvh-steps{grid-template-columns:1fr}
+ .fvh-packs{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+ .fvh-pack-art b{font-size:13px;bottom:24px}
+ .fvh-pack-info small{display:none}
+ .fvh-panel{padding:18px}
+}
+/* Retouches identité : menu et compétitions */
+.fvh-competitions{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:600px){.fvh-competitions{grid-template-columns:repeat(2,minmax(0,1fr))}.fvh-pack-art b{display:none}}
+
+/* Mon Vault : temps restant avant les prochaines missions de la période. */
+.vault-renew{display:block;margin-top:6px;color:var(--gold);font-weight:800;letter-spacing:.08em}
+
+/* Logos des championnats (competition-<id>.png) : vraies couleurs sur une pastille claire, lisibles sur le bleu nuit. */
+.album-comp-art .album-comp-logo{width:96px;height:96px;padding:10px;border-radius:18px;background:#fff;filter:none;opacity:1;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.season-art-crest{background:#fff}
+.season-art-crest img{width:50px;height:56px;filter:none;opacity:1}
+.fvh-competitions .fvh-comp-logo:has(img){display:flex;align-items:center;justify-content:center;font-size:0;width:44px;min-width:44px;height:40px;padding:4px;overflow:hidden;background:#fff}
+.fvh-comp-logo img{display:block;max-width:36px;max-height:32px;width:auto;height:auto;object-fit:contain}
+.admin-competition-identity img{background:#fff;border-radius:8px;padding:3px;object-fit:contain}
+
+/* Classement : récompenses de la semaine (barème) et récompense du joueur à récupérer. */
+.ranking-claim{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:16px 20px;border:1px solid var(--gold);border-radius:14px;background:linear-gradient(135deg,rgba(239,207,124,.18),rgba(239,207,124,.05))}
+.ranking-claim span{display:block;color:var(--gold);font-size:11px;font-weight:800;letter-spacing:.12em}
+.ranking-claim strong{display:block;font:900 24px var(--head);margin:4px 0}
+.ranking-claim small{color:var(--muted)}
+.ranking-rewards{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px;align-items:center;padding:20px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+.ranking-rewards h2{margin:4px 0 8px;font:900 24px var(--head)}
+.ranking-rewards p{margin:0;color:var(--muted);font-size:13px}
+.ranking-rewards ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.ranking-rewards li{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.03)}
+.ranking-rewards li b{display:block;color:var(--gold);font:900 16px var(--head)}
+.ranking-rewards li span{font-size:12px;color:var(--text)}
+@media(max-width:760px){.ranking-rewards{grid-template-columns:1fr}}
+
+/* Packs : logo(s) de la compétition (competition-<id>.png) sur une pastille claire, à la place du symbole. */
+.pack-logos{z-index:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;min-width:76px;height:76px;border-radius:18px;background:#fff;box-shadow:0 10px 26px rgba(0,0,0,.4)}
+.pack-logos img{display:block;max-width:60px;max-height:60px;width:auto;height:auto;object-fit:contain}
+.pack-logos-multi{height:60px;padding:6px 10px;border-radius:14px}
+.pack-logos-multi img{max-width:38px;max-height:42px}
+.shop-pack-art:has(.pack-logos) .shop-pack-symbol{display:none}
+.fvh-pack-art>.pack-logos{position:absolute;top:12px;left:50%;transform:translateX(-50%);min-width:0;height:48px;padding:5px 8px;border-radius:12px}
+.fvh-pack-art>.pack-logos img{width:auto;max-width:34px;max-height:36px;opacity:1}
+
+/* Ouverture de pack : pack scellé, distribution des cartes, retournement par le joueur, halo par rareté */
+.pack-reveal-modal{--rv:#9aa3ad;--rv-soft:rgba(154,163,173,.35)}
+.pack-reveal-modal [hidden]{display:none!important}
+.reveal-stage{display:grid;place-items:center;flex:1;min-height:min(46vh,380px);padding:10px 0}
+.reveal-pack{appearance:none;-webkit-appearance:none;position:relative;display:grid;place-items:center;width:min(220px,52vw);aspect-ratio:2/2.85;padding:0;border:0;background:none;color:inherit;cursor:pointer;--rv:#9aa3ad}
+.reveal-pack.rv-rare{--rv:var(--r-rare)}.reveal-pack.rv-epic{--rv:var(--r-epic)}.reveal-pack.rv-legendary{--rv:var(--r-legendary)}.reveal-pack.rv-icon{--rv:#7df3ff}
+.reveal-pack:focus-visible{outline:2px solid var(--gold2);outline-offset:8px;border-radius:14px}
+.reveal-pack-glow{position:absolute;inset:-26%;border-radius:50%;background:radial-gradient(circle,var(--rv) 0,transparent 62%);opacity:.38;filter:blur(18px);animation:rvPulse 1.8s ease-in-out infinite}
+.reveal-pack-body{position:relative;display:grid;place-content:center;gap:6px;width:100%;height:100%;border-radius:14px;border:1px solid var(--rv);text-align:center;background:linear-gradient(135deg,rgba(255,255,255,.14),transparent 38%),linear-gradient(160deg,#11233d,#070f1d 70%);box-shadow:0 18px 40px rgba(0,0,0,.5),inset 0 0 0 5px rgba(255,255,255,.03),0 0 26px -6px var(--rv);overflow:hidden;animation:rvFloat 2.6s ease-in-out infinite}
+.reveal-pack-body::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.28) 50%,transparent 65%);transform:translateX(-120%);animation:rvShine 3s ease-in-out infinite}
+.reveal-pack-body b{font:900 58px/1 var(--head);color:var(--gold2);letter-spacing:2px}
+.reveal-pack-body small{font:800 12px/1.2 var(--head);letter-spacing:2px;color:var(--muted);padding:0 12px;text-transform:uppercase}
+.reveal-pack-cta{position:absolute;left:50%;bottom:-34px;transform:translateX(-50%);white-space:nowrap;font:800 11px var(--head);letter-spacing:2px;color:var(--gold2)}
+.reveal-pack.opening{animation:rvShake .72s cubic-bezier(.3,.7,.4,1) forwards}
+.reveal-pack.opening .reveal-pack-glow{animation:rvBurst .72s ease-out forwards}
+.reveal-pack.opening .reveal-pack-cta{opacity:0}
+.pack-reveal-modal .reveal-grid[hidden]{display:none}
+.pack-reveal-modal.rv-opened .reveal-card{animation:rvDeal .55s cubic-bezier(.2,.8,.25,1) both;animation-delay:calc(var(--i)*90ms)}
+.pack-reveal-modal .reveal-back{border-color:var(--rv-soft);box-shadow:inset 0 0 18px -6px var(--rv)}
+.reveal-card.rv-rare{--rv:var(--r-rare)}.reveal-card.rv-epic{--rv:var(--r-epic)}.reveal-card.rv-legendary{--rv:var(--r-legendary)}.reveal-card.rv-icon{--rv:#7df3ff}
+.reveal-card.rv-common{--rv:#9aa3ad}
+.reveal-card:not(.flipped).rv-epic .reveal-back,.reveal-card:not(.flipped).rv-legendary .reveal-back,.reveal-card:not(.flipped).rv-icon .reveal-back{box-shadow:0 0 14px -2px var(--rv),inset 0 0 18px -6px var(--rv);animation:rvPulse 1.6s ease-in-out infinite}
+.reveal-card.flipped{z-index:2}
+.reveal-card.rv-burst::before{content:"";position:absolute;inset:-8%;border-radius:16px;background:radial-gradient(circle,var(--rv) 0,transparent 70%);opacity:.45;filter:blur(14px);pointer-events:none;z-index:-1}
+.reveal-card.rv-burst::after{content:"";position:absolute;inset:-6%;border-radius:12px;border:2px solid var(--rv);pointer-events:none;animation:rvRing .85s ease-out forwards}
+.reveal-card.rv-legendary.rv-burst,.reveal-card.rv-icon.rv-burst{animation:rvPop .9s ease-out}
+@keyframes rvFloat{0%,100%{transform:translateY(0) rotate(-1.2deg)}50%{transform:translateY(-8px) rotate(1.2deg)}}
+@keyframes rvPulse{0%,100%{opacity:.3}50%{opacity:.6}}
+@keyframes rvShine{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+@keyframes rvShake{0%{transform:scale(1)}15%{transform:scale(1.04) rotate(-3deg)}30%{transform:scale(1.06) rotate(3deg)}45%{transform:scale(1.08) rotate(-4deg)}60%{transform:scale(1.1) rotate(4deg)}100%{transform:scale(1.5);opacity:0}}
+@keyframes rvBurst{0%{opacity:.4;transform:scale(1)}100%{opacity:1;transform:scale(2.6)}}
+@keyframes rvDeal{0%{opacity:0;transform:translateY(46px) scale(.6) rotate(-6deg)}100%{opacity:1;transform:none}}
+@keyframes rvRing{0%{opacity:.95;transform:scale(.9)}100%{opacity:0;transform:scale(1.35)}}
+@keyframes rvPop{0%{transform:scale(1)}30%{transform:scale(1.08)}100%{transform:scale(1)}}
+@media(max-width:560px){.reveal-stage{min-height:min(40vh,320px)}.reveal-pack{width:min(170px,50vw)}.reveal-pack-body b{font-size:46px}}
+@media (prefers-reduced-motion:reduce){.reveal-pack-body,.reveal-pack-glow,.reveal-pack-body::after,.pack-reveal-modal.rv-opened .reveal-card,.reveal-card.rv-burst::after,.reveal-card:not(.flipped) .reveal-back{animation:none!important}.reveal-pack.opening{opacity:0}}
+.pack-reveal-modal .reveal-card{position:relative}
+
+/* Cadre de l'ouverture : hauteur fixe une fois le pack ouvert ; la grille se dimensionne (JS : --rv-cols, --rv-w) pour que toutes les cartes tiennent sans défilement quand c'est possible */
+.pack-reveal-modal.rv-opened{height:min(calc(100dvh - 24px),900px)}
+.pack-reveal-modal .reveal-grid{grid-template-columns:repeat(var(--rv-cols,5),var(--rv-w,minmax(0,1fr)));justify-content:center;align-content:center;flex:1 1 0;max-height:none;overflow-y:auto;overflow-x:hidden;padding:6px 4px;isolation:isolate}
+.pack-reveal-modal .reveal-card{max-height:none;width:100%}
+.pack-reveal-modal .reveal-card-inner{will-change:transform}
+@media(max-width:800px){.pack-reveal-modal .reveal-grid{max-height:none}.pack-reveal-modal .reveal-card{max-height:none}}
+
+/* Ouverture de pack aux couleurs du site (bleu nuit, filets bleus, or pour les accents) ; boutons masqués tant que le pack est scellé */
+.pack-reveal-modal{background:radial-gradient(ellipse 80% 55% at 50% 0%,rgba(51,135,236,.20),transparent 70%),linear-gradient(160deg,#0d2340 0%,#081b32 52%,#061427 100%);border:1px solid #1b4169;box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 1px rgba(91,151,222,.08) inset}
+.pack-reveal-modal .reveal-controls{border-top-color:rgba(91,151,222,.22)}
+.pack-reveal-modal:not(.rv-opened) .reveal-controls{display:none}
+.pack-reveal-modal .reveal-stage{padding:10px 0 46px;min-height:min(54vh,430px)}
+.pack-reveal-modal .reveal-back{background:radial-gradient(circle at 50% 45%,rgba(51,135,236,.30),transparent 55%),linear-gradient(160deg,#10294a,#081b32);border-color:rgba(91,151,222,.45);box-shadow:inset 0 0 18px -6px rgba(91,151,222,.7)}
+.pack-reveal-modal .reveal-grid{scrollbar-color:rgba(91,151,222,.55) transparent}
+.reveal-pack-body{background:linear-gradient(135deg,rgba(255,255,255,.12),transparent 38%),linear-gradient(160deg,#143056,#081b32 70%)}
+
+/* Accessibilité clavier : lien d'évitement (visible seulement au focus) et contenu principal focalisable par le script */
+.skip-link{position:fixed;left:12px;top:-60px;z-index:1000;display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:10px;background:var(--gold2);color:#050b16;font:800 13px var(--body);text-decoration:none}
+.skip-link:focus{top:12px;outline:2px solid #050b16;outline-offset:2px}
+#app:focus{outline:none}
+.shop-search:focus-within{border-color:var(--gold2);box-shadow:var(--focus)}
+#modal [tabindex="-1"]:focus{outline:none}
+
+/* Mobile (A5) : cibles tactiles d'au moins 44 px et marges des écrans à encoches */
+@media(max-width:760px){
+  .btn,.filter,.success-filter-btn,.shop-filter-toggle,.shop-all-link,.menu,.notif-bell,.brand,.nav a,button.active,a.active{min-height:44px;min-width:44px}
+  .auth-switch button{min-height:44px;padding:0 6px}
+  a.btn,.btn-gold,.btn-outline,.btn-ghost{display:inline-flex;align-items:center;justify-content:center}
+  .notif-bell,.menu{display:inline-flex;align-items:center;justify-content:center}
+  .collection-search,.collection-sort,.auction-search,.auction-select,#shopSearch,#successSearch,#successSort{min-height:44px}
+  .header{padding-left:max(13px,env(safe-area-inset-left));padding-right:max(13px,env(safe-area-inset-right))}
+  body{padding-bottom:env(safe-area-inset-bottom)}
+}
+
+.vault-streak{margin:10px 0 0;font:800 11px var(--body);letter-spacing:.06em;color:var(--gold2)}
+
+.empty h1{font:900 28px var(--head);margin:0 0 10px;text-transform:uppercase}
+
+/* Sets thématiques (Vault, app.js ; éditeur : set-admin-editor.js). */
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.set-card .set-cards{margin:4px 0 10px}
+.set-card .set-cards summary{display:flex;align-items:center;min-height:44px;cursor:pointer;color:var(--gold2);font:800 11px var(--body);letter-spacing:1px}
+.set-card .set-cards ul{list-style:none;margin:6px 0 0;padding:0;max-height:220px;overflow:auto;display:grid;gap:4px;font-size:12px}
+.set-card .set-cards li.is-missing{opacity:.6}
+.set-card .set-cards li small{color:var(--muted)}
+.set-card .set-cap-note{color:var(--gold2);font-size:12px;font-weight:700;margin:0 0 10px}
+.set-editor-results{display:grid;gap:6px;font-size:12px}
+.set-editor-result,.set-editor-chosen li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}
+.set-editor-chosen{list-style:none;margin:6px 0 0;padding:0;max-height:200px;overflow:auto}
+.set-editor-result small,.set-editor-chosen small{color:var(--muted)}
+.set-editor-modal .field-error{display:block}
+
+/* Échanges de cartes (fv-trades.js). */
+.trade-code-box{display:flex;flex-wrap:wrap;align-items:center;gap:14px}
+.trade-code-box p{flex-basis:100%;margin:0;color:var(--muted);font-size:13px;line-height:1.6}
+.trade-code{font:900 34px var(--head);letter-spacing:6px;color:var(--gold2)}
+.trade-search label{display:block;font:800 10px var(--body);letter-spacing:1px;text-transform:uppercase;color:#a3a59f;margin-bottom:6px}
+.trade-search-row{display:flex;gap:10px;flex-wrap:wrap}
+.trade-search-row input{flex:1 1 200px;min-height:48px;border:1px solid var(--line);background:#070908;color:var(--text);padding:0 13px;text-transform:uppercase;letter-spacing:3px;font:700 16px var(--body)}
+.trade-with{margin:16px 0 8px}
+.trade-columns{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0}
+.trade-columns fieldset{margin:0;border:1px solid var(--line);padding:10px 12px;min-width:0}
+.trade-columns legend{padding:0 6px;font:800 11px var(--body);letter-spacing:1px;color:var(--gold2);text-transform:uppercase}
+.trade-columns h4{margin:0 0 6px;font:800 11px var(--body);letter-spacing:1px;color:var(--gold2);text-transform:uppercase}
+.trade-columns ul{list-style:none;margin:0;padding:0}
+.trade-pick-list{max-height:320px;overflow:auto}
+.trade-pick{display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer;border-bottom:1px solid var(--line);padding:4px 0}
+.trade-pick input{width:20px;height:20px;flex:none}
+.trade-pick small,.trade-offer small{color:var(--muted)}
+.trade-offers{display:grid;gap:12px}
+.trade-offer-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.trade-empty{color:var(--muted);font-size:13px}
+@media(max-width:760px){.trade-columns{grid-template-columns:1fr}.trade-code{font-size:28px}}
