@@ -2525,3 +2525,5 @@ hr{border-color:#1d3d63}
   .header{padding-left:max(13px,env(safe-area-inset-left));padding-right:max(13px,env(safe-area-inset-right))}
   body{padding-bottom:env(safe-area-inset-bottom)}
 }
+
+.vault-streak{margin:10px 0 0;font:800 11px var(--body);letter-spacing:.06em;color:var(--gold2)}
