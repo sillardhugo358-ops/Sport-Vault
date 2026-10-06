@@ -206,6 +206,33 @@ test('marché : prix de marché sur la fiche carte, ventes récentes et alertes 
   assert.deepEqual(errors, []);
 });
 
+test('marché (fv-market.js) : créer une enchère puis l\'annuler par les fenêtres de saisie', async () => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const api = await page.evaluate(() => Object.keys(window.FVC?.market || {}).sort());
+  assert.deepEqual(api, ['auctionDialog', 'bidAuction', 'cancelAuction', 'createAuction', 'loadAuctionHistory', 'market', 'showBidHistory', 'siteConfirmDialog', 'startAuctionTimer', 'withdrawAuction']);
+  const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
+  const base = (await server.db.query('SELECT * FROM catalog_cards ORDER BY id LIMIT 1')).rows[0];
+  await server.db.query(
+    `INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,ovr,pace,shooting,passing,dribbling,defending,physical,is_limited,acquired_at,source,status)
+     VALUES(gen_random_uuid(),$1,$2,$3,'Vendeur',$4,$5,$6,$7,70,70,70,70,70,70,70,false,now(),'test','owned')`,
+    [base.id, uid, base.season, base.position, base.club, base.nation, base.rarity]);
+  await visit('market');
+  await page.click('[data-auction-tab="sell"]');
+  await page.waitForSelector('#auctionSell [data-sell-card]');
+  await page.click('#auctionSell [data-sell-card]');
+  await page.fill('#auctionDialogValue', '150');
+  await page.click('#auctionDialogConfirm');
+  await page.waitForSelector('#auctionDialogConfirm');
+  await page.click('#auctionDialogConfirm');
+  await page.waitForSelector('#auctionLive [data-cancel-auction]', { timeout: 15000 });
+  assert.equal(await page.evaluate(() => document.querySelectorAll('.auction-card').length > 0), true);
+  await page.click('#auctionLive [data-cancel-auction]');
+  await page.waitForSelector('#auctionDialogConfirm');
+  await page.click('#auctionDialogConfirm');
+  await page.waitForFunction(() => !document.querySelector('#auctionLive [data-cancel-auction]'), null, { timeout: 15000 });
+  assert.deepEqual(errors, []);
+});
+
 test('mobile : filtres des packs repliés, dépliables ; onglets du marché exclusifs', async () => {
   await page.setViewportSize({ width: 390, height: 844 });
   await visit('packs');
