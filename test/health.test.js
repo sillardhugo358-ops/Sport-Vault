@@ -55,3 +55,29 @@ test('durée de session : valeur par défaut et bornes', () => {
   assert.equal(sessionDays('365'), 30);
   assert.equal(sessionDays('0.0001'), 5 / 1440);
 });
+
+test('base injoignable au démarrage : le serveur annonce le code d\'erreur (sans adresse ni mot de passe) et le mode TLS', async () => {
+  const { spawn } = require('node:child_process');
+  const net = require('node:net');
+  const port = await new Promise(r => { const s = net.createServer(); s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => r(p)); }); });
+  const child = spawn(process.execPath, ['-r', './security-bootstrap.js', 'server.js'], {
+    cwd: require('node:path').join(__dirname, '..'),
+    env: { ...process.env, DATABASE_URL: 'postgresql://secret_user:secret_pass@127.0.0.1:1/x', PORT: String(port), NODE_ENV: 'production', ADMIN_EMAILS: '' },
+    stdio: 'ignore'
+  });
+  try {
+    let h = null;
+    for (let i = 0; i < 60 && !(h && h.storage === 'unavailable'); i++) {
+      await new Promise(r => setTimeout(r, 500));
+      h = await fetch(`http://127.0.0.1:${port}/api/health`).then(r => r.json()).catch(() => null);
+    }
+    assert.equal(h.ok, false);
+    assert.equal(h.storage, 'unavailable');
+    assert.equal(h.databaseStartError, 'ECONNREFUSED');
+    assert.equal(h.databaseTls, 'unverified', 'en production sans certificat : chiffré sans vérification');
+    const text = JSON.stringify(h);
+    assert.ok(!text.includes('secret_pass') && !text.includes('secret_user') && !text.includes('127.0.0.1:1'), 'aucun identifiant ni adresse de base exposé');
+  } finally {
+    child.kill('SIGTERM');
+  }
+});

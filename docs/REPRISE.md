@@ -3,8 +3,8 @@
 Ce fichier permet de reprendre le travail dans une **nouvelle session** sans perdre d'information. À lire avec `CLAUDE.md` (règles du projet) et `docs/PROMPT-REPRISE.md` (message de démarrage). Source de vérité du code : le dépôt (`main`) ; ici, le contexte, les décisions, les pièges et le reste à faire.
 
 ## 1. Où en est-on (en dix lignes)
-- `main` = `9426ba79c6ba` (PR #102 fusionnée). Dernière version **prouvée en ligne** : `2854355094c9` (#101, run n°64 de `production.yml`). Le déploiement de `9426ba7` (#102) reste à contrôler.
-- **Point ouvert n°1 — certificat TLS de la base : CAUSE TROUVÉE (run n°65, `9426ba79c6ba` en ligne)** : `databaseTlsDiagnostic` = `{"caCertChars":0,"caFileSet":false,"nearbyNames":["DATABASE_CA_SERT","DATABASE_URL"]}` → la variable a été créée sur Render sous le nom **`DATABASE_CA_SERT`** (S au lieu de C). Le propriétaire doit la **renommer en `DATABASE_CA_CERT`** (même valeur) et redéployer ; ensuite relancer `production.yml` et attendre « TLS de la base : verified » (le champ `databaseTlsDiagnostic` disparaît alors). Historique : au run n°64, `databaseTls` = `unverified` ; le propriétaire pensait avoir tout vérifié.
+- `main` = `63d3ff0174fb` (PR #103) ; PR #104 en cours (voir §6). Dernière version prouvée en ligne : `63d3ff0174fb` (run n°67 réussi, site rétabli après la panne du certificat).
+- **Point ouvert n°1 — certificat TLS de la base (NE PAS refaire le renommage à l'aveugle)** : sur Render, la variable s'appelait `DATABASE_CA_SERT` (faute de frappe, cause trouvée au run n°65). Le propriétaire l'a renommée en `DATABASE_CA_CERT` → **le site est tombé de 19 h 53 à 20 h 02 UTC** (`/api/health` : `ok:false`, `storage:"unavailable"`, `database:null`, catalogue de secours de 478 cartes) car la vérification complète du certificat échoue au démarrage (cause exacte inconnue : mauvais certificat — ex. certificat du service au lieu du « CA certificate » —, chaîne incomplète ou nom de serveur différent). Retour arrière fait : variable de nouveau nommée `DATABASE_CA_SERT` → site rétabli (run n°67 réussi). **État actuel : `databaseTls = "unverified"`, `nearbyNames = ["DATABASE_CA_SERT","DATABASE_URL"]`.** La PR #104 ajoute `databaseStartError` (code d'erreur Node, sans secret) pour diagnostiquer. Procédure : voir §7. Rappel : après un échec de connexion au démarrage, le serveur reste « unavailable » jusqu'au redémarrage suivant (pas de nouvelle tentative automatique).
 - Prochaine étape de la feuille de route : **Q2** (marché et enchères dans `fv-market.js`), puis G2, Q3–Q5, G3.
 - Le propriétaire a **ouvert tous les domaines** du réseau de l'environnement cloud : une nouvelle session doit pouvoir lire `https://sport-vault.onrender.com` directement (vérifier d'abord avec `curl`). Avant, l'accès était bloqué (`CONNECT 403`, `EGRESS_BLOCKED`).
 
@@ -77,23 +77,24 @@ Rapports PDF dans `docs/` : `FOOTVAULT_Rapport_30_septembre_2026.pdf`, `FOOTVAUL
 | #99 (Q0) | Espace de noms `FVC`, table des pages, lien inconnu = accueil | n°60 (7644c94) |
 | #100 (Q1) | Administration dans `fv-admin.js` (`app.js` 236 → 142 Ko) | n°61 (d1a4981) |
 | #101 | Mode TLS de la base annoncé (`databaseTls`) | n°64 (2854355) : « unverified » |
-| #102 | Diagnostic du certificat (`databaseTlsDiagnostic`) | **à contrôler** (9426ba7) |
+| #102 | Diagnostic du certificat (`databaseTlsDiagnostic`) | n°65 (9426ba7) : a révélé la faute de frappe `DATABASE_CA_SERT` |
+| #103 | Fichier de reprise, prompt, mémoire de travail | — |
+| #104 | Code d'erreur de connexion à la base au démarrage (`databaseStartError`), mode TLS toujours annoncé | **à fusionner / contrôler** |
 
 Détails utiles :
 - **Série de connexion (#98)** — barème **validé par le propriétaire** : 150 FC + 10 XP au jour 1 ; +10 FC par jour de série (plafond +100 FC) ; palier +500 FC au 7ᵉ jour, +2000 FC au 30ᵉ ; jour manqué = retour à 1 (record `best_streak` conservé). Code : `DAILY_STREAK` (`lib/game-config.js`), `lib/daily-streak.js` (`previousDayKey` sans « −24 h », sûr aux changements d'heure ; `currentStreak`, `nextStreak`, `streakReward`), `claimDaily` (`lib/rewards.js`, sous `FOR UPDATE`), colonnes `users.daily_streak/best_streak` (`ADD COLUMN IF NOT EXISTS`), `/api/progression` → `daily{claimed, reward, streak, bestStreak}`, affichage dans le Vault.
 - **Accessibilité** : modales via `setModal`/`closeModal` (rôle `dialog`, `aria-modal`, `aria-labelledby` = premier titre, `inert` sur le fond, focus piégé, Échap clique `#siteConfirmCancel,#auctionDialogCancel` sinon `.modal-close`, retour du focus au déclencheur). Base a11y actuelle : **2 entrées / 4 défauts** (3 liens du Profil, 1 bouton « 7 j » d'admin) ; objectif final : base vide et test bloquant.
 - **Q1** : extraction **automatique** par analyse `acorn` (déclarations de premier niveau de l'IIFE `FV`, fermeture des dépendances, rien réécrit) ; contrôle `no-undef` ; si le contrôle de production ne couvre pas l'administration, vérifier à la main que `fv-admin.js` se charge (voir §8).
 
-## 7. Point ouvert : certificat TLS (cause trouvée ; procédure de conclusion)
-**Constat du 06/10 à 19 h 46 UTC : la variable s'appelle `DATABASE_CA_SERT` sur Render (faute de frappe).** Action : la renommer en `DATABASE_CA_CERT`, redéployer, puis appliquer la procédure ci-dessous pour confirmer `verified`.
-1. Lancer `production.yml` (ref `main`), lire (`get_job_logs`, `tail_lines` ≈ 200) la ligne « Prêt après … TLS de la base : <mode>. Diagnostic TLS : {…} » et « En ligne : <sha12> — main : <sha12> » (attendu `9426ba79c6ba`, relancer 3 min plus tard si le déploiement est en cours).
-2. Si accès réseau ouvert : `curl -s https://sport-vault.onrender.com/api/health | jq` donne la même chose.
-3. Interpréter :
-   - `verified` → certificat bien utilisé ✔ (rien d'autre à faire ; mettre à jour la doc si besoin) ;
-   - `unverified` + `caCertChars: 0` → la variable est absente/vide **pour le processus** : regarder `nearbyNames` (faute de frappe : `DATABASE_CA_CERTIFICATE`, `DATABASE_CA_CERT ` avec espace, variable sur un autre service ou dans un groupe d'environnement non lié…) et le dire au propriétaire ;
-   - `unverified` + `caCertChars > 0` → anomalie dans `lib/db-ssl.js` (`caCertificate()` : exige un PEM `-----BEGIN CERTIFICATE-----…-----END CERTIFICATE-----` ; les `\n` littéraux sont acceptés) : investiguer le code, ne pas accuser la configuration ;
-   - serveur qui ne démarre pas → certificat invalide : retour arrière en supprimant la variable (`docs/SAUVEGARDE.md`).
-4. Rappeler au propriétaire : changer le mot de passe Aiven puis mettre à jour `DATABASE_URL` (pas encore fait).
+## 7. Point ouvert : certificat TLS (procédure sûre)
+**Historique du 06/10** : variable mal nommée `DATABASE_CA_SERT` (run n°65) ; renommée en `DATABASE_CA_CERT` → panne 19 h 53–20 h 02 UTC (vérification complète du certificat qui échoue) ; retour arrière → site rétabli (run n°67). La vérification TLS complète n'est donc **pas** active aujourd'hui.
+Procédure pour réessayer **sans risque** :
+1. S'assurer que #104 est fusionnée et déployée (`/api/health` doit contenir `databaseTls` même base indisponible, et `databaseStartError` en cas d'échec). Lancer `production.yml`, lire « En ligne : <sha12> ».
+2. Vérifier avec le propriétaire que la valeur est bien le **« CA certificate »** du service PostgreSQL Aiven (fichier `ca.pem`, onglet *Overview* → *CA certificate* → Download), PEM complet de `-----BEGIN CERTIFICATE-----` à `-----END CERTIFICATE-----`, sans guillemets. Tester d'abord hors site si le réseau est ouvert : `openssl s_client -connect <hôte>:<port> -CAfile ca.pem -servername <hôte>` (le propriétaire fournit hôte et port, **jamais** le mot de passe) → « Verification: OK » attendu.
+3. Seulement alors, renommer la variable en `DATABASE_CA_CERT` sur Render et redéployer ; **surveiller `/api/health` pendant 2 minutes** : `databaseTls:"verified"` + `ok:true` = succès ; `ok:false` + `databaseStartError` = échec → **retour arrière immédiat** (renommer en `DATABASE_CA_SERT`), lire le code d'erreur (`SELF_SIGNED_CERT_IN_CHAIN`, `UNABLE_TO_VERIFY_LEAF_SIGNATURE`, `ERR_TLS_CERT_ALTNAME_INVALID`, `ECONNREFUSED`…) et corriger.
+4. Interprétation : `unverified` + `caCertChars:0` → variable absente/vide pour le processus (regarder `nearbyNames`) ; `unverified` + `caCertChars>0` → anomalie dans `lib/db-ssl.js` (`caCertificate()` exige un PEM ; `\n` littéraux acceptés).
+5. Rappeler au propriétaire : changer le mot de passe Aiven puis mettre à jour `DATABASE_URL` (pas encore fait).
+Idée à proposer : nouvelle tentative automatique de connexion à la base au démarrage (aujourd'hui une panne de base au démarrage laisse le serveur « unavailable » jusqu'au redémarrage).
 
 ## 8. Reste à faire (feuille de route validée)
 Ordre décidé avec le propriétaire (« nouvelles fonctionnalités de jeu », « qualité du code », « mobile et accessibilité ») : A1–A5 ✔, G1 ✔, Q0 ✔, Q1 ✔, **Q2 →** G2 → Q3 → Q4 → Q5 → G3.
