@@ -16,6 +16,7 @@ Pourquoi `no-verify` côté application : avec la version de `pg` utilisée, `ss
 1. Console Aiven > le service PostgreSQL > *Overview* > *CA certificate* > **Download** (fichier `ca.pem`).
 2. Render > le service web > *Environment* > ajouter la variable **`DATABASE_CA_CERT`** et y coller tout le contenu du fichier (de `-----BEGIN CERTIFICATE-----` à `-----END CERTIFICATE-----`). Les retours à la ligne peuvent être remplacés par `\n`.
 3. Laisser `DATABASE_URL` telle quelle : le paramètre `sslmode` y est ignoré dès que `DATABASE_CA_CERT` est présent (la vérification complète du certificat et du nom du serveur s'applique alors).
+   Vérification après le redéploiement : `/api/health` annonce `"databaseTls": "verified"` (au lieu de `"unverified"`), et l'étape « Santé du serveur et de la base » de `production.yml` l'affiche (« TLS de la base : verified »). Si le certificat est invalide, le serveur refuse de démarrer.
 4. Enregistrer : Render redéploie. Contrôle : `production.yml` doit rester vert (« Santé du serveur et de la base »).
 5. **Retour arrière** : supprimer la variable `DATABASE_CA_CERT` et redéployer (retour à `no-verify`).
 
