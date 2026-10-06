@@ -508,3 +508,24 @@ test('accueil : le pied de page renvoie vers la page « état du site »', async
   await page.goto(server.base + '/#home');
   assert.equal(await page.$eval('.footer a[href="etat.html"]', e => e.textContent.trim()), 'ÉTAT DU SITE');
 });
+
+test('clavier : lien d\'évitement au premier Tab, titre par page, focus sur le contenu au changement de page', async () => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await visit('home');
+  assert.match(await page.title(), /^Accueil — FOOTVAULT$/);
+  await page.evaluate(() => { document.activeElement?.blur(); window.scrollTo(0, 0); });
+  await page.keyboard.press('Tab');
+  const skip = await page.evaluate(() => { const a = document.activeElement, r = a.getBoundingClientRect(); return { cls: a.className, text: a.textContent.trim(), top: Math.round(r.top) }; });
+  assert.equal(skip.cls, 'skip-link');
+  assert.equal(skip.text, 'Aller au contenu');
+  assert.ok(skip.top >= 0, 'le lien d\'évitement est visible au focus : ' + skip.top);
+  await page.keyboard.press('Enter');
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'app', 'le focus passe au contenu');
+  assert.ok(!/#app/.test(page.url()), 'la navigation ne change pas l\'adresse : ' + page.url());
+  assert.equal(await page.$eval('#app', e => e.children.length > 0), true, 'la page reste affichée');
+  // Changement de page : titre mis à jour et focus sur le contenu.
+  await page.evaluate(() => { location.hash = '#market'; });
+  await page.waitForFunction(() => document.title === 'Marché — FOOTVAULT', null, { timeout: 15000 });
+  await page.waitForFunction(() => document.activeElement?.id === 'app', null, { timeout: 5000 });
+  assert.deepEqual(errors, []);
+});

@@ -63,6 +63,34 @@ for (const vp of VIEWPORTS) {
   });
 }
 
+test('accessibilité clavier : chaque élément atteint au Tab a un indicateur de focus visible', async () => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  for (const route of ROUTES) {
+    await page.goto(server.base + '/#' + route);
+    await page.reload();
+    await page.waitForFunction(() => document.querySelector('#app')?.children.length > 0, null, { timeout: 15000 });
+    await page.waitForLoadState('networkidle');
+    await page.evaluate(() => { document.activeElement?.blur(); window.scrollTo(0, 0); });
+    let bad = 0; const sample = [];
+    for (let i = 0; i < 30; i++) {
+      await page.keyboard.press('Tab');
+      const r = await page.evaluate(() => {
+        const el = document.activeElement;
+        if (!el || el === document.body) return null;
+        const s = getComputedStyle(el), rect = el.getBoundingClientRect();
+        const hasRing = st => (st.outlineStyle !== 'none' && parseFloat(st.outlineWidth) > 0) || (st.boxShadow && st.boxShadow !== 'none');
+        // Le cadre peut être porté par le conteneur (champ de recherche dans un label : :focus-within).
+        let ring = hasRing(s);
+        for (let p = el.parentElement, n = 0; !ring && p && n < 2; p = p.parentElement, n++) ring = p.matches(':focus-within') && hasRing(getComputedStyle(p));
+        const label = el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + (el.classList.length ? '.' + el.classList[0] : '');
+        return { ring, label, shown: rect.width > 0 && rect.height > 0 };
+      });
+      if (r && r.shown && !r.ring) { bad++; if (sample.length < 3) sample.push(r.label); }
+    }
+    if (bad) { found[`ordinateur|${route}|focus-invisible`] = bad; samples[`ordinateur|${route}|focus-invisible`] = sample; }
+  }
+});
+
 test('accessibilité : aucune régression par rapport à la base connue', () => {
   if (UPDATE) {
     fs.writeFileSync(BASELINE_FILE, JSON.stringify(Object.fromEntries(Object.entries(found).sort()), null, 1) + '\n');

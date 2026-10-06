@@ -2507,3 +2507,9 @@ hr{border-color:#1d3d63}
 .pack-reveal-modal .reveal-back{background:radial-gradient(circle at 50% 45%,rgba(51,135,236,.30),transparent 55%),linear-gradient(160deg,#10294a,#081b32);border-color:rgba(91,151,222,.45);box-shadow:inset 0 0 18px -6px rgba(91,151,222,.7)}
 .pack-reveal-modal .reveal-grid{scrollbar-color:rgba(91,151,222,.55) transparent}
 .reveal-pack-body{background:linear-gradient(135deg,rgba(255,255,255,.12),transparent 38%),linear-gradient(160deg,#143056,#081b32 70%)}
+
+/* Accessibilité clavier : lien d'évitement (visible seulement au focus) et contenu principal focalisable par le script */
+.skip-link{position:fixed;left:12px;top:-60px;z-index:1000;display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:10px;background:var(--gold2);color:#050b16;font:800 13px var(--body);text-decoration:none}
+.skip-link:focus{top:12px;outline:2px solid #050b16;outline-offset:2px}
+#app:focus{outline:none}
+.shop-search:focus-within{border-color:var(--gold2);box-shadow:var(--focus)}
