@@ -29,6 +29,22 @@ test('interface : page d\'accueil et tout ce qu\'elle charge', async () => {
   }
 });
 
+test('feuilles de style : styles.css à styles-6.css liées dans l\'ordre de la cascade, chacune en CSS valide (accolades équilibrées)', async () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const linked = [...html.matchAll(/<link rel="stylesheet" href="(styles(?:-\d)?\.css)\?v=[^"]+">/g)].map(m => m[1]);
+  assert.deepEqual(linked, ['styles.css', 'styles-2.css', 'styles-3.css', 'styles-4.css', 'styles-5.css', 'styles-6.css']);
+  assert.ok(html.indexOf('styles-6.css') < html.indexOf('cards-v4.css'), 'cards-v4.css reste après les styles');
+  for (const f of linked) {
+    const r = await fetch(server.base + '/' + f);
+    assert.equal(r.status, 200, f);
+    assert.match(r.headers.get('content-type') || '', /text\/css/, f);
+    const css = (await r.text()).replace(/\/\*[\s\S]*?\*\//g, '').replace(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g, '');
+    let depth = 0;
+    for (const c of css) { if (c === '{') depth++; else if (c === '}') depth--; assert.ok(depth >= 0, f + ' : accolade fermante en trop'); }
+    assert.equal(depth, 0, f + ' : accolades déséquilibrées (coupure au milieu d\'une règle ?)');
+  }
+});
+
 test('refusé : code serveur, bibliothèques, données, configuration, dépôt git', async () => {
   const hidden = ['/server.js', '/security-bootstrap.js', '/ligue1-launcher.js', '/package.json', '/render.yaml', '/CLAUDE.md', '/README.md',
     '/.gitignore', '/.git/config', '/lib/rewards.js', '/lib/stats.js', '/lib/ledger.js', '/lib/tasks.js', '/lib/notifications.js', '/lib/profile.js', '/lib/leaderboard.js', '/lib/ligue1-history.js', '/lib/challenges.js', '/lib/club-key.js', '/lib/routes/auth.js', '/data/README.md', '/data/europe-2010-2027.json.gz',
