@@ -37,7 +37,12 @@ test('certificat : « \\n » littéraux acceptés, fichier PEM, valeur invalide 
   try { assert.equal(caCertificate({ DATABASE_CA_FILE: file }), PEM); } finally { fs.unlinkSync(file); }
   assert.equal(caCertificate({}), null);
   assert.throws(() => caCertificate({ DATABASE_CA_CERT: 'pas un certificat' }), /certificat PEM invalide/);
-  assert.throws(() => poolConfig({}, { DATABASE_URL: URL_NO_VERIFY, DATABASE_CA_CERT: 'xxx' }), /certificat PEM invalide/);
+  // Un PEM invalide ne doit jamais empêcher le démarrage : retour au comportement historique (annoncé « invalid » par /api/health).
+  const quiet = console.error; console.error = () => {};
+  try {
+    const c = poolConfig({ max: 2 }, { DATABASE_URL: URL_NO_VERIFY, DATABASE_CA_CERT: 'xxx', NODE_ENV: 'production' });
+    assert.deepEqual(c, { connectionString: URL_NO_VERIFY, ssl: { rejectUnauthorized: false }, max: 2 });
+  } finally { console.error = quiet; }
 });
 
 test('adresse : seuls les paramètres TLS sont retirés', () => {
@@ -52,6 +57,7 @@ test('mode TLS annoncé : verified avec le certificat, unverified en production 
   assert.equal(tlsMode({ DATABASE_URL: URL_NO_VERIFY, DATABASE_CA_CERT: PEM, NODE_ENV: 'production' }), 'verified');
   assert.equal(tlsMode({ DATABASE_URL: URL_NO_VERIFY, NODE_ENV: 'production' }), 'unverified');
   assert.equal(tlsMode({ DATABASE_URL: 'postgresql://localhost/x' }), 'off');
+  assert.equal(tlsMode({ DATABASE_URL: URL_NO_VERIFY, DATABASE_CA_CERT: 'pas un certificat', NODE_ENV: 'production' }), 'invalid', 'valeur fournie mais inexploitable : jamais d\'exception');
 });
 
 test('diagnostic TLS : longueur et noms seulement, jamais de valeur', () => {
@@ -61,4 +67,22 @@ test('diagnostic TLS : longueur et noms seulement, jamais de valeur', () => {
   assert.deepEqual(d.nearbyNames, ['DATABASE_CA_CERT', 'DATABASE_CA_CERTIFICATE', 'DATABASE_URL', 'RENDER_CERT_X']);
   assert.ok(!JSON.stringify(d).includes('postgresql://') && !JSON.stringify(d).includes('BEGIN CERTIFICATE'));
   assert.equal(tlsDiagnostic({ DATABASE_CA_CERT: PEM }).caCertChars, PEM.length);
+});
+
+test('diagnostic d\'un PEM refusé : forme de la valeur (comptes et booléens), jamais son contenu', () => {
+  const secret = 'MIIBsecretsecretsecret';
+  const cases = {
+    corpsSeul: secret,
+    entouréDeGuillemets: '"' + PEM + '"',
+    enTeteSeule: '-----BEGIN CERTIFICATE-----\n' + secret,
+    unBlocComplet: PEM
+  };
+  const shapes = Object.fromEntries(Object.entries(cases).map(([k, v]) => [k, tlsDiagnostic({ DATABASE_CA_CERT: v }).caCertShape]));
+  assert.equal(shapes.corpsSeul.certificateBlocks, 0); assert.equal(shapes.corpsSeul.startsWithDashes, false);
+  assert.equal(shapes.entouréDeGuillemets.quoted, true); assert.equal(shapes.entouréDeGuillemets.certificateBlocks, 1);
+  assert.equal(shapes.enTeteSeule.beginLines, 1); assert.equal(shapes.enTeteSeule.endLines, 0); assert.equal(shapes.enTeteSeule.certificateBlocks, 0);
+  assert.equal(shapes.unBlocComplet.certificateBlocks, 1); assert.equal(shapes.unBlocComplet.realNewlines, 3);
+  assert.equal(tlsDiagnostic({ DATABASE_CA_CERT: PEM.replace(/\n/g, '\\n') }).caCertShape.literalBackslashN, true);
+  assert.equal(tlsDiagnostic({}).caCertShape, undefined);
+  for (const v of Object.values(cases)) assert.ok(!JSON.stringify(tlsDiagnostic({ DATABASE_CA_CERT: v })).includes(secret), 'aucun contenu exposé');
 });
