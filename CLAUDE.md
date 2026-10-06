@@ -232,7 +232,7 @@ schémas ou de résultats de test.
 
 Contexte détaillé : **`docs/REPRISE.md`** (état exact, décisions, pièges, reste à faire) et **`docs/PROMPT-REPRISE.md`** (message de démarrage). Rapports : `docs/FOOTVAULT_Rapport_*.pdf`. Ce qui suit est le résumé à toujours appliquer.
 
-**État.** `main` est à jour avec les PR #84 à #102 (accessibilité, mobile, série de connexion quotidienne, découpage de `app.js`, mode TLS annoncé). Dernière version prouvée en ligne : `2854355094c9` (#101). Point ouvert : le certificat Aiven (`DATABASE_CA_CERT`) n'est pas pris en compte (`/api/health` → `databaseTls: "unverified"`) ; #102 ajoute `databaseTlsDiagnostic` pour comprendre pourquoi.
+**État.** `main` est à jour avec les PR #84 à #102 (accessibilité, mobile, série de connexion quotidienne, découpage de `app.js`, mode TLS annoncé). Dernière version prouvée en ligne : `2854355094c9` (#101). Point ouvert : le certificat Aiven n'est pas pris en compte (`/api/health` → `databaseTls: "unverified"`). **Cause trouvée (run n°65) : la variable a été créée sur Render sous le nom `DATABASE_CA_SERT` au lieu de `DATABASE_CA_CERT`** ; à renommer, puis relancer `production.yml` et confirmer `verified`.
 
 **Règles de collaboration (consignes permanentes du propriétaire).**
 - Répondre en français, concis ; dire ce qui a été testé et ce qui ne l'a pas été.

@@ -4,7 +4,7 @@ Ce fichier permet de reprendre le travail dans une **nouvelle session** sans per
 
 ## 1. Où en est-on (en dix lignes)
 - `main` = `9426ba79c6ba` (PR #102 fusionnée). Dernière version **prouvée en ligne** : `2854355094c9` (#101, run n°64 de `production.yml`). Le déploiement de `9426ba7` (#102) reste à contrôler.
-- **Point ouvert n°1 — certificat TLS de la base** : le propriétaire a ajouté `DATABASE_CA_CERT` sur Render (nom, service et enregistrement vérifiés par lui) mais `/api/health` annonçait `"databaseTls": "unverified"` (run n°64, serveur démarré à 17 h 00 UTC, donc après l'ajout). #102 ajoute `databaseTlsDiagnostic` (longueur de la variable lue, présence de `DATABASE_CA_FILE`, **noms** de variables proches, jamais de valeur) et le journal de `production.yml` l'affiche (« Diagnostic TLS : {...} »). **À faire : lancer `production.yml`, lire ce diagnostic, conclure** (voir §7).
+- **Point ouvert n°1 — certificat TLS de la base : CAUSE TROUVÉE (run n°65, `9426ba79c6ba` en ligne)** : `databaseTlsDiagnostic` = `{"caCertChars":0,"caFileSet":false,"nearbyNames":["DATABASE_CA_SERT","DATABASE_URL"]}` → la variable a été créée sur Render sous le nom **`DATABASE_CA_SERT`** (S au lieu de C). Le propriétaire doit la **renommer en `DATABASE_CA_CERT`** (même valeur) et redéployer ; ensuite relancer `production.yml` et attendre « TLS de la base : verified » (le champ `databaseTlsDiagnostic` disparaît alors). Historique : au run n°64, `databaseTls` = `unverified` ; le propriétaire pensait avoir tout vérifié.
 - Prochaine étape de la feuille de route : **Q2** (marché et enchères dans `fv-market.js`), puis G2, Q3–Q5, G3.
 - Le propriétaire a **ouvert tous les domaines** du réseau de l'environnement cloud : une nouvelle session doit pouvoir lire `https://sport-vault.onrender.com` directement (vérifier d'abord avec `curl`). Avant, l'accès était bloqué (`CONNECT 403`, `EGRESS_BLOCKED`).
 
@@ -84,7 +84,8 @@ Détails utiles :
 - **Accessibilité** : modales via `setModal`/`closeModal` (rôle `dialog`, `aria-modal`, `aria-labelledby` = premier titre, `inert` sur le fond, focus piégé, Échap clique `#siteConfirmCancel,#auctionDialogCancel` sinon `.modal-close`, retour du focus au déclencheur). Base a11y actuelle : **2 entrées / 4 défauts** (3 liens du Profil, 1 bouton « 7 j » d'admin) ; objectif final : base vide et test bloquant.
 - **Q1** : extraction **automatique** par analyse `acorn` (déclarations de premier niveau de l'IIFE `FV`, fermeture des dépendances, rien réécrit) ; contrôle `no-undef` ; si le contrôle de production ne couvre pas l'administration, vérifier à la main que `fv-admin.js` se charge (voir §8).
 
-## 7. Point ouvert : certificat TLS (procédure de conclusion)
+## 7. Point ouvert : certificat TLS (cause trouvée ; procédure de conclusion)
+**Constat du 06/10 à 19 h 46 UTC : la variable s'appelle `DATABASE_CA_SERT` sur Render (faute de frappe).** Action : la renommer en `DATABASE_CA_CERT`, redéployer, puis appliquer la procédure ci-dessous pour confirmer `verified`.
 1. Lancer `production.yml` (ref `main`), lire (`get_job_logs`, `tail_lines` ≈ 200) la ligne « Prêt après … TLS de la base : <mode>. Diagnostic TLS : {…} » et « En ligne : <sha12> — main : <sha12> » (attendu `9426ba79c6ba`, relancer 3 min plus tard si le déploiement est en cours).
 2. Si accès réseau ouvert : `curl -s https://sport-vault.onrender.com/api/health | jq` donne la même chose.
 3. Interpréter :
