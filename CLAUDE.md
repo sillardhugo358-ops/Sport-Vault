@@ -227,3 +227,24 @@ de déploiement ; - l'état réel des fonctionnalités listées ci-dessus.
 **Principe général :** comprendre l'existant, préserver les données et
 livrer des changements vérifiables, sans inventer de fonctionnalités, de
 schémas ou de résultats de test.
+
+## 9. Mémoire de travail et reprise de session (mise à jour le 06/10/2026)
+
+Contexte détaillé : **`docs/REPRISE.md`** (état exact, décisions, pièges, reste à faire) et **`docs/PROMPT-REPRISE.md`** (message de démarrage). Rapports : `docs/FOOTVAULT_Rapport_*.pdf`. Ce qui suit est le résumé à toujours appliquer.
+
+**État.** `main` est à jour avec les PR #84 à #102 (accessibilité, mobile, série de connexion quotidienne, découpage de `app.js`, mode TLS annoncé). Dernière version prouvée en ligne : `2854355094c9` (#101). Point ouvert : le certificat Aiven (`DATABASE_CA_CERT`) n'est pas pris en compte (`/api/health` → `databaseTls: "unverified"`) ; #102 ajoute `databaseTlsDiagnostic` pour comprendre pourquoi.
+
+**Règles de collaboration (consignes permanentes du propriétaire).**
+- Répondre en français, concis ; dire ce qui a été testé et ce qui ne l'a pas été.
+- Ne jamais écrire « en ligne » sans la ligne exacte `En ligne : <sha12> — main : <sha12>` lue dans le journal de `production.yml`.
+- « Fusionne la PR dès que la CI est verte » : squash avec `expectedHeadSha` complet (40 caractères) quand les deux contrôles `check` sont verts, puis désabonnement, branche de travail remise sur `origin/main` (`--force-with-lease`), contrôle de production programmé (≈ 6 minutes) puis lecture de la ligne de version.
+- Une PR par tâche, sur la branche de travail imposée par la session. Le fichier de plan ne doit contenir que le programme de modifications de la demande en cours.
+
+**Architecture du front (depuis Q0/Q1).** `app.js` (IIFE `FV`) expose `window.FVC` : `FVC.pages` (une fonction par page, remplaçable par un module chargé après `app.js`), `FVC.core` (aides partagées), `FVC.admin` (éditeurs d'administration de `fv-admin.js`). Tout nouveau script : l'ajouter à `PUBLIC_SCRIPTS` (`server.js`) et à `index.html` avec un `?v=`. Pour déplacer du code hors d'`app.js` : analyser les dépendances (acorn), ne rien réécrire, vérifier `no-undef`, tests navigateur.
+
+**Tests.** `npm run check`, `npm test` (222), `npm run test:browser` (32), `npm run test:a11y` (4, base de défauts connus qui ne doit jamais augmenter). Base de test locale PostgreSQL à (re)démarrer dans la même commande que les tests (elle s'arrête entre deux appels) ; des échecs en masse = base tombée, pas un bug.
+
+**Série de connexion (barème validé).** 150 FC + 10 XP au jour 1, +10 FC par jour de série (plafond +100 FC), +500 FC au 7ᵉ jour, +2000 FC au 30ᵉ ; un jour manqué remet la série à 1, record conservé (`lib/daily-streak.js`, `DAILY_STREAK`).
+
+**Reste à faire (ordre validé).** Q2 (`fv-market.js`) → G2 sets thématiques (budget de FOOTCOINS à fixer avec le propriétaire) → Q3 à Q5 → G3 échanges de cartes (règle anti-triche à valider avant tout code). Actions du propriétaire en attente : changer le mot de passe Aiven puis `DATABASE_URL`, relire `docs/NATIONALITES-LDC-CONFLITS.csv`, fournir les nationalités 2024-25 et 2025-26 (701 cartes) et les logos de FC Košice et Lierse SK, décider pour UptimeRobot (« Keyword »).
+
