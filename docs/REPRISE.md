@@ -120,7 +120,7 @@ Feuille de route de découpage et de jeu **terminée** : A1–A5 ✔, G1–G3 �
 2. **Changer le mot de passe de la base Aiven** puis mettre à jour `DATABASE_URL` sur Render (un mot de passe figure dans un fichier de configuration local).
 3. Relire `docs/NATIONALITES-LDC-CONFLITS.csv` (154 cas ; reporté à sa demande).
 4. Fournir : nationalités des saisons 2024-25 et 2025-26 (701 cartes) ; logos de FC Košice et Lierse SK.
-5. ~~UptimeRobot en mode « Keyword »~~ : **fait** selon le propriétaire (06/10, non vérifiable depuis la session). Mot-clé utile : `"ok":true` sur `/api/health`.
+5. ~~UptimeRobot en mode « Keyword »~~ : **fait et confirmé par capture d'écran du propriétaire (06/10)** : moniteur « Keyword » sur `https://sport-vault.onrender.com/api/health`, mot-clé `"ok":true`, incident si le mot-clé est absent. Pourquoi ce mode : `/api/health` répond HTTP 200 même base tombée (`ok` vaut `dbReady`) ; seul le mot-clé détecte la panne.
 6. Vérifier sur téléphone : cibles tactiles (boutons, menu, cloche), série de connexion dans le Vault, page Administration.
 
 ## 10. Pièges déjà rencontrés (ne pas les revivre)
