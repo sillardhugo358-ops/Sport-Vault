@@ -21,6 +21,8 @@ test('santé : version déployée, démarrage, base joignable', async () => {
   assert.ok(h.database.latencyMs >= 0);
   assert.ok(!JSON.stringify(h).includes('postgresql://'), 'aucune adresse de base exposée');
   assert.equal(h.databaseTls, 'off', 'TLS de la base annoncé (pas de TLS sur la base de test)');
+  assert.equal(h.databaseTlsDiagnostic.caCertChars, 0, 'diagnostic TLS présent quand la vérification est absente');
+  assert.ok(!JSON.stringify(h.databaseTlsDiagnostic).includes('postgresql://'), 'le diagnostic n\'expose aucune valeur');
   for (const k of ['rss', 'heapUsed', 'heapTotal', 'external']) assert.ok(Number.isInteger(h.memory[k]) && h.memory[k] >= 0, 'mémoire ' + k);
   assert.ok(h.memory.rss >= h.memory.heapUsed, 'la mémoire occupée couvre les données JavaScript');
 });
