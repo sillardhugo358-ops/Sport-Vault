@@ -7,7 +7,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { poolConfig, caCertificate, withoutSslParams, tlsMode } = require('../lib/db-ssl');
+const { poolConfig, caCertificate, withoutSslParams, tlsMode, tlsDiagnostic } = require('../lib/db-ssl');
 
 const PEM = '-----BEGIN CERTIFICATE-----\nMIIBszCCAVmgAwIBAgIUTESTTESTTESTTESTTESTTEST\n-----END CERTIFICATE-----\n';
 const URL_NO_VERIFY = 'postgresql://u:p%40ss@db.example.com:12345/app?sslmode=no-verify';
@@ -52,4 +52,13 @@ test('mode TLS annoncé : verified avec le certificat, unverified en production 
   assert.equal(tlsMode({ DATABASE_URL: URL_NO_VERIFY, DATABASE_CA_CERT: PEM, NODE_ENV: 'production' }), 'verified');
   assert.equal(tlsMode({ DATABASE_URL: URL_NO_VERIFY, NODE_ENV: 'production' }), 'unverified');
   assert.equal(tlsMode({ DATABASE_URL: 'postgresql://localhost/x' }), 'off');
+});
+
+test('diagnostic TLS : longueur et noms seulement, jamais de valeur', () => {
+  const d = tlsDiagnostic({ DATABASE_URL: URL_NO_VERIFY, DATABASE_CA_CERTIFICATE: PEM, DATABASE_CA_CERT: '', OTHER: 'x', RENDER_CERT_X: 'y' });
+  assert.equal(d.caCertChars, 0);
+  assert.equal(d.caFileSet, false);
+  assert.deepEqual(d.nearbyNames, ['DATABASE_CA_CERT', 'DATABASE_CA_CERTIFICATE', 'DATABASE_URL', 'RENDER_CERT_X']);
+  assert.ok(!JSON.stringify(d).includes('postgresql://') && !JSON.stringify(d).includes('BEGIN CERTIFICATE'));
+  assert.equal(tlsDiagnostic({ DATABASE_CA_CERT: PEM }).caCertChars, PEM.length);
 });
