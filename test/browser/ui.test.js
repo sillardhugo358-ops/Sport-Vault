@@ -529,3 +529,40 @@ test('clavier : lien d\'évitement au premier Tab, titre par page, focus sur le 
   await page.waitForFunction(() => document.activeElement?.id === 'app', null, { timeout: 5000 });
   assert.deepEqual(errors, []);
 });
+
+test('fenêtres modales : rôle dialog nommé, focus piégé, Échap, fond inerte, focus rendu au déclencheur', async () => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await visit('admin');
+  await page.click('[data-admin-tab="successes"]');
+  await page.waitForSelector('[data-preview-achievement]');
+  await page.evaluate(() => document.querySelector('[data-preview-achievement]').setAttribute('data-test-trigger', '1'));
+  await page.focus('[data-test-trigger]');
+  await page.keyboard.press('Enter');
+  await page.waitForSelector('#modal.show');
+  const open = await page.evaluate(() => {
+    const m = document.querySelector('#modal'), title = document.getElementById(m.getAttribute('aria-labelledby') || '');
+    return { role: m.getAttribute('role'), modal: m.getAttribute('aria-modal'), title: title?.textContent.trim() || '', inside: m.contains(document.activeElement),
+      appInert: document.querySelector('#app').inert, headerInert: document.querySelector('.header').inert };
+  });
+  assert.equal(open.role, 'dialog');
+  assert.equal(open.modal, 'true');
+  assert.ok(open.title.length > 2, 'titre : ' + open.title);
+  assert.equal(open.inside, true, 'le focus est dans la fenêtre à l\'ouverture');
+  assert.equal(open.appInert && open.headerInert, true, 'le fond est inerte');
+  for (let i = 0; i < 25; i++) {
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.querySelector('#modal').contains(document.activeElement)), true, 'Tab n\'est pas sorti de la fenêtre (' + i + ')');
+  }
+  for (let i = 0; i < 6; i++) {
+    await page.keyboard.press('Shift+Tab');
+    assert.equal(await page.evaluate(() => document.querySelector('#modal').contains(document.activeElement)), true, 'Maj+Tab n\'est pas sorti de la fenêtre (' + i + ')');
+  }
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.querySelector('#modal').classList.contains('show'));
+  const closed = await page.evaluate(() => ({ role: document.querySelector('#modal').getAttribute('role'), appInert: document.querySelector('#app').inert,
+    headerInert: document.querySelector('.header').inert, back: document.activeElement?.hasAttribute('data-test-trigger') }));
+  assert.equal(closed.role, null);
+  assert.equal(closed.appInert || closed.headerInert, false, 'le fond est de nouveau actif');
+  assert.equal(closed.back, true, 'le focus revient au bouton qui a ouvert la fenêtre');
+  assert.deepEqual(errors, []);
+});
