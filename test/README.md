@@ -64,3 +64,8 @@ TEST_DATABASE_URL=postgresql://postgres:motdepasse@localhost:5432/postgres npm r
 ## Fichiers techniques
 
 - `helpers.js` : base jetable, démarrage et redémarrage du serveur, client HTTP avec cookie de session. Chaque joueur de test a sa propre IP (en-tête `X-Forwarded-For`), car le serveur limite les inscriptions par IP.
+
+## Accessibilité (`npm run test:a11y`)
+
+`test/browser/a11y.test.js` mesure, page par page (ordinateur et mobile), des défauts d'accessibilité avec des règles maison sans dépendance (`test/browser/a11y-rules.js` : images sans `alt`, boutons et liens sans nom, champs sans étiquette, éléments cliquables non natifs, cibles tactiles de moins de 44 px sur mobile, un seul `h1`, identifiants dupliqués, `lang` et titre du document).
+Les défauts déjà connus sont comptés dans `test/browser/a11y-baseline.json` : le test échoue si un compte **augmente**. Après une correction, `A11Y_UPDATE=1 npm run test:a11y` resserre la base ; l'objectif est une base vide, puis la suppression de la base.
