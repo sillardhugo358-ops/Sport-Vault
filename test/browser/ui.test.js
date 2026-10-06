@@ -570,3 +570,28 @@ test('fenêtres modales : rôle dialog nommé, focus piégé, Échap, fond inert
   assert.equal(closed.back, true, 'le focus revient au bouton qui a ouvert la fenêtre');
   assert.deepEqual(errors, []);
 });
+
+test('espace de noms FVC : une fonction par page, aides partagées, page remplaçable, lien inconnu = accueil', async () => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(server.base + '/#home');
+  await page.reload();
+  await page.waitForFunction(() => document.querySelector('#app')?.children.length > 0);
+  const ns = await page.evaluate(() => ({
+    pages: Object.keys(window.FVC?.pages || {}).sort(),
+    core: Object.keys(window.FVC?.core || {}).sort(),
+    allFunctions: Object.values(window.FVC?.pages || {}).every(f => typeof f === 'function')
+  }));
+  assert.deepEqual(ns.pages, ['admin', 'album', 'auth', 'card', 'classement', 'collection', 'home', 'market', 'packs', 'profil', 'successes', 'vault']);
+  for (const k of ['$', 'api', 'app', 'esc', 'render', 'state', 'toast']) assert.ok(ns.core.includes(k), 'FVC.core.' + k);
+  assert.equal(ns.allFunctions, true);
+  // Un lien inconnu affiche l'accueil (et non « [object Promise] »).
+  await page.goto(server.base + '/#page-qui-nexiste-pas');
+  await page.waitForFunction(() => document.querySelector('#app')?.children.length > 0);
+  assert.equal(await page.evaluate(() => document.querySelector('#app').textContent.includes('[object')), false);
+  assert.ok(await page.evaluate(() => document.querySelector('#app .page, #app section')), 'l\'accueil est affiché');
+  // Un module chargé après app.js peut remplacer une page.
+  await page.evaluate(() => { window.FVC.pages.successes = async () => '<div class="page" id="page-remplacee"><h1>Page remplacée</h1></div>'; });
+  await page.goto(server.base + '/#successes');
+  await page.waitForSelector('#page-remplacee');
+  assert.deepEqual(errors, []);
+});

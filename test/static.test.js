@@ -54,7 +54,7 @@ test("polices : fonts/*.woff2 servies (cache long), rien d'autre dans fonts/", a
 test('cache et compression : gzip, ETag et 304, cache long des fichiers versionnés', async () => {
   const raw = await fetch(server.base + '/app.js', { headers: { 'accept-encoding': 'identity' } });
   const size = Number(raw.headers.get('content-length'));
-  assert.ok(size > 100000, 'app.js brut');
+  assert.ok(size > 20000, 'app.js assez gros pour que la compression compte');
   // http.get : fetch décompresse et masque la taille réellement transférée.
   const gz = await new Promise((resolve, reject) => {
     const u = new URL(server.base);
