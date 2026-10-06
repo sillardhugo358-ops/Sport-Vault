@@ -595,3 +595,20 @@ test('espace de noms FVC : une fonction par page, aides partagées, page rempla�
   await page.waitForSelector('#page-remplacee');
   assert.deepEqual(errors, []);
 });
+
+test('administration (fv-admin.js) : onglets et éditeurs de cartes, packs, pools, compétitions et clubs s\'ouvrent', async () => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await visit('admin');
+  assert.ok(await page.evaluate(() => typeof window.FVC.admin?.showPackEditor === 'function' && typeof window.FVC.pages.admin === 'function'));
+  const editors = [['cards', '[data-new-catalog-card]'], ['packs', '[data-new-pack]'], ['packs', '[data-new-pool]'], ['competitions', '[data-new-competition]'], ['competitions', '[data-new-club]']];
+  for (const [tab, selector] of editors) {
+    await page.click(`[data-admin-tab="${tab}"]`);
+    await page.waitForSelector(selector, { state: 'visible' });
+    await page.click(selector);
+    await page.waitForFunction(() => document.querySelector('#modal')?.classList.contains('show'));
+    assert.ok((await page.textContent('#modal h2, #modal h3, #modal h1'))?.trim().length > 2, selector + ' : fenêtre titrée');
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => !document.querySelector('#modal').classList.contains('show'));
+  }
+  assert.deepEqual(errors, []);
+});
