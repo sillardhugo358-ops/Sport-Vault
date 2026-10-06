@@ -81,3 +81,31 @@ test('base injoignable au démarrage : le serveur annonce le code d\'erreur (san
     child.kill('SIGTERM');
   }
 });
+
+test('certificat de la base inexploitable : /api/health répond toujours (jamais 500), annonce « invalid » et la forme de la valeur, sans son contenu', async () => {
+  const { spawn } = require('node:child_process');
+  const net = require('node:net');
+  const port = await new Promise(r => { const s = net.createServer(); s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => r(p)); }); });
+  const child = spawn(process.execPath, ['-r', './security-bootstrap.js', 'server.js'], {
+    cwd: require('node:path').join(__dirname, '..'),
+    env: { ...process.env, DATABASE_URL: 'postgresql://secret_user:secret_pass@127.0.0.1:1/x', DATABASE_CA_CERT: 'MIIBcorpsDuCertificatSansEnTete', PORT: String(port), NODE_ENV: 'production', ADMIN_EMAILS: '' },
+    stdio: 'ignore'
+  });
+  try {
+    let res = null, h = null;
+    for (let i = 0; i < 60 && !(h && h.storage === 'unavailable'); i++) {
+      await new Promise(r => setTimeout(r, 500));
+      res = await fetch(`http://127.0.0.1:${port}/api/health`).catch(() => null);
+      h = res ? await res.json().catch(() => null) : null;
+    }
+    assert.equal(res.status, 200, 'jamais de 500 sur /api/health');
+    assert.equal(h.databaseTls, 'invalid');
+    assert.equal(h.databaseTlsDiagnostic.caCertShape.certificateBlocks, 0);
+    assert.equal(h.databaseTlsDiagnostic.caCertShape.startsWithDashes, false);
+    assert.equal(h.databaseStartError, 'ECONNREFUSED', 'le démarrage a bien tenté la base (retour au mode historique)');
+    const text = JSON.stringify(h);
+    assert.ok(!text.includes('MIIBcorps') && !text.includes('secret_pass') && !text.includes('secret_user'), 'ni le certificat ni les identifiants exposés');
+  } finally {
+    child.kill('SIGTERM');
+  }
+});
