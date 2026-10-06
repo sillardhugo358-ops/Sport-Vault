@@ -535,6 +535,7 @@
   .collection-toolbar .filters::-webkit-scrollbar{display:none}
   .collection-toolbar .filter{flex:none;padding:8px 10px}
   .collection-tools{width:100%;display:grid;grid-template-columns:1fr;gap:7px}
+  .fvh-head a,.vault-page a[href="#collection"],[data-shop-reset]{display:inline-flex;align-items:center;min-height:44px}
   .collection-search,.collection-sort{width:100%;min-width:0;height:42px}
   .collection-rarity-section{margin:20px 0 30px}
   .collection-rarity-head{align-items:center;margin-bottom:10px;padding-bottom:8px}
@@ -2514,3 +2515,13 @@ hr{border-color:#1d3d63}
 #app:focus{outline:none}
 .shop-search:focus-within{border-color:var(--gold2);box-shadow:var(--focus)}
 #modal [tabindex="-1"]:focus{outline:none}
+
+/* Mobile (A5) : cibles tactiles d'au moins 44 px et marges des écrans à encoches */
+@media(max-width:760px){
+  .btn,.filter,.success-filter-btn,.shop-filter-toggle,.shop-all-link,.menu,.notif-bell,.brand,.nav a,button.active,a.active{min-height:44px;min-width:44px}
+  a.btn,.btn-gold,.btn-outline,.btn-ghost{display:inline-flex;align-items:center;justify-content:center}
+  .notif-bell,.menu{display:inline-flex;align-items:center;justify-content:center}
+  .collection-search,.collection-sort,.auction-search,.auction-select,#shopSearch,#successSearch,#successSort{min-height:44px}
+  .header{padding-left:max(13px,env(safe-area-inset-left));padding-right:max(13px,env(safe-area-inset-right))}
+  body{padding-bottom:env(safe-area-inset-bottom)}
+}
