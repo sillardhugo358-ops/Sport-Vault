@@ -2513,3 +2513,4 @@ hr{border-color:#1d3d63}
 .skip-link:focus{top:12px;outline:2px solid #050b16;outline-offset:2px}
 #app:focus{outline:none}
 .shop-search:focus-within{border-color:var(--gold2);box-shadow:var(--focus)}
+#modal [tabindex="-1"]:focus{outline:none}
