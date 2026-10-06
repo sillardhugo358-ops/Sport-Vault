@@ -2544,3 +2544,25 @@ hr{border-color:#1d3d63}
 .set-editor-chosen{list-style:none;margin:6px 0 0;padding:0;max-height:200px;overflow:auto}
 .set-editor-result small,.set-editor-chosen small{color:var(--muted)}
 .set-editor-modal .field-error{display:block}
+
+/* Échanges de cartes (fv-trades.js). */
+.trade-code-box{display:flex;flex-wrap:wrap;align-items:center;gap:14px}
+.trade-code-box p{flex-basis:100%;margin:0;color:var(--muted);font-size:13px;line-height:1.6}
+.trade-code{font:900 34px var(--head);letter-spacing:6px;color:var(--gold2)}
+.trade-search label{display:block;font:800 10px var(--body);letter-spacing:1px;text-transform:uppercase;color:#a3a59f;margin-bottom:6px}
+.trade-search-row{display:flex;gap:10px;flex-wrap:wrap}
+.trade-search-row input{flex:1 1 200px;min-height:48px;border:1px solid var(--line);background:#070908;color:var(--text);padding:0 13px;text-transform:uppercase;letter-spacing:3px;font:700 16px var(--body)}
+.trade-with{margin:16px 0 8px}
+.trade-columns{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0}
+.trade-columns fieldset{margin:0;border:1px solid var(--line);padding:10px 12px;min-width:0}
+.trade-columns legend{padding:0 6px;font:800 11px var(--body);letter-spacing:1px;color:var(--gold2);text-transform:uppercase}
+.trade-columns h4{margin:0 0 6px;font:800 11px var(--body);letter-spacing:1px;color:var(--gold2);text-transform:uppercase}
+.trade-columns ul{list-style:none;margin:0;padding:0}
+.trade-pick-list{max-height:320px;overflow:auto}
+.trade-pick{display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer;border-bottom:1px solid var(--line);padding:4px 0}
+.trade-pick input{width:20px;height:20px;flex:none}
+.trade-pick small,.trade-offer small{color:var(--muted)}
+.trade-offers{display:grid;gap:12px}
+.trade-offer-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.trade-empty{color:var(--muted);font-size:13px}
+@media(max-width:760px){.trade-columns{grid-template-columns:1fr}.trade-code{font-size:28px}}

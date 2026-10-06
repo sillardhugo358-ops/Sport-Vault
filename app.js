@@ -10,7 +10,7 @@ const rarityOrder={common:1,rare:2,epic:3,legendary:4,icon:5};
 const rarityValue={common:100,rare:300,epic:700,legendary:1800,icon:4500};
 const route=()=>{const h=location.hash.replace(/^#/,'')||'home';const [r,q]=h.split('?');return{r:r||'home',q:new URLSearchParams(q||'')}};
 // Titre de l'onglet par page (lecteurs d'écran, historique du navigateur) ; le focus passe au contenu quand on change de page.
-const PAGE_TITLES={home:'Accueil',collection:'Ma collection',album:'Album',packs:'Packs',vault:'Mon Vault',profil:'Profil',successes:'Succès',market:'Marché',classement:'Classement',card:'Carte',auth:'Connexion',admin:'Administration'};
+const PAGE_TITLES={home:'Accueil',collection:'Ma collection',album:'Album',packs:'Packs',vault:'Mon Vault',profil:'Profil',successes:'Succès',market:'Marché',trades:'Échanges',classement:'Classement',card:'Carte',auth:'Connexion',admin:'Administration'};
 document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('.skip-link');if(a){e.preventDefault();app().focus()}});
 async function api(path,opt={}){const r=await fetch(path,{credentials:'same-origin',cache:'no-store',...opt});let d={};try{d=await r.json()}catch{};if(!r.ok){const e=new Error(d.error||'Une erreur est survenue.');e.status=r.status;e.data=d;throw e}
  // Après une action (pack, enchère, récompense…), la cloche vérifie les succès et missions terminés (notifications-bell.js).

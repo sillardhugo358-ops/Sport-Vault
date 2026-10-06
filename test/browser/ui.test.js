@@ -8,14 +8,14 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const { chromium } = require('playwright-core');
-const { startServer, ensureTestClubs } = require('../helpers');
+const { startServer, ensureTestClubs, newPlayer } = require('../helpers');
 
 const VIEWPORTS = [
   { name: 'ordinateur', width: 1280, height: 900 },
   { name: 'tablette', width: 900, height: 1000 },
   { name: 'mobile', width: 390, height: 844 }
 ];
-const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'classement', 'admin'];
+const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'admin'];
 
 let server, browser, context, page;
 const errors = [];
@@ -277,6 +277,45 @@ test('sets thématiques : éditeur admin (recherche de cartes) puis récupérati
   assert.match(await page.textContent('.set-section'), /3\/3/);
   await page.click('[data-set-claim]');
   await page.waitForFunction(() => /RÉCUPÉRÉ/.test(document.querySelector('.set-section')?.innerText || ''), null, { timeout: 15000 });
+  assert.deepEqual(errors, []);
+});
+
+test('échanges : proposer une offre depuis la page, puis accepter une offre reçue', async () => {
+  const other = await newPlayer(server, 'Partenaire');
+  const me = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
+  const base = (await server.db.query('SELECT * FROM catalog_cards ORDER BY id LIMIT 1')).rows[0];
+  const give = async (uid, name) => (await server.db.query(
+    `INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,source,status)
+     VALUES(gen_random_uuid(),$1,$2,$3,$4,$5,$6,$7,'common','pack:test','owned') RETURNING instance_id`, [base.id, uid, base.season, name, base.position, base.club, base.nation])).rows[0].instance_id;
+  const myCard = await give(me, 'Carte Navigateur'), hisCard = await give(other.user.id, 'Carte Partenaire'), hisOther = await give(other.user.id, 'Autre Partenaire');
+  for (const vp of [VIEWPORTS[0], VIEWPORTS[2]]) {
+    await page.setViewportSize({ width: vp.width, height: vp.height });
+    const r = await visit('trades');
+    assert.ok(r.overflow <= 1, vp.name + ' : débordement de ' + r.overflow + ' px');
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await visit('trades');
+  const otherCode = (await other.get('/api/trades')).body.code;
+  await page.fill('#tradeCode', otherCode);
+  await page.click('[data-trade-search]');
+  await page.waitForSelector('[data-trade-pick="ask"]');
+  await page.check('[data-trade-pick="give"][value="' + myCard + '"]');
+  await page.check('[data-trade-pick="ask"][value="' + hisCard + '"]');
+  await page.click('[data-trade-send]');
+  await page.waitForFunction(() => /EN COURS \(1\)/.test(document.querySelector('.trades-page')?.innerText || ''), null, { timeout: 15000 });
+  assert.equal((await other.get('/api/trades')).body.received.length, 1);
+  // Offre reçue : acceptation depuis la page.
+  const mineCode = await page.textContent('#tradeMyCode');
+  const sent = await other.post('/api/trades/offer', { toCode: mineCode, give: [hisOther], ask: [(await server.db.query("SELECT instance_id FROM card_instances WHERE owner_id=$1 AND name='Carte Navigateur'", [me])).rows[0].instance_id.toString()] });
+  assert.equal(sent.status, 409, 'carte déjà engagée dans l\'offre précédente');
+  const spare = await give(me, 'Carte De Rechange');
+  const ok = await other.post('/api/trades/offer', { toCode: mineCode, give: [hisOther], ask: [spare] });
+  assert.equal(ok.status, 200, JSON.stringify(ok.body));
+  await visit('trades');
+  await page.waitForSelector('[data-trade-accept]');
+  await page.click('[data-trade-accept]');
+  await page.waitForFunction(() => /ACCEPTÉE/.test(document.querySelector('.trades-page')?.innerText || ''), null, { timeout: 15000 });
+  assert.equal((await server.db.query('SELECT owner_id FROM card_instances WHERE instance_id=$1', [hisOther])).rows[0].owner_id, me);
   assert.deepEqual(errors, []);
 });
 
@@ -655,7 +694,7 @@ test('espace de noms FVC : une fonction par page, aides partagées, page rempla�
     core: Object.keys(window.FVC?.core || {}).sort(),
     allFunctions: Object.values(window.FVC?.pages || {}).every(f => typeof f === 'function')
   }));
-  assert.deepEqual(ns.pages, ['admin', 'album', 'auth', 'card', 'classement', 'collection', 'home', 'market', 'packs', 'profil', 'successes', 'vault']);
+  assert.deepEqual(ns.pages, ['admin', 'album', 'auth', 'card', 'classement', 'collection', 'home', 'market', 'packs', 'profil', 'successes', 'trades', 'vault']);
   for (const k of ['$', 'api', 'app', 'esc', 'render', 'state', 'toast']) assert.ok(ns.core.includes(k), 'FVC.core.' + k);
   assert.equal(ns.allFunctions, true);
   // Un lien inconnu affiche l'accueil (et non « [object Promise] »).
