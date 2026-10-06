@@ -692,10 +692,12 @@ test('espace de noms FVC : une fonction par page, aides partagées, page rempla�
   const ns = await page.evaluate(() => ({
     pages: Object.keys(window.FVC?.pages || {}).sort(),
     core: Object.keys(window.FVC?.core || {}).sort(),
+    ui: Object.keys(window.FVC?.ui || {}).sort(),
     allFunctions: Object.values(window.FVC?.pages || {}).every(f => typeof f === 'function')
   }));
   assert.deepEqual(ns.pages, ['admin', 'album', 'auth', 'card', 'classement', 'collection', 'home', 'market', 'packs', 'profil', 'successes', 'trades', 'vault']);
   for (const k of ['$', 'api', 'apiRetry', 'app', 'bind', 'cardLink', 'cardMarkup', 'cardStatDefinitions', 'closeModal', 'esc', 'initials', 'money', 'rarityOrder', 'render', 'setModal', 'state', 'toast', 'viewHero']) assert.ok(ns.core.includes(k), 'FVC.core.' + k);
+  for (const k of ['claimAlbum', 'claimChallengeUi', 'claimSetUi', 'daily', 'logout', 'mission', 'openPack', 'openPool', 'submitAuth', 'task', 'toggleFavorite']) assert.ok(ns.ui.includes(k), 'FVC.ui.' + k);
   assert.equal(ns.allFunctions, true);
   // Un lien inconnu affiche l'accueil (et non « [object Promise] »).
   await page.goto(server.base + '/#page-qui-nexiste-pas');
