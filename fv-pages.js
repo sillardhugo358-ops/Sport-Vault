@@ -258,6 +258,7 @@ async function profile(){
  +'<div class="profile-side"><section class="profile-panel"><p class="eyebrow">PROGRESSION</p><h2>PARCOURS</h2><div class="profile-stats">'
  +[['Succès obtenus',g.achievements],['Missions accomplies',g.missions],['Tâches récupérées',g.tasks],['Albums complétés',g.albums],['Ventes aux enchères',g.auctionsSold],['Enchères remportées',g.auctionsWon],['Ventes en cours',g.auctionsActive]].map(([l,v])=>'<div><span>'+l+'</span><b>'+money(v||0)+'</b></div>').join('')
  +'</div><a class="btn btn-ghost profile-more" href="#successes">VOIR MES SUCCÈS →</a></section>'
+ +(FVC.push?FVC.push.panelHtml():'')
  +'<section class="profile-panel profile-history"><p class="eyebrow">HISTORIQUE</p><h2>MOUVEMENTS DE FOOTCOINS</h2>'
  +(h.length?'<ul class="profile-list">'+h.map(x=>'<li><span class="profile-li-main"><strong>'+esc(x.label)+'</strong><time datetime="'+esc(x.createdAt)+'">'+esc(when(x.createdAt))+'</time></span><b class="'+(x.amount>=0?'pos':'neg')+'">'+(x.amount>=0?'+':'−')+money(Math.abs(x.amount))+' FC</b></li>').join('')+'</ul>':'<p class="profile-empty">Aucun mouvement enregistré pour le moment.</p>')
  +'<p class="profile-note">Les 30 derniers mouvements. Historique tenu depuis le 30 septembre 2026.</p></section></div>'
