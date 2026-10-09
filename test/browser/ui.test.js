@@ -813,7 +813,7 @@ test('collection : affichage de base par OVR décroissant, tri modifiable', asyn
   const order = async () => page.evaluate(() => [...document.querySelectorAll('.collection-card-item')].map(e => e.textContent).filter(t => /Tri OVR/.test(t)).map(t => Number(/Tri OVR (\d+)/.exec(t)[1])));
   assert.deepEqual(await order(), [80, 70, 60]);
   await page.selectOption('#collectionSort', 'name');
-  await page.waitForFunction(() => document.querySelector('#collectionSort').value === 'name');
+  await page.waitForFunction(() => { const t = [...document.querySelectorAll('.collection-card-item')].map(e => e.textContent).find(x => /Tri OVR/.test(x)); return t && /Tri OVR 60/.test(t); });
   assert.deepEqual(await order(), [60, 70, 80]);
   assert.deepEqual(errors, []);
 });
