@@ -755,6 +755,31 @@ test('menu : « Marché » regroupe Enchères et Échanges (liste déroulante au
   assert.deepEqual(errors, []);
 });
 
+test('roue des éditions limitées : fenêtre accessible, lancer sur action du joueur, résultat annoncé, puis révélation des cartes', async () => {
+  await page.setViewportSize({ width: 390, height: 800 });
+  await page.goto(server.base + '/#home');
+  await page.reload();
+  await page.waitForFunction(() => window.FVC?.ui?.openPool);
+  const card = (id, name, extra = {}) => ({ instanceId: id, cardId: id, name, position: 'ST', club: 'FC Roue', nation: 'France', season: '2026-2027', rarity: 'epic', ovr: 88, ...extra });
+  await page.route('**/api/pools/open', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+    user: { id: 'u', name: 'T', coins: 10, xp: 0 },
+    cards: [card('s1', 'Spéciale', { rarity: 'icon' }), card('l1', 'Limitée', { isLimited: true, serial: 1, maxSupply: 5, serialLabel: '1/5', bonus: true })],
+    wheels: [{ special: { id: 's1', name: 'Spéciale' }, segments: [{ label: '/5', tier: 5, chance: 0.5 }, { label: 'RIEN', tier: null }], index: 0, lostChance: 99.5, tier: 5, card: card('l1', 'Limitée', { serialLabel: '1/5' }) }],
+    pack: { id: 'pool:x', name: 'Pool', cards: 1, pool: true }
+  }) }));
+  await page.evaluate(() => { window.FVC.ui.openPool('x'); });
+  await page.waitForSelector('#wheelGo');
+  assert.equal(await page.getAttribute('#modal', 'role'), 'dialog');
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1), false);
+  assert.equal(await page.textContent('#wheelResult'), '', 'rien n\'est annoncé avant le lancer');
+  await page.click('#wheelGo');
+  await page.waitForFunction(() => document.getElementById('wheelGo')?.textContent === 'CONTINUER', null, { timeout: 8000 });
+  assert.match(await page.textContent('#wheelResult'), /Limitée.*1\/5/);
+  await page.click('#wheelGo');
+  await page.waitForFunction(() => !document.getElementById('wheelGo'));
+  await page.unroute('**/api/pools/open');
+});
+
 test('administration (fv-admin.js) : onglets et éditeurs de cartes, packs, pools, compétitions et clubs s\'ouvrent', async () => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await visit('admin');
