@@ -232,7 +232,7 @@ schémas ou de résultats de test.
 
 Contexte détaillé : **`docs/REPRISE.md`** (état exact, décisions, pièges, reste à faire) et **`docs/PROMPT-REPRISE.md`** (message de démarrage). Rapports : `docs/FOOTVAULT_Rapport_*.pdf`. Ce qui suit est le résumé à toujours appliquer.
 
-**État.** `main` est à jour avec les PR #84 à #112 (accessibilité, mobile, série de connexion quotidienne, découpage de l'interface Q0–Q5, diagnostic TLS, sets thématiques G2, échanges de cartes G3) ; reste Q3 à Q5. Point ouvert : le certificat Aiven. Variable `DATABASE_CA_CERT` collée **sans lignes BEGIN/END** (diagnostic mesuré) : site en mode historique (`databaseTls:"invalid"`) ; **panne du 06/10 de 22 h 46 à 23 h 09 UTC** (corrigée par la PR #116 : `/api/health` ne lève plus). **Ne rien changer à cette variable sans la procédure de `docs/REPRISE.md` §7** (test `openssl` préalable, PEM entier avec BEGIN/END, surveillance de `/api/health`, retour arrière immédiat).
+**État.** `main` est à jour avec les PR #84 à #117 (accessibilité, mobile, série de connexion quotidienne, découpage de l'interface Q0–Q5, sets thématiques G2, échanges de cartes G3, menu mobile, correctif de santé du certificat). **Vérification TLS complète de la base active depuis le 09/10/2026** (`databaseTls:"verified"` dans `/api/health`, variable `DATABASE_CA_CERT` = « CA certificate » Aiven entier avec BEGIN/END). Incidents du 06/10 (pannes de 19 h 53–20 h 02 et 22 h 46–23 h 09 UTC) : voir `docs/REPRISE.md` §7. **Ne pas modifier cette variable sans la procédure de `docs/REPRISE.md` §7** (test `openssl` préalable, PEM entier, surveillance de `/api/health`, retour arrière immédiat).
 
 **Règles de collaboration (consignes permanentes du propriétaire).**
 - Répondre en français, concis ; dire ce qui a été testé et ce qui ne l'a pas été.
@@ -242,7 +242,7 @@ Contexte détaillé : **`docs/REPRISE.md`** (état exact, décisions, pièges, r
 
 **Architecture du front (Q0 à Q5, terminée).** Ordre des scripts : `fv-core.js` (socle) → `fv-cards.js` → `app.js` (routeur, `render`, `bind`) → `fv-pages.js` → `fv-admin.js`, `fv-market.js`, `fv-trades.js`… ; `window.FVC` expose `FVC.core` (aides partagées), `FVC.pages` (une fonction par page, enregistrée par son module), `FVC.ui` (actions des pages appelées par `bind()`), `FVC.admin`, `FVC.market`. Feuilles de style `styles.css` à `styles-6.css` : ordre = cascade. Tout nouveau script : l'ajouter à `PUBLIC_SCRIPTS` (`server.js`) et à `index.html` avec un `?v=`, à la bonne place. Pour déplacer du code : analyser les dépendances (acorn), ne rien réécrire, vérifier `no-undef`, tests navigateur (détails : `docs/REPRISE.md` §4).
 
-**Tests.** `npm run check`, `npm test` (241), `npm run test:browser` (36), `npm run test:a11y` (4, base de défauts connus qui ne doit jamais augmenter). Base de test locale PostgreSQL à (re)démarrer dans la même commande que les tests (elle s'arrête entre deux appels) ; des échecs en masse = base tombée, pas un bug.
+**Tests.** `npm run check`, `npm test` (243), `npm run test:browser` (36), `npm run test:a11y` (4, base de défauts connus qui ne doit jamais augmenter). Base de test locale PostgreSQL à (re)démarrer dans la même commande que les tests (elle s'arrête entre deux appels) ; des échecs en masse = base tombée, pas un bug.
 
 **Série de connexion (barème validé).** 150 FC + 10 XP au jour 1, +10 FC par jour de série (plafond +100 FC), +500 FC au 7ᵉ jour, +2000 FC au 30ᵉ ; un jour manqué remet la série à 1, record conservé (`lib/daily-streak.js`, `DAILY_STREAK`).
 
