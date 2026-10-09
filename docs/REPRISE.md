@@ -110,10 +110,17 @@ Procédure pour réussir **sans panne** :
 UptimeRobot (Keyword `"ok":true` sur `/api/health`) détecte ces pannes.
 
 ## 8. Reste à faire
-Feuille de route de découpage et de jeu **terminée** : A1–A5 ✔, G1–G3 ✔, Q0–Q5 ✔.
-- **Vérifications en ligne connectées** (jamais faites) : voir §1 ; demander au propriétaire l'autorisation d'un compte jetable (et un compte admin pour l'administration). Les outils de contrôle d'ordinateur n'étaient pas disponibles dans la session ; Chromium sans interface suffit hors connexion.
-- **A5 (suite)** : harmoniser les points de rupture `@media`, tables d'admin lisibles à 390 px, `dvh`, indice de défilement des filtres ; base a11y vide et test bloquant. La mesure d'accessibilité ne couvre pas les pages hors connexion.
-- **Idées** : saisons de classement ; nouvelle tentative automatique de connexion à la base au démarrage ; échanges : limite de valeur ou de rareté si de l'abus apparaît ; réduire le CSS (les 6 feuilles empilent des correctifs successifs : beaucoup de règles se recouvrent) ; retirer les noms inutilisés des destructurations de tête d'`app.js`.
+Feuille de route de découpage et de jeu précédente **terminée** : A1–A5, G1–G3, Q0–Q5.
+**Nouvelle feuille de route VALIDÉE par le propriétaire le 07/10/2026** (toutes les idées proposées sont acceptées ; ordre recommandé ci-dessous ; pour chacune, poser les questions de règles au propriétaire AVANT de coder, comme pour G2/G3) :
+1. **Saisons de classement** (M) : saison de plusieurs semaines avec remise à zéro, récompenses finales (FC, badges, cartes exclusives), historique par joueur. S'appuie sur `lib/leaderboard.js`, `leaderboard_results`. Questions : durée, score saisonnier (cartes obtenues pendant la saison ou collection totale), barème.
+2. **Éditions limitées numérotées** (M) : page « Éditions limitées » (stock restant, numéro « #12/100 » de chaque exemplaire possédé). Le propriétaire **créera lui-même les cartes** (éditeur admin, `is_limited`, `max_supply`, `serial` déjà en base). Questions : comment elles sortent (pack limité, récompense de saison, enchères).
+3. **PWA + notifications push** (M) : service worker, manifeste complet (icônes 192/512 et « maskable »), Web Push (clés VAPID en variables d'environnement, jamais dans le dépôt), **push seulement, jamais d'e-mail** (consigne du propriétaire) : enchère terminée, offre d'échange reçue, série de connexion menacée. Réutilise les `notifications` existantes.
+4. **APK Android** (« à l'avenir ») : une fois la PWA prête, empaquetage TWA (Bubblewrap/PWABuilder) ; nécessite `/.well-known/assetlinks.json` (le serveur ignore aujourd'hui les chemins commençant par un point : prévoir une route dédiée), une clé de signature gardée par le propriétaire (secret) ; Google Play = compte développeur payant (≈ 25 $, une fois) ; sinon APK à installer à la main. Question : Play Store ou APK direct ?
+5. **Amis et profils publics** (M à L) : amis par code d'échange, profil public (collection, sets complétés, meilleures cartes), flux d'activité. Questions de vie privée (profil public par défaut ou sur option).
+6. **Listes de souhaits** (S à M) avec alertes (enchères, échanges), **statistiques de collection** (S : % par championnat/décennie, valeur estimée), **équipe type** (L : composer un 11, note d'équipe, classement).
+7. **Économie** : vente rapide d'un doublon contre des FC (au prix de référence moins une marge), **fusion de cartes** (5 doublons Common → 1 Rare), **pack sur mesure** (budget, club, rareté minimale), **défis collectifs** (la communauté ouvre N packs). Toujours cadrer l'impact sur la masse de FC avec le propriétaire (plafonds, `coin_ledger`).
+8. **Confort** : page Échanges plus riche (historique, offres en attente, refus avec motif), **accessibilité : base à zéro et test bloquant** (4 défauts connus), vérifications en ligne connectées (compte jetable à autoriser).
+- **Idées techniques** : nouvelle tentative automatique de connexion à la base au démarrage ; bascule automatique en mode TLS historique si un certificat valide échoue (décision du propriétaire en attente) ; réduire le CSS (6 feuilles de correctifs qui se recouvrent) ; retirer les noms inutilisés des destructurations de tête d'`app.js`.
 
 ## 9. Actions en attente côté propriétaire
 1. Certificat Aiven : voir §7 (vérifié par lui ; en cours d'analyse).
