@@ -3,7 +3,7 @@
 (()=>{
 const FVC=window.FVC=window.FVC||{};FVC.core=FVC.core||{};
 const bind=(...a)=>FVC.core.bind(...a);
-const state={user:null,cards:[],catalog:[],packs:[],progress:null,album:null,auctions:[],auctionHistory:[],adminUsers:[],adminCompetitions:[],adminClubs:[],filter:'all',collectionSearch:'',collectionSort:'recent',marketRarity:'all',marketSort:'ending',authMode:'login',packShopType:'all',packShopSearch:'',packShopMax:5000,packShopSort:'recent'};
+const state={user:null,cards:[],catalog:[],packs:[],progress:null,album:null,auctions:[],auctionHistory:[],adminUsers:[],adminCompetitions:[],adminClubs:[],filter:'all',collectionSearch:'',collectionSort:'ovr',marketRarity:'all',marketSort:'ending',authMode:'login',packShopType:'all',packShopSearch:'',packShopMax:5000,packShopSort:'recent'};
 const $=s=>document.querySelector(s);
 const app=()=>$('#app');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

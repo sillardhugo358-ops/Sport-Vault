@@ -799,6 +799,25 @@ test('PWA : manifeste complet (icônes maskable), service worker enregistré, bl
   assert.deepEqual(errors, []);
 });
 
+test('collection : affichage de base par OVR décroissant, tri modifiable', async () => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
+  for (const [i, ovr] of [60, 80, 70].entries()) {
+    const cardId = 'tri-ovr-' + i, name = 'Tri OVR ' + ovr;
+    await server.db.query("INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr) VALUES($1,'2026-2027',$2,'ST','FC Tri','France','common',$3)", [cardId, name, ovr]);
+    await server.db.query(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,ovr,source,acquired_at)
+      VALUES(gen_random_uuid(),$1,$2,'2026-2027',$3,'ST','FC Tri','France','common',$4,'pack:test',now() + ($5 || ' seconds')::interval)`, [cardId, uid, name, ovr, String(i)]);
+  }
+  await visit('collection');
+  assert.equal(await page.inputValue('#collectionSort'), 'ovr');
+  const order = async () => page.evaluate(() => [...document.querySelectorAll('.collection-card-item')].map(e => e.textContent).filter(t => /Tri OVR/.test(t)).map(t => Number(/Tri OVR (\d+)/.exec(t)[1])));
+  assert.deepEqual(await order(), [80, 70, 60]);
+  await page.selectOption('#collectionSort', 'name');
+  await page.waitForFunction(() => { const t = [...document.querySelectorAll('.collection-card-item')].map(e => e.textContent).find(x => /Tri OVR/.test(x)); return t && /Tri OVR 60/.test(t); });
+  assert.deepEqual(await order(), [60, 70, 80]);
+  assert.deepEqual(errors, []);
+});
+
 test('administration (fv-admin.js) : onglets et éditeurs de cartes, packs, pools, compétitions et clubs s\'ouvrent', async () => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await visit('admin');
