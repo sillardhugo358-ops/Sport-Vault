@@ -13,12 +13,12 @@ let server;
 const q = async (sql, params) => (await server.db.query(sql, params)).rows;
 let n = 0;
 // Donne à un joueur une nouvelle carte (instance) et renvoie son identifiant d'instance.
-async function card(p, { rarity = 'common', source = 'pack:test', tradeable = true, name } = {}) {
+async function card(p, { rarity = 'common', source = 'pack:test', tradeable = true, name, limited = false } = {}) {
   n++;
   const id = crypto.randomUUID(), cardId = 'trade-' + n;
   await q("INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr) VALUES($1,'2026-2027',$2,'ST','FC Echange','France',$3,70) ON CONFLICT DO NOTHING", [cardId, name || 'Joueur Echange ' + n, rarity]);
-  await q(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,source,tradeable,acquired_at)
-    VALUES($1,$2,$3,'2026-2027',$4,'ST','FC Echange','France',$5,$6,$7,'2026-01-01')`, [id, cardId, p.user.id, name || 'Joueur Echange ' + n, rarity, source, tradeable]);
+  await q(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,source,tradeable,acquired_at,is_limited,serial,max_supply)
+    VALUES($1,$2,$3,'2026-2027',$4,'ST','FC Echange','France',$5,$6,$7,'2026-01-01',$8,$9,$10)`, [id, cardId, p.user.id, name || 'Joueur Echange ' + n, rarity, source, tradeable, limited, limited ? 1 : null, limited ? 10 : null]);
   return id;
 }
 const owner = async id => (await q('SELECT owner_id FROM card_instances WHERE instance_id=$1', [id]))[0].owner_id;
@@ -62,6 +62,9 @@ test('validation : codes, nombres, propriété, raretés, cartes de bienvenue et
   }
   assert.equal((await post({ toCode: cb, give: [await card(a, { source: 'welcome' })], ask: [theirs] })).status, 400);
   assert.equal((await post({ toCode: cb, give: [await card(a, { tradeable: false })], ask: [theirs] })).status, 400);
+  const lim = await post({ toCode: cb, give: [await card(a, { limited: true })], ask: [theirs] });
+  assert.equal(lim.status, 400); assert.match(lim.body.error, /édition limitée/);
+  assert.equal((await post({ toCode: cb, give: [mine], ask: [await card(b, { limited: true })] })).status, 400);
   assert.equal((await post({ toCode: cb, give: [mine], ask: [theirs] })).status, 200);
 });
 
