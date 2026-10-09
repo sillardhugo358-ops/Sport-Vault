@@ -442,3 +442,7 @@
 .wheel-legend li{display:flex;gap:6px}
 .wheel-result{min-height:44px;font-weight:700}
 @media(max-width:420px){.wheel-stage{width:240px;height:240px}.wheel-label{font-size:13px}}
+/* Notifications push et installation (profil) */
+.push-panel .push-note{margin:0 0 12px;color:var(--muted);font-size:14px;line-height:1.5}
+.push-panel .btn{width:100%;justify-content:center}
+.push-install{margin-top:12px;padding-top:12px;border-top:1px solid var(--line,rgba(255,255,255,.12))}

@@ -780,6 +780,25 @@ test('roue des éditions limitées : fenêtre accessible, lancer sur action du j
   await page.unroute('**/api/pools/open');
 });
 
+test('PWA : manifeste complet (icônes maskable), service worker enregistré, bloc Notifications du profil sans débordement', async () => {
+  const man = await (await fetch(server.base + '/manifest.json')).json();
+  assert.equal(man.display, 'standalone');
+  assert.ok(man.icons.some(i => i.purpose === 'maskable' && i.sizes === '512x512'));
+  for (const i of man.icons) assert.equal((await fetch(server.base + '/' + i.src)).status, 200, i.src);
+  const sw = await fetch(server.base + '/sw.js');
+  assert.equal(sw.status, 200);
+  assert.match(sw.headers.get('content-type'), /javascript/);
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    const r = await visit('profil');
+    assert.ok(r.overflow <= 1, 'pas de débordement à ' + width);
+    await page.waitForSelector('.push-panel');
+    assert.match(await page.textContent('.push-panel'), /NOTIFICATIONS/);
+  }
+  await page.waitForFunction(() => navigator.serviceWorker.getRegistration().then(r => !!r));
+  assert.deepEqual(errors, []);
+});
+
 test('administration (fv-admin.js) : onglets et éditeurs de cartes, packs, pools, compétitions et clubs s\'ouvrent', async () => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await visit('admin');
