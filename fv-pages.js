@@ -114,7 +114,25 @@ async function packs(){
   </div>`;
 }
 async function openPack(id){try{const d=await api('/api/packs/open',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({packId:id})});state.user=d.user;showReveal(d.cards||[],d.pack,()=>openPack(id));toast(`Pack ouvert · ${d.cards.length} cartes · +${d.cards.length*2} XP`);nav();await render()}catch(e){if(e.status===401){location.hash='auth?next=packs';return}toast(e.message)}}
-async function openPool(id){try{const d=await api('/api/pools/open',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({poolId:id})});state.user=d.user;showReveal(d.cards||[],d.pack,()=>openPool(id));toast(`Tirage effectué · ${d.cards.length} cartes · +${d.cards.length*2} XP`);nav();await render()}catch(e){if(e.status===401){location.hash='auth?next=packs';return}toast(e.message)}}
+// Roue des éditions limitées : le résultat vient du serveur (déjà enregistré) ; la roue ne fait que l'animer, sur action du joueur.
+function wheelDialog(w){
+ return new Promise(resolve=>{
+  const n=w.segments.length,a=360/n,colors=w.segments.map((sg,i)=>sg.tier===null?(i%4===1?'#1b2f4d':'#14253f'):'#c9a24a');
+  const bg='conic-gradient('+colors.map((c,i)=>c+' '+(i*a)+'deg '+((i+1)*a)+'deg').join(',')+')';
+  const labels=w.segments.map((sg,i)=>'<span class="wheel-label'+(sg.tier===null?' wheel-nothing':'')+'" style="transform:rotate('+(i*a+a/2)+'deg) translateY(-112px)"><b>'+esc(sg.label)+'</b></span>').join('');
+  const legend=w.segments.filter(sg=>sg.tier!==null).map(sg=>'<li><b>'+esc(sg.label)+'</b><span>'+String(sg.chance).replace('.',',')+' %</span></li>').join('')+'<li><b>Rien</b><span>'+String(w.lostChance).replace('.',',')+' %</span></li>';
+  setModal('<div class="modal-box wheel-box"><button class="modal-close" type="button" data-close aria-label="Fermer">×</button><p class="eyebrow">ÉDITIONS LIMITÉES</p><h2>LA ROUE TOURNE !</h2><p>Ta carte spéciale <strong>'+esc(w.special.name)+'</strong> te donne un tour de roue : une édition limitée numérotée peut s’ajouter à ton tirage.</p><div class="wheel-stage"><i class="wheel-pointer" aria-hidden="true"></i><div class="wheel" id="wheelDisc" style="background:'+bg+'">'+labels+'</div></div><ul class="wheel-legend">'+legend+'</ul><p class="wheel-result" id="wheelResult" role="status" aria-live="polite"></p><button class="btn btn-gold" type="button" id="wheelGo">LANCER LA ROUE</button></div>');
+  const done=()=>{closeModal();resolve()};
+  document.querySelector('#modal .modal-close').onclick=done;
+  const go=document.getElementById('wheelGo'),disc=document.getElementById('wheelDisc'),res=document.getElementById('wheelResult');
+  const finish=()=>{res.textContent=w.card?'Bravo ! Tu gagnes '+w.card.name+' — édition limitée '+(w.card.serialLabel||'')+', en plus de ta carte.':'Pas de limitée cette fois : tu gardes ta carte spéciale.';go.disabled=false;go.textContent='CONTINUER';go.onclick=done;go.focus()};
+  go.onclick=()=>{go.disabled=true;go.textContent='…';const target=360*5-(w.index*a+a/2);
+   if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){disc.style.transform='rotate('+target+'deg)';finish();return}
+   disc.style.transition='transform 4.5s cubic-bezier(.15,.7,.1,1)';requestAnimationFrame(()=>{disc.style.transform='rotate('+target+'deg)'});
+   let ended=false;const end=()=>{if(!ended){ended=true;finish()}};disc.addEventListener('transitionend',end,{once:true});setTimeout(end,5200)};
+ });
+}
+async function openPool(id){try{const d=await api('/api/pools/open',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({poolId:id})});state.user=d.user;for(const w of d.wheels||[])await wheelDialog(w);showReveal(d.cards||[],d.pack,()=>openPool(id));toast(`Tirage effectué · ${d.cards.length} cartes · +${d.cards.length*2} XP`);nav();await render()}catch(e){if(e.status===401){location.hash='auth?next=packs';return}toast(e.message)}}
 function showReveal(cards,pack,again){
  const RANK={common:0,rare:1,epic:2,legendary:3,icon:4};
  const rank=c=>RANK[c?.rarity]??0;
