@@ -716,6 +716,24 @@ test('espace de noms FVC : une fonction par page, aides partagées, page rempla�
   assert.deepEqual(errors, []);
 });
 
+test('classement : onglet SAISON (saison à venir ou en cours), barème et pas de débordement', async () => {
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(server.base + '/#classement?periode=saison');
+    await page.reload();
+    await page.waitForSelector('.season-box');
+    const r = await page.evaluate(() => ({
+      tab: document.querySelector('.ranking-tabs a.active')?.textContent.trim(),
+      rows: document.querySelectorAll('.season-box > ul li').length,
+      overflow: document.documentElement.scrollWidth > window.innerWidth + 1
+    }));
+    assert.equal(r.tab, 'SAISON');
+    assert.equal(r.rows, 5);
+    assert.equal(r.overflow, false);
+  }
+  assert.deepEqual(errors, []);
+});
+
 test('administration (fv-admin.js) : onglets et éditeurs de cartes, packs, pools, compétitions et clubs s\'ouvrent', async () => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await visit('admin');

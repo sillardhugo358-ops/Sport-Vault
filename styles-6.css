@@ -407,3 +407,8 @@
   .nav .mobile-account .mobile-logout{grid-column:1/-1;background:transparent;border:1px solid var(--danger);color:var(--danger)}
   .nav .mobile-account-guest .btn{width:100%}
 }
+.season-box{flex-direction:column;align-items:stretch}
+.season-prizes{margin-top:14px;padding-top:12px;border-top:1px solid var(--line,rgba(255,255,255,.12))}
+.season-prizes h3{font-size:12px;letter-spacing:.12em;color:var(--gold);margin:0 0 8px}
+.season-prizes ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.season-prizes li{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
