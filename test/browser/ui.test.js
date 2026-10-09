@@ -748,7 +748,7 @@ test('menu : « Marché » regroupe Enchères et Échanges (liste déroulante au
   await page.click('.nav-group:has(a[data-route="trades"]) .nav-group-btn');
   await page.click('#nav a[data-route="trades"]');
   await page.waitForFunction(() => location.hash.startsWith('#trades'));
-  assert.equal(await page.evaluate(() => document.querySelector('.nav-group:has(a[data-route="trades"]) .nav-group-btn').classList.contains('active')), true);
+  await page.waitForFunction(() => document.querySelector('.nav-group:has(a[data-route="trades"]) .nav-group-btn')?.classList.contains('active'));
   await page.setViewportSize({ width: 390, height: 800 });
   await page.click('#menu');
   assert.equal(await page.isVisible('#nav a[data-route="trades"]'), true);
