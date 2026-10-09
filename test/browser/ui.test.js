@@ -734,6 +734,27 @@ test('classement : onglet SAISON (saison à venir ou en cours), barème et pas d
   assert.deepEqual(errors, []);
 });
 
+test('menu : « Marché » regroupe Enchères et Échanges (liste déroulante au bureau, liste à plat sur mobile)', async () => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(server.base + '/#home');
+  await page.reload();
+  await page.waitForSelector('#nav .nav-group-btn');
+  assert.equal(await page.isVisible('#nav a[data-route="trades"]'), false);
+  await page.click('.nav-group:has(a[data-route="trades"]) .nav-group-btn');
+  assert.equal(await page.isVisible('#nav a[data-route="trades"]'), true);
+  assert.equal(await page.getAttribute('.nav-group.open .nav-group-btn', 'aria-expanded'), 'true');
+  await page.keyboard.press('Escape');
+  assert.equal(await page.isVisible('#nav a[data-route="trades"]'), false);
+  await page.click('.nav-group:has(a[data-route="trades"]) .nav-group-btn');
+  await page.click('#nav a[data-route="trades"]');
+  await page.waitForFunction(() => location.hash.startsWith('#trades'));
+  assert.equal(await page.evaluate(() => document.querySelector('.nav-group:has(a[data-route="trades"]) .nav-group-btn').classList.contains('active')), true);
+  await page.setViewportSize({ width: 390, height: 800 });
+  await page.click('#menu');
+  assert.equal(await page.isVisible('#nav a[data-route="trades"]'), true);
+  assert.deepEqual(errors, []);
+});
+
 test('administration (fv-admin.js) : onglets et éditeurs de cartes, packs, pools, compétitions et clubs s\'ouvrent', async () => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await visit('admin');

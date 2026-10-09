@@ -412,3 +412,21 @@
 .season-prizes h3{font-size:12px;letter-spacing:.12em;color:var(--gold);margin:0 0 8px}
 .season-prizes ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 .season-prizes li{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+/* Menus regroupés : « Ma collection » et « Marché » */
+.nav-group{position:relative;display:flex}
+.nav-group-btn{font:inherit;color:#b4c5df;background:transparent;border:1px solid transparent;border-radius:9px;padding:10px 11px;font-size:11px;font-weight:700;letter-spacing:inherit;text-transform:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.nav-group-btn::after{content:"";width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translateY(-2px)}
+.nav-group-btn:hover,.nav-group-btn.active,.nav-group.open .nav-group-btn{background:#112747;color:#fff;border-color:rgba(71,151,255,.18)}
+@media(min-width:761px){
+ .nav{overflow:visible !important;-webkit-mask-image:none !important;mask-image:none !important}
+ .nav-sub{display:none;position:absolute;top:calc(100% + 6px);left:0;min-width:180px;z-index:1000;flex-direction:column;gap:2px;padding:6px;background:#07182e;border:1px solid #1e4067;border-radius:12px;box-shadow:0 18px 40px rgba(0,0,0,.55)}
+ .nav-group.open .nav-sub{display:flex}
+ .nav-sub a{padding:10px 12px;white-space:nowrap}
+}
+@media(max-width:760px){
+ .nav-group{display:block}
+ .nav-group-btn{display:flex;width:100%;min-height:36px;padding:8px 16px 0;background:transparent !important;border:0 !important;color:var(--gold2);font-size:10px;letter-spacing:.14em;text-transform:uppercase;pointer-events:none;cursor:default}
+ .nav-group-btn::after{display:none}
+ .nav-sub{display:flex;flex-direction:column;gap:4px}
+ .nav-sub a{padding-left:28px}
+}
