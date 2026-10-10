@@ -490,3 +490,17 @@
 .stat-value p{margin:0;color:var(--muted);line-height:1.5}
 .stat-top{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 .stat-top li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+/* Équipe type */
+.team-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.team-count{color:var(--muted);font-size:13px}
+.team-pitch{margin-top:16px;padding:14px 8px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,rgba(40,120,70,.35),rgba(20,70,40,.45));display:grid;gap:14px}
+.team-row{display:flex;justify-content:space-evenly;gap:6px}
+.team-slot{display:grid;gap:2px;justify-items:center;align-content:center;min-width:56px;max-width:96px;flex:1;min-height:64px;padding:6px 4px;border:1px dashed rgba(255,255,255,.4);border-radius:12px;background:rgba(5,11,22,.55);color:var(--text);cursor:pointer}
+.team-slot b{font:900 20px var(--head);color:var(--gold2)}
+.team-slot span{font-size:11px;line-height:1.1;text-align:center;overflow-wrap:anywhere}
+.team-slot small{font-size:10px;color:var(--muted)}
+.team-slot.is-filled{border-style:solid;border-color:var(--gold)}
+.team-picker-list{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px;max-height:60vh;overflow:auto}
+.team-picker-list button{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:2px 10px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.04);color:var(--text);text-align:left;cursor:pointer}
+.team-picker-list b{grid-row:span 2;font:900 22px var(--head);color:var(--gold2)}
+.team-picker-list small,.team-empty{color:var(--muted)}

@@ -47,6 +47,7 @@ async function joueur(q){
   return '<div class="page friends-page">'+viewHero('FOOTVAULT / JOUEUR',esc(p.name).toUpperCase(),'Membre depuis le '+new Date(p.memberSince).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}))+relationBar(p)
    +'<section class="section"><ul class="friend-stats">'+stats.map(([k,v])=>'<li><strong>'+esc(String(v))+'</strong><span>'+k+'</span></li>').join('')+'</ul></section>'
    +section('VITRINE','CARTES FAVORITES',d.favorites.length?'<div class="friend-showcase">'+d.favorites.map(c=>'<div class="friend-showcase-card">'+cardMarkup(c)+'</div>').join('')+'</div>':'<p class="friend-empty">Aucune carte en vitrine.</p>')
+   +(d.team?section('ÉQUIPE TYPE','ÉQUIPE TYPE · '+esc(d.team.formation)+' · NOTE '+String(d.team.rating).replace('.',','),'<ul class="friend-sets team-public">'+d.team.players.map((x,i)=>'<li>'+(x?'<strong>'+x.ovr+'</strong> '+esc(x.name)+' <small>'+esc(x.position)+'</small>':'<small>poste vide</small>')+'</li>').join('')+'</ul>'):'')
    +((d.wishlist||[]).length?section('SOUHAITS','CARTES RECHERCHÉES',`<ul class="friend-sets">${d.wishlist.map(w=>'<li>'+esc(w.name)+'</li>').join('')}</ul>`):'')
    +section('SETS','SETS TERMINÉS ('+p.sets.length+')',p.sets.length?'<ul class="friend-sets">'+p.sets.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>':'<p class="friend-empty">Aucun set terminé.</p>')
    +'</div>';
