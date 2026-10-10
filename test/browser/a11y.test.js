@@ -16,7 +16,7 @@ const { collectViolations } = require('./a11y-rules');
 const BASELINE_FILE = path.join(__dirname, 'a11y-baseline.json');
 const UPDATE = process.env.A11Y_UPDATE === '1';
 const VIEWPORTS = [{ name: 'ordinateur', width: 1280, height: 900, mobile: false }, { name: 'mobile', width: 390, height: 844, mobile: true }];
-const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'admin'];
+const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'amis', 'admin'];
 
 let server, browser, page;
 const found = {};          // « ordinateur|home|img-sans-alt » -> nombre

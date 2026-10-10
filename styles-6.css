@@ -446,3 +446,23 @@
 .push-panel .push-note{margin:0 0 12px;color:var(--muted);font-size:14px;line-height:1.5}
 .push-panel .btn{width:100%;justify-content:center}
 .push-install{margin-top:12px;padding-top:12px;border-top:1px solid var(--line,rgba(255,255,255,.12))}
+/* Amis et profils publics */
+.friend-code-box,.friend-add,.friend-visibility{display:grid;gap:12px}
+.friend-code-box .trade-code{font:900 32px var(--head);letter-spacing:.2em}
+.friend-add-row{display:flex;gap:10px;flex-wrap:wrap}
+.friend-add-row input{flex:1 1 180px;min-width:0;text-transform:uppercase}
+.friend-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.friend-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.03)}
+.friend-name{display:grid;color:var(--text);text-decoration:none}
+.friend-name small{color:var(--muted)}
+.friend-actions{display:flex;gap:8px;flex-wrap:wrap}
+.friend-empty{color:var(--muted)}
+.friend-relation{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0}
+.friend-stats{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px}
+.friend-stats li{display:grid;gap:2px;padding:14px;border:1px solid var(--line);border-radius:12px;text-align:center}
+.friend-stats strong{font:900 28px var(--head);color:var(--gold2)}
+.friend-stats span{color:var(--muted);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.friend-showcase{display:flex;gap:14px;overflow-x:auto;padding-bottom:8px}
+.friend-showcase-card{flex:0 0 auto}
+.friend-sets{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0}
+.friend-sets li{padding:8px 12px;border:1px solid var(--line);border-radius:999px}
