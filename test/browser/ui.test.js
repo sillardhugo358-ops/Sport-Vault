@@ -15,7 +15,7 @@ const VIEWPORTS = [
   { name: 'tablette', width: 900, height: 1000 },
   { name: 'mobile', width: 390, height: 844 }
 ];
-const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'amis', 'souhaits', 'statistiques', 'equipe', 'atelier', 'surmesure', 'admin'];
+const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'amis', 'souhaits', 'statistiques', 'equipe', 'atelier', 'surmesure', 'collectif', 'admin'];
 
 let server, browser, context, page;
 const errors = [];
@@ -700,7 +700,7 @@ test('espace de noms FVC : une fonction par page, aides partagées, page rempla�
     ui: Object.keys(window.FVC?.ui || {}).sort(),
     allFunctions: Object.values(window.FVC?.pages || {}).every(f => typeof f === 'function')
   }));
-  assert.deepEqual(ns.pages, ['admin', 'album', 'amis', 'atelier', 'auth', 'card', 'classement', 'collection', 'equipe', 'home', 'joueur', 'market', 'packs', 'profil', 'souhaits', 'statistiques', 'successes', 'surmesure', 'trades', 'vault']);
+  assert.deepEqual(ns.pages, ['admin', 'album', 'amis', 'atelier', 'auth', 'card', 'classement', 'collectif', 'collection', 'equipe', 'home', 'joueur', 'market', 'packs', 'profil', 'souhaits', 'statistiques', 'successes', 'surmesure', 'trades', 'vault']);
   for (const k of ['$', 'api', 'apiRetry', 'app', 'bind', 'cardLink', 'cardMarkup', 'cardStatDefinitions', 'closeModal', 'esc', 'initials', 'money', 'rarityOrder', 'render', 'setModal', 'state', 'toast', 'viewHero']) assert.ok(ns.core.includes(k), 'FVC.core.' + k);
   for (const k of ['claimAlbum', 'claimChallengeUi', 'claimSetUi', 'daily', 'logout', 'mission', 'openPack', 'openPool', 'submitAuth', 'task', 'toggleFavorite']) assert.ok(ns.ui.includes(k), 'FVC.ui.' + k);
   assert.equal(ns.allFunctions, true);
@@ -934,6 +934,22 @@ test('pack sur mesure : prix calculé par le serveur, aperçu qui suit les choix
   await page.waitForSelector('[data-reveal-card]', { state: 'attached' });
   assert.equal(await page.locator('[data-reveal-card]').count(), 5);
   assert.equal(Number((await server.db.query('SELECT coins FROM users WHERE id=$1', [uid])).rows[0].coins), before - 220);
+  assert.deepEqual(errors, []);
+});
+
+test('défis collectifs : jauge commune, palier atteint réclamé une seule fois, sans débordement', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
+  await server.db.query("INSERT INTO collective_challenges(id,title,description,metrics,tiers,starts_at,ends_at) VALUES('cl-ui','Défi UI','Ouvre des packs',ARRAY['packs'],$1::jsonb,now()-interval '1 hour',now()+interval '1 day')", [JSON.stringify([{ at: 1, coins: 77, xp: 5 }, { at: 1000, coins: 500, xp: 50 }])]);
+  await server.db.query("INSERT INTO security_events(user_id,event,details) VALUES($1,'pack_open','{\"cards\":5}'::jsonb)", [uid]);
+  const r = await visit('collectif');
+  assert.ok(r.overflow <= 1, 'pas de débordement');
+  await page.waitForSelector('[data-cl-claim="cl-ui"][data-tier="0"]');
+  assert.equal(await page.locator('[data-cl-claim="cl-ui"][data-tier="1"]').count(), 0, 'palier lointain non réclamable');
+  const before = Number((await server.db.query('SELECT coins FROM users WHERE id=$1', [uid])).rows[0].coins);
+  await page.click('[data-cl-claim="cl-ui"][data-tier="0"]');
+  await page.waitForFunction(() => !document.querySelector('[data-cl-claim="cl-ui"][data-tier="0"]'));
+  assert.equal(Number((await server.db.query('SELECT coins FROM users WHERE id=$1', [uid])).rows[0].coins), before + 77);
   assert.deepEqual(errors, []);
 });
 
