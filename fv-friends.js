@@ -8,10 +8,22 @@ const section=(eyebrow,title,body)=>'<section class="section friends-section"><d
 const person=(p,actions)=>'<li class="friend-row"><a class="friend-name" href="#joueur?code='+encodeURIComponent(p.code)+'"><strong>'+esc(p.name)+'</strong><small>Niveau '+Number(p.level)+'</small></a><span class="friend-actions">'+actions+'</span></li>';
 const list=(items,empty)=>items.length?'<ul class="friend-list">'+items.join('')+'</ul>':'<p class="friend-empty">'+empty+'</p>';
 
+const RL={epic:'Epic',legendary:'Legendary',icon:'Icon'};
+const when=d=>{const m=Math.max(1,Math.round((Date.now()-new Date(d))/60000));return m<60?m+' min':m<1440?Math.round(m/60)+' h':Math.round(m/1440)+' j'};
+const eventText=e=>{
+  const who='<a href="#joueur?code='+encodeURIComponent(e.code)+'"><strong>'+esc(e.name)+'</strong></a>';
+  if(e.kind==='card')return who+' a obtenu <strong>'+esc(e.label)+'</strong> <span class="rarity-tag rarity-'+esc(e.rarity)+'">'+esc(RL[e.rarity]||e.rarity)+'</span>'+(e.serial?' · édition limitée '+esc(e.serial):'');
+  if(e.kind==='set')return who+' a terminé le set <strong>'+esc(e.label)+'</strong>';
+  return who+' a débloqué le succès <strong>'+esc(e.label)+'</strong>';
+};
+const activityList=ev=>ev.length?'<ul class="friend-activity">'+ev.map(e=>'<li>'+eventText(e)+'<time datetime="'+esc(String(e.at))+'">il y a '+when(e.at)+'</time></li>').join('')+'</ul>':'<p class="friend-empty">Rien de marquant ces 14 derniers jours : cartes Epic ou mieux, sets terminés et succès apparaîtront ici.</p>';
+
 async function amis(){
   let d;
-  try{d=await api('/api/friends')}catch(e){if(e.status===401)return FVC.pages.auth(new URLSearchParams({next:'amis'}));throw e}
+  let act={events:[]};
+  try{[d,act]=await Promise.all([api('/api/friends'),api('/api/friends/activity').catch(()=>({events:[]}))])}catch(e){if(e.status===401)return FVC.pages.auth(new URLSearchParams({next:'amis'}));throw e}
   return '<div class="page friends-page">'+viewHero('FOOTVAULT / AMIS','TES <span>AMIS.</span>','Ajoute des joueurs avec leur code, découvre leur vitrine et échange avec eux.',String(d.friends.length),'AMI'+(d.friends.length>1?'S':''))
+   +(d.friends.length?section('ACTIVITÉ','ACTIVITÉ DE MES AMIS',activityList(act.events)):'')
    +section('MON CODE','MON CODE JOUEUR','<div class="panel friend-code-box"><strong class="trade-code" id="friendMyCode">'+esc(d.code)+'</strong><button class="btn btn-outline" type="button" data-friend-copy>COPIER</button><p>C’est le même code que pour les échanges. Donne-le à un ami : il pourra te demander en ami, et tu accepteras.</p></div>')
    +section('AJOUTER','AJOUTER UN AMI','<form class="panel friend-add" data-friend-add><label for="friendCode">Code du joueur</label><div class="friend-add-row"><input id="friendCode" name="code" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="Ex. K7M2QX9P" required><button class="btn btn-gold" type="submit">ENVOYER LA DEMANDE</button></div></form>')
    +(d.incoming.length?section('DEMANDES','DEMANDES REÇUES ('+d.incoming.length+')',list(d.incoming.map(p=>person(p,'<button class="btn btn-gold" type="button" data-friend-act="accept" data-id="'+p.id+'">ACCEPTER</button><button class="btn btn-outline" type="button" data-friend-act="decline" data-id="'+p.id+'">REFUSER</button>')),'')):'')

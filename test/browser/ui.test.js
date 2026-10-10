@@ -833,6 +833,7 @@ test('amis : demande par code, acceptation, profil public, confidentialité', as
   assert.equal((await other.post('/api/friends/accept', { id: incoming[0].id })).status, 200);
   r = await visit('amis');
   await page.waitForFunction(() => /AmiTest/.test(document.querySelector('.friend-list')?.innerText || ''));
+  assert.match(await page.textContent('.friends-page'), /ACTIVITÉ DE MES AMIS/);
   await page.click('.friend-name');
   await page.waitForFunction(() => location.hash.startsWith('#joueur'));
   await page.waitForFunction(() => /AMITEST/.test(document.querySelector('#app h1')?.textContent || ''));

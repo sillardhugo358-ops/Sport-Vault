@@ -466,3 +466,7 @@
 .friend-showcase-card{flex:0 0 auto}
 .friend-sets{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0}
 .friend-sets li{padding:8px 12px;border:1px solid var(--line);border-radius:999px}
+.friend-activity{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.friend-activity li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.03)}
+.friend-activity a{color:var(--text);text-decoration:none}
+.friend-activity time{color:var(--muted);font-size:12px;white-space:nowrap}
