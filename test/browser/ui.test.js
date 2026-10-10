@@ -879,7 +879,7 @@ test('équipe type : formation, meilleur 11, choix d\'un joueur, enregistrement,
     const cardId = 'team-ui-' + pos;
     await server.db.query("INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr) VALUES($1,'2026-2027',$2,$3,'FC Equipe','France','common',$4) ON CONFLICT DO NOTHING", [cardId, 'Titulaire ' + pos, pos, ovr]);
     await server.db.query(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,ovr,source)
-      SELECT gen_random_uuid(),$1,$2,'2026-2027',$3,$4,'FC Equipe','France','common',$5,'pack:test' WHERE NOT EXISTS(SELECT 1 FROM card_instances WHERE card_id=$1 AND owner_id=$2)`, [cardId, uid, 'Titulaire ' + pos, pos, ovr]);
+      SELECT gen_random_uuid(),$1::varchar,$2::uuid,'2026-2027',$3::varchar,$4::varchar,'FC Equipe','France','common',$5::int,'pack:test' WHERE NOT EXISTS(SELECT 1 FROM card_instances WHERE card_id=$1::varchar AND owner_id=$2::uuid)`, [cardId, uid, 'Titulaire ' + pos, pos, ovr]);
   }
   const r = await visit('equipe');
   assert.ok(r.overflow <= 1, 'pas de débordement');
