@@ -511,3 +511,18 @@
 .wk-main{display:grid;gap:2px}.wk-main small{color:var(--muted)}
 .wk-actions{display:flex;gap:8px;flex-wrap:wrap}
 .wk-result{display:grid;gap:6px;margin-top:12px}
+
+/* Pack sur mesure */
+.cp-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr);gap:18px;align-items:start}
+.cp-form{display:grid;gap:14px}
+.cp-group{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:0;min-width:0}
+.cp-group legend{padding:0 6px;font-weight:700}
+.cp-field select,.cp-clubadd input{width:100%;min-height:44px}
+.cp-radios,.cp-checks{display:flex;flex-wrap:wrap;gap:8px}
+.cp-radio,.cp-check{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:6px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.cp-radio span{display:grid}.cp-radio small{color:var(--muted)}
+.cp-clubadd{display:flex;gap:8px}.cp-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.cp-chip{min-height:44px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.05);color:inherit;cursor:pointer}
+.cp-summary{position:sticky;top:84px;display:grid;gap:10px}
+.cp-price{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.cp-price strong{font-size:2rem}.cp-price small{color:var(--muted);flex-basis:100%}
+@media (max-width:820px){.cp-grid{grid-template-columns:1fr}.cp-summary{position:static}}
