@@ -15,7 +15,7 @@ const VIEWPORTS = [
   { name: 'tablette', width: 900, height: 1000 },
   { name: 'mobile', width: 390, height: 844 }
 ];
-const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'amis', 'souhaits', 'statistiques', 'admin'];
+const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'amis', 'souhaits', 'statistiques', 'equipe', 'admin'];
 
 let server, browser, context, page;
 const errors = [];
@@ -700,7 +700,7 @@ test('espace de noms FVC : une fonction par page, aides partagées, page rempla�
     ui: Object.keys(window.FVC?.ui || {}).sort(),
     allFunctions: Object.values(window.FVC?.pages || {}).every(f => typeof f === 'function')
   }));
-  assert.deepEqual(ns.pages, ['admin', 'album', 'amis', 'auth', 'card', 'classement', 'collection', 'home', 'joueur', 'market', 'packs', 'profil', 'souhaits', 'statistiques', 'successes', 'trades', 'vault']);
+  assert.deepEqual(ns.pages, ['admin', 'album', 'amis', 'auth', 'card', 'classement', 'collection', 'equipe', 'home', 'joueur', 'market', 'packs', 'profil', 'souhaits', 'statistiques', 'successes', 'trades', 'vault']);
   for (const k of ['$', 'api', 'apiRetry', 'app', 'bind', 'cardLink', 'cardMarkup', 'cardStatDefinitions', 'closeModal', 'esc', 'initials', 'money', 'rarityOrder', 'render', 'setModal', 'state', 'toast', 'viewHero']) assert.ok(ns.core.includes(k), 'FVC.core.' + k);
   for (const k of ['claimAlbum', 'claimChallengeUi', 'claimSetUi', 'daily', 'logout', 'mission', 'openPack', 'openPool', 'submitAuth', 'task', 'toggleFavorite']) assert.ok(ns.ui.includes(k), 'FVC.ui.' + k);
   assert.equal(ns.allFunctions, true);
@@ -869,6 +869,35 @@ test('statistiques : compétitions, décennies, rareté, poste, valeur indicativ
     const text = await page.textContent('.stats-page');
     for (const t of ['PAR COMPÉTITION', 'PAR DÉCENNIE', 'PAR RARETÉ', 'PAR POSTE', 'VALEUR ESTIMÉE', 'Ce n’est pas un prix garanti']) assert.ok(text.includes(t), t);
   }
+  assert.deepEqual(errors, []);
+});
+
+test('équipe type : formation, meilleur 11, choix d\'un joueur, enregistrement, sans débordement', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
+  for (const [pos, ovr] of [['GK', 77], ['CB', 76], ['ST', 79]]) {
+    const cardId = 'team-ui-' + pos;
+    await server.db.query("INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr) VALUES($1,'2026-2027',$2,$3,'FC Equipe','France','common',$4) ON CONFLICT DO NOTHING", [cardId, 'Titulaire ' + pos, pos, ovr]);
+    await server.db.query(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,ovr,source)
+      SELECT gen_random_uuid(),$1,$2,'2026-2027',$3,$4,'FC Equipe','France','common',$5,'pack:test' WHERE NOT EXISTS(SELECT 1 FROM card_instances WHERE card_id=$1 AND owner_id=$2)`, [cardId, uid, 'Titulaire ' + pos, pos, ovr]);
+  }
+  const r = await visit('equipe');
+  assert.ok(r.overflow <= 1, 'pas de débordement');
+  await page.waitForSelector('.team-pitch');
+  assert.equal(await page.locator('.team-slot').count(), 11);
+  await page.selectOption('#teamFormation', '4-4-2');
+  await page.waitForFunction(() => document.querySelectorAll('.team-row').length === 4 && document.querySelector('#teamFormation').value === '4-4-2');
+  await page.click('[data-team-auto]');
+  await page.waitForFunction(() => document.querySelectorAll('.team-slot.is-filled').length >= 3);
+  await page.click('[data-team-slot="0"]');
+  await page.waitForSelector('.team-picker');
+  assert.equal(await page.getAttribute('#modal', 'role'), 'dialog');
+  await page.click('[data-team-remove]');
+  await page.waitForFunction(() => !document.querySelector('.team-picker'));
+  await page.click('[data-team-save]');
+  await page.waitForFunction(() => /Équipe enregistrée|0 \/ 11|\/ 11 postes/.test(document.body.innerText) && !document.querySelector('[data-team-save]:not([disabled])'));
+  const saved = (await server.db.query('SELECT formation FROM team_lineups WHERE user_id=$1', [uid])).rows[0];
+  assert.equal(saved.formation, '4-4-2');
   assert.deepEqual(errors, []);
 });
 
