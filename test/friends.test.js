@@ -92,3 +92,44 @@ test('retirer un ami et limites', async () => {
   assert.equal(last.status, 400, 'plus de 20 demandes en attente');
   assert.match(last.body.error, /demandes en attente/);
 });
+
+test('flux d\'activité : événements marquants des amis seulement, sans montants, vie privée respectée', async () => {
+  const [x, y, z] = [await newPlayer(server, 'Xavier'), await newPlayer(server, 'Yasmine'), await newPlayer(server, 'Zoe')];
+  const crypto = require('node:crypto');
+  const card = async (owner, { rarity, source = 'pack:test', name, limited = false, ago = '1 hour' }) => {
+    const cardId = 'act-' + crypto.randomBytes(4).toString('hex');
+    await q("INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr) VALUES($1,'2026-2027',$2,'ST','FC Flux','France',$3,80)", [cardId, name, rarity]);
+    const id = crypto.randomUUID();
+    await q(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,source,acquired_at,is_limited,serial,max_supply)
+      VALUES($1,$2,$3,'2026-2027',$4,'ST','FC Flux','France',$5,$6,now() - $7::interval,$8,$9,$10)`, [id, cardId, owner.user.id, name, rarity, source, ago, limited, limited ? 3 : null, limited ? 10 : null]);
+    return id;
+  };
+  // x est ami de y (visible) et de z (profil privé)
+  for (const other of [y, z]) {
+    await x.post('/api/friends/request', { code: await codeOf(other) });
+    await other.post('/api/friends/accept', { id: (await other.get('/api/friends')).body.incoming[0].id });
+  }
+  await card(y, { rarity: 'epic', name: 'Carte Epic Amie' });
+  await card(y, { rarity: 'legendary', name: 'Carte Limitée Amie', limited: true });
+  await card(y, { rarity: 'common', name: 'Carte Commune' });                       // trop commune
+  await card(y, { rarity: 'epic', name: 'Carte Offerte', source: 'admin_grant' });   // offerte
+  await card(y, { rarity: 'epic', name: 'Carte Ancienne', ago: '30 days' });          // trop ancienne
+  await card(z, { rarity: 'icon', name: 'Carte Privée' });
+  await q("UPDATE users SET profile_visibility='private' WHERE id=$1", [z.user.id]);
+  await q("INSERT INTO reward_claims(user_id,claim_id) VALUES($1,$2)", [y.user.id, 'achievement:act-visible']);
+  await q("INSERT INTO achievements(id,name,category,description,type,target,coins,xp,hidden) VALUES('act-visible','Succès Visible','test','d','cards',1,9999,9,false),('act-cache','Succès Caché','test','d','cards',1,0,0,true)");
+  await q("INSERT INTO reward_claims(user_id,claim_id) VALUES($1,'achievement:act-cache')", [y.user.id]);
+  const r = await x.get('/api/friends/activity');
+  assert.equal(r.status, 200);
+  const labels = r.body.events.map(e => e.label);
+  assert.ok(labels.includes('Carte Epic Amie'));
+  assert.ok(labels.includes('Carte Limitée Amie'));
+  assert.ok(labels.includes('Succès Visible'));
+  for (const bad of ['Carte Commune', 'Carte Offerte', 'Carte Ancienne', 'Carte Privée', 'Succès Caché']) assert.ok(!labels.includes(bad), bad + ' ne doit pas apparaître');
+  assert.equal(r.body.events.find(e => e.label === 'Carte Limitée Amie').serial, '3/10');
+  assert.ok(!/9999|coins|xp/i.test(JSON.stringify(r.body)), 'aucun montant');
+  assert.ok(r.body.events.every(e => e.name === 'Yasmine'), 'seulement les amis visibles');
+  // un joueur sans amis ne voit rien ; un inconnu ne voit pas l'activité d'un joueur dont il n'est pas ami
+  assert.deepEqual((await (await newPlayer(server, 'Solo')).get('/api/friends/activity')).body.events, []);
+  assert.equal((await client(server).get('/api/friends/activity')).status, 401);
+});
