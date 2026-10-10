@@ -39,6 +39,7 @@ const { userAchievementStats, achievementProgress, progressSnapshot } = require(
 const { periodMissions, recordVisit, recordPageView } = require('./lib/mission-stats').createMissionStats({ getPool: () => pool, progressSnapshot: (...args) => progressSnapshot(...args), listMissions: (...args) => listMissions(...args), listTasks: (...args) => listTasks(...args) });
 const { listFavorites, setFavorite } = require('./lib/favorites').createFavorites({ getPool: () => pool, publicCard });
 const { stats: collectionStats } = require('./lib/collection-stats').createCollectionStats({ getPool: () => pool, albumData: (...args) => albumData(...args) });
+const economy = require('./lib/economy').createEconomy({ getPool: () => pool, securityEvent, buildInstance, createCardInstance, activeCatalogCards, safeUser, getUserById });
 const wishlist = require('./lib/wishlist').createWishlist({ getPool: () => pool });
 const team = require('./lib/team').createTeam({ getPool: () => pool });
 const friends = require('./lib/friends').createFriends({ getPool: () => pool, ensureCode: tradeEnsureCode, listFavorites, levelProgressFromXp: (...args) => levelProgressFromXp(...args), rankOf, publicTeam: team.publicTeam });
@@ -57,6 +58,7 @@ const apiRoutes = [
  require('./lib/routes/friends').createFriendsRoutes({ currentUser, friends }),
  require('./lib/routes/collection-stats').createCollectionStatsRoutes({ currentUser, collectionStats }),
  require('./lib/routes/team').createTeamRoutes({ currentUser, team }),
+ require('./lib/routes/economy').createEconomyRoutes({ currentUser, economy }),
  require('./lib/routes/wishlist').createWishlistRoutes({ currentUser, wishlist }),
  require('./lib/routes/push').createPushRoutes({ currentUser, push }),
  require('./lib/routes/internal').createInternalRoutes({ getPool: () => pool })
@@ -88,7 +90,7 @@ async function securityEvent(userId,ip,event,details={},client=null){const db=cl
 
 // Fichiers publics : uniquement à la racine du dépôt, pages, styles et images, plus les
 // scripts de l'interface listés ci-dessous. Jamais le code serveur, lib/, data/, .git/ ni la configuration.
-const PUBLIC_SCRIPTS=new Set(['fv-core.js','fv-cards.js','app.js','fv-pages.js','fv-admin.js','fv-market.js','fv-trades.js','market-insights.js','challenge-admin-editor.js','set-admin-editor.js','notifications-bell.js','fv-push.js','fv-friends.js','fv-wishlist.js','fv-stats.js','fv-team.js','sw.js','admin-stats.js','task-admin-editor.js','achievement-admin-editor.js','mission-admin-editor.js','manifest.json']);
+const PUBLIC_SCRIPTS=new Set(['fv-core.js','fv-cards.js','app.js','fv-pages.js','fv-admin.js','fv-market.js','fv-trades.js','market-insights.js','challenge-admin-editor.js','set-admin-editor.js','notifications-bell.js','fv-push.js','fv-friends.js','fv-wishlist.js','fv-stats.js','fv-team.js','fv-workshop.js','sw.js','admin-stats.js','task-admin-editor.js','achievement-admin-editor.js','mission-admin-editor.js','manifest.json']);
 const PUBLIC_EXTENSIONS=new Set(['.html','.css','.svg','.png','.ico','.webp']);
 function isPublicFile(name){return !name.startsWith('.')&&(PUBLIC_SCRIPTS.has(name)||PUBLIC_EXTENSIONS.has(path.extname(name)));}
 // Polices hébergées par le site : fonts/*.woff2 uniquement.

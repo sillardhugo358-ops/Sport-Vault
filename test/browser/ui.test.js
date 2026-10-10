@@ -15,7 +15,7 @@ const VIEWPORTS = [
   { name: 'tablette', width: 900, height: 1000 },
   { name: 'mobile', width: 390, height: 844 }
 ];
-const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'amis', 'souhaits', 'statistiques', 'equipe', 'admin'];
+const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'amis', 'souhaits', 'statistiques', 'equipe', 'atelier', 'admin'];
 
 let server, browser, context, page;
 const errors = [];
@@ -700,7 +700,7 @@ test('espace de noms FVC : une fonction par page, aides partagées, page rempla�
     ui: Object.keys(window.FVC?.ui || {}).sort(),
     allFunctions: Object.values(window.FVC?.pages || {}).every(f => typeof f === 'function')
   }));
-  assert.deepEqual(ns.pages, ['admin', 'album', 'amis', 'auth', 'card', 'classement', 'collection', 'equipe', 'home', 'joueur', 'market', 'packs', 'profil', 'souhaits', 'statistiques', 'successes', 'trades', 'vault']);
+  assert.deepEqual(ns.pages, ['admin', 'album', 'amis', 'atelier', 'auth', 'card', 'classement', 'collection', 'equipe', 'home', 'joueur', 'market', 'packs', 'profil', 'souhaits', 'statistiques', 'successes', 'trades', 'vault']);
   for (const k of ['$', 'api', 'apiRetry', 'app', 'bind', 'cardLink', 'cardMarkup', 'cardStatDefinitions', 'closeModal', 'esc', 'initials', 'money', 'rarityOrder', 'render', 'setModal', 'state', 'toast', 'viewHero']) assert.ok(ns.core.includes(k), 'FVC.core.' + k);
   for (const k of ['claimAlbum', 'claimChallengeUi', 'claimSetUi', 'daily', 'logout', 'mission', 'openPack', 'openPool', 'submitAuth', 'task', 'toggleFavorite']) assert.ok(ns.ui.includes(k), 'FVC.ui.' + k);
   assert.equal(ns.allFunctions, true);
@@ -898,6 +898,23 @@ test('équipe type : formation, meilleur 11, choix d\'un joueur, enregistrement,
   await page.waitForFunction(() => /Équipe enregistrée|0 \/ 11|\/ 11 postes/.test(document.body.innerText) && !document.querySelector('[data-team-save]:not([disabled])'));
   const saved = (await server.db.query('SELECT formation FROM team_lineups WHERE user_id=$1', [uid])).rows[0];
   assert.equal(saved.formation, '4-4-2');
+  assert.deepEqual(errors, []);
+});
+
+test('atelier : vente rapide d\'un doublon, fusion refusée sans assez de doublons, sans débordement', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
+  await server.db.query("INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr) VALUES('wk-ui','2026-2027','Doublon Atelier UI','ST','FC Atelier','France','common',70) ON CONFLICT DO NOTHING");
+  for (let i = 0; i < 2; i++) await server.db.query(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,ovr,source)
+    VALUES(gen_random_uuid(),'wk-ui',$1,'2026-2027','Doublon Atelier UI','ST','FC Atelier','France','common',70,'pack:test')`, [uid]);
+  const r = await visit('atelier');
+  assert.ok(r.overflow <= 1, 'pas de débordement');
+  await page.waitForSelector('[data-wk-sell="wk-ui"]');
+  assert.equal(await page.locator('[data-wk-fuse="common"]').isDisabled(), true, 'pas assez de doublons pour fusionner');
+  const before = Number((await server.db.query('SELECT coins FROM users WHERE id=$1', [uid])).rows[0].coins);
+  await page.click('[data-wk-sell="wk-ui"]');
+  await page.waitForFunction(() => !document.querySelector('[data-wk-sell="wk-ui"]'));
+  assert.equal(Number((await server.db.query('SELECT coins FROM users WHERE id=$1', [uid])).rows[0].coins), before + 20);
   assert.deepEqual(errors, []);
 });
 

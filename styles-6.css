@@ -504,3 +504,10 @@
 .team-picker-list button{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:2px 10px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.04);color:var(--text);text-align:left;cursor:pointer}
 .team-picker-list b{grid-row:span 2;font:900 22px var(--head);color:var(--gold2)}
 .team-picker-list small,.team-empty{color:var(--muted)}
+/* Atelier */
+.wk-note{color:var(--muted);line-height:1.5;margin:0 0 12px}
+.wk-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.wk-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.03)}
+.wk-main{display:grid;gap:2px}.wk-main small{color:var(--muted)}
+.wk-actions{display:flex;gap:8px;flex-wrap:wrap}
+.wk-result{display:grid;gap:6px;margin-top:12px}
