@@ -896,7 +896,12 @@ test('équipe type : formation, meilleur 11, choix d\'un joueur, enregistrement,
   await page.waitForFunction(() => !document.querySelector('.team-picker'));
   await page.click('[data-team-save]');
   await page.waitForFunction(() => /Équipe enregistrée|0 \/ 11|\/ 11 postes/.test(document.body.innerText) && !document.querySelector('[data-team-save]:not([disabled])'));
-  const saved = (await server.db.query('SELECT formation FROM team_lineups WHERE user_id=$1', [uid])).rows[0];
+  // L'enregistrement est asynchrone : on attend la ligne en base (au lieu de la lire dès que le texte de la page change).
+  let saved;
+  for (let i = 0; i < 50 && !saved; i++) {
+    saved = (await server.db.query('SELECT formation FROM team_lineups WHERE user_id=$1', [uid])).rows[0];
+    if (!saved) await new Promise(r => setTimeout(r, 100));
+  }
   assert.equal(saved.formation, '4-4-2');
   assert.deepEqual(errors, []);
 });
