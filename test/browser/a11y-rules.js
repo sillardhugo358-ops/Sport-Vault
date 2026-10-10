@@ -6,7 +6,7 @@
 
 function collectViolations(opts) {
   const out = {};
-  const add = (rule, el) => { (out[rule] ||= { count: 0, samples: [] }).count++; if (out[rule].samples.length < 3) out[rule].samples.push(short(el)); };
+  const add = (rule, el, extra = '') => { (out[rule] ||= { count: 0, samples: [] }).count++; if (out[rule].samples.length < 3) out[rule].samples.push(short(el) + extra); };
   const short = el => {
     const id = el.id ? '#' + el.id : '', cls = el.classList?.length ? '.' + [...el.classList].slice(0, 2).join('.') : '';
     const txt = (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 24);
@@ -65,7 +65,7 @@ function collectViolations(opts) {
       if (!visible(el)) continue;
       if (el.matches('a') && el.closest('p, li, td, span:not([class])') && getComputedStyle(el).display === 'inline') continue;
       const r = el.getBoundingClientRect();
-      if (r.width < 44 || r.height < 44) add('cible-tactile-44px', el);
+      if (r.width < 44 || r.height < 44) add('cible-tactile-44px', el, ' [' + Math.round(r.width) + '×' + Math.round(r.height) + ' px]');
     }
   }
 
