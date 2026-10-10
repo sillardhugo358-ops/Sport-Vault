@@ -321,6 +321,22 @@ test('échanges : proposer une offre depuis la page, puis accepter une offre re�
   await page.click('[data-trade-accept]');
   await page.waitForFunction(() => /ACCEPTÉE/.test(document.querySelector('.trades-page')?.innerText || ''), null, { timeout: 15000 });
   assert.equal((await server.db.query('SELECT owner_id FROM card_instances WHERE instance_id=$1', [hisOther])).rows[0].owner_id, me);
+  // Lien « Échanger » d'un profil : le code est rempli et la recherche lancée ; filtres de cartes ; historique filtrable.
+  await visit('trades?code=' + otherCode);
+  await page.waitForSelector('[data-trade-pick="give"]');
+  assert.equal(await page.inputValue('#tradeCode'), otherCode);
+  const before = await page.locator('[data-trade-pick="give"]').count();
+  assert.ok(before >= 1);
+  await page.fill('#tradeFilterQ', 'zzzzintrouvable');
+  await page.waitForFunction(() => !document.querySelector('[data-trade-pick="give"]') && /correspond/.test(document.querySelector('.trades-page').innerText));
+  assert.equal(await page.inputValue('#tradeFilterQ'), 'zzzzintrouvable', 'la saisie garde son focus et sa valeur');
+  await page.fill('#tradeFilterQ', '');
+  await page.waitForFunction(n => document.querySelectorAll('[data-trade-pick="give"]').length === n, before);
+  await page.waitForSelector('#tradeHistory .trade-offer');
+  await page.selectOption('[data-trade-hstatus]', 'declined');
+  await page.waitForFunction(() => /Aucun échange pour ce filtre/.test(document.querySelector('#tradeHistory').innerText));
+  await page.selectOption('[data-trade-hstatus]', 'accepted');
+  await page.waitForSelector('#tradeHistory .trade-offer');
   assert.deepEqual(errors, []);
 });
 

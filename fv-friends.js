@@ -27,7 +27,7 @@ async function amis(){
    +section('MON CODE','MON CODE JOUEUR','<div class="panel friend-code-box"><strong class="trade-code" id="friendMyCode">'+esc(d.code)+'</strong><button class="btn btn-outline" type="button" data-friend-copy>COPIER</button><p>C’est le même code que pour les échanges. Donne-le à un ami : il pourra te demander en ami, et tu accepteras.</p></div>')
    +section('AJOUTER','AJOUTER UN AMI','<form class="panel friend-add" data-friend-add><label for="friendCode">Code du joueur</label><div class="friend-add-row"><input id="friendCode" name="code" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="Ex. K7M2QX9P" required><button class="btn btn-gold" type="submit">ENVOYER LA DEMANDE</button></div></form>')
    +(d.incoming.length?section('DEMANDES','DEMANDES REÇUES ('+d.incoming.length+')',list(d.incoming.map(p=>person(p,'<button class="btn btn-gold" type="button" data-friend-act="accept" data-id="'+p.id+'">ACCEPTER</button><button class="btn btn-outline" type="button" data-friend-act="decline" data-id="'+p.id+'">REFUSER</button>')),'')):'')
-   +section('MES AMIS','MES AMIS ('+d.friends.length+')',list(d.friends.map(p=>person(p,'<a class="btn btn-outline" href="#trades">ÉCHANGER</a><button class="btn btn-outline" type="button" data-friend-act="remove" data-id="'+p.id+'" aria-label="Retirer '+esc(p.name)+'">RETIRER</button>')),'Aucun ami pour l’instant : saisis le code d’un joueur ci-dessus.'))
+   +section('MES AMIS','MES AMIS ('+d.friends.length+')',list(d.friends.map(p=>person(p,'<a class="btn btn-outline" href="#trades?code='+encodeURIComponent(p.code)+'">ÉCHANGER</a><button class="btn btn-outline" type="button" data-friend-act="remove" data-id="'+p.id+'" aria-label="Retirer '+esc(p.name)+'">RETIRER</button>')),'Aucun ami pour l’instant : saisis le code d’un joueur ci-dessus.'))
    +(d.outgoing.length?section('EN ATTENTE','DEMANDES ENVOYÉES ('+d.outgoing.length+')',list(d.outgoing.map(p=>person(p,'<button class="btn btn-outline" type="button" data-friend-act="cancel" data-id="'+p.id+'">ANNULER</button>')),'')):'')
    +section('CONFIDENTIALITÉ','QUI VOIT MON PROFIL ?','<div class="panel friend-visibility"><label for="friendVis">Mon profil est visible par</label><select id="friendVis" data-friend-vis>'+Object.entries(VIS).map(([k,v])=>'<option value="'+k+'"'+(d.visibility===k?' selected':'')+'>'+v+'</option>').join('')+'</select><p>Un profil montre ton niveau, ton rang, tes succès, ta vitrine de 5 cartes favorites, tes sets et albums terminés. Jamais ton solde ni ton e-mail.</p></div>')
    +'</div>';
@@ -55,7 +55,7 @@ async function joueur(q){
 function relationBar(p){
   const code=esc(p.code);
   if(p.relation==='self')return '<p class="friend-relation">C’est ton profil. <a href="#amis">Gérer mes amis et ma confidentialité</a></p>';
-  if(p.relation==='friend')return '<p class="friend-relation">Vous êtes amis. <a class="btn btn-outline" href="#trades">ÉCHANGER</a></p>';
+  if(p.relation==='friend')return '<p class="friend-relation">Vous êtes amis. <a class="btn btn-outline" href="#trades?code='+encodeURIComponent(p.code)+'">PROPOSER UN ÉCHANGE</a></p>';
   if(p.relation==='pending_out')return '<p class="friend-relation">Demande envoyée, en attente de réponse.</p>';
   if(p.relation==='pending_in')return '<p class="friend-relation">Ce joueur t’a demandé en ami. <a class="btn btn-gold" href="#amis">RÉPONDRE</a></p>';
   return '<p class="friend-relation"><button class="btn btn-gold" type="button" data-friend-ask="'+code+'">DEMANDER EN AMI</button></p>';

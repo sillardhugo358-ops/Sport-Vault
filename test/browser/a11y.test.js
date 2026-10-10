@@ -100,7 +100,7 @@ test('accessibilité : aucune régression par rapport à la base connue', () => 
   const baseline = JSON.parse(fs.readFileSync(BASELINE_FILE, 'utf8'));
   const regressions = [], improved = [];
   for (const [key, n] of Object.entries(found)) {
-    const base = baseline[key] || 0, margin = key.endsWith('|cible-tactile-44px') ? Math.max(3, Math.ceil(base * 0.1)) : 0;   // les cibles tactiles varient un peu avec le chargement
+    const base = baseline[key] || 0, margin = 0;   // base à zéro : tout nouveau défaut fait échouer le test
     if (n > base + margin) regressions.push(`${key} : ${n} (base ${base}) ex. ${(samples[key] || []).join(' ; ')}`);
   }
   for (const [key, n] of Object.entries(baseline)) if ((found[key] || 0) < n) improved.push(`${key} : ${found[key] || 0} (base ${n})`);
@@ -108,7 +108,7 @@ test('accessibilité : aucune régression par rapport à la base connue', () => 
   const total = {};
   for (const [key, n] of Object.entries(found)) { const rule = key.split('|')[2]; total[rule] = (total[rule] || 0) + n; }
   console.log('Défauts d\'accessibilité par règle (toutes pages et tailles) :', JSON.stringify(total));
-  const remaining = Object.keys(found).filter(k => !k.endsWith('|cible-tactile-44px')).sort().map(k => `${k} : ${found[k]} ex. ${(samples[k] || []).join(' ; ')}`);
+  const remaining = Object.keys(found).filter(k => process.env.A11Y_VERBOSE === '1' || !k.endsWith('|cible-tactile-44px')).sort().map(k => `${k} : ${found[k]} ex. ${(samples[k] || []).join(' ; ')}`);
   if (remaining.length) console.log('Défauts restants (hors cibles tactiles) :\n  ' + remaining.join('\n  '));
   if (improved.length) console.log('En amélioration (relancer avec A11Y_UPDATE=1 pour resserrer la base) :\n  ' + improved.join('\n  '));
   assert.deepEqual(regressions, [], 'nouveaux défauts d\'accessibilité');
