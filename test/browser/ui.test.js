@@ -15,7 +15,7 @@ const VIEWPORTS = [
   { name: 'tablette', width: 900, height: 1000 },
   { name: 'mobile', width: 390, height: 844 }
 ];
-const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'amis', 'admin'];
+const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'amis', 'souhaits', 'admin'];
 
 let server, browser, context, page;
 const errors = [];
@@ -700,7 +700,7 @@ test('espace de noms FVC : une fonction par page, aides partagées, page rempla�
     ui: Object.keys(window.FVC?.ui || {}).sort(),
     allFunctions: Object.values(window.FVC?.pages || {}).every(f => typeof f === 'function')
   }));
-  assert.deepEqual(ns.pages, ['admin', 'album', 'amis', 'auth', 'card', 'classement', 'collection', 'home', 'joueur', 'market', 'packs', 'profil', 'successes', 'trades', 'vault']);
+  assert.deepEqual(ns.pages, ['admin', 'album', 'amis', 'auth', 'card', 'classement', 'collection', 'home', 'joueur', 'market', 'packs', 'profil', 'souhaits', 'successes', 'trades', 'vault']);
   for (const k of ['$', 'api', 'apiRetry', 'app', 'bind', 'cardLink', 'cardMarkup', 'cardStatDefinitions', 'closeModal', 'esc', 'initials', 'money', 'rarityOrder', 'render', 'setModal', 'state', 'toast', 'viewHero']) assert.ok(ns.core.includes(k), 'FVC.core.' + k);
   for (const k of ['claimAlbum', 'claimChallengeUi', 'claimSetUi', 'daily', 'logout', 'mission', 'openPack', 'openPool', 'submitAuth', 'task', 'toggleFavorite']) assert.ok(ns.ui.includes(k), 'FVC.ui.' + k);
   assert.equal(ns.allFunctions, true);
@@ -842,6 +842,21 @@ test('amis : demande par code, acceptation, profil public, confidentialité', as
   await other.post('/api/profile/visibility', { visibility: 'private' });
   await page.reload();
   await page.waitForFunction(() => /pas visible/.test(document.querySelector('#app').innerText));
+  assert.deepEqual(errors, []);
+});
+
+test('souhaits : recherche, ajout, retrait, sans débordement', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await server.db.query("INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr) VALUES('wish-ui','2026-2027','Joueur Souhaité UI','ST','FC Souhait','France','epic',88) ON CONFLICT DO NOTHING");
+  const r = await visit('souhaits');
+  assert.ok(r.overflow <= 1, 'pas de débordement');
+  await page.fill('#wishQuery', 'Souhaité UI');
+  await page.waitForSelector('[data-wish-add="wish-ui"]');
+  await page.click('[data-wish-add="wish-ui"]');
+  await page.waitForSelector('[data-wish-remove="wish-ui"]');
+  assert.match(await page.textContent('.wish-page'), /Pas en vente/);
+  await page.click('[data-wish-remove="wish-ui"]');
+  await page.waitForFunction(() => !document.querySelector('[data-wish-remove="wish-ui"]'));
   assert.deepEqual(errors, []);
 });
 
