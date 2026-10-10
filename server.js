@@ -38,6 +38,7 @@ const { settleExpiredAuctions, auctionData, withdrawAuctionParticipation, auctio
 const { userAchievementStats, achievementProgress, progressSnapshot } = require('./lib/achievement-stats').createAchievementStats({ getPool: () => pool, levelProgressFromXp: (...args) => levelProgressFromXp(...args), listMissions: (...args) => listMissions(...args) });
 const { periodMissions, recordVisit, recordPageView } = require('./lib/mission-stats').createMissionStats({ getPool: () => pool, progressSnapshot: (...args) => progressSnapshot(...args), listMissions: (...args) => listMissions(...args), listTasks: (...args) => listTasks(...args) });
 const { listFavorites, setFavorite } = require('./lib/favorites').createFavorites({ getPool: () => pool, publicCard });
+const wishlist = require('./lib/wishlist').createWishlist({ getPool: () => pool });
 const friends = require('./lib/friends').createFriends({ getPool: () => pool, ensureCode: tradeEnsureCode, listFavorites, levelProgressFromXp: (...args) => levelProgressFromXp(...args), rankOf });
 const { cardMarket, recentSales, listAlerts, setAlert, deleteAlert } = require('./lib/market').createMarket({ getPool: () => pool, publicCard, settleExpiredAuctions });
 const { adminLog, adminSetAccountStatus, adminSetRole, adminAdjustResources, adminTransferCard, adminRemoveCard, adminGrantCard, adminLogs, adminOverview, adminCollections, adminSetCollection, adminPacks, adminSetPack, adminCompetitions, adminSetCompetition, adminCards, adminCardsPage, adminCardsSummary, adminCreateCatalogCard, adminDeleteCatalogCard, adminUpdateCatalogCard, adminUsers, adminUserDetail, adminAuctions } = require('./lib/admin').createAdmin({ getPool: () => pool, catalog: () => CARD_CATALOG, getUserById, canManage, safeUser, securityEvent, buildInstance, createCardInstance, publicCard, configuredPackCards });
@@ -52,6 +53,7 @@ const apiRoutes = [
  require('./lib/routes/admin').createAdminRoutes({ adminSeasonPrizes, adminSetSeasonPrize, adminChallenges, adminSaveChallenge, adminSets, adminSaveSet, adminCardsPage, adminCardsSummary, adminTasks, adminSaveTask, adminStats, adminAchievements, adminSaveAchievement, adminMissions, adminSaveMission, adminAdjustResources, adminAuctions, adminCards, adminCollections, adminCompetitions, adminCreateCatalogCard, adminDeleteCatalogCard, adminGrantCard, adminLog, adminLogs, adminOverview, adminPacks, adminRemoveCard, adminSetAccountStatus, adminSetCollection, adminSetCompetition, adminSetPack, adminSetRole, adminTransferCard, adminUpdateCatalogCard, adminUserDetail, adminUsers, getPool: () => pool, requireAdmin, safeUser }),
  require('./lib/routes/trades').createTradesRoutes({ currentUser, tradeInfo, tradeLookupPlayer, tradeMyCards, tradeCreateOffer, tradeListOffers, tradeCancelOffer, tradeDeclineOffer, tradeAcceptOffer }),
  require('./lib/routes/friends').createFriendsRoutes({ currentUser, friends }),
+ require('./lib/routes/wishlist').createWishlistRoutes({ currentUser, wishlist }),
  require('./lib/routes/push').createPushRoutes({ currentUser, push }),
  require('./lib/routes/internal').createInternalRoutes({ getPool: () => pool })
 ];
@@ -82,7 +84,7 @@ async function securityEvent(userId,ip,event,details={},client=null){const db=cl
 
 // Fichiers publics : uniquement à la racine du dépôt, pages, styles et images, plus les
 // scripts de l'interface listés ci-dessous. Jamais le code serveur, lib/, data/, .git/ ni la configuration.
-const PUBLIC_SCRIPTS=new Set(['fv-core.js','fv-cards.js','app.js','fv-pages.js','fv-admin.js','fv-market.js','fv-trades.js','market-insights.js','challenge-admin-editor.js','set-admin-editor.js','notifications-bell.js','fv-push.js','fv-friends.js','sw.js','admin-stats.js','task-admin-editor.js','achievement-admin-editor.js','mission-admin-editor.js','manifest.json']);
+const PUBLIC_SCRIPTS=new Set(['fv-core.js','fv-cards.js','app.js','fv-pages.js','fv-admin.js','fv-market.js','fv-trades.js','market-insights.js','challenge-admin-editor.js','set-admin-editor.js','notifications-bell.js','fv-push.js','fv-friends.js','fv-wishlist.js','sw.js','admin-stats.js','task-admin-editor.js','achievement-admin-editor.js','mission-admin-editor.js','manifest.json']);
 const PUBLIC_EXTENSIONS=new Set(['.html','.css','.svg','.png','.ico','.webp']);
 function isPublicFile(name){return !name.startsWith('.')&&(PUBLIC_SCRIPTS.has(name)||PUBLIC_EXTENSIONS.has(path.extname(name)));}
 // Polices hébergées par le site : fonts/*.woff2 uniquement.
