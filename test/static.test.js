@@ -90,3 +90,15 @@ test('cache et compression : gzip, ETag et 304, cache long des fichiers versionn
   assert.match(await html.text(), /FOOTVAULT/);
   assert.equal((await fetch(server.base + '/server.js')).status, 404);
 });
+
+test('application Android : assetlinks.json public, empreinte valide, dossiers cachés toujours refusés', async () => {
+  const r = await fetch(server.base + '/.well-known/assetlinks.json');
+  assert.equal(r.status, 200);
+  assert.match(r.headers.get('content-type'), /application\/json/);
+  const body = await r.json();
+  assert.equal(body[0].target.namespace, 'android_app');
+  assert.equal(body[0].target.package_name, 'com.footvault.app');
+  assert.match(body[0].target.sha256_cert_fingerprints[0], /^([0-9A-F]{2}:){31}[0-9A-F]{2}$/);
+  assert.equal(await rawGet('/.well-known/autre.json'), 404, 'seul assetlinks.json est servi');
+  assert.equal(await rawGet('/android/app/build.gradle'), 404, 'le code de l\'application n\'est pas servi');
+});
