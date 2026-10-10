@@ -15,7 +15,7 @@ const VIEWPORTS = [
   { name: 'tablette', width: 900, height: 1000 },
   { name: 'mobile', width: 390, height: 844 }
 ];
-const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'amis', 'souhaits', 'statistiques', 'equipe', 'atelier', 'admin'];
+const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'amis', 'souhaits', 'statistiques', 'equipe', 'atelier', 'surmesure', 'admin'];
 
 let server, browser, context, page;
 const errors = [];
@@ -700,7 +700,7 @@ test('espace de noms FVC : une fonction par page, aides partagées, page rempla�
     ui: Object.keys(window.FVC?.ui || {}).sort(),
     allFunctions: Object.values(window.FVC?.pages || {}).every(f => typeof f === 'function')
   }));
-  assert.deepEqual(ns.pages, ['admin', 'album', 'amis', 'atelier', 'auth', 'card', 'classement', 'collection', 'equipe', 'home', 'joueur', 'market', 'packs', 'profil', 'souhaits', 'statistiques', 'successes', 'trades', 'vault']);
+  assert.deepEqual(ns.pages, ['admin', 'album', 'amis', 'atelier', 'auth', 'card', 'classement', 'collection', 'equipe', 'home', 'joueur', 'market', 'packs', 'profil', 'souhaits', 'statistiques', 'successes', 'surmesure', 'trades', 'vault']);
   for (const k of ['$', 'api', 'apiRetry', 'app', 'bind', 'cardLink', 'cardMarkup', 'cardStatDefinitions', 'closeModal', 'esc', 'initials', 'money', 'rarityOrder', 'render', 'setModal', 'state', 'toast', 'viewHero']) assert.ok(ns.core.includes(k), 'FVC.core.' + k);
   for (const k of ['claimAlbum', 'claimChallengeUi', 'claimSetUi', 'daily', 'logout', 'mission', 'openPack', 'openPool', 'submitAuth', 'task', 'toggleFavorite']) assert.ok(ns.ui.includes(k), 'FVC.ui.' + k);
   assert.equal(ns.allFunctions, true);
@@ -915,6 +915,25 @@ test('atelier : vente rapide d\'un doublon, fusion refusée sans assez de doublo
   await page.click('[data-wk-sell="wk-ui"]');
   await page.waitForFunction(() => !document.querySelector('[data-wk-sell="wk-ui"]'));
   assert.equal(Number((await server.db.query('SELECT coins FROM users WHERE id=$1', [uid])).rows[0].coins), before + 20);
+  assert.deepEqual(errors, []);
+});
+
+test('pack sur mesure : prix calculé par le serveur, aperçu qui suit les choix, achat et révélation, sans débordement', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
+  for (let i = 0; i < 25; i++) await server.db.query("INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr) VALUES($1,'2026-2027',$2,'ST','FC Sur Mesure','France','common',70) ON CONFLICT DO NOTHING", ['cpui' + i, 'Sur Mesure UI ' + i]);
+  await server.db.query('UPDATE users SET coins=5000 WHERE id=$1', [uid]);
+  const r = await visit('surmesure');
+  assert.ok(r.overflow <= 1, 'pas de débordement');
+  await page.waitForSelector('[data-cp-open]');
+  await page.fill('#cpClub', 'FC Sur Mesure');
+  await page.click('[data-cp-club-add]');
+  await page.waitForFunction(() => /5 cartes/.test(document.querySelector('#cpQuote .cp-price small')?.textContent || '') && /220/.test(document.querySelector('#cpQuote .cp-price strong')?.textContent.replace(/\s/g, '') || ''));
+  const before = Number((await server.db.query('SELECT coins FROM users WHERE id=$1', [uid])).rows[0].coins);
+  await page.click('[data-cp-open]');
+  await page.waitForSelector('[data-reveal-card]', { state: 'attached' });
+  assert.equal(await page.locator('[data-reveal-card]').count(), 5);
+  assert.equal(Number((await server.db.query('SELECT coins FROM users WHERE id=$1', [uid])).rows[0].coins), before - 220);
   assert.deepEqual(errors, []);
 });
 

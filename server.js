@@ -12,7 +12,7 @@ const { initDb } = require('./lib/schema');
 let pool = null;
 const memory = { users: new Map(), sessions: new Map(), cards: new Map(), claims: new Map(), activity: [], reg: new Map(), login: new Map() };
 const { hashPassword, verifyPassword, validPassword, safeUser, sessionCookie, expiryDate, findUserByEmail, getUserById, cleanupSessions, canManage, requireAdmin, currentUser: authCurrentUser, createSession, destroySession, registrationAllowed, markRegistration, loginStatus, loginFailure, loginSuccess } = require('./lib/auth').createAuth({ db: () => pool, memory });
-const { publicCard, configuredPackCards, buildInstance, listPacks, createCardInstance, getUserCards, grantWelcomeCards, openPackForUser, openPoolForUser, warmCatalog, activeCatalogCards } = require('./lib/cards').createCards({ getPool: () => pool, memory, catalog: () => CARD_CATALOG, setCatalog: c => { CARD_CATALOG = c; }, getUserById, safeUser, securityEvent });
+const { publicCard, configuredPackCards, buildInstance, listPacks, createCardInstance, getUserCards, grantWelcomeCards, openPackForUser, openCustomPack, quoteCustomPack, customPackOptions, openPoolForUser, warmCatalog, activeCatalogCards } = require('./lib/cards').createCards({ getPool: () => pool, memory, catalog: () => CARD_CATALOG, setCatalog: c => { CARD_CATALOG = c; }, getUserById, safeUser, securityEvent });
 const { listMissions, isUnlocked: isMissionUnlocked, adminMissions, adminSaveMission } = require('./lib/missions').createMissions({ getPool: () => pool, adminLog: (...args) => adminLog(...args) });
 const { listChallenges, claimChallenge, adminChallenges, adminSaveChallenge } = require('./lib/challenges').createChallenges({ getPool: () => pool, adminLog: (...args) => adminLog(...args), applyReward: (...args) => applyReward(...args), securityEvent: (...args) => securityEvent(...args) });
 const { listSets, claimSet, adminSets, adminSaveSet } = require('./lib/card-sets').createCardSets({ getPool: () => pool, adminLog: (...args) => adminLog(...args), applyReward: (...args) => applyReward(...args), securityEvent: (...args) => securityEvent(...args) });
@@ -59,6 +59,7 @@ const apiRoutes = [
  require('./lib/routes/collection-stats').createCollectionStatsRoutes({ currentUser, collectionStats }),
  require('./lib/routes/team').createTeamRoutes({ currentUser, team }),
  require('./lib/routes/economy').createEconomyRoutes({ currentUser, economy }),
+ require('./lib/routes/custom-pack').createCustomPackRoutes({ currentUser, customPackOptions, quoteCustomPack, openCustomPack }),
  require('./lib/routes/wishlist').createWishlistRoutes({ currentUser, wishlist }),
  require('./lib/routes/push').createPushRoutes({ currentUser, push }),
  require('./lib/routes/internal').createInternalRoutes({ getPool: () => pool })
@@ -90,7 +91,7 @@ async function securityEvent(userId,ip,event,details={},client=null){const db=cl
 
 // Fichiers publics : uniquement à la racine du dépôt, pages, styles et images, plus les
 // scripts de l'interface listés ci-dessous. Jamais le code serveur, lib/, data/, .git/ ni la configuration.
-const PUBLIC_SCRIPTS=new Set(['fv-core.js','fv-cards.js','app.js','fv-pages.js','fv-admin.js','fv-market.js','fv-trades.js','market-insights.js','challenge-admin-editor.js','set-admin-editor.js','notifications-bell.js','fv-push.js','fv-friends.js','fv-wishlist.js','fv-stats.js','fv-team.js','fv-workshop.js','sw.js','admin-stats.js','task-admin-editor.js','achievement-admin-editor.js','mission-admin-editor.js','manifest.json']);
+const PUBLIC_SCRIPTS=new Set(['fv-core.js','fv-cards.js','app.js','fv-pages.js','fv-admin.js','fv-market.js','fv-trades.js','market-insights.js','challenge-admin-editor.js','set-admin-editor.js','notifications-bell.js','fv-push.js','fv-friends.js','fv-wishlist.js','fv-stats.js','fv-team.js','fv-workshop.js','fv-custompack.js','sw.js','admin-stats.js','task-admin-editor.js','achievement-admin-editor.js','mission-admin-editor.js','manifest.json']);
 const PUBLIC_EXTENSIONS=new Set(['.html','.css','.svg','.png','.ico','.webp']);
 function isPublicFile(name){return !name.startsWith('.')&&(PUBLIC_SCRIPTS.has(name)||PUBLIC_EXTENSIONS.has(path.extname(name)));}
 // Polices hébergées par le site : fonts/*.woff2 uniquement.
