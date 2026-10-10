@@ -15,7 +15,7 @@ const VIEWPORTS = [
   { name: 'tablette', width: 900, height: 1000 },
   { name: 'mobile', width: 390, height: 844 }
 ];
-const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'admin'];
+const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'amis', 'admin'];
 
 let server, browser, context, page;
 const errors = [];
@@ -700,7 +700,7 @@ test('espace de noms FVC : une fonction par page, aides partagées, page rempla�
     ui: Object.keys(window.FVC?.ui || {}).sort(),
     allFunctions: Object.values(window.FVC?.pages || {}).every(f => typeof f === 'function')
   }));
-  assert.deepEqual(ns.pages, ['admin', 'album', 'auth', 'card', 'classement', 'collection', 'home', 'market', 'packs', 'profil', 'successes', 'trades', 'vault']);
+  assert.deepEqual(ns.pages, ['admin', 'album', 'amis', 'auth', 'card', 'classement', 'collection', 'home', 'joueur', 'market', 'packs', 'profil', 'successes', 'trades', 'vault']);
   for (const k of ['$', 'api', 'apiRetry', 'app', 'bind', 'cardLink', 'cardMarkup', 'cardStatDefinitions', 'closeModal', 'esc', 'initials', 'money', 'rarityOrder', 'render', 'setModal', 'state', 'toast', 'viewHero']) assert.ok(ns.core.includes(k), 'FVC.core.' + k);
   for (const k of ['claimAlbum', 'claimChallengeUi', 'claimSetUi', 'daily', 'logout', 'mission', 'openPack', 'openPool', 'submitAuth', 'task', 'toggleFavorite']) assert.ok(ns.ui.includes(k), 'FVC.ui.' + k);
   assert.equal(ns.allFunctions, true);
@@ -815,6 +815,32 @@ test('collection : affichage de base par OVR décroissant, tri modifiable', asyn
   await page.selectOption('#collectionSort', 'name');
   await page.waitForFunction(() => { const t = [...document.querySelectorAll('.collection-card-item')].map(e => e.textContent).find(x => /Tri OVR/.test(x)); return t && /Tri OVR 60/.test(t); });
   assert.deepEqual(await order(), [60, 70, 80]);
+  assert.deepEqual(errors, []);
+});
+
+test('amis : demande par code, acceptation, profil public, confidentialité', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const other = await newPlayer(server, 'AmiTest');
+  const otherCode = (await other.get('/api/trades')).body.code;
+  let r = await visit('amis');
+  assert.ok(r.overflow <= 1, 'pas de débordement');
+  await page.waitForSelector('[data-friend-add]');
+  await page.fill('#friendCode', otherCode);
+  await page.click('[data-friend-add] button[type=submit]');
+  await page.waitForFunction(() => /DEMANDES ENVOYÉES/.test(document.querySelector('#app').innerText));
+  const incoming = (await other.get('/api/friends')).body.incoming;
+  assert.equal(incoming.length, 1);
+  assert.equal((await other.post('/api/friends/accept', { id: incoming[0].id })).status, 200);
+  r = await visit('amis');
+  await page.waitForFunction(() => /AmiTest/.test(document.querySelector('.friend-list')?.innerText || ''));
+  await page.click('.friend-name');
+  await page.waitForFunction(() => location.hash.startsWith('#joueur'));
+  await page.waitForFunction(() => /AMITEST/.test(document.querySelector('#app h1')?.textContent || ''));
+  assert.match(await page.textContent('.friend-relation'), /Vous êtes amis/);
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1), false);
+  await other.post('/api/profile/visibility', { visibility: 'private' });
+  await page.reload();
+  await page.waitForFunction(() => /pas visible/.test(document.querySelector('#app').innerText));
   assert.deepEqual(errors, []);
 });
 
