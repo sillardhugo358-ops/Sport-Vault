@@ -1,53 +1,66 @@
 // Équipe type (page « equipe ») : un 11 composé de cartes possédées, dans une formation ; note d'équipe = moyenne des OVR (poste vide = 0).
-// Chargé après app.js ; serveur : /api/team, /api/team/save (lib/team.js) qui valide tout (propriété, ligne du poste, doublons).
+// Chaque poste demande un POSTE EXACT (latéral gauche ≠ latéral droit). Chargé après app.js ; serveur : /api/team, /api/team/save
+// (lib/team.js), qui valide tout (propriété, poste exact, doublons) et fournit les formations et les libellés.
 (()=>{
-const {$,api,esc,money,render,toast,setModal,closeModal,viewHero}=FVC.core;
+const {$,api,esc,render,toast,setModal,closeModal,viewHero}=FVC.core;
 const post=(url,body)=>api(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-const LABEL={GK:'Gardien',DEF:'Défenseur',MID:'Milieu',ATT:'Attaquant'};
-const ROWS=['ATT','MID','DEF','GK'];
-const st={loaded:false,formations:[],formation:'4-3-3',lines:[],slots:[],cards:[],dirty:false,busy:false,pick:-1};
+const st={loaded:false,formations:[],rowsOf:{},labels:{},formation:'4-3-3',positions:[],slots:[],cards:[],dirty:false,busy:false,pick:-1};
 const byId=()=>new Map(st.cards.map(c=>[c.cardId,c]));
 const rating=()=>{const m=byId();return Math.round(st.slots.reduce((n,id)=>n+(m.get(id)?.ovr||0),0)/11*10)/10};
 const filled=()=>st.slots.filter(Boolean).length;
+const rowsOf=f=>st.rowsOf[f]||[];
 function setFromServer(d){
-  st.formations=d.formations;st.cards=d.cards;st.formation=d.lineup.formation;st.lines=d.lineup.lines;st.slots=d.lineup.slots.map(c=>c?c.cardId:null);st.dirty=false;st.loaded=true;
+  st.formations=d.formations;st.rowsOf=d.formationRows;st.labels=d.positionLabels;st.cards=d.cards;
+  st.formation=d.lineup.formation;st.positions=d.lineup.positions;st.slots=d.lineup.slots.map(c=>c?c.cardId:null);st.dirty=false;st.loaded=true;
 }
+// Changer de formation : chaque joueur reste, s'il existe un poste identique libre (même poste exact) ; sinon son poste est libéré.
 function changeFormation(f){
-  const lines={'4-3-3':[4,3,3],'4-4-2':[4,4,2],'3-5-2':[3,5,2],'4-2-3-1':[4,5,1],'5-3-2':[5,3,2]}[f];if(!lines)return;
-  const next=['GK',...Array(lines[0]).fill('DEF'),...Array(lines[1]).fill('MID'),...Array(lines[2]).fill('ATT')];
-  const m=byId(),pool={GK:[],DEF:[],MID:[],ATT:[]};
-  st.slots.forEach((id,i)=>{if(id&&m.get(id))pool[st.lines[i]].push(id)});
-  st.slots=next.map(l=>pool[l].shift()||null);st.lines=next;st.formation=f;st.dirty=true;
+  const next=rowsOf(f).flat();if(next.length!==11)return;
+  const m=byId(),pool={};
+  st.slots.forEach((id,i)=>{if(id&&m.get(id))(pool[st.positions[i]]||=[]).push(id)});
+  st.slots=next.map(p=>(pool[p]||[]).shift()||null);st.positions=next;st.formation=f;st.dirty=true;
 }
+// Meilleur 11 : pour chaque poste, la meilleure carte possédée de CE poste, sans doublon.
 function autoFill(){
   const used=new Set();
-  st.slots=st.lines.map(l=>{const c=st.cards.find(x=>x.line===l&&!used.has(x.cardId));if(c)used.add(c.cardId);return c?c.cardId:null});st.dirty=true;
+  st.slots=st.positions.map(p=>{const c=st.cards.find(x=>x.position===p&&!used.has(x.cardId));if(c)used.add(c.cardId);return c?c.cardId:null});st.dirty=true;
 }
+const label=p=>st.labels[p]||p;
 function slotHtml(i){
-  const c=byId().get(st.slots[i]);
-  return '<button class="team-slot'+(c?' is-filled rarity-'+esc(c.rarity):'')+'" type="button" data-team-slot="'+i+'" aria-label="'+(c?esc(c.name)+', note '+c.ovr+', changer':LABEL[st.lines[i]]+', choisir une carte')+'">'
-   +(c?'<b>'+c.ovr+'</b><span>'+esc(c.name)+'</span><small>'+esc(c.position)+'</small>':'<b>+</b><span>'+LABEL[st.lines[i]]+'</span>')+'</button>';
+  const c=byId().get(st.slots[i]),pos=st.positions[i];
+  return '<button class="team-slot'+(c?' is-filled rarity-'+esc(c.rarity):'')+'" type="button" data-team-slot="'+i+'" aria-label="'+(c?esc(c.name)+', '+esc(label(pos))+', note '+c.ovr+', changer':esc(label(pos))+', choisir une carte')+'">'
+   +(c?'<b>'+c.ovr+'</b><span class="team-name">'+esc(c.name)+'</span><small>'+esc(pos)+'</small>':'<i aria-hidden="true">+</i><small>'+esc(pos)+'</small>')+'</button>';
 }
 function pitchHtml(){
-  return '<div class="team-pitch">'+ROWS.map(l=>'<div class="team-row">'+st.lines.map((x,i)=>x===l?slotHtml(i):'').join('')+'</div>').join('')+'</div>';
+  // Rangées de l'arrière vers l'avant : on les affiche à l'envers (attaque en haut, gardien en bas) ; les index suivent l'ordre des postes.
+  const rows=rowsOf(st.formation);let start=0;const idx=rows.map(r=>{const a=Array.from({length:r.length},(_,k)=>start+k);start+=r.length;return a});
+  return '<div class="team-pitch" role="group" aria-label="Terrain, formation '+esc(st.formation)+'"><i class="team-markings" aria-hidden="true"></i>'
+   +rows.map((_,k)=>rows.length-1-k).map(k=>'<div class="team-row">'+idx[k].map(slotHtml).join('')+'</div>').join('')+'</div>';
+}
+function statsHtml(){
+  const m=byId(),avg=(from,to)=>{const ids=st.slots.slice(from,to).filter(Boolean);return ids.length?Math.round(ids.reduce((n,id)=>n+(m.get(id)?.ovr||0),0)/ids.length):'–'};
+  const rows=rowsOf(st.formation),sizes=rows.map(r=>r.length),names=['Gardien','Défense','Milieu','Attaque','Attaque'];
+  let a=0;const parts=sizes.map((n,k)=>{const html='<div class="team-stat"><small>'+names[k]+(k===3&&rows.length===5?' (ailiers)':k===4?' (pointe)':'')+'</small><b>'+avg(a,a+n)+'</b></div>';a+=n;return html});
+  return '<div class="team-stats" aria-label="Notes moyennes par ligne">'+parts.join('')+'</div>';
 }
 async function equipe(){
   if(!st.loaded||!st.dirty){
     let d;try{d=await api('/api/team')}catch(e){if(e.status===401)return FVC.pages.auth(new URLSearchParams({next:'equipe'}));throw e}
     if(!st.dirty)setFromServer(d);
   }
-  return '<div class="page team-page">'+viewHero('FOOTVAULT / ÉQUIPE TYPE','TON <span>ÉQUIPE TYPE.</span>','Compose ton 11 avec tes cartes. La note d’équipe est la moyenne des OVR des 11 titulaires ; un poste vide compte 0. Ton équipe est visible sur ton profil.',String(rating()).replace('.',','),'NOTE D’ÉQUIPE')
-   +'<section class="section"><div class="panel team-tools"><label for="teamFormation">Formation</label><select id="teamFormation" data-team-formation>'+st.formations.map(f=>'<option'+(f===st.formation?' selected':'')+'>'+f+'</option>').join('')+'</select>'
-   +'<button class="btn btn-outline" type="button" data-team-auto>MEILLEUR 11</button><button class="btn btn-outline" type="button" data-team-clear>VIDER</button>'
-   +'<button class="btn btn-gold" type="button" data-team-save'+(st.dirty&&!st.busy?'':' disabled')+'>ENREGISTRER</button><span class="team-count" role="status">'+filled()+' / 11 postes'+(st.dirty?' · modifications non enregistrées':'')+'</span></div>'+pitchHtml()+'</section></div>';
+  return '<div class="page team-page">'+viewHero('FOOTVAULT / ÉQUIPE TYPE','TON <span>ÉQUIPE TYPE.</span>','Compose ton 11 avec tes cartes : chaque poste demande le poste exact (un latéral gauche ne joue pas à droite). La note d’équipe est la moyenne des OVR des 11 titulaires ; un poste vide compte 0. Ton équipe est visible sur ton profil.',String(rating()).replace('.',','),'NOTE D’ÉQUIPE')
+   +'<section class="section team-board"><div class="team-toolbar"><label class="team-formation-field" for="teamFormation"><span>Formation</span><select id="teamFormation" data-team-formation>'+st.formations.map(f=>'<option'+(f===st.formation?' selected':'')+'>'+f+'</option>').join('')+'</select></label>'
+   +'<div class="team-actions"><button class="btn btn-outline" type="button" data-team-auto>MEILLEUR 11</button><button class="btn btn-outline" type="button" data-team-clear>VIDER</button><button class="btn btn-gold" type="button" data-team-save'+(st.dirty&&!st.busy?'':' disabled')+'>ENREGISTRER</button></div>'
+   +'<p class="team-count" role="status">'+filled()+' / 11 postes'+(st.dirty?' · <em>modifications non enregistrées</em>':'')+'</p></div>'
+   +statsHtml()+pitchHtml()+'</section></div>';
 }
 function openPicker(i){
   st.pick=i;
-  const line=st.lines[i],used=new Set(st.slots.filter((id,j)=>id&&j!==i));
-  const list=st.cards.filter(c=>c.line===line&&!used.has(c.cardId));
-  setModal('<div class="modal-box team-picker"><button class="modal-close" type="button" data-close aria-label="Fermer">×</button><h2>CHOISIR UN '+LABEL[line].toUpperCase()+'</h2>'
+  const pos=st.positions[i],used=new Set(st.slots.filter((id,j)=>id&&j!==i));
+  const list=st.cards.filter(c=>c.position===pos&&!used.has(c.cardId));
+  setModal('<div class="modal-box team-picker"><button class="modal-close" type="button" data-close aria-label="Fermer">×</button><h2>CHOISIR : '+esc(label(pos).toUpperCase())+'</h2>'
    +(st.slots[i]?'<button class="btn btn-outline" type="button" data-team-remove>RETIRER CE JOUEUR</button>':'')
-   +(list.length?'<ul class="team-picker-list">'+list.slice(0,200).map(c=>'<li><button type="button" data-team-choose="'+esc(c.cardId)+'"><b>'+c.ovr+'</b><span>'+esc(c.name)+'</span><small>'+esc(c.club)+' · '+esc(c.position)+'</small></button></li>').join('')+'</ul>':'<p class="team-empty">Tu n’as aucune carte pour ce poste.</p>')+'</div>');
+   +(list.length?'<ul class="team-picker-list">'+list.slice(0,200).map(c=>'<li><button type="button" data-team-choose="'+esc(c.cardId)+'" class="rarity-'+esc(c.rarity)+'"><b>'+c.ovr+'</b><span>'+esc(c.name)+'</span><small>'+esc(c.club)+' · '+esc(c.season)+'</small></button></li>').join('')+'</ul>':'<p class="team-empty">Tu n’as aucune carte pour ce poste ('+esc(label(pos).toLowerCase())+').</p>')+'</div>');
 }
 document.addEventListener('click',async e=>{
   const t=e.target.closest('[data-team-slot],[data-team-choose],[data-team-remove],[data-team-auto],[data-team-clear],[data-team-save]');if(!t)return;
