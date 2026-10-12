@@ -29,13 +29,13 @@ test('options, aperçu et refus : prix serveur, validation, connexion obligatoir
   assert.equal((await client(server).get('/api/custom-pack/options')).status, 401);
   assert.equal((await client(server).post('/api/custom-pack/open', spec())).status, 401);
   const o = (await p.get('/api/custom-pack/options')).body;
-  assert.ok(o.clubs.includes('FC Mesure') && o.positions.includes('GK') && o.perCard.icon === 6000);
+  assert.ok(o.clubs.includes('FC Mesure') && o.positions.includes('GK') && o.perCard.icon === 6000 && o.perCard.common === 150 && o.perCard.rare === 500 && o.perCard.epic === 1000 && o.perCard.legendary === 2000);
   const qt = (await p.post('/api/custom-pack/quote', spec())).body;
   assert.equal(qt.ok, true);
-  assert.equal(qt.price, 220, '5 cartes × 40 FC + 10 % (1 catégorie de filtre)');
+  assert.equal(qt.price, 825, '5 cartes × 150 FC + 10 % (1 catégorie de filtre)');
   assert.equal(qt.poolSize, 43);
   assert.equal((await p.post('/api/custom-pack/quote', spec({ minRarity: 'icon' }))).body.price, 33000, '5 × 6 000 FC + 10 %');
-  assert.equal((await p.post('/api/custom-pack/quote', spec({ filters: { clubs: ['FC Mesure'], positions: ['ST'] } }))).body.price, 240, 'deux catégories : +20 %');
+  assert.equal((await p.post('/api/custom-pack/quote', spec({ filters: { clubs: ['FC Mesure'], positions: ['ST'] } }))).body.price, 900, 'deux catégories : +20 %');
   for (const bad of [spec({ cards: 2 }), spec({ cards: 11 }), spec({ cards: 5.5 }), spec({ minRarity: 'mythic' }), spec({ filters: { positions: ['XX'] } }), spec({ filters: { clubs: 'FC Mesure' } })])
     assert.equal((await p.post('/api/custom-pack/quote', bad)).status, 400);
   const narrow = (await p.post('/api/custom-pack/quote', spec({ filters: { clubs: ['FC Solitaire'] } }))).body;
@@ -49,9 +49,9 @@ test('achat : prix débité, cartes distinctes du filtre, rareté minimale tenue
   assert.equal(r.body.cards.length, 5);
   assert.equal(new Set(r.body.cards.map(c => c.cardId)).size, 5, 'cartes distinctes');
   for (const c of r.body.cards) { assert.equal(c.club, 'FC Mesure'); assert.ok(['rare', 'epic', 'legendary', 'icon'].includes(c.rarity), c.rarity); }
-  assert.equal(before - await coins(), 330, '5 × 60 FC + 10 %');
+  assert.equal(before - await coins(), 2750, '5 × 500 FC + 10 %');
   const led = await q("SELECT amount,reason,ref FROM coin_ledger WHERE user_id=$1 ORDER BY id DESC LIMIT 1", [p.user.id]);
-  assert.deepEqual([Number(led[0].amount), led[0].reason, led[0].ref], [-330, 'pack', 'custom']);
+  assert.deepEqual([Number(led[0].amount), led[0].reason, led[0].ref], [-2750, 'pack', 'custom']);
   assert.equal((await q("SELECT count(*)::int AS n FROM card_instances WHERE owner_id=$1 AND source='pack:custom'", [p.user.id]))[0].n, 5);
 });
 
@@ -68,10 +68,10 @@ test('refus avant débit : sélection trop étroite, pas assez de cartes de la r
   await q('UPDATE users SET coins=100 WHERE id=$1', [poor.user.id]);
   const refused = await poor.post('/api/custom-pack/open', spec());
   assert.equal(refused.status, 400);
-  assert.equal(refused.body.error, 'FOOTCOINS insuffisants : il te faut 220 FC, tu en as 100.', 'aucune enchère en cours : pas de mention d\'enchère');
+  assert.equal(refused.body.error, 'FOOTCOINS insuffisants : il te faut 825 FC, tu en as 100.', 'aucune enchère en cours : pas de mention d\'enchère');
   await q('UPDATE users SET reserved_coins=60 WHERE id=$1', [poor.user.id]);
   const reserved = await poor.post('/api/custom-pack/open', spec());
-  assert.match(reserved.body.error, /60 FC sont réservés par une enchère \(disponible : 40 FC, il en faut 220\)/);
+  assert.match(reserved.body.error, /60 FC sont réservés par une enchère \(disponible : 40 FC, il en faut 825\)/);
   await q('UPDATE users SET reserved_coins=0 WHERE id=$1', [poor.user.id]);
   assert.equal(Number((await userRow(server, poor.user.id)).coins), 100);
 });
