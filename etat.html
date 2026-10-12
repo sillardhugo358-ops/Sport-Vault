@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>FOOTVAULT — État du site</title>
-<meta name="description" content="État en direct du serveur FOOTVAULT : disponibilité, base de données, version en ligne et mémoire.">
+<meta name="description" content="État en direct du serveur FOOTVAULT (administrateurs).">
+<meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#050b16">
 <link rel="icon" type="image/svg+xml" href="footvault-icon.svg">
 <link rel="stylesheet" href="fonts.css?v=20260930-fonts">
@@ -61,7 +62,7 @@ h1{margin:0 0 6px;font:900 clamp(34px,7vw,54px)/1 'Barlow Condensed',sans-serif;
   function fail(){set('bad','Le serveur ne répond pas pour le moment. S\'il vient de se réveiller, patiente une minute puis la page se met à jour toute seule.');tiles.innerHTML=''}
   function load(){
     var ctl=typeof AbortController==='function'?new AbortController():null,timer=setTimeout(function(){ctl&&ctl.abort()},15000);
-    fetch('/api/health',{cache:'no-store',signal:ctl?ctl.signal:undefined}).then(function(r){return r.json()}).then(function(h){render(h);checked.textContent='Dernière vérification : '+new Date().toLocaleTimeString('fr-FR')}).catch(function(){fail();checked.textContent='Dernière tentative : '+new Date().toLocaleTimeString('fr-FR')}).then(function(){clearTimeout(timer)});
+    fetch('/api/health',{cache:'no-store',credentials:'same-origin',signal:ctl?ctl.signal:undefined}).then(function(r){return r.json()}).then(function(h){render(h);checked.textContent='Dernière vérification : '+new Date().toLocaleTimeString('fr-FR')}).catch(function(){fail();checked.textContent='Dernière tentative : '+new Date().toLocaleTimeString('fr-FR')}).then(function(){clearTimeout(timer)});
   }
   load();setInterval(load,30000);
 })();

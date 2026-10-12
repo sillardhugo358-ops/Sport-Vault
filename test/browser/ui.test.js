@@ -618,33 +618,42 @@ test('cartes : pastille du club quand il a un logo, rien sinon', async () => {
   await page.unroute('**/api/club-logos');
 });
 
-test('état du site : page publique, serveur et base annoncés en ligne, mémoire affichée, serveur en panne signalé', async () => {
-  const ctx = await browser.newContext({ extraHTTPHeaders: { 'X-Forwarded-For': server.newIp() }, viewport: { width: 390, height: 844 } });
-  const p = await ctx.newPage();
+test('état du site : réservé aux administrateurs (page, lien du pied de page), serveur et base annoncés, serveur en panne signalé', async () => {
+  // Visiteur anonyme : ni lien dans le pied de page, ni page.
+  const anon = await browser.newContext({ extraHTTPHeaders: { 'X-Forwarded-For': server.newIp() }, viewport: { width: 390, height: 844 } });
+  const ap = await anon.newPage();
+  const res = await ap.goto(server.base + '/etat.html');
+  assert.equal(res.status(), 404, 'page introuvable pour un visiteur');
+  await ap.goto(server.base + '/#home');
+  await ap.waitForFunction(() => document.querySelector('#app')?.children.length > 0);
+  assert.equal(await ap.$('.footer a[href="etat.html"]'), null, 'pas de lien visible pour un visiteur');
+  assert.ok(!/ÉTAT DU SITE/.test(await ap.content()), 'le lien n\'est même pas dans le code de la page');
+  await anon.close();
+  // Administrateur connecté (le compte du navigateur est « creator ») : lien, page et mesures.
+  await page.setViewportSize({ width: 390, height: 844 });
   const errs = [];
-  p.on('pageerror', e => errs.push(e.message));
-  await p.goto(server.base + '/etat.html');
-  await p.waitForFunction(() => /Tout fonctionne/.test(document.getElementById('statusText').textContent), null, { timeout: 15000 });
-  assert.equal(await p.$eval('#status', e => e.className.includes('ok')), true);
-  const tiles = await p.$$eval('.tile', els => els.map(e => e.textContent));
+  const onErr = e => errs.push(e.message);
+  page.on('pageerror', onErr);
+  await page.goto(server.base + '/#home');
+  await page.waitForSelector('.footer a[href="etat.html"]');
+  assert.equal(await page.$eval('.footer a[href="etat.html"]', e => e.textContent.trim()), 'ÉTAT DU SITE');
+  await page.goto(server.base + '/etat.html');
+  await page.waitForFunction(() => /Tout fonctionne/.test(document.getElementById('statusText').textContent), null, { timeout: 15000 });
+  assert.equal(await page.$eval('#status', e => e.className.includes('ok')), true);
+  const tiles = await page.$$eval('.tile', els => els.map(e => e.textContent));
   assert.equal(tiles.length, 6);
   assert.ok(tiles.some(t => /Base de données.*OK/.test(t)), tiles.join(' | '));
   assert.ok(tiles.some(t => /Mémoire du serveur\d+ Mo/.test(t)), tiles.join(' | '));
-  assert.equal(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'pas de défilement horizontal sur mobile');
-  assert.equal(await p.$('a[href="/"]') !== null, true);
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'pas de défilement horizontal sur mobile');
+  assert.equal(await page.$('a[href="/"]') !== null, true);
   // Serveur injoignable : message clair, page toujours là.
-  await p.route('**/api/health', route => route.abort());
-  await p.evaluate(() => new Promise(r => setTimeout(r, 0)));
-  await p.reload();
-  await p.waitForFunction(() => /ne répond pas/.test(document.getElementById('statusText').textContent), null, { timeout: 15000 });
-  assert.equal(await p.$eval('#status', e => e.className.includes('bad')), true);
+  await page.route('**/api/health', route => route.abort());
+  await page.reload();
+  await page.waitForFunction(() => /ne répond pas/.test(document.getElementById('statusText').textContent), null, { timeout: 15000 });
+  assert.equal(await page.$eval('#status', e => e.className.includes('bad')), true);
+  await page.unroute('**/api/health');
+  page.off('pageerror', onErr);
   assert.deepEqual(errs, []);
-  await ctx.close();
-});
-
-test('accueil : le pied de page renvoie vers la page « état du site »', async () => {
-  await page.goto(server.base + '/#home');
-  assert.equal(await page.$eval('.footer a[href="etat.html"]', e => e.textContent.trim()), 'ÉTAT DU SITE');
 });
 
 test('clavier : lien d\'évitement au premier Tab, titre par page, focus sur le contenu au changement de page', async () => {

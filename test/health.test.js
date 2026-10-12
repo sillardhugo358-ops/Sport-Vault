@@ -6,34 +6,67 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { startServer } = require('./helpers');
 const { sessionDays } = require('../lib/auth');
+const { newPlayer } = require('./helpers');
+const TOKEN = 'jeton-sante-de-test-0123456789';
+const bearer = { headers: { Authorization: 'Bearer ' + TOKEN } };
 
 let server;
-test.before(async () => { server = await startServer({ env: { RENDER_GIT_COMMIT: 'abcdef1234567890abcdef1234567890abcdef12', SESSION_TTL_DAYS: '0.5' } }); });
+test.before(async () => { server = await startServer({ env: { RENDER_GIT_COMMIT: 'abcdef1234567890abcdef1234567890abcdef12', SESSION_TTL_DAYS: '0.5', HEALTH_TOKEN: TOKEN } }); });
 test.after(async () => { await server?.stop(); });
 
-test('santé : version déployée, démarrage, base joignable', async () => {
+test('santé publique : l\'essentiel seulement (en ligne, base, version), aucun détail interne', async () => {
   const h = await (await fetch(server.base + '/api/health')).json();
   assert.equal(h.ok, true);
+  assert.equal(h.ready, true);
   assert.equal(h.commit, 'abcdef123456');
-  assert.ok(Date.parse(h.startedAt) <= Date.now());
-  assert.ok(Number.isInteger(h.uptimeSeconds));
+  assert.equal(h.storage, 'postgres');
   assert.equal(h.database.ok, true);
   assert.ok(h.database.latencyMs >= 0);
+  assert.deepEqual(Object.keys(h.database).sort(), ['latencyMs', 'ok']);
+  for (const k of ['startedAt', 'uptimeSeconds', 'memory', 'cards', 'packs', 'universe', 'databaseTls', 'databaseTlsDiagnostic', 'databaseStartError', 'timestamp'])
+    assert.equal(k in h, false, k + ' ne doit pas être public');
   assert.ok(!JSON.stringify(h).includes('postgresql://'), 'aucune adresse de base exposée');
-  assert.equal(h.databaseTls, 'off', 'TLS de la base annoncé (pas de TLS sur la base de test)');
-  assert.equal(h.databaseTlsDiagnostic.caCertChars, 0, 'diagnostic TLS présent quand la vérification est absente');
-  assert.ok(!JSON.stringify(h.databaseTlsDiagnostic).includes('postgresql://'), 'le diagnostic n\'expose aucune valeur');
-  for (const k of ['rss', 'heapUsed', 'heapTotal', 'external']) assert.ok(Number.isInteger(h.memory[k]) && h.memory[k] >= 0, 'mémoire ' + k);
-  assert.ok(h.memory.rss >= h.memory.heapUsed, 'la mémoire occupée couvre les données JavaScript');
+  const wrong = await (await fetch(server.base + '/api/health', { headers: { Authorization: 'Bearer mauvais-jeton' } })).json();
+  assert.equal('memory' in wrong, false, 'mauvais jeton : toujours la version publique');
+  const player = await newPlayer(server, 'Simple');
+  assert.equal('memory' in (await player.get('/api/health')).body, false, 'un joueur connecté n\'a pas les détails');
 });
 
-test('page « état du site » : servie publiquement, lit /api/health', async () => {
-  const r = await fetch(server.base + '/etat.html');
-  assert.equal(r.status, 200);
-  const html = await r.text();
-  assert.match(html, /État du site/);
-  assert.match(html, /\/api\/health/);
-  assert.ok(!/postgres(ql)?:\/\//.test(html));
+test('santé détaillée : administrateur connecté ou jeton HEALTH_TOKEN', async () => {
+  const admin = await newPlayer(server, 'Surveillant');
+  await server.db.query("UPDATE users SET role='admin' WHERE id=$1", [admin.user.id]);
+  const detail = async h => {
+    assert.equal(h.ok, true);
+    assert.ok(Date.parse(h.startedAt) <= Date.now());
+    assert.ok(Number.isInteger(h.uptimeSeconds));
+    assert.equal(h.databaseTls, 'off', 'TLS de la base annoncé (pas de TLS sur la base de test)');
+    assert.equal(h.databaseTlsDiagnostic.caCertChars, 0, 'diagnostic TLS présent quand la vérification est absente');
+    assert.ok(!JSON.stringify(h.databaseTlsDiagnostic).includes('postgresql://'), 'le diagnostic n\'expose aucune valeur');
+    for (const k of ['rss', 'heapUsed', 'heapTotal', 'external']) assert.ok(Number.isInteger(h.memory[k]) && h.memory[k] >= 0, 'mémoire ' + k);
+    assert.ok(h.memory.rss >= h.memory.heapUsed, 'la mémoire occupée couvre les données JavaScript');
+    assert.ok(Number(h.cards) >= 0);
+    assert.ok(!JSON.stringify(h).includes('postgresql://'), 'aucune adresse de base exposée');
+  };
+  await detail((await admin.get('/api/health')).body);
+  await detail(await (await fetch(server.base + '/api/health', bearer)).json());
+});
+
+test('page « état du site » : réservée aux administrateurs, introuvable pour les autres (même par des chemins détournés)', async () => {
+  const anon = await fetch(server.base + '/etat.html');
+  assert.equal(anon.status, 404);
+  const net = require('node:net');
+  const raw = p => new Promise((resolve, reject) => {
+    const u = new URL(server.base), sock = net.connect(Number(u.port), u.hostname, () => sock.write(`GET ${p} HTTP/1.1\r\nHost: x\r\nConnection: close\r\n\r\n`));
+    let out = ''; sock.on('data', d => { out += d; }); sock.on('end', () => resolve(Number((out.match(/^HTTP\/1\.1 (\d+)/) || [])[1]))); sock.on('error', reject);
+  });
+  for (const p of ['/etat.html', '/etat%2ehtml', '/%65tat.html', '/./etat.html', '/etat.html/../etat.html']) assert.equal(await raw(p), 404, p);
+  const player = await newPlayer(server, 'Curieux');
+  assert.equal((await player.get('/etat.html')).status, 404, 'un joueur connecté non admin ne la voit pas');
+  const withToken = await fetch(server.base + '/etat.html', bearer);
+  assert.equal(withToken.status, 404, 'le jeton ne donne pas accès à la page');
+  const admin = await newPlayer(server, 'Superviseur');
+  await server.db.query("UPDATE users SET role='creator' WHERE id=$1", [admin.user.id]);
+  assert.equal((await admin.get('/etat.html')).status, 200, 'un administrateur connecté la voit');
 });
 
 test('session : durée lue dans SESSION_TTL_DAYS, cookie en secondes entières', async () => {
@@ -62,14 +95,14 @@ test('base injoignable au démarrage : le serveur annonce le code d\'erreur (san
   const port = await new Promise(r => { const s = net.createServer(); s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => r(p)); }); });
   const child = spawn(process.execPath, ['-r', './security-bootstrap.js', 'server.js'], {
     cwd: require('node:path').join(__dirname, '..'),
-    env: { ...process.env, DATABASE_URL: 'postgresql://secret_user:secret_pass@127.0.0.1:1/x', PORT: String(port), NODE_ENV: 'production', ADMIN_EMAILS: '' },
+    env: { ...process.env, DATABASE_URL: 'postgresql://secret_user:secret_pass@127.0.0.1:1/x', PORT: String(port), NODE_ENV: 'production', ADMIN_EMAILS: '', HEALTH_TOKEN: TOKEN },
     stdio: 'ignore'
   });
   try {
     let h = null;
     for (let i = 0; i < 60 && !(h && h.storage === 'unavailable'); i++) {
       await new Promise(r => setTimeout(r, 500));
-      h = await fetch(`http://127.0.0.1:${port}/api/health`).then(r => r.json()).catch(() => null);
+      h = await fetch(`http://127.0.0.1:${port}/api/health`, bearer).then(r => r.json()).catch(() => null);
     }
     assert.equal(h.ok, false);
     assert.equal(h.storage, 'unavailable');
@@ -88,14 +121,14 @@ test('certificat de la base inexploitable : /api/health répond toujours (jamais
   const port = await new Promise(r => { const s = net.createServer(); s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => r(p)); }); });
   const child = spawn(process.execPath, ['-r', './security-bootstrap.js', 'server.js'], {
     cwd: require('node:path').join(__dirname, '..'),
-    env: { ...process.env, DATABASE_URL: 'postgresql://secret_user:secret_pass@127.0.0.1:1/x', DATABASE_CA_CERT: 'MIIBcorpsDuCertificatSansEnTete', PORT: String(port), NODE_ENV: 'production', ADMIN_EMAILS: '' },
+    env: { ...process.env, DATABASE_URL: 'postgresql://secret_user:secret_pass@127.0.0.1:1/x', DATABASE_CA_CERT: 'MIIBcorpsDuCertificatSansEnTete', PORT: String(port), NODE_ENV: 'production', ADMIN_EMAILS: '', HEALTH_TOKEN: TOKEN },
     stdio: 'ignore'
   });
   try {
     let res = null, h = null;
     for (let i = 0; i < 60 && !(h && h.storage === 'unavailable'); i++) {
       await new Promise(r => setTimeout(r, 500));
-      res = await fetch(`http://127.0.0.1:${port}/api/health`).catch(() => null);
+      res = await fetch(`http://127.0.0.1:${port}/api/health`, bearer).catch(() => null);
       h = res ? await res.json().catch(() => null) : null;
     }
     assert.equal(res.status, 200, 'jamais de 500 sur /api/health');

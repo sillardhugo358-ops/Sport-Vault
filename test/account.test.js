@@ -13,10 +13,14 @@ test('santé : serveur prêt sur PostgreSQL, catalogue chargé', async () => {
   assert.equal(r.status, 200);
   assert.equal(r.body.ok, true);
   assert.equal(r.body.storage, 'postgres');
+  // Catalogue et packs : détails réservés aux administrateurs (la santé publique reste minimale).
+  const admin = await newPlayer(server, 'Verificateur');
+  await server.db.query("UPDATE users SET role='admin' WHERE id=$1", [admin.user.id]);
+  const d = (await admin.get('/api/health')).body;
   const active = Number((await server.db.query('SELECT count(*) FROM catalog_cards WHERE is_active=true')).rows[0].count);
   assert.ok(active > 0);
-  assert.equal(r.body.cards, active);
-  assert.deepEqual(r.body.packs, ['starter', 'pro', 'legend']);
+  assert.equal(d.cards, active);
+  assert.deepEqual(d.packs, ['starter', 'pro', 'legend']);
 });
 
 test('inscription : 1 000 FC, 50 gems, 3 cartes de bienvenue', async () => {
