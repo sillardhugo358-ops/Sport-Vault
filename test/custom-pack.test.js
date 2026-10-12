@@ -66,7 +66,13 @@ test('refus avant débit : sélection trop étroite, pas assez de cartes de la r
   await q("UPDATE catalog_cards SET rarity_locked=false,updated_at=now() WHERE id LIKE 'cp-icon%'");
   const poor = await newPlayer(server, 'Fauchee');
   await q('UPDATE users SET coins=100 WHERE id=$1', [poor.user.id]);
-  assert.equal((await poor.post('/api/custom-pack/open', spec())).status, 400);
+  const refused = await poor.post('/api/custom-pack/open', spec());
+  assert.equal(refused.status, 400);
+  assert.equal(refused.body.error, 'FOOTCOINS insuffisants : il te faut 220 FC, tu en as 100.', 'aucune enchère en cours : pas de mention d\'enchère');
+  await q('UPDATE users SET reserved_coins=60 WHERE id=$1', [poor.user.id]);
+  const reserved = await poor.post('/api/custom-pack/open', spec());
+  assert.match(reserved.body.error, /60 FC sont réservés par une enchère \(disponible : 40 FC, il en faut 220\)/);
+  await q('UPDATE users SET reserved_coins=0 WHERE id=$1', [poor.user.id]);
   assert.equal(Number((await userRow(server, poor.user.id)).coins), 100);
 });
 

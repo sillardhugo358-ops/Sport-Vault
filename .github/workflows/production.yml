@@ -41,7 +41,7 @@ jobs:
             jq -e '.ok == true and .storage == "postgres"' health.json > /dev/null || { echo "::error::Serveur démarré sans base PostgreSQL prête (après $WAIT_SECONDS s). Code d'erreur au démarrage : $(jq -r '.databaseStartError // "inconnu"' health.json). Mode TLS : $(jq -r '.databaseTls // "?"' health.json)."; exit 1; }
             echo "::error::Base de données injoignable : $(jq -r '.database.error // "inconnu"' health.json)"; exit 1
           fi
-          echo "Prêt après $tries essai(s). Base : $(jq -r '.database.latencyMs' health.json) ms, catalogue : $(jq -r '.cards // "non public"' health.json) cartes. TLS de la base : $(jq -r '.databaseTls // "?"' health.json). $(jq -r 'if .databaseTlsDiagnostic then "Diagnostic TLS : " + (.databaseTlsDiagnostic | tojson) + ". " else "" end' health.json)Mo (processus), tas JS : $(jq -r '.memory.heapUsed // "?"' health.json) Mo."
+          echo "Prêt après $tries essai(s). Base : $(jq -r '.database.latencyMs' health.json) ms. Version : $(jq -r '.commit // "?"' health.json). (Les détails — mémoire, catalogue, TLS — ne sont plus publics : voir /etat.html en administrateur.)"
       - name: Pages et fichiers protégés
         run: |
           curl -fsS --max-time 60 "$URL/" | grep -q 'FOOTVAULT' || { echo "::error::La page d'accueil ne répond pas correctement."; exit 1; }
