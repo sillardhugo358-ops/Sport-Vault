@@ -48,9 +48,10 @@
     const panel=document.getElementById('notifPanel');if(panel&&!panel.hidden)renderPanel(panel);
   }
   function renderPanel(panel){
-    const list=data?.notifications||[],ready=Number(data?.rewardsReady||0);
+    const list=data?.notifications||[],ready=Number(data?.rewardsVault??data?.rewardsReady??0),ranking=Number(data?.rewardsRanking||0);
     panel.innerHTML='<header><h2>NOTIFICATIONS</h2>'+(data?.unread?'<button type="button" data-notif-read>TOUT MARQUER LU</button>':'')+'</header>'
       +(ready?'<a class="notif-ready" href="#vault"><span>'+(ready>1?ready+' récompenses t’attendent':'1 récompense t’attend')+' dans ton Vault</span><b>RÉCUPÉRER →</b></a>':'')
+      +(ranking?'<a class="notif-ready" href="#classement"><span>'+(ranking>1?ranking+' récompenses du classement t’attendent':'1 récompense du classement t’attend')+'</span><b>RÉCUPÉRER →</b></a>':'')
       +(list.length?'<ul class="notif-list">'+list.map(n=>{const link=safeLink(n.link),inner='<strong>'+esc(n.title)+'</strong>'+(n.body?'<span>'+esc(n.body)+'</span>':'')+'<time datetime="'+esc(n.createdAt)+'">'+esc(ago(n.createdAt))+'</time>';return '<li class="notif-item'+(n.read?'':' unread')+'">'+(link?'<a href="'+esc(link)+'">'+inner+'</a>':'<div>'+inner+'</div>')+'</li>';}).join('')+'</ul>':(ready?'':'<p class="notif-empty">Aucune notification pour le moment. Tu seras prévenu ici des surenchères, des fins d’enchère, des succès et des missions terminés.</p>'));
     const b=panel.querySelector('[data-notif-read]');if(b)b.onclick=markRead;
     panel.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>close()));
