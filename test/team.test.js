@@ -1,12 +1,12 @@
 'use strict';
 
-// Équipe type : formations, lignes par poste, propriété des cartes, doublons, note d'équipe, profil public.
+// Équipe type : formations, postes exacts, propriété des cartes, doublons, note d'équipe, profil public.
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const { startServer, newPlayer, client } = require('./helpers');
-const { FORMATIONS } = require('../lib/team');
+const { FORMATIONS, FORMATION_ROWS } = require('../lib/team');
 
 let server, p, other;
 const q = async (sql, params) => (await server.db.query(sql, params)).rows;
@@ -24,13 +24,16 @@ test.before(async () => { server = await startServer(); p = await newPlayer(serv
 test.after(async () => { await server.stop?.(); });
 
 test('formations : chaque formation compte 11 postes avec 1 gardien', () => {
-  for (const [name, lines] of Object.entries(FORMATIONS)) {
-    assert.equal(lines.length, 11, name);
-    assert.equal(lines.filter(l => l === 'GK').length, 1, name);
+  for (const [name, pos] of Object.entries(FORMATIONS)) {
+    assert.equal(pos.length, 11, name);
+    assert.equal(pos.filter(l => l === 'GK').length, 1, name);
+    assert.deepEqual(FORMATION_ROWS[name].flat(), pos, name);
+    assert.ok(pos.includes('ST') || pos.includes('LW'), name + ' : une attaque');
   }
+  assert.deepEqual(FORMATIONS['4-3-3'].slice(0, 5), ['GK', 'LB', 'CB', 'CB', 'RB']);
 });
 
-test('lecture : droits, formations, cartes possédées par ligne', async () => {
+test('lecture : droits, formations, cartes possédées, postes', async () => {
   assert.equal((await client(server).get('/api/team')).status, 401);
   const gk = await give(p, 'GK', 80);
   const r = (await p.get('/api/team')).body;
@@ -38,15 +41,16 @@ test('lecture : droits, formations, cartes possédées par ligne', async () => {
   assert.equal(r.lineup.formation, '4-3-3');
   assert.equal(r.lineup.filled, 0);
   assert.equal(r.lineup.rating, 0);
-  assert.ok(r.cards.some(c => c.cardId === gk && c.line === 'GK'));
+  assert.deepEqual(r.lineup.positions, FORMATIONS['4-3-3']);
+  assert.equal(r.positionLabels.LB, 'Latéral gauche');
+  assert.ok(r.cards.some(c => c.cardId === gk && c.position === 'GK'));
 });
 
-test('enregistrement : lignes respectées, propriété, doublons, note d\'équipe', async () => {
+test('enregistrement : poste exact, propriété, doublons, note d\'équipe', async () => {
   const gk = await give(p, 'GK', 80), d1 = await give(p, 'CB', 70), d2 = await give(p, 'LB', 60), m1 = await give(p, 'CM', 90), a1 = await give(p, 'ST', 100);
   const foreign = await give(other, 'CB', 99);
-  const lines = FORMATIONS['4-3-3'];
-  const pick = { GK: [gk], DEF: [d1, d2], MID: [m1], ATT: [a1] };
-  const slots = lines.map(l => pick[l].shift() || null);
+  const pick = { GK: [gk], CB: [d1], LB: [d2], CM: [m1], ST: [a1] };
+  const slots = FORMATIONS['4-3-3'].map(l => (pick[l] || []).shift() || null);
   const ok = await p.post('/api/team/save', { formation: '4-3-3', slots });
   assert.equal(ok.status, 200, JSON.stringify(ok.body));
   assert.equal(ok.body.lineup.filled, 5);
@@ -58,9 +62,11 @@ test('enregistrement : lignes respectées, propriété, doublons, note d\'équip
   assert.equal(await bad(blank().slice(0, 10)), 400, '11 postes exigés');
   assert.equal((await p.post('/api/team/save', { formation: '9-9-9', slots: blank() })).status, 400, 'formation inconnue');
   let s = blank(); s[0] = d1; assert.equal(await bad(s), 400, 'un défenseur ne joue pas gardien');
+  s = blank(); s[4] = d2; assert.equal(await bad(s), 400, 'un latéral gauche ne joue pas à droite');
+  s = blank(); s[1] = d1; assert.equal(await bad(s), 400, 'un défenseur central ne joue pas latéral gauche');
   s = blank(); s[1] = foreign; assert.equal(await bad(s), 400, 'carte d\'un autre joueur');
-  s = blank(); s[1] = d1; s[2] = d1; assert.equal(await bad(s), 400, 'même carte deux fois');
-  s = blank(); s[1] = 'inconnue'; assert.equal(await bad(s), 400, 'carte inconnue');
+  s = blank(); s[2] = d1; s[3] = d1; assert.equal(await bad(s), 400, 'même carte deux fois');
+  s = blank(); s[2] = 'inconnue'; assert.equal(await bad(s), 400, 'carte inconnue');
 });
 
 test('une carte qui n\'est plus possédée libère son poste ; l\'équipe apparaît sur le profil public', async () => {
