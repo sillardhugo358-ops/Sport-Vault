@@ -843,6 +843,65 @@ test('collection : taille des cartes (normale, grande, compacte) retenue après 
   assert.deepEqual(errors, []);
 });
 
+test('thème : nuit par défaut, jour au bouton du pied de page (feuille chargée seulement alors), automatique selon l\'appareil, retenu après rechargement', async () => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.evaluate(() => { try { localStorage.removeItem('fv-theme'); } catch {} });
+  await visit('home');
+  const state = () => page.evaluate(() => ({ theme: document.documentElement.dataset.theme, pref: document.documentElement.dataset.themePref, css: !!document.getElementById('fv-theme-light') }));
+  let st = await state();
+  assert.deepEqual([st.theme, st.pref, st.css], ['dark', 'dark', false], 'nuit par défaut, sans feuille du thème jour');
+  await page.click('#themeBtn');
+  await page.waitForFunction(() => document.documentElement.dataset.theme === 'light' && getComputedStyle(document.body).backgroundColor !== 'rgb(5, 11, 22)');
+  st = await state();
+  assert.equal(st.css, true);
+  assert.match(await page.textContent('#themeBtn'), /JOUR/);
+  await page.reload({ waitUntil: 'networkidle' });
+  st = await state();
+  assert.deepEqual([st.theme, st.pref, st.css], ['light', 'light', true], 'retenu après rechargement');
+  // Réglage du profil : automatique = mode de l'appareil.
+  await visit('profil');
+  await page.click('[data-theme-set="auto"]');
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark' && document.documentElement.dataset.themePref === 'auto');
+  assert.equal(await page.getAttribute('[data-theme-set="auto"]', 'aria-pressed'), 'true');
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.waitForFunction(() => document.documentElement.dataset.theme === 'light');
+  await page.click('[data-theme-set="dark"]');
+  await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark' && !document.getElementById('fv-theme-light'));
+  await page.emulateMedia({ colorScheme: 'no-preference' });
+  assert.deepEqual(errors, []);
+});
+
+test('thème jour : textes lisibles (contraste) et aucun débordement sur les pages principales', async () => {
+  const OK = /notif-badge|fvh-comp-logo/;
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.evaluate(() => { try { localStorage.setItem('fv-theme', 'light'); } catch {} });
+    for (const route of ['home', 'collection', 'vault', 'market', 'profil', 'equipe', 'atelier', 'souhaits', 'trades']) {
+      const r = await visit(route);
+      assert.ok(r.overflow <= 1, 'pas de débordement : ' + route + ' à ' + width);
+      const bad = await page.evaluate(() => {
+        const parse = s => { const m = /rgba?\(([^)]+)\)/.exec(s); if (!m) return null; const [r, g, b, a = 1] = m[1].split(/[ ,\/]+/).map(Number); return { r, g, b, a }; };
+        const lum = ({ r, g, b }) => { const f = v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }; return .2126 * f(r) + .7152 * f(g) + .0722 * f(b); };
+        const bgOf = el => { for (let e = el; e && e.nodeType === 1; e = e.parentElement) { const cs = getComputedStyle(e); if (cs.backgroundImage !== 'none') return null; const c = parse(cs.backgroundColor); if (c && c.a > .5) return c; } return { r: 242, g: 245, b: 250 }; };
+        const out = [];
+        for (const el of document.querySelectorAll('#app *, .footer *')) {
+          if (![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) || el.closest('.tcg-card,.team-pitch,#modal,.pack-cover,.hero-card')) continue;
+          const rc = el.getBoundingClientRect(); if (!rc.width || !rc.height) continue;
+          const cs = getComputedStyle(el), fg = parse(cs.color), bg = bgOf(el);
+          if (!fg || fg.a < .5 || !bg || cs.visibility === 'hidden') continue;
+          const L1 = lum(fg), L2 = lum(bg), ratio = (Math.max(L1, L2) + .05) / (Math.min(L1, L2) + .05);
+          if (ratio < 3) out.push(el.tagName.toLowerCase() + '.' + String(el.className).split(' ')[0] + ' « ' + el.textContent.trim().slice(0, 20) + ' » ' + ratio.toFixed(2));
+        }
+        return out;
+      });
+      assert.deepEqual(bad.filter(x => !OK.test(x)), [], 'contraste trop faible sur ' + route + ' à ' + width);
+    }
+  }
+  await page.evaluate(() => { try { localStorage.removeItem('fv-theme'); } catch {} });
+  assert.deepEqual(errors, []);
+});
+
 test('collection : affichage de base par OVR décroissant, tri modifiable', async () => {
   await page.setViewportSize({ width: 1280, height: 900 });
   const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
