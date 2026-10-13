@@ -29,7 +29,15 @@ const label=p=>st.labels[p]||p;
 function slotHtml(i){
   const c=byId().get(st.slots[i]),pos=st.positions[i];
   return '<button class="team-slot'+(c?' is-filled rarity-'+esc(c.rarity):'')+'" type="button" data-team-slot="'+i+'" aria-label="'+(c?esc(c.name)+', '+esc(label(pos))+', note '+c.ovr+', changer':esc(label(pos))+', choisir une carte')+'">'
-   +(c?'<b>'+c.ovr+'</b><span class="team-name">'+esc(c.name)+'</span><small>'+esc(pos)+'</small>':'<i aria-hidden="true">+</i><small>'+esc(pos)+'</small>')+'</button>';
+   +(c?'<span class="ts-ovr">'+c.ovr+'</span><span class="team-name">'+esc(c.name)+'</span><small>'+esc(pos)+'</small>':'<span class="ts-ovr ts-empty" aria-hidden="true">+</span><small>'+esc(pos)+'</small>')+'</button>';
+}
+// Liste « onze de départ » (ordre des postes : gardien d'abord) : chaque ligne ouvre le même choix de carte que le terrain.
+function listHtml(){
+  const m=byId();
+  return '<div class="team-xi"><p class="team-xi-head"><span>ONZE DE DÉPART</span><b>'+filled()+'/11</b></p><ul class="team-xi-list">'
+   +st.positions.map((pos,i)=>{const c=m.get(st.slots[i]);
+     return '<li><button class="team-xi-row'+(c?' rarity-'+esc(c.rarity):' is-empty')+'" type="button" data-team-edit="'+i+'" aria-label="'+(c?esc(c.name)+', '+esc(label(pos))+', note '+c.ovr+', changer':esc(label(pos))+', choisir une carte')+'"><span class="xi-pos">'+esc(pos)+'</span>'
+      +(c?'<span class="xi-main"><strong>'+esc(c.name)+'</strong><small>'+esc(c.club)+' · '+esc(c.season)+'</small></span><span class="xi-ovr">'+c.ovr+'</span>':'<span class="xi-main"><strong>Choisir un joueur</strong><small>'+esc(label(pos))+'</small></span><span class="xi-ovr xi-plus" aria-hidden="true">+</span>')+'</button></li>'}).join('')+'</ul></div>';
 }
 function pitchHtml(){
   // Rangées de l'arrière vers l'avant : on les affiche à l'envers (attaque en haut, gardien en bas) ; les index suivent l'ordre des postes.
@@ -52,7 +60,7 @@ async function equipe(){
    +'<section class="section team-board"><div class="team-toolbar"><label class="team-formation-field" for="teamFormation"><span>Formation</span><select id="teamFormation" data-team-formation>'+st.formations.map(f=>'<option'+(f===st.formation?' selected':'')+'>'+f+'</option>').join('')+'</select></label>'
    +'<div class="team-actions"><button class="btn btn-outline" type="button" data-team-auto>MEILLEUR 11</button><button class="btn btn-outline" type="button" data-team-clear>VIDER</button><button class="btn btn-gold" type="button" data-team-save'+(st.dirty&&!st.busy?'':' disabled')+'>ENREGISTRER</button></div>'
    +'<p class="team-count" role="status">'+filled()+' / 11 postes'+(st.dirty?' · <em>modifications non enregistrées</em>':'')+'</p></div>'
-   +statsHtml()+pitchHtml()+'</section></div>';
+   +statsHtml()+'<div class="team-layout">'+pitchHtml()+listHtml()+'</div></section></div>';
 }
 function openPicker(i){
   st.pick=i;
@@ -63,8 +71,9 @@ function openPicker(i){
    +(list.length?'<ul class="team-picker-list">'+list.slice(0,200).map(c=>'<li><button type="button" data-team-choose="'+esc(c.cardId)+'" class="rarity-'+esc(c.rarity)+'"><b>'+c.ovr+'</b><span>'+esc(c.name)+'</span><small>'+esc(c.club)+' · '+esc(c.season)+'</small></button></li>').join('')+'</ul>':'<p class="team-empty">Tu n’as aucune carte pour ce poste ('+esc(label(pos).toLowerCase())+').</p>')+'</div>');
 }
 document.addEventListener('click',async e=>{
-  const t=e.target.closest('[data-team-slot],[data-team-choose],[data-team-remove],[data-team-auto],[data-team-clear],[data-team-save]');if(!t)return;
+  const t=e.target.closest('[data-team-slot],[data-team-edit],[data-team-choose],[data-team-remove],[data-team-auto],[data-team-clear],[data-team-save]');if(!t)return;
   if(t.dataset.teamSlot!==undefined)return openPicker(Number(t.dataset.teamSlot));
+  if(t.dataset.teamEdit!==undefined)return openPicker(Number(t.dataset.teamEdit));
   if(t.dataset.teamChoose){st.slots[st.pick]=t.dataset.teamChoose;st.dirty=true;closeModal();return render()}
   if(t.matches('[data-team-remove]')){st.slots[st.pick]=null;st.dirty=true;closeModal();return render()}
   if(t.matches('[data-team-auto]')){autoFill();return render()}
