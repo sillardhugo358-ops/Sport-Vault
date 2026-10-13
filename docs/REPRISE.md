@@ -172,3 +172,7 @@ Feuille de route de découpage et de jeu précédente **terminée** : A1–A5, G
 - Atelier (12-13/10/2026) : la fusion se fait avec des doublons CHOISIS par le joueur (`picks` = `{cardId: nombre}` dans `POST /api/workshop/fuse`, total exact = 5, sans `picks` l'ancien choix automatique reste valable), révélation animée (carte retournée par le joueur, mouvement réduit respecté), onglets Fusion / Vente rapide.
 
 - CI (13/10/2026) : minutes GitHub Actions épuisées le 12/10 (2 000 min/mois) → dépôt passé **public** (minutes gratuites) ; `check.yml` ne se déclenche plus qu'une fois par modification (`pull_request`, et `push` sur `main`), annule les contrôles périmés (`concurrency`) et ignore `docs/**` et `*.md`.
+
+## Inscription : limite par connexion (13/10/2026)
+
+Avant : 1 compte par IP et par 72 h (bloquait les nouveaux joueurs sur réseau partagé). Maintenant : 5 comptes par IP et par fenêtre de 72 h, réglable via `REGISTRATIONS_PER_WINDOW` et `REGISTRATION_WINDOW_HOURS` (Render). Code : `lib/registration-limit.js`, `lib/auth.js` ; colonnes `count` et `window_start` ajoutées (additif) à `registration_limits`. En cas de doute sur l'IP vue par le serveur : `/api/admin/ip-debug` (admin).
