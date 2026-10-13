@@ -50,6 +50,8 @@ test('semaine écoulée figée : rangs, barème, ex æquo, notification', async 
   const notif = (await alice.get('/api/notifications')).body;
   assert.ok(notif.notifications.some(n => n.kind === 'leaderboard_reward' && n.title.includes('1er')));
   assert.ok(notif.rewardsReady >= 1);
+  assert.ok(notif.rewardsRanking >= 1, 'la récompense du classement est comptée à part');
+  assert.equal(notif.rewardsReady, notif.rewardsVault + notif.rewardsRanking, 'le total est la somme du Vault et du classement');
   // Une seule fois, même après redémarrage.
   await server.restart();
   await bruno.get('/api/leaderboard');
