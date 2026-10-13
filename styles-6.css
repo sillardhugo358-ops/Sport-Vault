@@ -473,10 +473,14 @@
 /* Souhaits */
 .wish-search{display:grid;gap:10px}
 .wish-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-.wish-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.03)}
-.wish-main{display:grid;gap:2px}.wish-main small{color:var(--muted)}
-.wish-side{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.wish-empty,.wish-note{color:var(--muted)}
+.wish-summary{margin:0 0 12px;color:var(--muted)}.wish-summary b{color:var(--gold2)}
+.wish-row{display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-left:4px solid var(--line);border-radius:12px;background:rgba(255,255,255,.03)}
+.wish-row.rarity-rare{border-left-color:#4aa3ff}.wish-row.rarity-epic{border-left-color:#a457ff}.wish-row.rarity-legendary{border-left-color:#ff9f2e}.wish-row.rarity-icon{border-left-color:#38e2d0}
+.wish-ovr{display:grid;justify-items:center;font:900 22px var(--head);color:var(--gold2)}.wish-ovr small{font:600 10px var(--head);color:var(--muted)}
+.wish-main{display:grid;gap:3px;min-width:0}.wish-main strong{overflow-wrap:anywhere}.wish-main small{color:var(--muted)}
+.wish-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.wish-limited{font-size:11px;color:var(--gold2)}
+.wish-side{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}.wish-side .btn{min-height:44px}
+@media (max-width:620px){.wish-row{grid-template-columns:44px 1fr}.wish-side{grid-column:1/-1;justify-content:flex-start}.wish-side .btn{flex:1}}
 .wish-owned{color:var(--green)}.wish-done{color:var(--green);font-weight:700}
 /* Statistiques de collection */
 .stat-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
