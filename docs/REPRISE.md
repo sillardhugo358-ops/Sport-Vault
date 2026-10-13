@@ -169,3 +169,4 @@ Feuille de route de découpage et de jeu précédente **terminée** : A1–A5, G
 - Récompenses de saison validées (« 6. Je valide ») : 1er 20 000 FC / 2 000 XP, 2e 12 000 / 1 200, 3e 8 000 / 800, 4e à 10e 4 000 / 400, 11e à 50e 1 000 / 100 ; saison 1 du lundi 12/10/2026 au 07/12/2026 (8 semaines).
 - Pack sur mesure : prix par carte Common 150 / Rare 500 / Epic 1 000 / Legendary 2 000 (Icon 6 000).
 - À faire plus tard (propriétaire) : mot de passe Aiven, `docs/NATIONALITES-LDC-CONFLITS.csv`, nationalités 2024-25 et 2025-26, logos FC Košice et Lierse SK, création des cartes limitées.
+- Atelier (12-13/10/2026) : la fusion se fait avec des doublons CHOISIS par le joueur (`picks` = `{cardId: nombre}` dans `POST /api/workshop/fuse`, total exact = 5, sans `picks` l'ancien choix automatique reste valable), révélation animée (carte retournée par le joueur, mouvement réduit respecté), onglets Fusion / Vente rapide.

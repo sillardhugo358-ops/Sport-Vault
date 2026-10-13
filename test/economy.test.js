@@ -102,6 +102,21 @@ test('fusion : 5 doublons -> 1 carte de la rareté supérieure ; refus sans rien
   assert.equal((await q("SELECT count(*)::int AS n FROM card_instances WHERE owner_id=$1 AND rarity='common'", [p.user.id]))[0].n, stock);
 });
 
+test('fusion : le joueur choisit les doublons consommés ; choix invalides refusés sans rien consommer', async () => {
+  await card('rare', 'Cible Rare Choix');
+  const a = await card('common', 'Choix A'), b = await card('common', 'Choix B'), r2 = await card('rare', 'Rare Choix');
+  await copies(p, a, 4); await copies(p, b, 4); await copies(p, r2, 3);
+  const fuse = picks => p.post('/api/workshop/fuse', { rarity: 'common', picks });
+  const before = [await count(a), await count(b)];
+  for (const bad of [{ [a]: 2 }, { [a]: 3, [b]: 3 }, { [a]: 4, [b]: 1 }, { [a]: 3, [r2]: 2 }, { [a]: 3, inconnue: 2 }, { [a]: -1, [b]: 6 }, { [a]: 1.5, [b]: 3.5 }, [a, b], null])
+    assert.equal((await fuse(bad)).status, 400, JSON.stringify(bad));
+  assert.deepEqual([await count(a), await count(b)], before, 'rien consommé');
+  const ok = await fuse({ [a]: 3, [b]: 2 });
+  assert.equal(ok.status, 200, JSON.stringify(ok.body));
+  assert.equal(ok.body.card.rarity, 'rare');
+  assert.deepEqual([await count(a), await count(b)], [before[0] - 3, before[1] - 2]);
+});
+
 test('fusion : 10 par jour, puis refus sans rien consommer', async () => {
   const c = await card('common', 'Commune Limite');
   await copies(p, c, 6);
