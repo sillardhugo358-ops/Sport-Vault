@@ -606,3 +606,14 @@
   .profile-list li>a{min-height:44px}
   .admin-stats-periods button{min-width:44px;min-height:44px}
 }
+
+/* Échanges : cartes lisibles */
+.trade-card{display:grid;grid-template-columns:40px 1fr;align-items:center;gap:10px;padding:8px 10px;margin:0 0 6px;border:1px solid var(--line);border-left:4px solid var(--line);border-radius:10px;background:rgba(255,255,255,.03)}
+.trade-card b{font:900 20px var(--head);color:var(--gold2);text-align:center}
+.trade-card span{display:grid;gap:1px;min-width:0}.trade-card strong{overflow-wrap:anywhere}
+.trade-card.rarity-rare{border-left-color:#4aa3ff}.trade-card.rarity-epic{border-left-color:#a457ff}.trade-card.rarity-legendary{border-left-color:#ff9f2e}.trade-card.rarity-icon{border-left-color:#38e2d0}
+label.trade-pick.trade-card{grid-template-columns:20px 40px 1fr;cursor:pointer}
+label.trade-pick.trade-card.is-picked{border-color:var(--gold);background:rgba(255,200,60,.08)}
+.trade-offer{border-radius:14px}
+.trade-offer-cols>div{padding:10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.02)}
+.trade-offer .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.trade-offer .actions .btn{min-height:44px}

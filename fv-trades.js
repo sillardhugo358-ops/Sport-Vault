@@ -6,8 +6,9 @@ const MAX_CARDS=3;
 const st={code:'',player:null,theirs:[],mine:[],give:new Set(),ask:new Set(),busy:false,info:null,f:{q:'',rarity:'',sort:'ovr'},h:{status:'all',page:1},hist:null,autoCode:''};
 const post=(url,body)=>api(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 const fmt=d=>new Date(d).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-const cardLine=c=>'<li><strong>'+esc(c.name)+'</strong> <small>'+esc(c.club)+' · '+esc(c.season)+' · '+esc(String(c.rarity||'').toUpperCase())+' · '+Number(c.ovr)+'</small></li>';
-const pick=(side,c,checked,locked)=>'<li><label class="trade-pick"><input type="checkbox" data-trade-pick="'+side+'" value="'+esc(c.instanceId)+'" '+(checked?'checked ':'')+(locked&&!checked?'disabled ':'')+'><span><strong>'+esc(c.name)+'</strong> <small>'+esc(c.club)+' · '+esc(c.season)+' · '+esc(String(c.rarity||'').toUpperCase())+' · '+Number(c.ovr)+'</small></span></label></li>';
+const rc=c=>' rarity-'+esc(String(c.rarity||'common').toLowerCase());
+const cardLine=c=>'<li class="trade-card'+rc(c)+'"><b>'+Number(c.ovr)+'</b><span><strong>'+esc(c.name)+'</strong><small>'+esc(c.club)+' · '+esc(c.season)+' · '+esc(String(c.rarity||'').toUpperCase())+'</small></span></li>';
+const pick=(side,c,checked,locked)=>'<li><label class="trade-pick trade-card'+rc(c)+(checked?' is-picked':'')+'"><input type="checkbox" data-trade-pick="'+side+'" value="'+esc(c.instanceId)+'" '+(checked?'checked ':'')+(locked&&!checked?'disabled ':'')+'><b>'+Number(c.ovr)+'</b><span><strong>'+esc(c.name)+'</strong><small>'+esc(c.club)+' · '+esc(c.season)+' · '+esc(String(c.rarity||'').toUpperCase())+'</small></span></label></li>';
 const RAR={common:'Common',rare:'Rare',epic:'Epic'};
 const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 const applyF=cards=>{
@@ -28,7 +29,7 @@ function composerHtml(){
       +'<button class="btn btn-gold" type="button" data-trade-send '+(ready&&!st.busy?'':'disabled')+'>ENVOYER L’OFFRE</button>':'');
 }
 const offerCard=(o,kind)=>'<article class="panel trade-offer"><div class="trade-offer-head"><p class="eyebrow">'+(kind==='received'?'DE '+esc(o.fromName.toUpperCase()):kind==='sent'?'POUR '+esc(o.toName.toUpperCase()):esc(({accepted:'ACCEPTÉE',declined:'REFUSÉE',cancelled:'ANNULÉE',expired:'EXPIRÉE'})[o.status]||o.status))+'</p><small>'+(o.status==='open'?'Valable jusqu’au '+esc(fmt(o.expiresAt)):esc(fmt(o.resolvedAt||o.createdAt)))+'</small></div>'
-  +'<div class="trade-columns"><div><h4>'+(kind==='received'?'Il donne':kind==='sent'?'Tu donnes':'Donné')+'</h4><ul>'+o.give.map(cardLine).join('')+'</ul></div><div><h4>'+(kind==='received'?'Tu donnes':kind==='sent'?'Tu reçois':'Demandé')+'</h4><ul>'+o.ask.map(cardLine).join('')+'</ul></div></div>'
+  +'<div class="trade-columns trade-offer-cols"><div><h4>'+(kind==='received'?'Il donne':kind==='sent'?'Tu donnes':'Donné')+'</h4><ul>'+o.give.map(cardLine).join('')+'</ul></div><div><h4>'+(kind==='received'?'Tu donnes':kind==='sent'?'Tu reçois':'Demandé')+'</h4><ul>'+o.ask.map(cardLine).join('')+'</ul></div></div>'
   +(kind==='received'?'<div class="actions"><button class="btn btn-gold" type="button" data-trade-accept="'+esc(o.id)+'">ACCEPTER</button><button class="btn btn-outline" type="button" data-trade-decline="'+esc(o.id)+'">REFUSER</button></div>':kind==='sent'?'<div class="actions"><button class="btn btn-outline" type="button" data-trade-cancel="'+esc(o.id)+'">ANNULER L’OFFRE</button></div>':'')+'</article>';
 const section=(eyebrow,title,body)=>'<section class="section trade-section"><div class="section-head"><div><p class="eyebrow">'+eyebrow+'</p><h2>'+title+'</h2></div></div>'+body+'</section>';
 
@@ -57,8 +58,8 @@ async function trades(){
   const L=data.limits;
   return '<div class="page trades-page">'+viewHero('FOOTVAULT / ÉCHANGES','ÉCHANGE <span>DE CARTES.</span>','Échange 1 à '+L.maxCardsPerSide+' de tes cartes contre celles d’un autre joueur. Les cartes Legendary et Icon ne s’échangent pas.',String(data.remainingToday),'ÉCHANGES RESTANTS AUJOURD’HUI')
     +section('MON CODE','MON CODE D’ÉCHANGE','<div class="panel trade-code-box"><strong class="trade-code" id="tradeMyCode">'+esc(data.code)+'</strong><button class="btn btn-outline" type="button" data-trade-copy>COPIER</button><p>Donne ce code à un ami pour qu’il t’envoie une offre. '+L.maxOpenSent+' offres ouvertes maximum ('+data.openSent+' en cours) · '+L.dailyLimit+' échanges conclus par jour · une offre expire au bout de '+L.expiresDays+' jours.</p></div>')
-    +section('NOUVELLE OFFRE','PROPOSER UN ÉCHANGE','<div class="panel trade-composer" id="tradeComposer">'+composerHtml()+'</div>')
     +section('REÇUES','OFFRES REÇUES ('+data.received.length+')',data.received.length?'<div class="trade-offers">'+data.received.map(o=>offerCard(o,'received')).join('')+'</div>':'<p class="trade-empty">Aucune offre en attente.</p>')
+    +section('NOUVELLE OFFRE','PROPOSER UN ÉCHANGE','<div class="panel trade-composer" id="tradeComposer">'+composerHtml()+'</div>')
     +section('ENVOYÉES','MES OFFRES EN COURS ('+data.sent.length+')',data.sent.length?'<div class="trade-offers">'+data.sent.map(o=>offerCard(o,'sent')).join('')+'</div>':'<p class="trade-empty">Aucune offre en cours.</p>')
     +section('HISTORIQUE','HISTORIQUE DES ÉCHANGES','<div id="tradeHistory">'+historyHtml()+'</div>')
     +'</div>';
