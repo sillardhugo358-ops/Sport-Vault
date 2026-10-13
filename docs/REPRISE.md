@@ -170,3 +170,5 @@ Feuille de route de découpage et de jeu précédente **terminée** : A1–A5, G
 - Pack sur mesure : prix par carte Common 150 / Rare 500 / Epic 1 000 / Legendary 2 000 (Icon 6 000).
 - À faire plus tard (propriétaire) : mot de passe Aiven, `docs/NATIONALITES-LDC-CONFLITS.csv`, nationalités 2024-25 et 2025-26, logos FC Košice et Lierse SK, création des cartes limitées.
 - Atelier (12-13/10/2026) : la fusion se fait avec des doublons CHOISIS par le joueur (`picks` = `{cardId: nombre}` dans `POST /api/workshop/fuse`, total exact = 5, sans `picks` l'ancien choix automatique reste valable), révélation animée (carte retournée par le joueur, mouvement réduit respecté), onglets Fusion / Vente rapide.
+
+- CI (13/10/2026) : minutes GitHub Actions épuisées le 12/10 (2 000 min/mois) → dépôt passé **public** (minutes gratuites) ; `check.yml` ne se déclenche plus qu'une fois par modification (`pull_request`, et `push` sur `main`), annule les contrôles périmés (`concurrency`) et ignore `docs/**` et `*.md`.

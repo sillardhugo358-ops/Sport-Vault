@@ -1,5 +1,16 @@
 name: FOOTVAULT checks
-on: [push, pull_request]
+# Un seul déclenchement par modification : les PR (le contrôle qui compte) et les fusions sur main ; les poussées sur une branche
+# de PR ne lancent plus un second contrôle identique. Une nouvelle poussée annule le contrôle devenu inutile. Les modifications
+# de documentation seule ne lancent rien.
+on:
+  pull_request:
+    paths-ignore: ['docs/**', '**/*.md']
+  push:
+    branches: [main]
+    paths-ignore: ['docs/**', '**/*.md']
+concurrency:
+  group: checks-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   check:
     runs-on: ubuntu-latest
