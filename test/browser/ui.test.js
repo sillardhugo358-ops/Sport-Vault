@@ -939,8 +939,13 @@ test('atelier : vente rapide d\'un doublon, fusion refusée sans assez de doublo
     VALUES(gen_random_uuid(),'wk-ui',$1,'2026-2027','Doublon Atelier UI','ST','FC Atelier','France','common',70,'pack:test')`, [uid]);
   const r = await visit('atelier');
   assert.ok(r.overflow <= 1, 'pas de débordement');
-  await page.waitForSelector('[data-wk-sell="wk-ui"]');
+  await page.waitForSelector('[data-wk-fuse="common"]');
   assert.equal(await page.locator('[data-wk-fuse="common"]').isDisabled(), true, 'pas assez de doublons pour fusionner');
+  await page.click('[data-wk-pick="wk-ui"][data-d="1"]');
+  await page.waitForFunction(() => /1 \/ 5/.test(document.querySelector('.wk-tray-count')?.textContent || ''));
+  assert.equal(await page.locator('[data-wk-fuse="common"]').isDisabled(), true, 'il faut 5 doublons choisis');
+  await page.click('[data-wk-tab="sell"]');
+  await page.waitForSelector('[data-wk-sell="wk-ui"]');
   const before = Number((await server.db.query('SELECT coins FROM users WHERE id=$1', [uid])).rows[0].coins);
   await page.click('[data-wk-sell="wk-ui"]');
   await page.waitForFunction(() => !document.querySelector('[data-wk-sell="wk-ui"]'));
