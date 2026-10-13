@@ -657,3 +657,10 @@ label.trade-pick.trade-card.is-picked{border-color:var(--gold);background:rgba(2
 .sk-list{display:grid;gap:8px}.sk-list .sk{min-height:64px;border-radius:12px}
 .sk-board{display:grid;grid-template-columns:minmax(0,560px) minmax(0,1fr);gap:20px}.sk-board .sk:first-child{aspect-ratio:4/5}.sk-board .sk:last-child{min-height:420px}
 @media(max-width:900px){.sk-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.sk-board{grid-template-columns:1fr}}
+/* Thème : bouton du pied de page et réglage du profil */
+.theme-btn{min-height:44px;min-width:44px;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:transparent;color:inherit;font:inherit;letter-spacing:inherit;cursor:pointer}
+.theme-btn:focus-visible,.theme-choice button:focus-visible{outline:3px solid var(--gold2);outline-offset:2px}
+.profile-appearance{margin-bottom:16px}
+.theme-choice{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.theme-choice button{min-height:44px;min-width:88px;padding:0 16px;border:0;background:transparent;color:var(--muted);font:800 12px var(--head);letter-spacing:.1em;cursor:pointer}
+.theme-choice button.is-on{background:var(--gold);color:#101828}
