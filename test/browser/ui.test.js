@@ -902,6 +902,35 @@ test('thème jour : textes lisibles (contraste) et aucun débordement sur les pa
   assert.deepEqual(errors, []);
 });
 
+test('cartes physiques : inclinaison et reflets au survol (souris), puis au gyroscope sur la fiche d\'une carte', async () => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
+  await server.db.query("INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr) VALUES('holo-ui','2026-2027','Carte Holo UI','ST','FC Holo','France','epic',88) ON CONFLICT DO NOTHING");
+  const inst = (await server.db.query(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,ovr,source)
+    VALUES(gen_random_uuid(),'holo-ui',$1,'2026-2027','Carte Holo UI','ST','FC Holo','France','epic',88,'pack:test') RETURNING instance_id`, [uid])).rows[0].instance_id;
+  await visit('collection');
+  const card = page.locator('.collection-card-item .tcg-card.v4').first();
+  await card.waitFor();
+  assert.ok(await card.locator('.v4-shine').count() && await card.locator('.v4-glare').count(), 'couches de reflet présentes');
+  await card.scrollIntoViewIfNeeded();
+  const box = await card.boundingBox();
+  await page.mouse.move(box.x + box.width * 0.78, box.y + box.height * 0.22);
+  await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.2);
+  await page.waitForFunction(el => el.style.getPropertyValue('--act') === '1' && parseFloat(el.style.getPropertyValue('--ry')) > 1, await card.elementHandle());
+  await page.waitForFunction(el => Number(getComputedStyle(el.querySelector('.v4-glare')).opacity) > 0.5, await card.elementHandle());
+  await page.mouse.move(2, 2);
+  await page.waitForFunction(el => el.style.getPropertyValue('--act') === '', await card.elementHandle());
+  // Fiche d'une carte : le gyroscope incline la carte (capteur simulé).
+  await visit('card?id=' + inst);
+  await page.waitForSelector('.detail-card .tcg-card.v4');
+  await page.evaluate(() => { window.fvHolo.force = true; window.fvHolo.refresh(); });
+  assert.equal(await page.evaluate(() => window.fvHolo.gyroActive()), true);
+  await page.evaluate(() => { window.fvHolo.tilt(10, 0); window.fvHolo.tilt(10, 0); for (let i = 0; i < 12; i++) window.fvHolo.tilt(40, 18); });
+  const vars = await page.evaluate(() => { const el = document.querySelector('.detail-card .tcg-card.v4'); return { rx: parseFloat(el.style.getPropertyValue('--rx')), ry: parseFloat(el.style.getPropertyValue('--ry')), act: el.style.getPropertyValue('--act') }; });
+  assert.ok(Math.abs(vars.rx) > 1 && Math.abs(vars.ry) > 1 && Number(vars.act) > 0, 'inclinaison appliquée : ' + JSON.stringify(vars));
+  assert.deepEqual(errors, []);
+});
+
 test('collection : affichage de base par OVR décroissant, tri modifiable', async () => {
   await page.setViewportSize({ width: 1280, height: 900 });
   const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
