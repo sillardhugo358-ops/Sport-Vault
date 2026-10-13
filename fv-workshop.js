@@ -22,12 +22,12 @@ function trayHtml(d,cards,left){
   const byId=new Map(cards.map(c=>[c.cardId,c])),chosen=[];
   Object.entries(st.picks).forEach(([id,n])=>{for(let i=0;i<n;i++)chosen.push(byId.get(id))});
   const slots=Array.from({length:st.cost},(_,i)=>{const c=chosen[i];return c?'<li class="wk-slot is-filled rarity-'+esc(c.rarity)+'"><b>'+c.ovr+'</b><span>'+esc(c.name)+'</span></li>':'<li class="wk-slot" aria-hidden="true"><i>+</i></li>'}).join('');
-  const to=d.fusion.rules[st.rarity].to,ready=total()===st.cost&&left>0;
+  const rule=d.fusion.rules[st.rarity],to=rule.to,fresh=rule.fresh,ready=total()===st.cost&&left>0&&fresh>0;
   return '<div class="wk-tray"><ul class="wk-slots" aria-label="Doublons choisis pour la fusion">'+slots+'</ul>'
    +'<div class="wk-tray-side"><p class="wk-tray-count" role="status"><b>'+total()+' / '+st.cost+'</b> doublons choisis → 1 carte '+esc(RL[to])+'</p>'
    +'<div class="wk-actions"><button class="btn btn-outline" type="button" data-wk-auto'+(cards.length?'':' disabled')+'>CHOISIR POUR MOI</button><button class="btn btn-outline" type="button" data-wk-clear'+(total()?'':' disabled')+'>VIDER</button>'
    +'<button class="btn '+(ready?'btn-gold':'btn-outline')+'" type="button" data-wk-fuse="'+esc(st.rarity)+'"'+(ready&&!st.busy?'':' disabled')+'>FUSIONNER</button></div>'
-   +(left<=0?'<p class="wk-note">Limite du jour atteinte : reviens demain.</p>':'')+'</div></div>';
+   +(fresh>0?'<p class="wk-note">'+fresh+' carte'+(fresh>1?'s':'')+' '+esc(RL[to])+' que tu n’as pas encore peu'+(fresh>1?'ven':'')+'t sortir : la fusion ne donne jamais une carte que tu possèdes déjà.</p>':'<p class="wk-note">Tu possèdes déjà toutes les cartes '+esc(RL[to])+' que la fusion peut donner : rien de nouveau à gagner pour le moment.</p>')+(left<=0?'<p class="wk-note">Limite du jour atteinte : reviens demain.</p>':'')+'</div></div>';
 }
 function fuseHtml(d){
   const f=d.fusion,cards=d.cards.filter(c=>c.rarity===st.rarity);
@@ -63,7 +63,7 @@ function showFusion(card){
     stageEl.querySelectorAll('[data-close]').forEach(x=>x.addEventListener('click',closeModal));
     const b=stageEl.querySelector('[data-wk-flip]');b.focus({preventScroll:true});
     b.addEventListener('click',()=>{if(b.classList.contains('flipped'))return;b.classList.add('flipped');b.setAttribute('aria-pressed','true');if(card.rarity!=='common')b.classList.add('rv-burst');
-      stageEl.querySelector('.wk-reveal-note').textContent=card.name+' · '+(RL[card.rarity]||card.rarity)+' · '+card.ovr+' — ajoutée à ta collection.';stageEl.querySelector('.wk-reveal-actions').hidden=false});
+      stageEl.querySelector('.wk-reveal-note').textContent='Nouvelle carte pour ta collection : '+card.name+' · '+(RL[card.rarity]||card.rarity)+' · '+card.ovr;stageEl.querySelector('.wk-reveal-actions').hidden=false});
   };
   if(calm())reveal();else setTimeout(reveal,1500);
 }

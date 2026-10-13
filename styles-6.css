@@ -572,9 +572,9 @@
 .wk-stage{display:grid;justify-items:center;gap:14px;min-height:260px;align-content:center}
 .wk-reveal-grid{display:grid;grid-template-columns:minmax(0,230px)!important;justify-content:center;max-height:none!important;overflow:visible!important}
 .wk-reveal-actions{justify-content:center}
-.wk-fusing{position:relative;width:220px;height:220px}
-.wk-fusing i{position:absolute;left:calc(50% - 22px);top:calc(50% - 30px);width:44px;height:60px;border-radius:8px;border:2px solid var(--gold);background:rgba(255,200,60,.15);animation:wkMerge 1.3s cubic-bezier(.5,0,.3,1) both;animation-delay:calc(var(--i)*40ms);transform:rotate(calc(var(--i)*72deg)) translateY(-90px)}
-.wk-fusing span{position:absolute;inset:60px;border-radius:50%;background:radial-gradient(circle,#fff,var(--gold) 45%,transparent 70%);opacity:0;animation:wkFlash 1.3s ease-in both}
+.wk-fusing{position:relative;width:min(340px,80vw);height:min(340px,80vw)}
+.wk-fusing i{position:absolute;left:calc(50% - 35px);top:calc(50% - 48px);width:70px;height:96px;box-shadow:0 0 18px rgba(255,200,60,.35);border-radius:8px;border:2px solid var(--gold);background:rgba(255,200,60,.15);animation:wkMerge 1.3s cubic-bezier(.5,0,.3,1) both;animation-delay:calc(var(--i)*40ms);transform:rotate(calc(var(--i)*72deg)) translateY(min(-130px,-30vw))}
+.wk-fusing span{position:absolute;inset:25%;border-radius:50%;background:radial-gradient(circle,#fff,var(--gold) 45%,transparent 70%);opacity:0;animation:wkFlash 1.3s ease-in both}
 @keyframes wkMerge{to{transform:rotate(calc(var(--i)*72deg)) translateY(0) scale(.4);opacity:.2}}
 @keyframes wkFlash{0%,60%{opacity:0;transform:scale(.3)}100%{opacity:.95;transform:scale(1.5)}}
 @keyframes wkIn{from{transform:scale(.8);opacity:0}to{transform:none;opacity:1}}
@@ -633,3 +633,10 @@ label.trade-pick.trade-card.is-picked{border-color:var(--gold);background:rgba(2
 
 @media (max-width:900px){.team-layout{grid-template-columns:1fr}.team-pitch{max-width:560px;margin:0 auto;width:100%}}
 @media (max-width:520px){.team-actions{width:100%}.team-actions .btn{flex:1}.ts-ovr{width:44px;height:44px;font-size:17px}.team-slot .team-name{font-size:10px}.team-pitch{aspect-ratio:3/4;padding:16px 4px}.team-xi-row{padding:8px 12px;gap:10px}}
+/* Atelier : révélation centrée */
+.wk-reveal{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.wk-reveal .wk-stage{width:100%;min-height:0}
+.wk-reveal .wk-reveal-grid{grid-template-columns:minmax(0,clamp(220px,26vw,300px))!important;width:100%;justify-content:center;margin:0 auto}
+.wk-reveal .reveal-result{margin:0;text-align:center;max-width:480px}
+.wk-reveal .wk-reveal-actions{width:100%;margin-top:4px}
+@media (max-width:520px){.wk-reveal .wk-reveal-grid{grid-template-columns:minmax(0,min(72vw,260px))!important}}
