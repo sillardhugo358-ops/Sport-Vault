@@ -117,6 +117,29 @@ test('fusion : le joueur choisit les doublons consommés ; choix invalides refus
   assert.deepEqual([await count(a), await count(b)], [before[0] - 3, before[1] - 2]);
 });
 
+test('fusion : la carte obtenue est toujours une carte que le joueur ne possède pas encore', async () => {
+  const f = await newPlayer(server, 'Collectionneur');
+  const fcount = async cardId => (await q('SELECT count(*)::int AS n FROM card_instances WHERE card_id=$1 AND owner_id=$2', [cardId, f.user.id]))[0].n;
+  const fuseOnce = async () => {
+    const c = await card('common', 'Doublon Neuf ' + (++n));
+    await copies(f, c, 6);
+    return { c, r: await f.post('/api/workshop/fuse', { rarity: 'common', picks: { [c]: 5 } }) };
+  };
+  // Le joueur possède déjà toutes les cartes Rare du catalogue sauf une : c'est celle-là qu'il reçoit, jamais un doublon.
+  const target = await card('rare', 'Seule Rare Manquante');
+  for (const row of await q("SELECT id FROM catalog_cards WHERE rarity='rare' AND id<>$1", [target])) await copies(f, row.id, 1);
+  const first = await fuseOnce();
+  assert.equal(first.r.status, 200, JSON.stringify(first.r.body));
+  assert.equal(first.r.body.card.cardId, target);
+  assert.equal(await fcount(target), 1);
+  // Plus aucune carte nouvelle à gagner : refus, et rien n'est consommé.
+  const second = await fuseOnce();
+  assert.equal(second.r.status, 409);
+  assert.match(second.r.body.error, /déjà toutes les cartes/);
+  assert.equal(await fcount(second.c), 6, 'doublons intacts');
+  assert.equal((await f.get('/api/workshop')).body.fusion.rules.common.fresh, 0);
+});
+
 test('fusion : 10 par jour, puis refus sans rien consommer', async () => {
   const c = await card('common', 'Commune Limite');
   await copies(p, c, 6);
