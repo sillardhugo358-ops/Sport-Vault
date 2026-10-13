@@ -31,10 +31,30 @@ test('inscription : 1 000 FC, 50 gems, 3 cartes de bienvenue', async () => {
   assert.equal(col.body.count, 3);
 });
 
-test('inscription : une seule par IP toutes les 72 h', async () => {
+test('inscription : 5 comptes au plus par connexion et par fenêtre de 72 h, au-delà refusé avec un message clair', async () => {
   const first = await newPlayer(server, 'Bob');
-  const r = await client(server, first.ip).post('/api/register', { name: 'Bob2', email: 'bob2@test.footvault', password: 'MotDePasse123' });
-  assert.equal(r.status, 429);
+  const c = client(server, first.ip);
+  // Réseau partagé (mobile, domicile, école) : les 4 suivants passent, le 6e est refusé.
+  for (let i = 2; i <= 5; i++) {
+    const r = await c.post('/api/register', { name: 'Bob' + i, email: `bob${i}@test.footvault`, password: 'MotDePasse123' });
+    assert.equal(r.status, 201, 'compte ' + i + ' : ' + JSON.stringify(r.body));
+  }
+  const sixth = await client(server, first.ip).post('/api/register', { name: 'Bob6', email: 'bob6@test.footvault', password: 'MotDePasse123' });
+  assert.equal(sixth.status, 429);
+  assert.match(sixth.body.error, /5 au maximum toutes les 72 heures/);
+  // Une autre connexion n'est pas touchée.
+  assert.equal((await client(server).post('/api/register', { name: 'Bob7', email: 'bob7@test.footvault', password: 'MotDePasse123' })).status, 201);
+});
+
+test('inscription : la fenêtre expirée repart de zéro (anciennes lignes sans compteur comprises)', async () => {
+  const first = await newPlayer(server, 'Fenetre');
+  const q = (sql, params) => server.db.query(sql, params);
+  // Ligne ancienne (avant le compteur) : une inscription il y a plus de 72 h ne bloque plus.
+  await q("UPDATE registration_limits SET window_start=NULL, count=1, last_created_at=now() - interval '73 hours' WHERE ip=$1", [first.ip]);
+  const r = await client(server, first.ip).post('/api/register', { name: 'Fenetre2', email: 'fenetre2@test.footvault', password: 'MotDePasse123' });
+  assert.equal(r.status, 201, JSON.stringify(r.body));
+  const row = (await q('SELECT count FROM registration_limits WHERE ip=$1', [first.ip])).rows[0];
+  assert.equal(Number(row.count), 1, 'nouvelle fenêtre : compteur remis à 1');
 });
 
 test('inscription : mot de passe trop faible refusé', async () => {
