@@ -824,6 +824,25 @@ test('PWA : manifeste complet (icônes maskable), service worker enregistré, bl
   assert.deepEqual(errors, []);
 });
 
+test('collection : taille des cartes (normale, grande, compacte) retenue après rechargement, sans débordement', async () => {
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.evaluate(() => { try { localStorage.removeItem('fv-collection-view'); } catch {} });
+    const r = await visit('collection');
+    assert.ok(await page.locator('.collection-page.view-normal').count(), 'vue normale par défaut');
+    for (const v of ['compact', 'large']) {
+      await page.click('[data-coll-view="' + v + '"]');
+      await page.waitForSelector('.collection-page.view-' + v);
+      assert.equal(await page.getAttribute('[data-coll-view="' + v + '"]', 'aria-pressed'), 'true');
+      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth) <= 1, 'pas de débordement (' + v + ', ' + width + ' px)');
+    }
+    await page.reload({ waitUntil: 'networkidle' });
+    await page.waitForSelector('.collection-page.view-large');
+  }
+  await page.evaluate(() => { try { localStorage.removeItem('fv-collection-view'); } catch {} });
+  assert.deepEqual(errors, []);
+});
+
 test('collection : affichage de base par OVR décroissant, tri modifiable', async () => {
   await page.setViewportSize({ width: 1280, height: 900 });
   const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
