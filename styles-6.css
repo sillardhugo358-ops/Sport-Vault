@@ -361,6 +361,10 @@
 .set-card .set-cards ul{list-style:none;margin:6px 0 0;padding:0;max-height:220px;overflow:auto;display:grid;gap:4px;font-size:12px}
 .set-card .set-cards li.is-missing{opacity:.6}
 .set-card .set-cards li small{color:var(--muted)}
+.goal-tiers{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+.goal-tiers .btn{min-height:56px;line-height:1.2;padding:6px 8px}
+.goal-tiers .btn small{font-size:10px;letter-spacing:1px;opacity:.85}
+@media(min-width:700px){.goal-tiers{grid-template-columns:repeat(4,1fr)}}
 .set-card .set-cap-note{color:var(--gold2);font-size:12px;font-weight:700;margin:0 0 10px}
 .set-editor-results{display:grid;gap:6px;font-size:12px}
 .set-editor-result,.set-editor-chosen li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}
