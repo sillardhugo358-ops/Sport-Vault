@@ -78,3 +78,24 @@ html{scrollbar-color:#27466e transparent;scrollbar-width:thin}
     .page>.section:not(:first-child),.page>section:not(:first-child){animation:fv-rise linear both;animation-timeline:view();animation-range:entry 0px entry 140px}
   }
 }
+
+/* ===== Tranche 5 : hiérarchie des boutons et accueil (ajouts seulement : les variantes propres à une page restent intactes) ===== */
+
+/* Bouton principal : même source de lumière que les surfaces (liseré clair en haut), halo teinté plutôt qu'une ombre grise. */
+.btn-gold{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 8px 20px -10px rgba(240,201,75,.55)}
+/* Bouton secondaire : le survol remplit légèrement le fond au lieu de seulement colorer le bord. */
+.btn-outline:not(:disabled):hover{background-color:rgba(75,157,244,.10)}
+/* Bouton tertiaire : texte seul, soulignement fin au survol et au focus. */
+.btn-ghost{background:transparent;border-color:transparent;box-shadow:none}
+.btn-ghost:not(:disabled):hover,.btn-ghost:focus-visible{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;background:rgba(255,255,255,.04)}
+/* Gros bouton d'appel à l'action : plus de hauteur et d'interlettrage. */
+.btn-large{min-height:52px;padding-inline:28px;letter-spacing:.14em}
+
+/* Accueil : les trois cartes de la vitrine flottent doucement, à contretemps, via la propriété `translate`
+   (indépendante de `transform` : le survol et l'effet holographique des cartes ne sont pas gênés). */
+@keyframes fv-bob{0%,100%{translate:0 0}50%{translate:0 -7px}}
+@media (prefers-reduced-motion:no-preference){
+  .fvh-showcase-card{animation:fv-bob 7s ease-in-out infinite}
+  .fvh-showcase-2{animation-delay:-2.3s;animation-duration:8s}
+  .fvh-showcase-3{animation-delay:-4.6s;animation-duration:9s}
+}
