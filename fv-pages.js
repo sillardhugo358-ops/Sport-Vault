@@ -308,7 +308,7 @@ async function task(kind,id){try{const d=await api('/api/tasks/claim',{method:'P
 async function album(){
  let d=null;
  const seasonId=route().q.get('season');
- try{d=await api('/api/album'+(seasonId?'?seasonId='+encodeURIComponent(seasonId):''));state.album=d;if(seasonId){const c=await api('/api/collection');state.user=c.user;state.cards=c.cards||[]}else{state.cards=[]}}
+ try{d=await api('/api/album'+(seasonId?'?seasonId='+encodeURIComponent(seasonId):''));state.album=d;FVC.celebrate?.scan(d);if(seasonId){const c=await api('/api/collection');state.user=c.user;state.cards=c.cards||[]}else{state.cards=[]}}
  catch(e){if(e.status===401)return authView('login','album');throw e}
  const competitions=d.album.competitions||[],competitionId=route().q.get('competition'),total=d.album.overallTotal||0,own=d.album.overallOwned||0;
  if(!competitionId){

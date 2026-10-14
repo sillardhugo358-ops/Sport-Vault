@@ -1008,6 +1008,40 @@ test('amis : demande par code, acceptation, profil public, confidentialité', as
   assert.deepEqual(errors, []);
 });
 
+test('complétion : tampon « COMPLÉTÉ » une seule fois, point de départ silencieux, priorité championnat > édition > club, mouvement réduit respecté', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await visit('home');
+  await page.waitForFunction(() => !!window.fvCelebrate);
+  const mk = (clubs, season = false) => ({ album: { competitions: [{ id: 'c1', name: 'Ligue 1', completion: { complete: false }, seasons: [{ id: 's1', label: 'Saison 2026', season: '2026', completion: { complete: season }, clubs }] }] } });
+  const A = { id: 'a', name: 'Club A', total: 5, complete: true }, B = { id: 'b', name: 'Club B', total: 5, complete: true }, C = { id: 'c', name: 'Club C', total: 5, complete: true };
+  const scan = (data) => page.evaluate(d => { const r = window.fvCelebrate.scan(d, 0); return r && { kind: r.kind, label: r.label }; }, data);
+  await page.evaluate(() => window.fvCelebrate.reset());
+  assert.equal(await scan(mk([A])), null, 'première visite : rien n\'est célébré');
+  assert.equal(await page.locator('.fv-celebrate').count(), 0);
+  assert.deepEqual(await scan(mk([A, B])), { kind: 'club', label: 'Club B' });
+  await page.waitForSelector('.fv-celebrate');
+  assert.match(await page.textContent('.fv-celebrate'), /COMPLÉTÉ/);
+  assert.match(await page.textContent('.fv-celebrate'), /Club B/);
+  assert.equal(await page.locator('.fv-confetti i').count(), 44, 'confettis');
+  assert.ok(await page.evaluate(() => document.documentElement.classList.contains('fv-shake')), 'secousse');
+  assert.ok((await page.locator('[data-fv-celebrate-close]').boundingBox()).height >= 44, 'bouton de 44 px');
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'pas de débordement');
+  await page.click('[data-fv-celebrate-close]');
+  assert.equal(await page.locator('.fv-celebrate').count(), 0);
+  assert.equal(await scan(mk([A, B])), null, 'jamais deux fois la même complétion');
+  // Mouvement réduit : pas de confettis ni de secousse ; une édition complétée passe avant un club, et Échap ferme.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  assert.deepEqual(await scan(mk([A, B, C], true)), { kind: 'season', label: 'Ligue 1 · Saison 2026' });
+  await page.waitForSelector('.fv-celebrate');
+  assert.equal(await page.locator('.fv-confetti i').count(), 0, 'pas de confettis en mouvement réduit');
+  assert.equal(await page.evaluate(() => document.documentElement.classList.contains('fv-shake')), false);
+  assert.match(await page.textContent('.fv-celebrate'), /\+ 1 autre complétion/);
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.querySelector('.fv-celebrate'));
+  await page.emulateMedia({ reducedMotion: null });
+  assert.deepEqual(errors, []);
+});
+
 test('souhaits : recherche, ajout, retrait, sans débordement', async () => {
   await page.setViewportSize({ width: 390, height: 844 });
   await server.db.query("INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr) VALUES('wish-ui','2026-2027','Joueur Souhaité UI','ST','FC Souhait','France','epic',88) ON CONFLICT DO NOTHING");

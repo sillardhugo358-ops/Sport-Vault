@@ -684,3 +684,20 @@ label.trade-pick.trade-card.is-picked{border-color:var(--gold);background:rgba(2
 .rival-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rival-row progress{width:100%;height:12px;accent-color:#efcf7c}
 .rival-row b{min-width:58px;text-align:right}
+
+/* Micro-récompenses de complétion (fv-celebrate.js) */
+.fv-celebrate{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;background:rgba(3,8,18,.82);padding:16px;overflow:hidden}
+.fv-celebrate-card{position:relative;width:min(420px,100%);padding:28px 22px;border:2px solid #efcf7c;border-radius:18px;background:#0a1b32;color:#f4f7ff;text-align:center;box-shadow:0 0 40px rgba(239,207,124,.35)}
+.fv-celebrate-kind{margin:0 0 6px;color:#91a8c7;font:800 12px/1 'Inter',sans-serif;letter-spacing:3px}
+.fv-stamp{margin:0 0 8px;display:inline-block;padding:4px 18px;border:5px solid #65d5ad;border-radius:10px;color:#65d5ad;font:900 clamp(40px,12vw,64px)/1 'Barlow Condensed',sans-serif;letter-spacing:4px;transform:rotate(-6deg);animation:fv-slam .55s cubic-bezier(.2,1.6,.4,1) both}
+.fv-celebrate-label{margin:10px 0 14px;font-size:20px;font-weight:800;overflow-wrap:anywhere}
+.fv-celebrate-more{margin:0 0 14px;color:#91a8c7}
+.fv-confetti{position:absolute;inset:0;pointer-events:none}
+.fv-confetti i{position:absolute;top:-16px;width:9px;height:14px;opacity:0;animation:fv-fall var(--d,2.4s) var(--w,0s) ease-in both}
+@keyframes fv-slam{0%{transform:rotate(-6deg) scale(3);opacity:0}60%{transform:rotate(-6deg) scale(.92);opacity:1}100%{transform:rotate(-6deg) scale(1);opacity:1}}
+@keyframes fv-fall{0%{transform:translate(0,0) rotate(0);opacity:1}100%{transform:translate(var(--x,0),105vh) rotate(var(--r,360deg));opacity:1}}
+@keyframes fv-shake{0%,100%{transform:translate(0,0)}20%{transform:translate(-6px,3px)}40%{transform:translate(5px,-4px)}60%{transform:translate(-4px,-2px)}80%{transform:translate(3px,3px)}}
+html.fv-shake{overflow-x:hidden}
+html.fv-shake #app{animation:fv-shake .45s linear}
+.fv-celebrate.is-calm .fv-stamp{animation:none}
+@media (prefers-reduced-motion:reduce){.fv-stamp{animation:none}.fv-confetti{display:none}html.fv-shake #app{animation:none}}
