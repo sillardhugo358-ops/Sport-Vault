@@ -205,3 +205,6 @@ Page Amis : bouton **RIVAL** sur chaque ami (3 rivaux au plus, `FRIENDS.maxRival
 - Primes : oui ; FC bloqués à la création, remboursés à l'expiration (7 j), commission 5 % à l'échange réussi, Legendary/Icon exclus.
 - Prêts de cartes : oui (Common/Rare entre amis, 7 j, retour automatique) ; staking : non.
 - Club de cœur : un club par saison, choix gratuit, changeable au début de saison, classement des clubs par cartes possédées, aucune récompense en FC.
+
+### Redesign, tranche 1 (14/10/2026, règle « redesign-existing-projects » fournie par le propriétaire)
+Contrainte stricte : ni architecture des pages, ni URLs, ni fonctionnalités. Fait : police du texte Inter → Geist (auto-hébergée, `fonts/geist-*`, OFL), chiffres tabulaires, titres équilibrés (`text-wrap`), `100dvh`, retour tactile des boutons (survol, appui), transitions. Reste (par ordre de priorité) : palette (ombres teintées, grain), composants génériques, états de chargement/vide, hiérarchie typographique des titres, animations d'entrée.

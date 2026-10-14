@@ -9,7 +9,7 @@
   aspect-ratio:.685;padding:0;border-radius:16px;overflow:visible;
   background:none!important;box-shadow:none;
   filter:drop-shadow(0 14px 26px rgba(0,0,0,.5));
-  font-family:var(--body,'Inter',system-ui,sans-serif);color:#f2f0e9
+  font-family:var(--body,'Geist',system-ui,sans-serif);color:#f2f0e9
 }
 .tcg-card.v4:before,.tcg-card.v4:after{display:none!important}
 .tcg-card.v4.rarity-rare{--rarity-accent:#6fa8d6}
@@ -90,10 +90,10 @@
 .v4-hero{display:flex;align-items:center;justify-content:space-between;gap:2cqw;margin-top:5cqw}
 .v4-slot{flex:none;width:19cqw;height:19cqw;display:block}
 .v4-ovr{margin:0;text-align:center;font:900 15.5cqw/.72 var(--num,'Oswald','Barlow Condensed',Impact,sans-serif);color:var(--rarity-accent);letter-spacing:-.3cqw}
-.v4-ovr small{display:block;font:800 3cqw var(--body,'Inter',sans-serif);letter-spacing:.5cqw;margin-top:2cqw;opacity:.75;color:#f2f0e9}
+.v4-ovr small{display:block;font:800 3cqw var(--body,'Geist',sans-serif);letter-spacing:.5cqw;margin-top:2cqw;opacity:.75;color:#f2f0e9}
 .rarity-icon .v4-ovr{font-size:20cqw;color:#fff;text-shadow:0 0 34px rgba(255,255,255,.6)}
 .v4-name-zone{margin-top:auto;min-width:0}
-.v4-club{display:block;font:700 3cqw var(--body,'Inter',sans-serif);margin-bottom:1cqw;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v4-club{display:block;font:700 3cqw var(--body,'Geist',sans-serif);margin-bottom:1cqw;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tcg-card.v4 .v4-name{margin:0 0 3.3cqw;font:900 7.3cqw/.95 var(--head,'Barlow Condensed',sans-serif);text-transform:uppercase;letter-spacing:.03cqw;color:#fff;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rarity-legendary .v4-name{background:linear-gradient(90deg,#fff3c4,#f0cf7c,#c9973a);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -101,12 +101,12 @@
 .v4-stats{display:grid;grid-template-columns:1fr 1fr;column-gap:3.3cqw;row-gap:1.7cqw;padding-top:3.3cqw;border-top:1px solid rgba(255,255,255,.16);margin-bottom:3cqw}
 .v4-stats div{display:flex;align-items:baseline;justify-content:space-between;gap:2cqw}
 .v4-stats b{font:900 5cqw/1 var(--num,'Oswald','Barlow Condensed',Impact,sans-serif);color:#fff;text-shadow:0 0 10px rgba(255,255,255,.35)}
-.v4-stats span{font:700 2.7cqw var(--body,'Inter',sans-serif);letter-spacing:.33cqw;opacity:.68}
+.v4-stats span{font:700 2.7cqw var(--body,'Geist',sans-serif);letter-spacing:.33cqw;opacity:.68}
 .v4-foot{display:flex;justify-content:space-between;align-items:center;gap:4px;padding-top:3cqw;border-top:1px solid rgba(255,255,255,.14);
   font:800 3cqw var(--head,'Barlow Condensed',sans-serif);letter-spacing:.66cqw}
 .v4-rarity{color:var(--rarity-accent);white-space:nowrap}
 .rarity-icon .v4-rarity{letter-spacing:1cqw;text-shadow:0 0 14px rgba(255,255,255,.7)}
-.v4-brand{font:700 2.4cqw var(--body,'Inter',sans-serif);letter-spacing:.7cqw;opacity:.42;white-space:nowrap}
+.v4-brand{font:700 2.4cqw var(--body,'Geist',sans-serif);letter-spacing:.7cqw;opacity:.42;white-space:nowrap}
 
 /* Grille dense : sous ~160 px de large, attributs masqués (spec §5) ; OVR, rareté et motif restent. */
 @container (max-width:160px){
