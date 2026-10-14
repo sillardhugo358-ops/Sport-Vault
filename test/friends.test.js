@@ -133,3 +133,56 @@ test('flux d\'activité : événements marquants des amis seulement, sans montan
   assert.deepEqual((await (await newPlayer(server, 'Solo')).get('/api/friends/activity')).body.events, []);
   assert.equal((await client(server).get('/api/friends/activity')).status, 401);
 });
+
+test('rivalités d\'album : amis seulement, 3 au plus, comparaison de complétion, profil privé masqué, amitié retirée = rivalité retirée', async () => {
+  const crypto = require('node:crypto');
+  const [x, y, z, w, v, stranger] = [await newPlayer(server, 'Xavier'), await newPlayer(server, 'Yanis'), await newPlayer(server, 'Zoe'), await newPlayer(server, 'Willy'), await newPlayer(server, 'Vera'), await newPlayer(server, 'Inconnu')];
+  const befriend = async other => {
+    assert.equal((await x.post('/api/friends/request', { code: await codeOf(other) })).status, 200);
+    await other.post('/api/friends/accept', { id: (await other.get('/api/friends')).body.incoming[0].id });
+  };
+  for (const o of [y, z, w, v]) await befriend(o);
+  const [cx, cy, cs] = [await codeOf(y), await codeOf(z), await codeOf(stranger)];
+  assert.equal((await client(server).post('/api/friends/rival', { code: cx })).status, 401);
+  assert.equal((await x.post('/api/friends/rival', { code: 'court' })).status, 400);
+  assert.equal((await x.post('/api/friends/rival', { code: await codeOf(x) })).status, 400, 'pas soi-même');
+  assert.equal((await x.post('/api/friends/rival', { code: cs })).status, 403, 'un inconnu n\'est pas un rival');
+  assert.equal((await x.post('/api/friends/rival', { code: cx })).status, 200);
+  assert.equal((await x.post('/api/friends/rival', { code: cx })).status, 200, 'idempotent');
+  assert.equal((await x.post('/api/friends/rival', { code: cy })).status, 200);
+  assert.equal((await x.post('/api/friends/rival', { code: await codeOf(w) })).status, 200);
+  const full = await x.post('/api/friends/rival', { code: await codeOf(v) });
+  assert.equal(full.status, 400, '4e rival refusé');
+  assert.match(full.body.error, /3 rivaux/);
+
+  // Cartes : Xavier en possède 2, Yanis 1, Zoé 0 (cartes différentes du catalogue actif).
+  const cards = await q('SELECT id,name,position,club,nation,rarity,ovr,season FROM catalog_cards WHERE is_active=true ORDER BY id LIMIT 3');
+  const give = (owner, c) => q(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,ovr,source) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'pack:test')`,
+    [crypto.randomUUID(), c.id, owner.user.id, c.season, c.name, c.position, c.club, c.nation, c.rarity, c.ovr]);
+  await give(x, cards[0]); await give(x, cards[1]); await give(x, cards[1]); await give(y, cards[0]);
+  const sum = (await x.get('/api/friends')).body;
+  assert.equal(sum.rivals.length, 3);
+  const ry = sum.rivals.find(r => r.name === 'Yanis'), rz = sum.rivals.find(r => r.name === 'Zoe');
+  assert.equal(sum.rivals[0].name, 'Yanis', 'dans l\'ordre d\'ajout');
+  // Chaque joueur reçoit des cartes de bienvenue : seul l'écart compte. Xavier a 2 cartes de plus que Zoé, 1 de plus que Yanis ; ses doublons ne comptent qu'une fois.
+  assert.deepEqual([ry.you.cards - ry.cards, ry.gap], [1, 1]);
+  assert.deepEqual([rz.you.cards - rz.cards, rz.gap], [2, 2]);
+  assert.equal(ry.you.cards, rz.you.cards);
+  assert.ok(ry.total >= 3 && ry.you.pct > ry.pct && ry.hidden === false);
+  assert.deepEqual(sum.friends.filter(f => f.rival).map(f => f.name).sort(), ['Willy', 'Yanis', 'Zoe']);
+  assert.ok(!JSON.stringify(sum).includes('@'), 'aucun e-mail dans la réponse');
+
+  // Profil privé : le rival reste affiché mais sans aucun chiffre.
+  assert.equal((await y.post('/api/profile/visibility', { visibility: 'private' })).status, 200);
+  const hidden = (await x.get('/api/friends')).body.rivals.find(r => r.name === 'Yanis');
+  assert.equal(hidden.hidden, true);
+  for (const k of ['cards', 'pct', 'gap', 'level']) assert.equal(k in hidden, false, k + ' ne doit pas fuiter');
+
+  // Retirer un rival, puis retirer une amitié supprime la rivalité.
+  assert.equal((await x.post('/api/friends/rival', { code: cx, on: false })).status, 200);
+  assert.equal((await x.get('/api/friends')).body.rivals.some(r => r.name === 'Yanis'), false);
+  const idz = (await x.get('/api/friends')).body.friends.find(f => f.name === 'Zoe').id;
+  assert.equal((await x.post('/api/friends/remove', { id: idz })).status, 200);
+  assert.equal((await q('SELECT 1 FROM friend_rivals WHERE user_id=$1 AND rival_id=$2', [x.user.id, z.user.id])).length, 0);
+  assert.equal((await x.post('/api/friends/rival', { code: cx })).status, 200, 'une place s\'est libérée');
+});

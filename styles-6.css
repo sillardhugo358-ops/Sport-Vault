@@ -673,3 +673,14 @@ label.trade-pick.trade-card.is-picked{border-color:var(--gold);background:rgba(2
 .wk-preview-list span{display:grid;min-width:0}
 .wk-preview-list strong,.wk-preview-list small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wk-preview-list small{color:var(--muted)}
+
+/* Rivalités d'album (page Amis) */
+.rival-list{list-style:none;margin:0;padding:0;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.rival-card{padding:14px 16px;border:1px solid var(--line,rgba(255,255,255,.14));border-left-width:5px;border-radius:14px;background:rgba(255,255,255,.04)}
+.rival-card.is-ahead{border-left-color:#65d5ad}.rival-card.is-behind{border-left-color:#ff7c8c}
+.rival-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px}
+.rival-lead{margin:0 0 10px;color:var(--muted);font-weight:700}
+.rival-row{display:grid;grid-template-columns:minmax(64px,28%) 1fr auto;gap:10px;align-items:center;margin:6px 0}
+.rival-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rival-row progress{width:100%;height:12px;accent-color:#efcf7c}
+.rival-row b{min-width:58px;text-align:right}
