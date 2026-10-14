@@ -17,6 +17,12 @@ async function give(p, cardIds) {
   await q(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,source)
     SELECT gen_random_uuid(),c.id,$1,c.season,c.name,c.position,c.club,c.nation,c.rarity,'pack:test' FROM catalog_cards c WHERE c.id = ANY($2::text[])`, [p.user.id, cardIds]);
 }
+// Les cartes de bienvenue sont tirées au hasard dans tout le catalogue actif : on écarte celles de la saison d'essai pour partir de zéro.
+async function fresh(name) {
+  const p = await newPlayer(server, name);
+  await q("UPDATE card_instances SET status='archived' WHERE owner_id=$1 AND season=$2", [p.user.id, SEASON]);
+  return p;
+}
 const coins = async p => Number((await q('SELECT coins FROM users WHERE id=$1', [p.user.id]))[0].coins);
 const mine = async p => (await p.get('/api/season-goals')).body.seasons.find(s => s.season === SEASON);
 
@@ -40,7 +46,7 @@ test('connexion obligatoire', async () => {
 });
 
 test('progression, récompense unique par palier, journal des FC', async () => {
-  const p = await newPlayer(server, 'Objectifs');
+  const p = await fresh('Objectifs');
   let s = await mine(p);
   assert.equal(s.total, 20); assert.equal(s.owned, 0);
   assert.ok(s.tiers.every(t => !t.reached && !t.claimable));
@@ -62,7 +68,7 @@ test('progression, récompense unique par palier, journal des FC', async () => {
 });
 
 test('demandes simultanées : une seule récompense', async () => {
-  const p = await newPlayer(server, 'Simultane');
+  const p = await fresh('Simultane');
   await give(p, ids(1, 10));
   const before = await coins(p);
   const res = await Promise.all(Array.from({ length: 4 }, () => p.post('/api/season-goals/claim', { season: SEASON, pct: 50 })));
@@ -72,7 +78,7 @@ test('demandes simultanées : une seule récompense', async () => {
 
 test('plafond quotidien commun avec les sets : refus sans rien consommer', async () => {
   await awayFromParisMidnight();
-  const p = await newPlayer(server, 'Plafond');
+  const p = await fresh('Plafond');
   await give(p, ids(1, 20));
   // 2 000 FC déjà gagnés aujourd'hui par un set : 5 000 + 2 000 + 1 000 passent (10 000), les 500 FC du palier 25 % dépassent le plafond.
   await q("INSERT INTO coin_ledger(user_id,amount,reason,ref) VALUES($1,2000,'reward','set:autre')", [p.user.id]);
