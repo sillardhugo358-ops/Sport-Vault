@@ -217,3 +217,6 @@ Nouvelle feuille `styles-7.css` (liée après `styles-6.css`, ajoutée à `scrip
 
 ### Redesign, tranche 4 (14/10/2026)
 Dans `styles-7.css` : états vides avec halo et plus d'air, étiquettes à coins légers (plus de gélules), chiffres clés tabulaires, boutons désactivés explicites, liens de texte soulignés finement, révélation des sections au défilement (`animation-timeline:view()`, plage en pixels pour les sections très hautes, ignorée par les navigateurs qui ne la gèrent pas). Textes de succès sans point d'exclamation (« Set complété : +… »). Reste : hiérarchie des boutons par page, accueil.
+
+### Redesign, tranche 5 (14/10/2026)
+Dans `styles-7.css` : hiérarchie des boutons (principal avec liseré lumineux et halo doré, secondaire qui se remplit au survol, tertiaire `btn-ghost` en texte seul souligné, gros bouton `btn-large`), vitrine de l'accueil en légère lévitation (`translate`, indépendant de `transform`). Les variantes propres à une page ne sont pas touchées (ajouts seulement). Le redesign demandé le 14/10 est terminé ; pistes restantes : accordéons et carrousels s'il y en a, regroupement des définitions de `.btn-*` dispersées dans les six premières feuilles (refonte de la cascade, à ne faire qu'avec captures avant/après).
