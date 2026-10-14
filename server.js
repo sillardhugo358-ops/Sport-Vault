@@ -93,7 +93,7 @@ async function securityEvent(userId,ip,event,details={},client=null){const db=cl
 
 // Fichiers publics : uniquement à la racine du dépôt, pages, styles et images, plus les
 // scripts de l'interface listés ci-dessous. Jamais le code serveur, lib/, data/, .git/ ni la configuration.
-const PUBLIC_SCRIPTS=new Set(['theme.js','fv-core.js','fv-cards.js','fv-holo.js','fv-celebrate.js','app.js','fv-pages.js','fv-admin.js','fv-market.js','fv-trades.js','market-insights.js','challenge-admin-editor.js','set-admin-editor.js','notifications-bell.js','fv-push.js','fv-friends.js','fv-wishlist.js','fv-stats.js','fv-team.js','fv-workshop.js','fv-custompack.js','fv-collective.js','sw.js','admin-stats.js','task-admin-editor.js','achievement-admin-editor.js','mission-admin-editor.js','manifest.json']);
+const PUBLIC_SCRIPTS=new Set(['theme.js','fv-core.js','fv-cards.js','fv-holo.js','fv-fx.js','fv-celebrate.js','app.js','fv-pages.js','fv-admin.js','fv-market.js','fv-trades.js','market-insights.js','challenge-admin-editor.js','set-admin-editor.js','notifications-bell.js','fv-push.js','fv-friends.js','fv-wishlist.js','fv-stats.js','fv-team.js','fv-workshop.js','fv-custompack.js','fv-collective.js','sw.js','admin-stats.js','task-admin-editor.js','achievement-admin-editor.js','mission-admin-editor.js','manifest.json']);
 const PUBLIC_EXTENSIONS=new Set(['.html','.css','.svg','.png','.ico','.webp']);
 // etat.html n'est jamais servi comme fichier public : route réservée aux administrateurs (voir plus bas).
 function isPublicFile(name){return name!=='etat.html'&&!name.startsWith('.')&&(PUBLIC_SCRIPTS.has(name)||PUBLIC_EXTENSIONS.has(path.extname(name)));}

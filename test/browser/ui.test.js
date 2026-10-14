@@ -1179,6 +1179,35 @@ test('défis collectifs : jauge commune, palier atteint réclamé une seule fois
   assert.deepEqual(errors, []);
 });
 
+test('effets : vibrations et sons selon les préférences, réglage dans le profil, rien sans API', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await visit('home');
+  await page.waitForFunction(() => !!window.FVC && !!FVC.fx);
+  const r = await page.evaluate(() => {
+    const calls = []; navigator.vibrate = p => { calls.push(p); return true; };
+    localStorage.removeItem('fv-fx');
+    const on = FVC.fx.play('legend');
+    FVC.fx.setPref('haptics', false); const before = calls.length; FVC.fx.vibrate(50);
+    FVC.fx.setPref('haptics', true); FVC.fx.setPref('sound', false);
+    const soundOff = FVC.fx.sound('open');
+    return { on, calls, noBuzzWhenOff: calls.length === before, soundOff, rar: ['common', 'rare', 'epic', 'legendary', 'icon'].map(FVC.fx.forRarity) };
+  });
+  assert.ok(r.calls.length >= 1, 'vibration émise');
+  assert.equal(r.noBuzzWhenOff, true, 'pas de vibration si coupée');
+  assert.equal(r.soundOff, false, 'pas de son si coupé');
+  assert.deepEqual(r.rar, ['flip', 'rare', 'epic', 'legend', 'legend']);
+  await page.evaluate(() => localStorage.removeItem('fv-fx'));
+  await visit('profil');
+  await page.waitForSelector('[data-fx-set="sound"]');
+  assert.equal(await page.getAttribute('[data-fx-set="sound"]', 'aria-pressed'), 'true');
+  assert.ok((await page.locator('[data-fx-set="sound"]').boundingBox()).height >= 44, 'bouton de 44 px');
+  await page.click('[data-fx-set="sound"]');
+  assert.equal(await page.getAttribute('[data-fx-set="sound"]', 'aria-pressed'), 'false');
+  assert.equal(await page.evaluate(() => FVC.fx.prefs().sound), false);
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'pas de débordement');
+  await page.evaluate(() => localStorage.removeItem('fv-fx'));
+});
+
 test('administration (fv-admin.js) : onglets et éditeurs de cartes, packs, pools, compétitions et clubs s\'ouvrent', async () => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await visit('admin');
