@@ -1,0 +1,54 @@
+/* Habillage « Aurore » (clair / sombre) : nouveaux jetons, typographie Bricolage + Onest, en-tête, boutons en pilule, bandeaux dégradés.
+   Chargé après styles-7.css ; la spécificité html:root:root l'emporte aussi sur theme-light.css. Les cartes gardent leur police d'origine. */
+:root{--head:'Bricolage Grotesque','Onest',system-ui,sans-serif;--body:'Onest',system-ui,sans-serif;
+  --bg:#070b18;--panel:#121a33;--panel2:#0d1326;--text:#f2f5ff;--muted:#9aa8c9;--line:rgba(255,255,255,.1);
+  --gold:#ffc24d;--gold2:#ffd27a;--green:#1ccf9c;--danger:#ff7a86;--focus:0 0 0 2px #070b18,0 0 0 4px #7b9bff;
+  --av-blue:#3d5afe;--av-violet:#7b5cff;--av-pink:#ff4f8b;--av-coral:#ff7a59;--av-sun:#ffc24d;--av-mint:#1ccf9c;--av-sky:#35b8ff;
+  --av-grad:linear-gradient(120deg,#ff7a59,#ff4f8b 55%,#7b5cff);--av-surface:#121a33;--av-ghost:rgba(255,255,255,.07);--av-btn:#ffffff;--av-btn-ink:#0d1b3d;
+  --av-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 14px 30px -14px rgba(0,0,0,.8)}
+html[data-theme="light"]{--bg:#f5f7fd;--panel:#ffffff;--panel2:#eef2fb;--text:#0d1b3d;--muted:#4a5878;--line:#e4e9f5;
+  --gold:#c97a00;--gold2:#a65f00;--green:#0c8f6c;--danger:#d02c3a;--focus:0 0 0 2px #ffffff,0 0 0 4px #3d5afe;
+  --av-surface:#ffffff;--av-ghost:rgba(13,27,61,.06);--av-btn:#0d1b3d;--av-btn-ink:#ffffff;
+  --av-shadow:0 1px 2px rgba(20,30,80,.06),0 10px 24px -12px rgba(20,30,80,.18)}
+.tcg-card,[class*="tcg-"],[class*="v4-"],[class*="detail-card"],.hero-card{--head:'Barlow Condensed',sans-serif}
+html:root:root body{font-family:var(--body);background:var(--bg);color:var(--text)}
+html:root:root h1,html:root:root h2,html:root:root h3{font-family:var(--head);font-weight:800;letter-spacing:-.025em;text-transform:none}
+html:root:root .ambient{opacity:.5}
+html[data-theme="light"]:root:root .ambient{opacity:.12}
+/* En-tête et navigation */
+html:root:root .header{background:color-mix(in srgb,var(--bg) 82%,transparent);-webkit-backdrop-filter:saturate(1.6) blur(14px);backdrop-filter:saturate(1.6) blur(14px);border-bottom:1px solid var(--line);box-shadow:none}
+html:root:root .nav a,html:root:root .nav-group-btn{border-radius:999px;font-weight:500;color:var(--muted);letter-spacing:0;text-transform:none}
+html:root:root .nav a:hover,html:root:root .nav-group-btn:hover{background:var(--av-ghost);color:var(--text)}
+html:root:root .nav a.active,html:root:root .nav a[aria-current="page"]{background:var(--av-ghost);color:var(--text);font-weight:600;box-shadow:none}
+html:root:root .nav-sub{border-radius:18px;border:1px solid var(--line);background:var(--panel);box-shadow:var(--av-shadow)}
+html:root:root .nav-sub a{border-radius:12px}
+html:root:root .header-wallet{border:0;border-radius:999px;background:var(--av-ghost)}
+html:root:root .brand-copy b{background:none;color:var(--text);-webkit-text-fill-color:currentColor;font-family:var(--head);letter-spacing:-.02em}
+html:root:root .brand-copy b em{background:var(--av-grad);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;font-style:normal}
+html:root:root .brand-copy small{font-family:var(--body);letter-spacing:.14em}
+/* Boutons en pilule */
+html:root:root .btn{border-radius:999px;font-family:var(--body);font-weight:600;letter-spacing:0;text-transform:none;background:var(--av-ghost);color:var(--text);border:1px solid transparent}
+html:root:root .btn:hover{background:var(--line);transform:translateY(-1px)}
+html:root:root .btn-gold{background:var(--av-btn);color:var(--av-btn-ink);border-color:transparent;box-shadow:0 10px 22px -12px rgba(13,27,61,.55)}
+html:root:root .btn:focus-visible,html:root:root .nav a:focus-visible,html:root:root .nav-group-btn:focus-visible{box-shadow:var(--focus);outline:2px solid transparent}
+html:root:root .btn-gold:hover{background:var(--av-btn);filter:brightness(1.08)}
+html:root:root .btn-outline{background:transparent;border-color:var(--line);color:var(--text)}
+html:root:root .btn-outline:hover{background:var(--av-ghost)}
+/* Bandeaux de page en dégradé */
+html:root:root .shop-hero,html:root:root .season-hero,html:root:root .success-hero,html:root:root .admin-management-hero,html:root:root .view-hero,html:root:root .dash-hero{background:var(--av-grad);border:0;border-radius:28px;color:#fff;box-shadow:var(--av-shadow)}
+html:root:root .shop-hero :is(h1,h2,p,span,small,strong),html:root:root .season-hero :is(h1,h2,p,span,small,strong),html:root:root .success-hero :is(h1,h2,p,span,small,strong),html:root:root .admin-management-hero :is(h1,h2,p,span,small,strong),html:root:root .view-hero :is(h1,h2,p,span,small,strong),html:root:root .dash-hero :is(h1,h2,p,span,small,strong){color:#fff}
+/* Accueil */
+html:root:root .fvh-hero{background:var(--av-grad);border:0;border-radius:32px;color:#fff;box-shadow:var(--av-shadow)}
+html:root:root .fvh-hero :is(h1,h2,p,small,.eyebrow){color:#fff}
+html:root:root .fvh-hero .btn-gold{background:#fff;color:#0d1b3d}
+html:root:root .fvh-hero .btn-outline{border-color:rgba(255,255,255,.55);color:#fff}
+/* Pied de page */
+html:root:root .footer{border-top:1px solid var(--line);color:var(--muted);background:transparent}
+html:root:root .fvh-hero :is(.fvh-stats,.fvh-metrics) :is(b,strong,span,small,em){color:#fff;opacity:1}
+html:root:root .fvh-hero :is(.fvh-stats,.fvh-metrics) :is(span,small){opacity:.85}
+html:root:root .fvh-hero>*,html:root:root .fvh-lockup>*{min-width:0}
+html:root:root .fvh-wordmark{font-weight:800;letter-spacing:-.04em;font-size:clamp(40px,7.4vw,100px);line-height:.95;color:#fff;overflow-wrap:anywhere}
+html:root:root .fvh-wordmark span{color:#fff;opacity:.78}
+html:root:root .fvh-tagline{color:rgba(255,255,255,.9)}
+html:root:root .fvh-hero :is(.fvh-metrics,.fvh-stats) *{color:#fff}
+@media(max-width:700px){html:root:root .fvh-wordmark{font-size:clamp(30px,9.6vw,44px)}html:root:root .fvh-hero .fvh-actions .btn{width:100%}}
