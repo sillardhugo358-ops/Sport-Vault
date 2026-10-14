@@ -29,11 +29,11 @@ test('interface : page d\'accueil et tout ce qu\'elle charge', async () => {
   }
 });
 
-test('feuilles de style : styles.css à styles-6.css liées dans l\'ordre de la cascade, chacune en CSS valide (accolades équilibrées)', async () => {
+test('feuilles de style : styles.css à styles-7.css liées dans l\'ordre de la cascade, chacune en CSS valide (accolades équilibrées)', async () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   const linked = [...html.matchAll(/<link rel="stylesheet" href="(styles(?:-\d)?\.css)\?v=[^"]+">/g)].map(m => m[1]);
-  assert.deepEqual(linked, ['styles.css', 'styles-2.css', 'styles-3.css', 'styles-4.css', 'styles-5.css', 'styles-6.css']);
-  assert.ok(html.indexOf('styles-6.css') < html.indexOf('cards-v4.css'), 'cards-v4.css reste après les styles');
+  assert.deepEqual(linked, ['styles.css', 'styles-2.css', 'styles-3.css', 'styles-4.css', 'styles-5.css', 'styles-6.css', 'styles-7.css']);
+  assert.ok(html.indexOf('styles-7.css') < html.indexOf('cards-v4.css'), 'cards-v4.css reste après les styles');
   for (const f of linked) {
     const r = await fetch(server.base + '/' + f);
     assert.equal(r.status, 200, f);

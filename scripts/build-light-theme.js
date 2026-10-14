@@ -10,7 +10,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.join(__dirname, '..');
-const SOURCES = ['styles.css', 'styles-2.css', 'styles-3.css', 'styles-4.css', 'styles-5.css', 'styles-6.css'];
+const SOURCES = ['styles.css', 'styles-2.css', 'styles-3.css', 'styles-4.css', 'styles-5.css', 'styles-6.css', 'styles-7.css'];
 const OUT = path.join(ROOT, 'theme-light.css');
 const P = 'html[data-theme="light"]';
 

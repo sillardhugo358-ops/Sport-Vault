@@ -1,0 +1,53 @@
+/* Redesign, tranche 3 (14/10/2026) : entrée échelonnée des pages, surfaces avec relief, rayons hiérarchisés, titres plus présents, page courante signalée.
+   Aucun changement de structure, d'URL ni de fonctionnalité. Chargé après styles-6.css (ordre = cascade). */
+:root{--r-panel:16px;--r-inner:10px;--ease-out:cubic-bezier(.2,.8,.2,1);--edge:rgba(255,255,255,.055)}
+
+/* Surfaces : conteneurs plus doux, éléments internes plus serrés, liseré lumineux en haut (source de lumière unique, en haut). */
+.profile-panel,.mission,.set-card,.goal-card,.auction-card,.market-insights>*,.collective-card{border-radius:var(--r-panel)}
+.profile-panel,.mission,.auction-card{box-shadow:inset 0 1px 0 var(--edge),0 16px 36px -22px rgba(3,9,22,.75)}
+.mission .progress,.profile-track,.vault-mission-progress .progress{border-radius:999px}
+.btn,.auction-search,.theme-choice{border-radius:var(--r-inner)}
+
+/* Titres : plus de présence (interlignage serré, crénage resserré) sans changer les tailles. */
+h1{line-height:1.02;letter-spacing:-.012em}
+h2{line-height:1.05;letter-spacing:-.006em}
+.eyebrow{letter-spacing:.2em}
+
+/* Page courante : liseré net sous le lien actif du menu. */
+.nav a[aria-current="page"]{box-shadow:inset 0 -2px 0 var(--gold)}
+.nav-group-btn.active{box-shadow:inset 0 -2px 0 var(--gold)}
+
+/* Entrée échelonnée : seulement au changement de page (classe posée par app.js), jamais quand une page se rafraîchit après une action. */
+@keyframes fv-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:no-preference){
+  #app.fv-enter>.page>*,
+  #app.fv-enter .mission-grid>*,
+  #app.fv-enter .profile-kpis>*,
+  #app.fv-enter .profile-grid>*{animation:fv-rise .5s var(--ease-out) both;animation-delay:calc(var(--n,0)*60ms)}
+  #app.fv-enter>.page>*:nth-child(2),#app.fv-enter .mission-grid>*:nth-child(2),#app.fv-enter .profile-kpis>*:nth-child(2),#app.fv-enter .profile-grid>*:nth-child(2){--n:1}
+  #app.fv-enter>.page>*:nth-child(3),#app.fv-enter .mission-grid>*:nth-child(3),#app.fv-enter .profile-kpis>*:nth-child(3),#app.fv-enter .profile-grid>*:nth-child(3){--n:2}
+  #app.fv-enter>.page>*:nth-child(4),#app.fv-enter .mission-grid>*:nth-child(4),#app.fv-enter .profile-kpis>*:nth-child(4){--n:3}
+  #app.fv-enter>.page>*:nth-child(5),#app.fv-enter .mission-grid>*:nth-child(5){--n:4}
+  #app.fv-enter>.page>*:nth-child(n+6),#app.fv-enter .mission-grid>*:nth-child(n+6){--n:5}
+}
+
+/* En-tête en verre dépoli : flou léger et liseré de bord, le contenu défile sous l'en-tête sans le heurter. */
+.header{-webkit-backdrop-filter:blur(14px) saturate(1.15);backdrop-filter:blur(14px) saturate(1.15);box-shadow:inset 0 -1px 0 var(--edge),0 10px 30px -14px rgba(3,9,22,.55)}
+
+/* Fenêtres : apparition en douceur (opacité + léger zoom) ; les ouvertures de packs gardent leur propre animation. */
+@keyframes fv-pop{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:no-preference){
+  .modal-box:not(.pack-reveal-modal){animation:fv-pop .28s var(--ease-out) both}
+}
+
+/* Champs : même anneau de focus partout, visible au clavier comme à la souris. */
+input:not([type=checkbox]):not([type=radio]):focus-visible,select:focus-visible,textarea:focus-visible{outline:none;border-color:var(--gold2)!important;box-shadow:0 0 0 3px rgba(240,201,75,.18)}
+
+/* Cartes de la place de marché et des packs : léger soulèvement au survol (souris uniquement). */
+@media (hover:hover) and (prefers-reduced-motion:no-preference){
+  .auction-card:hover,.set-card:hover,.goal-card:hover{transform:translateY(-3px);box-shadow:inset 0 1px 0 var(--edge),0 22px 40px -22px rgba(3,9,22,.85)}
+}
+
+/* Détails : sélection de texte aux couleurs du site, barre de défilement discrète. */
+::selection{background:rgba(240,201,75,.32);color:#fff}
+html{scrollbar-color:#27466e transparent;scrollbar-width:thin}
