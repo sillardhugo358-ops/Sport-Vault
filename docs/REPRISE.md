@@ -201,3 +201,7 @@ Page Amis : bouton **RIVAL** sur chaque ami (3 rivaux au plus, `FRIENDS.maxRival
 - Pack « nouvelles cartes uniquement » : +30 % par carte, refusé si presque tout est déjà possédé.
 - « Acheter maintenant » aux enchères : NON.
 - Duel quotidien d'équipe type contre un ami : 50 FC + 10 XP au vainqueur, 1 duel/jour, calcul serveur.
+- Mur des transferts : opt-in (visible seulement pour les joueurs qui l'activent), pseudo affiché, aucune info privée.
+- Primes : oui ; FC bloqués à la création, remboursés à l'expiration (7 j), commission 5 % à l'échange réussi, Legendary/Icon exclus.
+- Prêts de cartes : oui (Common/Rare entre amis, 7 j, retour automatique) ; staking : non.
+- Club de cœur : un club par saison, choix gratuit, changeable au début de saison, classement des clubs par cartes possédées, aucune récompense en FC.
