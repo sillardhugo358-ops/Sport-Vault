@@ -37,7 +37,7 @@ function show(item,more){
     +'<h2 id="fvCelTitle" class="fv-stamp">COMPLÉTÉ</h2><p class="fv-celebrate-label">'+esc(item.label)+'</p>'
     +(more>0?'<p class="fv-celebrate-more">+ '+more+' autre'+(more>1?'s':'')+' complétion'+(more>1?'s':'')+'</p>':'')
     +'<button class="btn btn-gold" type="button" data-fv-celebrate-close>CONTINUER</button></div>';
-  document.body.appendChild(el);
+  document.body.appendChild(el);FVC.fx?.play('stamp');
   if(!still){document.documentElement.classList.add('fv-shake');setTimeout(()=>document.documentElement.classList.remove('fv-shake'),500)}
   const btn=el.querySelector('[data-fv-celebrate-close]');btn.focus();
   const onKey=e=>{if(e.key==='Escape'){document.removeEventListener('keydown',onKey);close(el)}};

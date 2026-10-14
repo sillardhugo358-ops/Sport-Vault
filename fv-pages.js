@@ -161,12 +161,12 @@ function showReveal(cards,pack,again){
  window.addEventListener('resize',fit);
  const update=()=>{const n=revealCards.filter(x=>x.classList.contains('flipped')).length;result.textContent=n<revealCards.length?`${n} / ${revealCards.length} cartes révélées`:`${cards.length} cartes ajoutées · +${cards.length*2} XP`;if(n===revealCards.length&&skip){skip.hidden=true}
   if(n===revealCards.length&&againBtn){againBtn.hidden=false;box.querySelector('a[href="#collection"]')?.classList.replace('btn-gold','btn-outline')}};
- const revealOne=card=>{if(!card||card.classList.contains('flipped'))return;card.classList.add('flipped');card.setAttribute('aria-pressed','true');if(rank(cards[+card.dataset.revealCard])>=2)card.classList.add('rv-burst');update()};
+ const revealOne=card=>{if(!card||card.classList.contains('flipped'))return;card.classList.add('flipped');card.setAttribute('aria-pressed','true');const rk=rank(cards[+card.dataset.revealCard]);if(rk>=2)card.classList.add('rv-burst');FVC.fx?.play(FVC.fx.forRarity(cards[+card.dataset.revealCard]?.rarity));update()};
  revealCards.forEach(card=>card.addEventListener('click',()=>revealOne(card)));
  skip?.addEventListener('click',()=>{revealCards.filter(x=>!x.classList.contains('flipped')).forEach((card,k)=>setTimeout(()=>revealOne(card),calm?0:k*110))});
  const openBtn=box.querySelector('[data-open-pack]');
  if(openBtn){
-  const open=()=>{if(openBtn.classList.contains('opening'))return;openBtn.classList.add('opening');setTimeout(()=>{box.querySelector('.reveal-stage')?.remove();box.classList.add('rv-opened');grid.hidden=false;skip.hidden=false;fit();requestAnimationFrame(fit);revealCards[0]?.focus({preventScroll:true})},calm?0:720)};
+  const open=()=>{if(openBtn.classList.contains('opening'))return;openBtn.classList.add('opening');FVC.fx?.play('open');setTimeout(()=>{box.querySelector('.reveal-stage')?.remove();box.classList.add('rv-opened');grid.hidden=false;skip.hidden=false;fit();requestAnimationFrame(fit);revealCards[0]?.focus({preventScroll:true})},calm?0:720)};
   openBtn.addEventListener('click',open);openBtn.focus({preventScroll:true});
  }
  else{fit();requestAnimationFrame(fit)}
@@ -256,6 +256,7 @@ async function profile(){
  +'<div class="profile-actions"><a class="btn btn-gold" href="#vault">MON VAULT</a><a class="btn btn-outline" href="#collection">MA COLLECTION</a></div></section>'
  +'<section class="profile-kpis">'+kpi('CARTES',money(c.cards),money(c.unique)+' joueurs différents')+kpi('CLUBS',money(c.clubs),'représentés dans ta collection')+kpi('PACKS OUVERTS',money(p.packsOpened),'depuis ton inscription')+kpi('FOOTCOINS',money(Math.max(0,p.coins-p.reservedCoins)),p.reservedCoins?money(p.reservedCoins)+' réservés':'disponibles')+'</section>'
  +'<section class="profile-panel profile-appearance"><p class="eyebrow">AFFICHAGE</p><h2>APPARENCE</h2><p class="wk-note">Nuit, jour, ou automatique selon le mode de ton appareil.</p><div class="theme-choice" role="group" aria-label="Thème d’affichage">'+[['dark','NUIT'],['light','JOUR'],['auto','AUTO']].map(([k,l])=>{const on=(window.fvTheme?window.fvTheme.get():'dark')===k;return '<button type="button" data-theme-set="'+k+'" class="'+(on?'is-on':'')+'" aria-pressed="'+on+'">'+l+'</button>'}).join('')+'</div></section>'
+ +(FVC.fx?FVC.fx.panelHtml():'')
  +favoriteShowcase(d.favorites||[])
  +'<div class="profile-grid">'
  +'<section class="profile-panel"><p class="eyebrow">COLLECTION</p><h2>RARETÉS</h2><div class="profile-bars">'+c.rarities.map(r=>'<div class="profile-bar"><span>'+RL[r.rarity]+'</span><b>'+money(r.count)+'</b><div class="profile-track"><i class="r-'+r.rarity+'" style="width:'+(r.count/maxR*100)+'%"></i></div></div>').join('')+'</div>'

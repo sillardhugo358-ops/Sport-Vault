@@ -192,3 +192,16 @@ Page Amis : bouton **RIVAL** sur chaque ami (3 rivaux au plus, `FRIENDS.maxRival
 ## Micro-récompenses de complétion (14/10/2026)
 
 `fv-celebrate.js` : quand un club, une édition ou un championnat de l'album vient d'être complété, animation plein écran (tampon « COMPLÉTÉ », confettis, légère secousse de la page, bouton CONTINUER de 44 px, Échap ou 7 s pour fermer). **Purement visuel**, aucune récompense ni appel serveur. Appelé par la page album (`fv-pages.js`, après `state.album=d`) avec les données de `/api/album`. L'état « déjà célébré » est dans `localStorage` (`fv-celebrated:<id joueur>`) : la **première visite** sert de point de départ silencieux (on ne fête pas l'existant), puis seule la complétion la plus haute nouvelle est célébrée (championnat > édition > club, avec « + N autres »). Avec « réduire les animations » : ni confettis ni secousse. Limite : la célébration se déclenche à la visite de l'album, pas à l'ouverture du pack. Tests : « complétion » dans `test/browser/ui.test.js`.
+
+### Effets : vibrations et sons (14/10/2026)
+`fv-fx.js` (`FVC.fx`) : vibrations (`navigator.vibrate`, coupées en mouvement réduit) et sons synthétisés WebAudio (aucun fichier audio) à l'ouverture d'un pack, au retournement des cartes (selon la rareté) et au tampon « COMPLÉTÉ ». Préférences sur l'appareil (`localStorage` `fv-fx`), réglage dans Profil > Effets. À tester sur téléphone (vibrations non vérifiables en navigateur de test).
+
+### Règles validées le 14/10/2026 (à construire)
+- Objectifs de saison : paliers 25/50/75/100 % → 500 / 1 000 / 2 000 / 5 000 FC + XP, une fois par palier et par saison, sous le plafond de 10 000 FC/jour.
+- Pack « nouvelles cartes uniquement » : +30 % par carte, refusé si presque tout est déjà possédé.
+- « Acheter maintenant » aux enchères : NON.
+- Duel quotidien d'équipe type contre un ami : 50 FC + 10 XP au vainqueur, 1 duel/jour, calcul serveur.
+- Mur des transferts : opt-in (visible seulement pour les joueurs qui l'activent), pseudo affiché, aucune info privée.
+- Primes : oui ; FC bloqués à la création, remboursés à l'expiration (7 j), commission 5 % à l'échange réussi, Legendary/Icon exclus.
+- Prêts de cartes : oui (Common/Rare entre amis, 7 j, retour automatique) ; staking : non.
+- Club de cœur : un club par saison, choix gratuit, changeable au début de saison, classement des clubs par cartes possédées, aucune récompense en FC.
