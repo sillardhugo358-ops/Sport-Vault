@@ -156,7 +156,7 @@ test('rivalités d\'album : amis seulement, 3 au plus, comparaison de complétio
   assert.match(full.body.error, /3 rivaux/);
 
   // Cartes : Xavier en possède 2, Yanis 1, Zoé 0 (cartes différentes du catalogue actif).
-  const cards = await q('SELECT id,name,position,club,nation,rarity,ovr,season FROM catalog_cards WHERE is_active=true ORDER BY id LIMIT 3');
+  const cards = await q('SELECT id,name,position,club,nation,rarity,ovr,season FROM catalog_cards WHERE is_active=true AND id NOT IN (SELECT card_id FROM card_instances WHERE owner_id = ANY($1::uuid[])) ORDER BY id LIMIT 3', [[x, y, z, w, v].map(p => p.user.id)]); // hors cartes de bienvenue (tirées au hasard)
   const give = (owner, c) => q(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,ovr,source) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'pack:test')`,
     [crypto.randomUUID(), c.id, owner.user.id, c.season, c.name, c.position, c.club, c.nation, c.rarity, c.ovr]);
   await give(x, cards[0]); await give(x, cards[1]); await give(x, cards[1]); await give(y, cards[0]);

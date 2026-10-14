@@ -285,6 +285,25 @@ test('sets thématiques : éditeur admin (recherche de cartes) puis récupérati
   assert.deepEqual(errors, []);
 });
 
+test('objectifs de saison : paliers sur le vault, récupération d\'un palier, mobile sans débordement', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await server.db.query(`INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr)
+    SELECT 'bgoal-' || n, '2033-2034', 'Joueur Palier ' || n, 'ST', 'FC Palier', 'France', 'common', 70 FROM generate_series(1,20) n ON CONFLICT DO NOTHING`);
+  const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
+  await server.db.query(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,source,status)
+    SELECT gen_random_uuid(),id,$1,season,name,position,club,nation,rarity,'test','owned' FROM catalog_cards WHERE id LIKE 'bgoal-%' ORDER BY id LIMIT 5`, [uid]);
+  await visit('vault');
+  await page.waitForSelector('.goal-section [data-goal-claim]');
+  const card = page.locator('.goal-card', { hasText: '2033-2034' });
+  assert.match(await card.textContent(), /5\/20/);
+  assert.equal(await card.locator('[data-goal-claim]').count(), 1, 'seul le palier 25 % est récupérable');
+  assert.ok((await card.locator('.goal-tiers .btn').first().boundingBox()).height >= 44, 'bouton de 44 px');
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'pas de débordement');
+  await card.locator('[data-goal-claim]').click();
+  await page.waitForFunction(() => /RÉCUPÉRÉ/.test(document.querySelector('.goal-card')?.innerText || ''), null, { timeout: 15000 });
+  assert.deepEqual(errors, []);
+});
+
 test('échanges : proposer une offre depuis la page, puis accepter une offre reçue', async () => {
   const other = await newPlayer(server, 'Partenaire');
   const me = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
