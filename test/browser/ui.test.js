@@ -987,6 +987,16 @@ test('amis : demande par code, acceptation, profil public, confidentialité', as
   r = await visit('amis');
   await page.waitForFunction(() => /AmiTest/.test(document.querySelector('.friend-list')?.innerText || ''));
   assert.match(await page.textContent('.friends-page'), /ACTIVITÉ DE MES AMIS/);
+  // Rivalités : épingler l'ami, voir les deux jauges, sans débordement ; zones tactiles de 44 px.
+  assert.match(await page.textContent('.friends-page'), /MES RIVAUX \(0\/3\)/);
+  assert.ok((await page.locator('[data-friend-rival]').first().boundingBox()).height >= 44, 'bouton RIVAL de 44 px');
+  await page.click('[data-friend-rival][data-on="1"]');
+  await page.waitForSelector('.rival-card progress');
+  assert.match(await page.textContent('.friends-page'), /MES RIVAUX \(1\/3\)/);
+  assert.equal(await page.locator('.rival-card progress').count(), 2, 'jauge de moi et du rival');
+  assert.equal(await page.locator('[data-friend-rival][aria-pressed="true"]').count(), 1);
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'pas de débordement avec un rival');
+  assert.ok((await page.locator('.rival-card [data-friend-rival]').boundingBox()).height >= 44, 'bouton RETIRER de 44 px');
   await page.click('.friend-name');
   await page.waitForFunction(() => location.hash.startsWith('#joueur'));
   await page.waitForFunction(() => /AMITEST/.test(document.querySelector('#app h1')?.textContent || ''));

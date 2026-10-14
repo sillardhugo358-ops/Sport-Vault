@@ -18,16 +18,29 @@ const eventText=e=>{
 };
 const activityList=ev=>ev.length?'<ul class="friend-activity">'+ev.map(e=>'<li>'+eventText(e)+'<time datetime="'+esc(String(e.at))+'">il y a '+when(e.at)+'</time></li>').join('')+'</ul>':'<p class="friend-empty">Rien de marquant ces 14 derniers jours : cartes Epic ou mieux, sets terminés et succès apparaîtront ici.</p>';
 
+// Rivalités d'album : jauge de complétion (cartes différentes du catalogue actif) de moi face à chaque rival épinglé (3 au plus).
+const pctText=n=>Number(n).toLocaleString('fr-FR',{maximumFractionDigits:1})+' %';
+const gauge=(label,n,total,pct)=>'<div class="rival-row"><span>'+esc(label)+'</span><progress max="'+Number(total)+'" value="'+Number(n)+'" aria-label="'+esc(label)+' : '+Number(n)+' cartes sur '+Number(total)+'"></progress><b>'+pctText(pct)+'</b></div>';
+const rivalOff=(r)=>'<button class="btn btn-outline" type="button" data-friend-rival="'+esc(r.code)+'" data-on="0" aria-label="Retirer '+esc(r.name)+' de mes rivaux">RETIRER</button>';
+function rivalCard(r){
+  const head='<div class="rival-head"><a class="friend-name" href="#joueur?code='+encodeURIComponent(r.code)+'"><strong>'+esc(r.name)+'</strong></a>'+rivalOff(r)+'</div>';
+  if(r.hidden)return '<li class="rival-card">'+head+'<p class="friend-empty">Profil privé : comparaison indisponible.</p></li>';
+  const lead=r.gap>0?'Tu mènes de '+r.gap+' carte'+(r.gap>1?'s':''):r.gap<0?esc(r.name)+' mène de '+(-r.gap)+' carte'+(-r.gap>1?'s':''):'Égalité parfaite';
+  return '<li class="rival-card'+(r.gap>0?' is-ahead':r.gap<0?' is-behind':'')+'">'+head+'<p class="rival-lead" role="status">'+lead+'</p>'+gauge('Toi',r.you.cards,r.total,r.you.pct)+gauge(r.name,r.cards,r.total,r.pct)+'</li>';
+}
+const rivalsSection=(d)=>section('RIVALITÉS','MES RIVAUX ('+d.rivals.length+'/'+d.limits.maxRivals+')',d.rivals.length?'<ul class="rival-list">'+d.rivals.map(rivalCard).join('')+'</ul>':'<p class="friend-empty">Épingle jusqu’à '+d.limits.maxRivals+' amis comme rivaux avec le bouton RIVAL de la liste « Mes amis » : tu verras toujours qui a le plus complété son album.</p>');
+
 async function amis(){
   let d;
   let act={events:[]};
   try{[d,act]=await Promise.all([api('/api/friends'),api('/api/friends/activity').catch(()=>({events:[]}))])}catch(e){if(e.status===401)return FVC.pages.auth(new URLSearchParams({next:'amis'}));throw e}
   return '<div class="page friends-page">'+viewHero('FOOTVAULT / AMIS','TES <span>AMIS.</span>','Ajoute des joueurs avec leur code, découvre leur vitrine et échange avec eux.',String(d.friends.length),'AMI'+(d.friends.length>1?'S':''))
+   +(d.friends.length?rivalsSection(d):'')
    +(d.friends.length?section('ACTIVITÉ','ACTIVITÉ DE MES AMIS',activityList(act.events)):'')
    +section('MON CODE','MON CODE JOUEUR','<div class="panel friend-code-box"><strong class="trade-code" id="friendMyCode">'+esc(d.code)+'</strong><button class="btn btn-outline" type="button" data-friend-copy>COPIER</button><p>C’est le même code que pour les échanges. Donne-le à un ami : il pourra te demander en ami, et tu accepteras.</p></div>')
    +section('AJOUTER','AJOUTER UN AMI','<form class="panel friend-add" data-friend-add><label for="friendCode">Code du joueur</label><div class="friend-add-row"><input id="friendCode" name="code" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="Ex. K7M2QX9P" required><button class="btn btn-gold" type="submit">ENVOYER LA DEMANDE</button></div></form>')
    +(d.incoming.length?section('DEMANDES','DEMANDES REÇUES ('+d.incoming.length+')',list(d.incoming.map(p=>person(p,'<button class="btn btn-gold" type="button" data-friend-act="accept" data-id="'+p.id+'">ACCEPTER</button><button class="btn btn-outline" type="button" data-friend-act="decline" data-id="'+p.id+'">REFUSER</button>')),'')):'')
-   +section('MES AMIS','MES AMIS ('+d.friends.length+')',list(d.friends.map(p=>person(p,'<a class="btn btn-outline" href="#trades?code='+encodeURIComponent(p.code)+'">ÉCHANGER</a><button class="btn btn-outline" type="button" data-friend-act="remove" data-id="'+p.id+'" aria-label="Retirer '+esc(p.name)+'">RETIRER</button>')),'Aucun ami pour l’instant : saisis le code d’un joueur ci-dessus.'))
+   +section('MES AMIS','MES AMIS ('+d.friends.length+')',list(d.friends.map(p=>person(p,'<a class="btn btn-outline" href="#trades?code='+encodeURIComponent(p.code)+'">ÉCHANGER</a><button class="btn btn-outline" type="button" data-friend-rival="'+esc(p.code)+'" data-on="'+(p.rival?'0':'1')+'" aria-pressed="'+(p.rival?'true':'false')+'">'+(p.rival?'RIVAL ✓':'RIVAL')+'</button><button class="btn btn-outline" type="button" data-friend-act="remove" data-id="'+p.id+'" aria-label="Retirer '+esc(p.name)+'">RETIRER</button>')),'Aucun ami pour l’instant : saisis le code d’un joueur ci-dessus.'))
    +(d.outgoing.length?section('EN ATTENTE','DEMANDES ENVOYÉES ('+d.outgoing.length+')',list(d.outgoing.map(p=>person(p,'<button class="btn btn-outline" type="button" data-friend-act="cancel" data-id="'+p.id+'">ANNULER</button>')),'')):'')
    +section('CONFIDENTIALITÉ','QUI VOIT MON PROFIL ?','<div class="panel friend-visibility"><label for="friendVis">Mon profil est visible par</label><select id="friendVis" data-friend-vis>'+Object.entries(VIS).map(([k,v])=>'<option value="'+k+'"'+(d.visibility===k?' selected':'')+'>'+v+'</option>').join('')+'</select><p>Un profil montre ton niveau, ton rang, tes succès, ta vitrine de 5 cartes favorites, tes sets et albums terminés. Jamais ton solde ni ton e-mail.</p></div>')
    +'</div>';
@@ -62,11 +75,12 @@ function relationBar(p){
 }
 
 document.addEventListener('click',async e=>{
-  const t=e.target.closest('[data-friend-copy],[data-friend-act],[data-friend-ask]');if(!t)return;
+  const t=e.target.closest('[data-friend-copy],[data-friend-act],[data-friend-ask],[data-friend-rival]');if(!t)return;
   if(t.matches('[data-friend-copy]')){try{await navigator.clipboard.writeText($('#friendMyCode').textContent);toast('Code copié.')}catch{toast('Copie impossible : sélectionne le code à la main.')}return}
   t.disabled=true;
   try{
-    if(t.dataset.friendAsk){await post('/api/friends/request',{code:t.dataset.friendAsk});toast('Demande envoyée.')}
+    if(t.dataset.friendRival){const on=t.dataset.on==='1';await post('/api/friends/rival',{code:t.dataset.friendRival,on});toast(on?'Rival ajouté.':'Rival retiré.')}
+    else if(t.dataset.friendAsk){await post('/api/friends/request',{code:t.dataset.friendAsk});toast('Demande envoyée.')}
     else{const a=t.dataset.friendAct;await post('/api/friends/'+a,{id:t.dataset.id});toast({accept:'Ami ajouté.',decline:'Demande refusée.',cancel:'Demande annulée.',remove:'Ami retiré.'}[a]||'Fait.')}
     render();
   }catch(err){toast(err.message);t.disabled=false}
