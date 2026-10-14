@@ -1,8 +1,19 @@
-// Service worker FOOTVAULT : notifications push et installation de l'application. Aucune mise en cache : le site reste toujours à jour.
-self.addEventListener('install', () => self.skipWaiting());
-self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
-// Réseau seul (obligatoire pour que certains navigateurs proposent l'installation).
-self.addEventListener('fetch', () => {});
+// Service worker FOOTVAULT : notifications push, installation de l'application et page « hors ligne ».
+// Seule la page offline.html est mise en cache : le site, l'API et les soldes ne le sont jamais (ils restent toujours à jour).
+const OFFLINE_CACHE = 'fv-offline-v1';
+const OFFLINE_URL = 'offline.html';
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(OFFLINE_CACHE).then(c => c.addAll([OFFLINE_URL, 'footvault-icon.svg'])).catch(() => {}).then(() => self.skipWaiting()));
+});
+self.addEventListener('activate', e => e.waitUntil(
+  caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith('fv-offline-') && k !== OFFLINE_CACHE).map(k => caches.delete(k)))).catch(() => {}).then(() => self.clients.claim())
+));
+// Pages visitées sans réseau : page hors ligne. Toute autre requête (scripts, API, images) passe directement au réseau.
+// Une réponse du serveur, même en erreur (503 pendant un redémarrage), n'est jamais remplacée.
+self.addEventListener('fetch', e => {
+  if (e.request.mode !== 'navigate') return;
+  e.respondWith(fetch(e.request).catch(async () => (await caches.match(OFFLINE_URL)) || new Response('Hors ligne', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } })));
+});
 self.addEventListener('push', e => {
   let m = {};
   try { m = e.data ? e.data.json() : {}; } catch { m = { title: 'FOOTVAULT', body: e.data ? e.data.text() : '' }; }

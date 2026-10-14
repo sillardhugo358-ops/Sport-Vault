@@ -180,3 +180,7 @@ Avant : 1 compte par IP et par 72 h (bloquait les nouveaux joueurs sur réseau p
 ## Atelier : aperçu des cartes possibles (14/10/2026)
 
 L'onglet Fusion affiche « Voir les N cartes <rareté> possibles » (liste repliable, triée de la meilleure à la moins bonne) seulement quand il reste 1 à 49 cartes nouvelles que la fusion peut donner (`ECONOMY.fusion.previewMax`, `lib/game-config.js`). Au-delà, le serveur n'envoie que le nombre (`fresh`) : `info().fusion.rules[from].preview` vaut alors `null`. Champs publics du catalogue seulement. Code : `lib/economy.js` (`info`), `fv-workshop.js` (`previewHtml`).
+
+## PWA hors ligne (14/10/2026)
+
+`sw.js` met en cache **uniquement** `offline.html` et `footvault-icon.svg` (cache `fv-offline-v1`) : sans réseau, une navigation affiche la page « Tu es hors ligne » (bouton Réessayer, rechargement automatique au retour du réseau) au lieu de l'erreur du navigateur. Le site, l'API et les soldes ne sont jamais mis en cache et une réponse du serveur, même en erreur (503 pendant un redémarrage), n'est jamais remplacée. Pour changer la page, incrémenter `OFFLINE_CACHE`. Tests : `test/service-worker.test.js` (logique du worker, sans navigateur : Playwright ne coupe pas le réseau du service worker) et le test « PWA hors ligne » de `test/browser/ui.test.js`. Idée non faite : mettre en cache les scripts versionnés (`?v=`) pour un démarrage plus rapide ; plus risqué (anciennes versions), à ne faire que sur demande.

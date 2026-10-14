@@ -824,6 +824,25 @@ test('PWA : manifeste complet (icônes maskable), service worker enregistré, bl
   assert.deepEqual(errors, []);
 });
 
+test('PWA hors ligne : page « Tu es hors ligne » en cache (et seulement elle), bouton Réessayer accessible', async () => {
+  const p2 = await context.newPage();
+  await p2.goto(server.base + '/');
+  await p2.waitForFunction(() => navigator.serviceWorker.ready.then(() => true));
+  await p2.waitForFunction(() => caches.open('fv-offline-v1').then(c => c.match('offline.html')).then(r => !!r));
+  const keys = await p2.evaluate(async () => (await caches.keys()));
+  assert.deepEqual(keys, ['fv-offline-v1'], 'aucun autre cache : le site et l\'API ne sont jamais mis en cache');
+  const urls = await p2.evaluate(async () => (await (await caches.open('fv-offline-v1')).keys()).map(r => new URL(r.url).pathname));
+  assert.deepEqual(urls.sort(), ['/footvault-icon.svg', '/offline.html']);
+  for (const width of [1280, 390]) {
+    await p2.setViewportSize({ width, height: 800 });
+    await p2.goto(server.base + '/offline.html');
+    assert.match(await p2.textContent('h2'), /Tu es hors ligne/);
+    assert.ok((await p2.locator('#retry').boundingBox()).height >= 44, 'zone tactile de 44 px');
+    assert.ok(await p2.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'pas de débordement à ' + width);
+  }
+  await p2.close();
+});
+
 test('collection : taille des cartes (normale, grande, compacte) retenue après rechargement, sans débordement', async () => {
   for (const width of [1280, 390]) {
     await page.setViewportSize({ width, height: 900 });
