@@ -3,7 +3,7 @@
 /* Variables : voir :root en tête de fichier (thème bleu, jetons de rareté). */
 body{background:radial-gradient(ellipse at 85% -10%,rgba(18,83,160,.20),transparent 40%),radial-gradient(ellipse at -10% 80%,rgba(16,60,120,.16),transparent 42%),var(--bg);color:var(--text)}
 .ambient-a{background:#1265c7;opacity:.12}.ambient-b{background:#123f8d;opacity:.13}
-.header{background:rgba(4,12,27,.94);border-color:rgba(74,142,232,.2);box-shadow:0 8px 30px rgba(0,0,0,.22)}
+.header{background:rgba(4,12,27,.94);border-color:rgba(74,142,232,.2);box-shadow:0 8px 30px rgba(3,9,22,.22)}
 .brand-icon{filter:drop-shadow(0 0 10px rgba(71,151,255,.2))}
 .brand-icon:after{border-color:rgba(91,163,255,.24)}
 .brand-copy b{background:linear-gradient(90deg,#f6f9ff,#6baeff 52%,#f5c94d);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -48,14 +48,14 @@ th{background:#102947;color:#eaf3ff}
 td{color:#c2d5ee}
 hr{border-color:#1d3d63}
 .modal{background:rgba(2,8,18,.78);backdrop-filter:blur(10px)}
-.dialog{background:linear-gradient(145deg,#0d2340,#07162a);border:1px solid #294e78;color:#f4f7ff;box-shadow:0 28px 90px rgba(0,0,0,.55)}
+.dialog{background:linear-gradient(145deg,#0d2340,#07162a);border:1px solid #294e78;color:#f4f7ff;box-shadow:0 28px 90px rgba(3,9,22,.55)}
 .toast{background:#102947;color:#f4f7ff;border:1px solid #315b88}
 .footer{border-color:#193657;color:#718baa}
-@media(max-width:760px){.nav{background:#07182e;border:1px solid #1e4067;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.45)}}
+@media(max-width:760px){.nav{background:#07182e;border:1px solid #1e4067;border-radius:12px;box-shadow:0 20px 50px rgba(3,9,22,.45)}}
 
 /* PACK SHOP REDESIGN */
 .shop-page{width:min(1500px,calc(100% - 42px));padding-top:24px}
-.shop-hero{min-height:290px;position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) 42%;align-items:center;padding:34px clamp(24px,5vw,76px);border:1px solid #1c4b7b;border-radius:18px;background:radial-gradient(ellipse at 75% 45%,rgba(31,123,236,.3),transparent 43%),linear-gradient(110deg,#07172e 0%,#09264a 56%,#07162c 100%);box-shadow:0 18px 50px rgba(0,0,0,.25)}
+.shop-hero{min-height:290px;position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) 42%;align-items:center;padding:34px clamp(24px,5vw,76px);border:1px solid #1c4b7b;border-radius:18px;background:radial-gradient(ellipse at 75% 45%,rgba(31,123,236,.3),transparent 43%),linear-gradient(110deg,#07172e 0%,#09264a 56%,#07162c 100%);box-shadow:0 18px 50px rgba(3,9,22,.25)}
 .shop-hero:before{content:"";position:absolute;inset:0;opacity:.24;background:repeating-linear-gradient(115deg,transparent 0 38px,rgba(119,183,255,.1) 39px 41px,transparent 42px 78px);pointer-events:none}
 .shop-hero-copy{position:relative;z-index:3;max-width:680px}
 .shop-kicker{display:flex;align-items:center;gap:9px;margin:0 0 10px;color:#8dc4ff;font-size:10px;font-weight:900;letter-spacing:2px}
@@ -102,7 +102,7 @@ hr{border-color:#1d3d63}
 .shop-section-heading>div>p:last-child{margin:8px 0 0;color:#92abc9;font-size:11px;line-height:1.5}
 .shop-result-count{flex:none;padding:7px 11px;border:1px solid #244a74;border-radius:20px;background:#0c2340;color:#a7c7ec;font-size:10px}
 .shop-pack-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
-.shop-pack-card{min-width:0;overflow:hidden;border:1px solid #1b426b;border-radius:13px;background:linear-gradient(155deg,#0c2341,#06162b);box-shadow:0 10px 26px rgba(0,0,0,.15);transition:transform .2s,border-color .2s}
+.shop-pack-card{min-width:0;overflow:hidden;border:1px solid #1b426b;border-radius:13px;background:linear-gradient(155deg,#0c2341,#06162b);box-shadow:0 10px 26px rgba(3,9,22,.15);transition:transform .2s,border-color .2s}
 .shop-pack-card:hover{transform:translateY(-4px);border-color:#4c9df4}
 .shop-pack-card[hidden]{display:none!important}
 .shop-pack-art{height:218px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;overflow:hidden;border-bottom:1px solid rgba(255,255,255,.1);background:radial-gradient(ellipse at 50% 22%,rgba(65,151,255,.38),transparent 48%),linear-gradient(145deg,#1b65b5,#0b1a34 62%,#050d1b);color:#d7eaff}
@@ -158,7 +158,7 @@ hr{border-color:#1d3d63}
 .collection-showcase-mark span{display:grid;place-items:center;width:105px;height:125px;border:2px solid #e6bd42;clip-path:polygon(10% 0,90% 0,83% 80%,50% 100%,17% 80%);background:linear-gradient(145deg,rgba(245,204,77,.24),rgba(8,24,48,.65));font:900 50px var(--head);text-shadow:0 0 25px #d49f28}
 .collection-showcase-mark b{font:900 13px/1.4 var(--head);letter-spacing:2px}
 .collection-overview{gap:12px;margin-bottom:20px}
-.collection-overview>div{border-color:#1c3e64;border-radius:9px;background:linear-gradient(145deg,#0b203a,#07152a);box-shadow:0 8px 24px rgba(0,0,0,.14)}
+.collection-overview>div{border-color:#1c3e64;border-radius:9px;background:linear-gradient(145deg,#0b203a,#07152a);box-shadow:0 8px 24px rgba(3,9,22,.14)}
 .collection-overview span{color:#83a9d5;font-size:8px}
 .collection-overview strong{color:#f4f7ff;font-size:34px}
 .collection-overview small{color:#87a4c6;font-size:8px;letter-spacing:.2px;text-transform:none}
@@ -180,7 +180,7 @@ hr{border-color:#1d3d63}
 .collection-rarity-head .eyebrow{color:#73b6ff}
 .collection-rarity-head h2{color:#eef5ff}
 .collection-quantity{display:block;margin-top:7px;padding:5px 7px;border:1px solid #1c4c7d;border-radius:5px;background:#071b33;color:#9fcfff;text-align:center;font-size:8px;font-weight:800;letter-spacing:.6px}
-.collection-card-grid .tcg-card{filter:drop-shadow(0 5px 12px rgba(0,0,0,.35))}
+.collection-card-grid .tcg-card{filter:drop-shadow(0 5px 12px rgba(3,9,22,.35))}
 .album-showcase{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 190px 290px;align-items:center;gap:25px;min-height:220px;overflow:hidden;padding:30px 34px;margin-bottom:32px;border:1px solid #1b4778;border-radius:14px;background:radial-gradient(ellipse at 55% 0%,rgba(28,132,255,.32),transparent 36%),linear-gradient(110deg,#06152c,#0a2a52 60%,#07162c)}
 .album-showcase:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,transparent 0 50px,rgba(88,166,255,.035) 51px 52px);pointer-events:none}
 .album-showcase-copy{position:relative;z-index:1}
@@ -199,7 +199,7 @@ hr{border-color:#1d3d63}
 .album-heading-row h2 span{color:#f3cd55}
 .album-collection-count{padding:8px 12px;border:1px solid #1d4773;border-radius:7px;background:#0a2039;color:#8ebbe9;font-size:9px;font-weight:800;letter-spacing:1px}
 .album-competitions-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:0}
-.album-comp-card{display:grid;grid-template-columns:115px minmax(0,1fr);gap:0;min-height:240px;padding:0;overflow:hidden;border:1px solid #1d4169;border-radius:11px;background:linear-gradient(145deg,#0a203b,#06152a);box-shadow:0 10px 28px rgba(0,0,0,.18)}
+.album-comp-card{display:grid;grid-template-columns:115px minmax(0,1fr);gap:0;min-height:240px;padding:0;overflow:hidden;border:1px solid #1d4169;border-radius:11px;background:linear-gradient(145deg,#0a203b,#06152a);box-shadow:0 10px 28px rgba(3,9,22,.18)}
 .album-comp-card.available:hover{border-color:#4b9cf0;box-shadow:0 14px 32px rgba(12,103,214,.15)}
 .album-comp-art{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(circle at 50% 30%,rgba(51,155,255,.45),transparent 55%),linear-gradient(150deg,#155fae,#07152d 72%);border-right:1px solid #1b416a}
 .album-comp-art:before{content:"";position:absolute;width:135px;height:135px;border:1px solid rgba(158,207,255,.2);border-radius:50%;box-shadow:0 0 0 16px rgba(80,164,255,.035),0 0 0 34px rgba(80,164,255,.025)}
@@ -223,7 +223,7 @@ hr{border-color:#1d3d63}
 .album-comp-body .competition-album-footer{margin-top:13px;padding-top:10px;border-color:#1b3d60;color:#8db9e8;font-size:8px}
 .album-comp-body .competition-album-footer strong{color:#f2ce5a}
 .album-comp-card.locked .album-comp-art{filter:grayscale(.65);opacity:.65}
-.vault-profile-dashboard{overflow:hidden;margin-bottom:16px;border:1px solid #1c4773;border-radius:13px;background:radial-gradient(ellipse at 90% 0%,rgba(25,112,224,.22),transparent 34%),linear-gradient(145deg,#081d37,#06142a);box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.vault-profile-dashboard{overflow:hidden;margin-bottom:16px;border:1px solid #1c4773;border-radius:13px;background:radial-gradient(ellipse at 90% 0%,rgba(25,112,224,.22),transparent 34%),linear-gradient(145deg,#081d37,#06142a);box-shadow:0 12px 30px rgba(3,9,22,.18)}
 .vault-profile-main{display:flex;align-items:center;gap:17px;padding:22px 24px 17px;border-bottom:1px solid #1a3c60}
 .vault-avatar{display:grid;place-items:center;flex:none;width:62px;height:62px;border:2px solid #3e9dff;border-radius:50%;background:linear-gradient(145deg,#6c37d5,#172b7b);color:#fff;font:900 23px var(--head);box-shadow:0 0 24px rgba(58,143,255,.22)}
 .vault-profile-copy{min-width:0;flex:1}
@@ -253,7 +253,7 @@ hr{border-color:#1d3d63}
 
 /* ALBUM — saisons redesign */
 .album-season-page{max-width:1600px;margin:0 auto}
-.season-hero{position:relative;display:flex;align-items:center;justify-content:space-between;gap:30px;min-height:250px;margin:0 0 25px;padding:34px 38px;overflow:hidden;border:1px solid rgba(58,145,255,.28);border-radius:15px;background:radial-gradient(ellipse at 75% 20%,rgba(34,116,255,.26),transparent 38%),radial-gradient(ellipse at 90% 90%,rgba(151,59,255,.16),transparent 38%),linear-gradient(115deg,#07162e 0%,#07152b 48%,#0a1e42 100%);box-shadow:inset 0 0 60px rgba(0,0,0,.35)}
+.season-hero{position:relative;display:flex;align-items:center;justify-content:space-between;gap:30px;min-height:250px;margin:0 0 25px;padding:34px 38px;overflow:hidden;border:1px solid rgba(58,145,255,.28);border-radius:15px;background:radial-gradient(ellipse at 75% 20%,rgba(34,116,255,.26),transparent 38%),radial-gradient(ellipse at 90% 90%,rgba(151,59,255,.16),transparent 38%),linear-gradient(115deg,#07162e 0%,#07152b 48%,#0a1e42 100%);box-shadow:inset 0 0 60px rgba(3,9,22,.35)}
 .season-hero:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(125deg,transparent 0 46px,rgba(70,142,255,.045) 47px 48px);pointer-events:none}
 .season-hero-copy{position:relative;z-index:2;max-width:720px}
 .season-breadcrumb{display:flex;align-items:center;gap:9px;margin:10px 0 17px;color:#8aa5ca;font-size:12px}
@@ -442,7 +442,7 @@ hr{border-color:#1d3d63}
   position:relative;overflow:hidden;border:1px solid rgba(72,145,231,.35);
   border-radius:14px;padding:24px 26px;margin:0 0 24px;
   background:radial-gradient(ellipse at 100% 0%,rgba(38,116,210,.18),transparent 48%),linear-gradient(115deg,#0a1a31,#071326 68%,#0b1c35);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 14px 35px rgba(0,0,0,.16)
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 14px 35px rgba(3,9,22,.16)
 }
 .album-season-progress .eyebrow{color:#79b7ff;letter-spacing:1.8px}
 .album-season-progress h2{font:900 clamp(27px,3vw,39px)/1 var(--head);letter-spacing:.3px;color:#f4f7ff}
@@ -459,13 +459,13 @@ hr{border-color:#1d3d63}
 .album-club-card{
   position:relative;overflow:hidden;padding:19px;border:1px solid #1b3c60;border-radius:12px;
   background:radial-gradient(ellipse at 100% 0%,rgba(28,95,163,.12),transparent 48%),linear-gradient(145deg,#0b1d35,#071326 78%);
-  box-shadow:0 12px 28px rgba(0,0,0,.14);transition:transform .2s,border-color .2s,box-shadow .2s
+  box-shadow:0 12px 28px rgba(3,9,22,.14);transition:transform .2s,border-color .2s,box-shadow .2s
 }
 .album-club-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#3188df,#f1d36a);opacity:.7}
-.album-club-card:hover{transform:translateY(-3px);border-color:rgba(83,160,241,.55);box-shadow:0 18px 36px rgba(0,0,0,.25),0 0 24px rgba(26,105,193,.08)}
+.album-club-card:hover{transform:translateY(-3px);border-color:rgba(83,160,241,.55);box-shadow:0 18px 36px rgba(3,9,22,.25),0 0 24px rgba(26,105,193,.08)}
 .album-club-head{align-items:center;padding-bottom:15px;border-bottom:1px solid rgba(98,149,207,.14)}
 .album-club-identity{gap:13px}
-.album-club-logo,.album-club-identity .club-logo-fallback{width:56px;height:56px;padding:6px;border:1px solid rgba(112,165,224,.3);background:linear-gradient(145deg,#fff,#dce7f5);box-shadow:0 5px 14px rgba(0,0,0,.2)}
+.album-club-logo,.album-club-identity .club-logo-fallback{width:56px;height:56px;padding:6px;border:1px solid rgba(112,165,224,.3);background:linear-gradient(145deg,#fff,#dce7f5);box-shadow:0 5px 14px rgba(3,9,22,.2)}
 .album-club-identity .club-logo-fallback{background:linear-gradient(145deg,#1c3f69,#0b1a30);color:#f0d36c;font-size:13px}
 .album-club-identity .eyebrow{margin:0 0 5px;color:#76b5f5;font-size:8px;letter-spacing:1.1px}
 .album-club-head h2{font:900 clamp(21px,2vw,27px)/1.05 var(--head);color:#f4f7ff;letter-spacing:.1px}

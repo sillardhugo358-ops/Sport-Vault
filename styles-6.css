@@ -110,7 +110,7 @@
 .profile-fav-empty:hover{border-color:var(--gold);color:var(--text)}
 .detail-copy-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .card-fav-toggle{white-space:nowrap}
-.collection-fav{position:absolute;top:-6px;left:-6px;z-index:3;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--gold);color:#1a1300;font-size:14px;box-shadow:0 3px 10px rgba(0,0,0,.4);pointer-events:none}
+.collection-fav{position:absolute;top:-6px;left:-6px;z-index:3;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--gold);color:#1a1300;font-size:14px;box-shadow:0 3px 10px rgba(3,9,22,.4);pointer-events:none}
 @media(max-width:900px){.profile-fav-row{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(150px,42%);overflow-x:auto;padding:10px 4px 6px;scroll-snap-type:x mandatory}.profile-fav-row>*{scroll-snap-align:start}.profile-fav-empty{min-height:200px}}
 
 /* Succès : numéro du document, succès secrets (condition masquée tant qu'ils ne sont pas réussis). */
@@ -143,7 +143,7 @@
 
 .fvh-hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:30px;align-items:center;min-height:520px;padding:40px clamp(20px,4vw,52px);border:1px solid var(--fv-line);border-radius:26px;background:radial-gradient(circle at 78% 50%,rgba(239,207,124,.12),transparent 55%),linear-gradient(135deg,rgba(12,32,62,.95),rgba(6,14,28,.95));overflow:hidden}
 .fvh-lockup{display:flex;align-items:center;gap:clamp(16px,2.5vw,30px)}
-.fvh-lockup-card{width:clamp(78px,9vw,118px);height:auto;filter:drop-shadow(0 12px 30px rgba(0,0,0,.45))}
+.fvh-lockup-card{width:clamp(78px,9vw,118px);height:auto;filter:drop-shadow(0 12px 30px rgba(3,9,22,.45))}
 .fvh-wordmark{margin:0;font:900 clamp(54px,8.4vw,112px)/.86 var(--head);letter-spacing:1px;color:var(--fv-white)}
 .fvh-wordmark span{color:var(--fv-gold)}
 .fvh-tagline{margin:14px 0 0;color:var(--fv-grey);font:600 clamp(13px,1.6vw,20px) var(--head);letter-spacing:.55em}
@@ -248,7 +248,7 @@
 .vault-renew{display:block;margin-top:6px;color:var(--gold);font-weight:800;letter-spacing:.08em}
 
 /* Logos des championnats (competition-<id>.png) : vraies couleurs sur une pastille claire, lisibles sur le bleu nuit. */
-.album-comp-art .album-comp-logo{width:96px;height:96px;padding:10px;border-radius:18px;background:#fff;filter:none;opacity:1;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.album-comp-art .album-comp-logo{width:96px;height:96px;padding:10px;border-radius:18px;background:#fff;filter:none;opacity:1;box-shadow:0 8px 24px rgba(3,9,22,.35)}
 .season-art-crest{background:#fff}
 .season-art-crest img{width:50px;height:56px;filter:none;opacity:1}
 .fvh-competitions .fvh-comp-logo:has(img){display:flex;align-items:center;justify-content:center;font-size:0;width:44px;min-width:44px;height:40px;padding:4px;overflow:hidden;background:#fff}
@@ -270,7 +270,7 @@
 @media(max-width:760px){.ranking-rewards{grid-template-columns:1fr}}
 
 /* Packs : logo(s) de la compétition (competition-<id>.png) sur une pastille claire, à la place du symbole. */
-.pack-logos{z-index:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;min-width:76px;height:76px;border-radius:18px;background:#fff;box-shadow:0 10px 26px rgba(0,0,0,.4)}
+.pack-logos{z-index:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;min-width:76px;height:76px;border-radius:18px;background:#fff;box-shadow:0 10px 26px rgba(3,9,22,.4)}
 .pack-logos img{display:block;max-width:60px;max-height:60px;width:auto;height:auto;object-fit:contain}
 .pack-logos-multi{height:60px;padding:6px 10px;border-radius:14px}
 .pack-logos-multi img{max-width:38px;max-height:42px}
@@ -286,7 +286,7 @@
 .reveal-pack.rv-rare{--rv:var(--r-rare)}.reveal-pack.rv-epic{--rv:var(--r-epic)}.reveal-pack.rv-legendary{--rv:var(--r-legendary)}.reveal-pack.rv-icon{--rv:#7df3ff}
 .reveal-pack:focus-visible{outline:2px solid var(--gold2);outline-offset:8px;border-radius:14px}
 .reveal-pack-glow{position:absolute;inset:-26%;border-radius:50%;background:radial-gradient(circle,var(--rv) 0,transparent 62%);opacity:.38;filter:blur(18px);animation:rvPulse 1.8s ease-in-out infinite}
-.reveal-pack-body{position:relative;display:grid;place-content:center;gap:6px;width:100%;height:100%;border-radius:14px;border:1px solid var(--rv);text-align:center;background:linear-gradient(135deg,rgba(255,255,255,.14),transparent 38%),linear-gradient(160deg,#11233d,#070f1d 70%);box-shadow:0 18px 40px rgba(0,0,0,.5),inset 0 0 0 5px rgba(255,255,255,.03),0 0 26px -6px var(--rv);overflow:hidden;animation:rvFloat 2.6s ease-in-out infinite}
+.reveal-pack-body{position:relative;display:grid;place-content:center;gap:6px;width:100%;height:100%;border-radius:14px;border:1px solid var(--rv);text-align:center;background:linear-gradient(135deg,rgba(255,255,255,.14),transparent 38%),linear-gradient(160deg,#11233d,#070f1d 70%);box-shadow:0 18px 40px rgba(3,9,22,.5),inset 0 0 0 5px rgba(255,255,255,.03),0 0 26px -6px var(--rv);overflow:hidden;animation:rvFloat 2.6s ease-in-out infinite}
 .reveal-pack-body::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.28) 50%,transparent 65%);transform:translateX(-120%);animation:rvShine 3s ease-in-out infinite}
 .reveal-pack-body b{font:900 58px/1 var(--head);color:var(--gold2);letter-spacing:2px}
 .reveal-pack-body small{font:800 12px/1.2 var(--head);letter-spacing:2px;color:var(--muted);padding:0 12px;text-transform:uppercase}
@@ -324,7 +324,7 @@
 @media(max-width:800px){.pack-reveal-modal .reveal-grid{max-height:none}.pack-reveal-modal .reveal-card{max-height:none}}
 
 /* Ouverture de pack aux couleurs du site (bleu nuit, filets bleus, or pour les accents) ; boutons masqués tant que le pack est scellé */
-.pack-reveal-modal{background:radial-gradient(ellipse 80% 55% at 50% 0%,rgba(51,135,236,.20),transparent 70%),linear-gradient(160deg,#0d2340 0%,#081b32 52%,#061427 100%);border:1px solid #1b4169;box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 1px rgba(91,151,222,.08) inset}
+.pack-reveal-modal{background:radial-gradient(ellipse 80% 55% at 50% 0%,rgba(51,135,236,.20),transparent 70%),linear-gradient(160deg,#0d2340 0%,#081b32 52%,#061427 100%);border:1px solid #1b4169;box-shadow:0 30px 80px rgba(3,9,22,.55),0 0 0 1px rgba(91,151,222,.08) inset}
 .pack-reveal-modal .reveal-controls{border-top-color:rgba(91,151,222,.22)}
 .pack-reveal-modal:not(.rv-opened) .reveal-controls{display:none}
 .pack-reveal-modal .reveal-stage{padding:10px 0 46px;min-height:min(54vh,430px)}
@@ -398,7 +398,7 @@
    lignes centrées de 48 px, page active repérée par un filet or, bloc compte en carte, boutons homogènes. Le fond reste opaque (rien ne transparaît). */
 @media(max-width:760px){
   .nav,.nav::before{background:#07182e !important;background-color:#07182e !important}
-  .nav{top:76px !important;gap:4px !important;padding:10px !important;border:1px solid #1e4067 !important;border-radius:16px !important;max-height:calc(100dvh - 92px);box-shadow:0 24px 60px rgba(0,0,0,.6) !important}
+  .nav{top:76px !important;gap:4px !important;padding:10px !important;border:1px solid #1e4067 !important;border-radius:16px !important;max-height:calc(100dvh - 92px);box-shadow:0 24px 60px rgba(3,9,22,.6) !important}
   .nav a{display:flex;align-items:center;min-height:48px;padding:0 16px;border:0;border-radius:12px;background:transparent;font-size:13px;letter-spacing:1px}
   .nav a.active{background:#112747;color:#fff;box-shadow:inset 3px 0 0 var(--gold2)}
   .nav .mobile-account{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 0;padding:14px;border:1px solid #1e4067;border-radius:14px;background:#0b2140 !important}
@@ -423,7 +423,7 @@
 .nav-group-btn:hover,.nav-group-btn.active,.nav-group.open .nav-group-btn{background:#112747;color:#fff;border-color:rgba(71,151,255,.18)}
 @media(min-width:761px){
  .nav{overflow:visible !important;-webkit-mask-image:none !important;mask-image:none !important}
- .nav-sub{display:none;position:absolute;top:calc(100% + 6px);left:0;min-width:180px;z-index:1000;flex-direction:column;gap:2px;padding:6px;background:#07182e;border:1px solid #1e4067;border-radius:12px;box-shadow:0 18px 40px rgba(0,0,0,.55)}
+ .nav-sub{display:none;position:absolute;top:calc(100% + 6px);left:0;min-width:180px;z-index:1000;flex-direction:column;gap:2px;padding:6px;background:#07182e;border:1px solid #1e4067;border-radius:12px;box-shadow:0 18px 40px rgba(3,9,22,.55)}
  .nav-group.open .nav-sub{display:flex}
  .nav-sub a{padding:10px 12px;white-space:nowrap}
 }
@@ -518,7 +518,7 @@
 .team-markings::before{top:-2px;border-top:0}.team-markings::after{bottom:-2px;border-bottom:0}
 .team-row{display:flex;justify-content:space-evenly;align-items:center;gap:4px}
 .team-slot{display:grid;justify-items:center;align-content:start;gap:2px;flex:1;min-width:0;max-width:100px;min-height:44px;padding:0;border:0;background:transparent;color:var(--text);cursor:pointer;font:inherit}
-.ts-ovr{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;border:3px solid var(--gold);background:radial-gradient(circle at 35% 30%,#2a3a5c,#101a30);font:900 20px var(--head);color:#fff;box-shadow:0 4px 10px rgba(0,0,0,.45)}
+.ts-ovr{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;border:3px solid var(--gold);background:radial-gradient(circle at 35% 30%,#2a3a5c,#101a30);font:900 20px var(--head);color:#fff;box-shadow:0 4px 10px rgba(3,9,22,.45)}
 .ts-ovr.ts-empty{border:2px dashed rgba(255,255,255,.6);background:rgba(5,11,22,.55);font-weight:700;color:rgba(255,255,255,.75)}
 .team-slot .team-name{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:700;text-shadow:0 1px 2px #000}
 .team-slot small{font-size:10px;color:rgba(255,255,255,.75);letter-spacing:.06em;text-shadow:0 1px 2px #000}
@@ -718,3 +718,4 @@ p,li{text-wrap:pretty}
 .mission:hover,.auction-card:hover{border-color:rgba(91,151,222,.38)}
 .mission.is-ready{box-shadow:0 0 0 1px rgba(240,201,75,.35),0 12px 32px rgba(240,201,75,.08)}
 @media (prefers-reduced-motion:reduce){.btn:not(:disabled):hover,.btn:not(:disabled):active{transform:none}}
+/* Ombres teintées (14/10/2026) : le noir pur des ombres est remplacé par le bleu nuit du fond (rgba(3,9,22,…)). */
