@@ -45,7 +45,7 @@ h1{margin:0 0 6px;font:900 clamp(34px,7vw,54px)/1 'Barlow Condensed',sans-serif;
   <div class="grid" id="tiles"></div>
   <ul class="recent" id="recent" aria-label="Dernières erreurs serveur"></ul>
   <p class="note" id="checked"></p>
-  <p class="note">Sur l'offre gratuite, le serveur se met en veille après un moment sans visite : le premier chargement peut prendre une minute, le temps qu'il redémarre.</p>
+  <p class="note">Le serveur est maintenu éveillé par une surveillance externe (un appel toutes les 10 minutes). Après un déploiement ou un incident, il redémarre : le premier chargement peut alors prendre une minute.</p>
 </main>
 <script>
 (function(){
@@ -72,7 +72,7 @@ h1{margin:0 0 6px;font:900 clamp(34px,7vw,54px)/1 'Barlow Condensed',sans-serif;
       +tile('Erreurs serveur',se.lastHour!=null?se.lastHour+' / heure':'—',se.last24h!=null?se.last24h+' sur 24 h · '+(se.claimLast24h||0)+' en récupération':'')
       +tile('Mémoire du serveur',mem.rss!=null?mem.rss+' Mo':'—','dont '+(mem.heapUsed!=null?mem.heapUsed:'?')+' Mo de données JavaScript');
   }
-  function fail(){set('bad','Le serveur ne répond pas pour le moment. S\'il vient de se réveiller, patiente une minute puis la page se met à jour toute seule.');tiles.innerHTML='';alertsBox.innerHTML='';recent.innerHTML=''}
+  function fail(){set('bad','Le serveur ne répond pas pour le moment. S\'il vient de redémarrer (déploiement), patiente une minute puis la page se met à jour toute seule.');tiles.innerHTML='';alertsBox.innerHTML='';recent.innerHTML=''}
   function load(){
     var ctl=typeof AbortController==='function'?new AbortController():null,timer=setTimeout(function(){ctl&&ctl.abort()},15000);
     fetch('/api/health',{cache:'no-store',credentials:'same-origin',signal:ctl?ctl.signal:undefined}).then(function(r){return r.json()}).then(function(h){render(h);checked.textContent='Dernière vérification : '+new Date().toLocaleTimeString('fr-FR')}).catch(function(){fail();checked.textContent='Dernière tentative : '+new Date().toLocaleTimeString('fr-FR')}).then(function(){clearTimeout(timer)});
