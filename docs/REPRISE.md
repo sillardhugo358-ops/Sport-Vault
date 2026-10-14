@@ -214,3 +214,6 @@ Contrainte stricte : ni architecture des pages, ni URLs, ni fonctionnalités. Fa
 
 ### Redesign, tranche 3 (14/10/2026)
 Nouvelle feuille `styles-7.css` (liée après `styles-6.css`, ajoutée à `scripts/build-light-theme.js` et au test `static.test.js`) : entrée échelonnée des pages (classe `fv-enter` posée par `render()` seulement au changement de page, mouvement réduit respecté), surfaces avec liseré lumineux et rayons hiérarchisés (16 px conteneurs / 10 px éléments), titres resserrés, page courante signalée (`aria-current="page"` + liseré or), en-tête en verre dépoli, apparition douce des fenêtres, anneau de focus commun aux champs, soulèvement des cartes au survol (souris seulement), sélection et barre de défilement aux couleurs du site. Reste : composants génériques (badges, accordéons, carrousels), hiérarchie des boutons, accueil.
+
+### Redesign, tranche 4 (14/10/2026)
+Dans `styles-7.css` : états vides avec halo et plus d'air, étiquettes à coins légers (plus de gélules), chiffres clés tabulaires, boutons désactivés explicites, liens de texte soulignés finement, révélation des sections au défilement (`animation-timeline:view()`, plage en pixels pour les sections très hautes, ignorée par les navigateurs qui ne la gèrent pas). Textes de succès sans point d'exclamation (« Set complété : +… »). Reste : hiérarchie des boutons par page, accueil.
