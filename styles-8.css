@@ -52,3 +52,51 @@ html:root:root .fvh-wordmark span{color:#fff;opacity:.78}
 html:root:root .fvh-tagline{color:rgba(255,255,255,.9)}
 html:root:root .fvh-hero :is(.fvh-metrics,.fvh-stats) *{color:#fff}
 @media(max-width:700px){html:root:root .fvh-wordmark{font-size:clamp(30px,9.6vw,44px)}html:root:root .fvh-hero .fvh-actions .btn{width:100%}}
+/* ---- Phase 2 : surfaces, bandeaux et composants de toutes les pages ---- */
+html:root:root :is(.panel,.fvh-panel,.profile-panel,.vault-resource-card,.vault-overview-card,.vault-recent-panel,.vault-command,.vault-xp,.vault-daily-card,.vault-profile-dashboard,.collection-showcase,.collection-progress-panel,.collection-toolbar,.collection-view,.collection-rarity-mini,.competition-album-card,.album-showcase,.album-global-progress,.shop-filters,.shop-pack-card,.auction-toolbar,.auction-card,.sell-card,.sell-market-head,.ranking-me,.ranking-rewards,.podium-step,.success-card,.success-player-bar,.mission,.profile-kpi,.profile-fav-empty,.team-stat,.team-xi,.wk-tray,.wk-slot,.cp-group,.theme-choice,.empty,.modal-box,.vault-command,.stat-card,.dash-card,.trade-card,.friend-card,.wish-card,.challenge-card,.set-card,.goal-card){
+  background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:var(--av-shadow);color:var(--text)}
+html:root:root :is(.collection-rarity-mini,.wk-slot,.cp-group,.profile-fav-empty,.theme-choice,.team-stat,.profile-kpi,.success-player-bar,.collection-toolbar,.shop-filters,.auction-toolbar){border-radius:16px;box-shadow:none;background:var(--panel2)}
+html:root:root :is(.success-card,.mission,.auction-card,.sell-card,.shop-pack-card,.competition-album-card,.podium-step){transition:transform .25s,box-shadow .25s}
+html:root:root :is(.success-card,.mission,.auction-card,.sell-card,.shop-pack-card,.competition-album-card):hover{transform:translateY(-3px);border-color:var(--line)}
+html:root:root :is(.panel,.fvh-panel,.profile-panel,.vault-overview-card,.success-card,.mission) :is(h2,h3,h4,strong,b){color:var(--text)}
+html:root:root :is(.panel,.fvh-panel,.profile-panel,.vault-overview-card,.success-card,.mission) :is(p,small){color:var(--muted)}
+/* Bandeaux de page : un dégradé par famille de pages */
+html:root:root :is(.view-hero,.ranking-hero,.profile-hero,.shop-hero,.success-hero,.season-hero,.admin-management-hero,.catalog-admin-hero,.dash-hero,.vault-profile-dashboard,.album-showcase,.collection-showcase){position:relative;overflow:hidden;border:0;border-radius:28px;color:#fff;background:var(--av-grad);box-shadow:var(--av-shadow)}
+html:root:root :is(.view-hero,.ranking-hero,.profile-hero,.shop-hero,.success-hero,.season-hero,.admin-management-hero,.catalog-admin-hero,.dash-hero,.vault-profile-dashboard,.album-showcase,.collection-showcase) :is(h1,h2,h3,p,span,small,strong,b,em,label,.eyebrow){color:#fff}
+html:root:root :is(.view-hero,.ranking-hero,.profile-hero,.shop-hero,.success-hero,.season-hero,.admin-management-hero,.catalog-admin-hero,.dash-hero,.vault-profile-dashboard,.album-showcase,.collection-showcase) .btn:not(.btn-gold){background:rgba(255,255,255,.2);color:#fff;border-color:rgba(255,255,255,.35)}
+html:root:root :is(.view-hero,.ranking-hero,.profile-hero,.shop-hero,.success-hero,.season-hero,.admin-management-hero,.catalog-admin-hero,.dash-hero,.vault-profile-dashboard,.album-showcase,.collection-showcase) .btn-gold{background:#fff;color:#0d1b3d}
+html:root:root :is(.view-hero,.ranking-hero,.profile-hero,.shop-hero,.success-hero,.season-hero,.admin-management-hero,.catalog-admin-hero,.dash-hero,.vault-profile-dashboard,.album-showcase,.collection-showcase) :is(.vault-resource-card,.vault-overview-card,.vault-xp,.vault-daily-card,.profile-kpi,.team-stat,.collection-rarity-mini){background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);box-shadow:none;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+html:root:root .shop-hero{background:linear-gradient(120deg,#1ccf9c,#35b8ff 55%,#5b6cff)}
+html:root:root .ranking-hero{background:linear-gradient(120deg,#ffb84d,#ff6a4d 55%,#f0397f)}
+html:root:root .profile-hero,html:root:root .vault-profile-dashboard{background:linear-gradient(120deg,#7b5cff,#b84fd8 55%,#ff4f8b)}
+html:root:root .success-hero,html:root:root .season-hero{background:linear-gradient(120deg,#ffc24d,#ff7a59 55%,#ff4f8b)}
+html:root:root .album-showcase,html:root:root .collection-showcase{background:linear-gradient(120deg,#35b8ff,#3d5afe 55%,#7b5cff)}
+html:root:root :is(.admin-management-hero,.catalog-admin-hero){background:linear-gradient(120deg,#35b8ff,#3d5afe 55%,#7b5cff)}
+/* Champs, onglets, étiquettes, jauges */
+html:root:root :is(input,select,textarea):not([type=checkbox]):not([type=radio]):not([type=range]){background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:12px;font-family:var(--body)}
+html:root:root :is(input,select,textarea):focus-visible{border-color:#7b9bff;box-shadow:var(--focus)}
+html:root:root :is(.auction-search,.shop-search){border-radius:999px}
+html:root:root :is(.chip,.pill,.tag,.badge,.rarity-pill,.is-on){border-radius:999px}
+html:root:root :is(.progress,.bar,.xp-bar,.vault-xp-bar){border-radius:999px}
+html:root:root :is(.progress,.bar,.xp-bar,.vault-xp-bar)>i,html:root:root :is(.progress,.bar,.xp-bar,.vault-xp-bar)>span{background:linear-gradient(90deg,var(--av-coral),var(--av-pink));border-radius:999px}
+html:root:root .eyebrow,html:root:root .fvh-eyebrow{font-family:var(--body);font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:var(--av-grad);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+html:root:root :is(.view-hero,.ranking-hero,.profile-hero,.shop-hero,.success-hero,.season-hero,.admin-management-hero,.fvh-hero) :is(.eyebrow,.fvh-eyebrow){background:none;color:rgba(255,255,255,.92);-webkit-text-fill-color:currentColor}
+html:root:root table{border-collapse:collapse}html:root:root th{color:var(--muted);letter-spacing:.06em}html:root:root td,html:root:root th{border-color:var(--line)}
+html:root:root .section-head h2,html:root:root .fvh-head h2{font-family:var(--head);font-weight:800;letter-spacing:-.03em;text-transform:none}
+html:root:root .modal-box{border-radius:24px}
+html:root:root :is(.vault-profile-dashboard,.view-hero,.profile-hero,.ranking-hero,.shop-hero,.success-hero) :is(.vault-resource-card,.vault-overview-card,.vault-xp,.vault-daily-card,.profile-kpi,.team-stat,.collection-rarity-mini,.vault-command a,.vault-command>*,a.vault-resource-card){background:rgba(24,16,90,.3);border:1px solid rgba(255,255,255,.22);color:#fff}
+html:root:root :is(.vault-profile-dashboard,.view-hero,.profile-hero,.ranking-hero,.shop-hero,.success-hero) :is(.vault-command,.vault-command a) *{color:#fff}
+html:root:root .vault-profile-dashboard :is(.vault-command,.vault-resource-card){border-top-color:rgba(255,255,255,.22)}
+html:root:root .vault-profile-dashboard>*{border-color:rgba(255,255,255,.22)}
+html:root:root .vault-profile-stats>div,html:root:root .vault-profile-links a{background:rgba(24,16,90,.3);border:1px solid rgba(255,255,255,.22);border-radius:16px;color:#fff;box-shadow:none}
+html:root:root .vault-profile-stats :is(span,strong),html:root:root .vault-profile-links a,html:root:root .vault-profile-links a span{color:#fff}
+html:root:root .vault-profile-stats strong{font-family:var(--head);font-weight:800}
+html:root:root .vault-profile-links a:hover{background:rgba(24,16,90,.45)}
+html:root:root .view-hero{padding:clamp(24px,4vw,44px);margin:24px 0 20px;display:flex;justify-content:space-between;align-items:flex-end;gap:20px;border-bottom:0;min-height:0}
+html:root:root .view-hero h1{font-size:clamp(34px,5.2vw,62px);line-height:1;letter-spacing:-.04em;margin:8px 0 10px;text-transform:none;font-weight:800}
+html:root:root .view-hero h1 span{color:#fff;opacity:.8}
+html:root:root .view-hero .lead{font-size:16px;line-height:1.5;max-width:60ch;margin:0;color:rgba(255,255,255,.92)}
+html:root:root .view-hero .hero-stat{padding:14px 20px;border-radius:18px;background:rgba(24,16,90,.3);border:1px solid rgba(255,255,255,.25);text-align:center}
+html:root:root .view-hero .hero-stat strong{font-family:var(--head);font-size:30px;font-weight:800;color:#fff}
+@media(max-width:700px){html:root:root .view-hero{flex-direction:column;align-items:flex-start}}
+html:root:root :is(.shop-hero,.view-hero,.ranking-hero,.profile-hero,.success-hero) a:not(.btn){color:#fff;text-decoration-color:rgba(255,255,255,.6)}
