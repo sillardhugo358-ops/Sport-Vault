@@ -29,11 +29,18 @@ function trayHtml(d,cards,left){
    +'<button class="btn '+(ready?'btn-gold':'btn-outline')+'" type="button" data-wk-fuse="'+esc(st.rarity)+'"'+(ready&&!st.busy?'':' disabled')+'>FUSIONNER</button></div>'
    +(fresh>0?'<p class="wk-note">'+fresh+' carte'+(fresh>1?'s':'')+' '+esc(RL[to])+' que tu n’as pas encore peu'+(fresh>1?'ven':'')+'t sortir : la fusion ne donne jamais une carte que tu possèdes déjà.</p>':'<p class="wk-note">Tu possèdes déjà toutes les cartes '+esc(RL[to])+' que la fusion peut donner : rien de nouveau à gagner pour le moment.</p>')+(left<=0?'<p class="wk-note">Limite du jour atteinte : reviens demain.</p>':'')+'</div></div>';
 }
+// Cartes que la fusion peut donner : le serveur n'envoie la liste que lorsqu'elle est courte (ECONOMY.fusion.previewMax).
+function previewHtml(rule){
+  const list=rule.preview;
+  if(!list||!list.length)return '';
+  return '<details class="wk-preview"><summary>Voir les '+list.length+' carte'+(list.length>1?'s':'')+' '+esc(RL[rule.to])+' possible'+(list.length>1?'s':'')+'</summary><ul class="wk-preview-list">'
+   +list.map(c=>'<li class="rarity-'+esc(rule.to)+'"><b>'+c.ovr+'</b><span><strong>'+esc(c.name)+'</strong><small>'+esc(c.position)+' · '+esc(c.club)+' · '+esc(c.season)+'</small></span></li>').join('')+'</ul></details>';
+}
 function fuseHtml(d){
   const f=d.fusion,cards=d.cards.filter(c=>c.rarity===st.rarity);
   const seg=Object.entries(f.rules).map(([from,r])=>'<button type="button" class="wk-seg'+(from===st.rarity?' is-on':'')+'" data-wk-rarity="'+from+'" aria-pressed="'+(from===st.rarity)+'">'+esc(RL[from])+' → '+esc(RL[r.to])+'<small>'+r.available+' doublon'+(r.available>1?'s':'')+'</small></button>').join('');
   return '<p class="wk-note">Choisis '+f.cost+' doublons de même rareté : ils donnent 1 carte de la rareté supérieure, tirée au hasard. Sont exclus : Legendary et Icon, éditions limitées, cartes de bienvenue, favorites, celles aux enchères ou dans un échange. Tu gardes toujours un exemplaire de chaque carte.</p>'
-   +'<div class="wk-segs" role="group" aria-label="Rareté à fusionner">'+seg+'</div>'+trayHtml(d,cards,f.left)
+   +'<div class="wk-segs" role="group" aria-label="Rareté à fusionner">'+seg+'</div>'+trayHtml(d,cards,f.left)+previewHtml(f.rules[st.rarity])
    +(cards.length?'<ul class="wk-tiles">'+cards.map(tileHtml).join('')+'</ul>':'<p class="wk-note">Aucun doublon '+esc(RL[st.rarity])+' à fusionner pour l’instant : ouvre des packs !</p>');
 }
 function sellHtml(d){

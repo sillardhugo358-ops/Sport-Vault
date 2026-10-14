@@ -664,3 +664,12 @@ label.trade-pick.trade-card.is-picked{border-color:var(--gold);background:rgba(2
 .theme-choice{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .theme-choice button{min-height:44px;min-width:88px;padding:0 16px;border:0;background:transparent;color:var(--muted);font:800 12px var(--head);letter-spacing:.1em;cursor:pointer}
 .theme-choice button.is-on{background:var(--gold);color:#101828}
+
+.wk-preview{margin:0 0 16px;border:1px solid var(--line,rgba(255,255,255,.12));border-radius:12px;background:rgba(255,255,255,.03)}
+.wk-preview summary{cursor:pointer;min-height:44px;display:flex;align-items:center;padding:0 14px;font-weight:700}
+.wk-preview-list{list-style:none;margin:0;padding:0 14px 12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.wk-preview-list li{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.04)}
+.wk-preview-list b{min-width:30px;text-align:center}
+.wk-preview-list span{display:grid;min-width:0}
+.wk-preview-list strong,.wk-preview-list small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wk-preview-list small{color:var(--muted)}

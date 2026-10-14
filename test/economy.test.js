@@ -152,3 +152,21 @@ test('fusion : 10 par jour, puis refus sans rien consommer', async () => {
   assert.equal(await count(c), before, 'rien consommé');
   assert.equal((await p.get('/api/workshop')).body.fusion.left, 0);
 });
+
+test('fusion : la liste des cartes possibles n\'est donnée que s\'il en reste 49 ou moins, triée par note', async () => {
+  const v = await newPlayer(server, 'Apercu');
+  const low = await card('rare', 'Rare Basse'), high = await card('rare', 'Rare Haute'), mid = await card('rare', 'Rare Moyenne');
+  for (const [id, ovr] of [[low, 78], [high, 83], [mid, 80]]) await q('UPDATE catalog_cards SET ovr=$2 WHERE id=$1', [id, ovr]);
+  const mine = new Set([low, high, mid]);
+  for (const row of await q("SELECT id FROM catalog_cards WHERE rarity='rare' AND is_active=true")) if (!mine.has(row.id)) await copies(v, row.id, 1);
+  const rule = async () => (await v.get('/api/workshop')).body.fusion.rules.common;
+  const few = await rule();
+  assert.equal(few.fresh, 3);
+  assert.deepEqual(few.preview.map(c => c.name), ['Rare Haute', 'Rare Moyenne', 'Rare Basse']);
+  assert.deepEqual(Object.keys(few.preview[0]).sort(), ['cardId', 'club', 'name', 'ovr', 'position', 'season'], 'seulement des champs publics du catalogue');
+  // Au-delà de 49 cartes possibles, le serveur n'envoie que le nombre.
+  for (let i = 0; i < 47; i++) await card('rare', 'Rare Surplus ' + i);
+  const many = await rule();
+  assert.equal(many.fresh, 50);
+  assert.equal(many.preview, null);
+});

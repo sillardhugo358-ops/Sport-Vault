@@ -1060,6 +1060,25 @@ test('atelier : vente rapide d\'un doublon, fusion refusée sans assez de doublo
   assert.deepEqual(errors, []);
 });
 
+test('atelier : la liste des cartes possibles apparaît quand il en reste peu, sans débordement', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
+  for (const [id, name, ovr] of [['wk-pv-1', 'Rare Aperçu Un', 80], ['wk-pv-2', 'Rare Aperçu Deux', 82]]) await server.db.query("INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr) VALUES($1,'2026-2027',$2,'ST','FC Aperçu','France','rare',$3) ON CONFLICT DO NOTHING", [id, name, ovr]);
+  await server.db.query(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,ovr,source)
+    SELECT gen_random_uuid(),c.id,$1,c.season,c.name,c.position,c.club,c.nation,c.rarity,c.ovr,'pack:test' FROM catalog_cards c
+    WHERE c.rarity='rare' AND c.is_active=true AND c.id NOT IN ('wk-pv-1','wk-pv-2') AND NOT EXISTS (SELECT 1 FROM card_instances i WHERE i.owner_id=$1 AND i.card_id=c.id)`, [uid]);
+  const r = await visit('atelier');
+  await page.waitForSelector('.wk-preview summary');
+  assert.match(await page.locator('.wk-preview summary').innerText(), /Voir les 2 cartes Rare possibles/);
+  await page.click('.wk-preview summary');
+  const names = await page.locator('.wk-preview-list strong').allInnerTexts();
+  assert.deepEqual(names, ['Rare Aperçu Deux', 'Rare Aperçu Un'], 'triées de la meilleure à la moins bonne');
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'pas de débordement');
+  assert.ok((await page.locator('.wk-preview summary').boundingBox()).height >= 44, 'zone tactile de 44 px');
+  assert.ok(r.overflow <= 1);
+  assert.deepEqual(errors, []);
+});
+
 test('pack sur mesure : prix calculé par le serveur, aperçu qui suit les choix, achat et révélation, sans débordement', async () => {
   await page.setViewportSize({ width: 390, height: 844 });
   const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
