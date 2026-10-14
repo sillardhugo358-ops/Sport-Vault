@@ -55,7 +55,7 @@ test('refusé : code serveur, bibliothèques, données, configuration, dépôt g
 });
 
 test("polices : fonts/*.woff2 servies (cache long), rien d'autre dans fonts/", async () => {
-  const r = await fetch(server.base + '/fonts/inter-latin-400-normal.woff2');
+  const r = await fetch(server.base + '/fonts/geist-latin-400-normal.woff2');
   assert.equal(r.status, 200);
   assert.equal(r.headers.get('content-type'), 'font/woff2');
   assert.match(r.headers.get('cache-control') || '', /immutable/);
