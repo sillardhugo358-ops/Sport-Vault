@@ -203,3 +203,7 @@ DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 ```
+
+## bricolage-grotesque (variable) et onest
+Bricolage Grotesque : Copyright 2022 The Bricolage Grotesque Project Authors (https://github.com/ateliertriay/bricolage). Onest : Copyright 2021 The Onest Project Authors (https://github.com/simple-web-fonts/onest).
+Licence SIL Open Font License 1.1 (https://openfontlicense.org), distribuées via Fontsource (paquets @fontsource-variable/bricolage-grotesque 5.3.0 et @fontsource/onest 5.3.1).
