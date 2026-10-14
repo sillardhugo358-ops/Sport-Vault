@@ -641,7 +641,9 @@ test('état du site : réservé aux administrateurs (page, lien du pied de page)
   await page.waitForFunction(() => /Tout fonctionne/.test(document.getElementById('statusText').textContent), null, { timeout: 15000 });
   assert.equal(await page.$eval('#status', e => e.className.includes('ok')), true);
   const tiles = await page.$$eval('.tile', els => els.map(e => e.textContent));
-  assert.equal(tiles.length, 6);
+  assert.equal(tiles.length, 7);
+  assert.ok(tiles.some(t => /Erreurs serveur\d+ \/ heure/.test(t)), tiles.join(' | '));
+  assert.equal(await page.$$eval('#alerts .alert', els => els.filter(e => e.classList.contains('critical')).length), 0, 'aucune alerte urgente quand tout va bien');
   assert.ok(tiles.some(t => /Base de données.*OK/.test(t)), tiles.join(' | '));
   assert.ok(tiles.some(t => /Mémoire du serveur\d+ Mo/.test(t)), tiles.join(' | '));
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'pas de défilement horizontal sur mobile');

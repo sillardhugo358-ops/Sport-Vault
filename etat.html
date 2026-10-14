@@ -26,6 +26,12 @@ h1{margin:0 0 6px;font:900 clamp(34px,7vw,54px)/1 'Barlow Condensed',sans-serif;
 .tile small{display:block;color:var(--muted);font:700 11px 'Inter',sans-serif;letter-spacing:1.5px;text-transform:uppercase}
 .tile b{display:block;margin-top:6px;font:800 26px 'Barlow Condensed',sans-serif;overflow-wrap:anywhere}
 .tile span{color:var(--muted);font-size:13px}
+.alerts{list-style:none;margin:0 0 22px;padding:0;display:grid;gap:10px}
+.alert{padding:12px 16px;border:1px solid var(--line);border-left-width:5px;border-radius:12px;background:var(--panel);line-height:1.4}
+.alert b{display:block;font:800 11px 'Inter',sans-serif;letter-spacing:1.5px;text-transform:uppercase}
+.alert.critical{border-left-color:var(--danger)}.alert.critical b{color:var(--danger)}
+.alert.warning{border-left-color:var(--warn)}.alert.warning b{color:var(--warn)}
+.recent{margin:22px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:13px;color:var(--muted)}
 .note{margin-top:22px;color:var(--muted);font-size:13px}
 </style>
 </head>
@@ -35,13 +41,15 @@ h1{margin:0 0 6px;font:900 clamp(34px,7vw,54px)/1 'Barlow Condensed',sans-serif;
   <h1>État du site</h1>
   <p class="note" style="margin:0">Mesures en direct du serveur, actualisées toutes les 30 secondes.</p>
   <div id="status" class="status warn" role="status" aria-live="polite"><span class="dot"></span><span id="statusText">Vérification en cours…</span></div>
+  <ul class="alerts" id="alerts" aria-label="Alertes"></ul>
   <div class="grid" id="tiles"></div>
+  <ul class="recent" id="recent" aria-label="Dernières erreurs serveur"></ul>
   <p class="note" id="checked"></p>
   <p class="note">Sur l'offre gratuite, le serveur se met en veille après un moment sans visite : le premier chargement peut prendre une minute, le temps qu'il redémarre.</p>
 </main>
 <script>
 (function(){
-  var box=document.getElementById('status'),text=document.getElementById('statusText'),tiles=document.getElementById('tiles'),checked=document.getElementById('checked');
+  var box=document.getElementById('status'),text=document.getElementById('statusText'),tiles=document.getElementById('tiles'),alertsBox=document.getElementById('alerts'),recent=document.getElementById('recent'),checked=document.getElementById('checked');
   function esc(v){return String(v==null?'—':v).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
   function tile(label,value,detail){return '<div class="tile"><small>'+esc(label)+'</small><b>'+esc(value)+'</b><span>'+esc(detail||'')+'</span></div>'}
   function uptime(s){s=Number(s)||0;var d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return d?d+' j '+h+' h':h?h+' h '+m+' min':m+' min'}
@@ -51,15 +59,20 @@ h1{margin:0 0 6px;font:900 clamp(34px,7vw,54px)/1 'Barlow Condensed',sans-serif;
     if(up)set('ok','Tout fonctionne : le serveur et la base de données répondent.');
     else if(h.ready===false||h.ok===false)set('warn','Le serveur démarre ou la base n\'est pas encore prête. Réessaie dans un instant.');
     else set('bad','Un problème est en cours : la base de données ne répond pas.');
+    var alerts=h.alerts||[];
+    alertsBox.innerHTML=alerts.map(function(a){return '<li class="alert '+(a.level==='critical'?'critical':'warning')+'"><b>'+(a.level==='critical'?'Urgent':'À surveiller')+'</b>'+esc(a.message)+'</li>'}).join('');
+    var se=h.serverErrors||{};
+    recent.innerHTML=(se.recent||[]).map(function(e){return '<li>'+esc(new Date(e.at).toLocaleString('fr-FR'))+' · '+esc(e.method)+' '+esc(e.path)+' · '+esc(e.status)+' · '+esc(e.kind)+'</li>'}).join('');
     var mem=h.memory||{};
     tiles.innerHTML=tile('Serveur',h.ok?'En ligne':'Démarrage',h.universe||'')
       +tile('Base de données',h.database?(h.database.ok?'OK':'Hors service'):'En attente',h.database&&h.database.ok?h.database.latencyMs+' ms de réponse':(h.database&&h.database.error)||'')
       +tile('Version en ligne',h.commit||'inconnue','Version '+(h.version||'?'))
       +tile('Allumé depuis',uptime(h.uptimeSeconds),h.startedAt?'depuis le '+new Date(h.startedAt).toLocaleString('fr-FR'):'')
       +tile('Catalogue',(h.cards!=null?Number(h.cards).toLocaleString('fr-FR'):'—')+' cartes','')
+      +tile('Erreurs serveur',se.lastHour!=null?se.lastHour+' / heure':'—',se.last24h!=null?se.last24h+' sur 24 h · '+(se.claimLast24h||0)+' en récupération':'')
       +tile('Mémoire du serveur',mem.rss!=null?mem.rss+' Mo':'—','dont '+(mem.heapUsed!=null?mem.heapUsed:'?')+' Mo de données JavaScript');
   }
-  function fail(){set('bad','Le serveur ne répond pas pour le moment. S\'il vient de se réveiller, patiente une minute puis la page se met à jour toute seule.');tiles.innerHTML=''}
+  function fail(){set('bad','Le serveur ne répond pas pour le moment. S\'il vient de se réveiller, patiente une minute puis la page se met à jour toute seule.');tiles.innerHTML='';alertsBox.innerHTML='';recent.innerHTML=''}
   function load(){
     var ctl=typeof AbortController==='function'?new AbortController():null,timer=setTimeout(function(){ctl&&ctl.abort()},15000);
     fetch('/api/health',{cache:'no-store',credentials:'same-origin',signal:ctl?ctl.signal:undefined}).then(function(r){return r.json()}).then(function(h){render(h);checked.textContent='Dernière vérification : '+new Date().toLocaleTimeString('fr-FR')}).catch(function(){fail();checked.textContent='Dernière tentative : '+new Date().toLocaleTimeString('fr-FR')}).then(function(){clearTimeout(timer)});

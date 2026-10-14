@@ -23,7 +23,7 @@ test('santé publique : l\'essentiel seulement (en ligne, base, version), aucun 
   assert.equal(h.database.ok, true);
   assert.ok(h.database.latencyMs >= 0);
   assert.deepEqual(Object.keys(h.database).sort(), ['latencyMs', 'ok']);
-  for (const k of ['startedAt', 'uptimeSeconds', 'memory', 'cards', 'packs', 'universe', 'databaseTls', 'databaseTlsDiagnostic', 'databaseStartError', 'timestamp'])
+  for (const k of ['startedAt', 'uptimeSeconds', 'memory', 'cards', 'packs', 'universe', 'databaseTls', 'databaseTlsDiagnostic', 'databaseStartError', 'serverErrors', 'alerts', 'timestamp'])
     assert.equal(k in h, false, k + ' ne doit pas être public');
   assert.ok(!JSON.stringify(h).includes('postgresql://'), 'aucune adresse de base exposée');
   const wrong = await (await fetch(server.base + '/api/health', { headers: { Authorization: 'Bearer mauvais-jeton' } })).json();
@@ -45,6 +45,9 @@ test('santé détaillée : administrateur connecté ou jeton HEALTH_TOKEN', asyn
     for (const k of ['rss', 'heapUsed', 'heapTotal', 'external']) assert.ok(Number.isInteger(h.memory[k]) && h.memory[k] >= 0, 'mémoire ' + k);
     assert.ok(h.memory.rss >= h.memory.heapUsed, 'la mémoire occupée couvre les données JavaScript');
     assert.ok(Number(h.cards) >= 0);
+    assert.deepEqual(Object.keys(h.serverErrors).sort(), ['claimLast24h', 'last24h', 'lastHour', 'recent', 'total']);
+    assert.ok(Array.isArray(h.serverErrors.recent) && Array.isArray(h.alerts));
+    assert.ok(h.alerts.every(a => ['critical', 'warning'].includes(a.level) && a.code && a.message), 'alertes bien formées');
     assert.ok(!JSON.stringify(h).includes('postgresql://'), 'aucune adresse de base exposée');
   };
   await detail((await admin.get('/api/health')).body);
