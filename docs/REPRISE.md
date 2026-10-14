@@ -176,3 +176,7 @@ Feuille de route de découpage et de jeu précédente **terminée** : A1–A5, G
 ## Inscription : limite par connexion (13/10/2026)
 
 Avant : 1 compte par IP et par 72 h (bloquait les nouveaux joueurs sur réseau partagé). Maintenant : 5 comptes par IP et par fenêtre de 72 h, réglable via `REGISTRATIONS_PER_WINDOW` et `REGISTRATION_WINDOW_HOURS` (Render). Code : `lib/registration-limit.js`, `lib/auth.js` ; colonnes `count` et `window_start` ajoutées (additif) à `registration_limits`. En cas de doute sur l'IP vue par le serveur : `/api/admin/ip-debug` (admin).
+
+## Atelier : aperçu des cartes possibles (14/10/2026)
+
+L'onglet Fusion affiche « Voir les N cartes <rareté> possibles » (liste repliable, triée de la meilleure à la moins bonne) seulement quand il reste 1 à 49 cartes nouvelles que la fusion peut donner (`ECONOMY.fusion.previewMax`, `lib/game-config.js`). Au-delà, le serveur n'envoie que le nombre (`fresh`) : `info().fusion.rules[from].preview` vaut alors `null`. Champs publics du catalogue seulement. Code : `lib/economy.js` (`info`), `fv-workshop.js` (`previewHtml`).
