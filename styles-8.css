@@ -101,8 +101,8 @@ html:root:root .view-hero .hero-stat strong{font-family:var(--head);font-size:30
 @media(max-width:700px){html:root:root .view-hero{flex-direction:column;align-items:flex-start}}
 html:root:root :is(.shop-hero,.view-hero,.ranking-hero,.profile-hero,.success-hero) a:not(.btn){color:#fff;text-decoration-color:rgba(255,255,255,.6)}
 /* ---- Phase 3 : pages restantes ---- */
-html:root:root :is(.collection-overview>*,.success-overview>*,.friend-row,.friend-showcase-card,.friend-activity,.friend-sets,.trade-offers>*,.trade-columns>*,.team-row,.team-stats>*,.success-player-stat,.success-toolbar,.trade-filters,.trade-with){background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--av-shadow);color:var(--text)}
-html:root:root :is(.team-row,.friend-row,.trade-columns>*,.success-toolbar,.trade-filters){box-shadow:none;background:var(--panel2);border-radius:14px}
+html:root:root :is(.collection-overview>*,.success-overview>*,.friend-row,.friend-showcase-card,.friend-activity,.friend-sets,.trade-offers>*,.trade-columns>*,.team-stats>*,.success-player-stat,.success-toolbar,.trade-filters,.trade-with){background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--av-shadow);color:var(--text)}
+html:root:root :is(.friend-row,.trade-columns>*,.success-toolbar,.trade-filters){box-shadow:none;background:var(--panel2);border-radius:14px}
 html:root:root :is(.collection-overview,.success-overview,.collection-rarity-grid){gap:12px}
 html:root:root :is(.collection-overview,.success-overview,.collection-rarity-grid)>*{border-radius:18px}
 html:root:root :is(.collection-showcase,.album-showcase,.success-hero,.season-hero) :is(.eyebrow,.fvh-eyebrow,[class*=kicker]){background:none;color:rgba(255,255,255,.92);-webkit-text-fill-color:currentColor}
@@ -110,3 +110,81 @@ html:root:root :is(.success-tabs,.collection-view,.wk-tabs,.wk-seg) button{borde
 html:root:root .success-tabs{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:4px;gap:4px}
 html:root:root .success-tabs button.active,html:root:root .success-tabs button[aria-selected=true]{background:var(--av-btn);color:var(--av-btn-ink);border-radius:999px}
 html:root:root :is(.collection-showcase,.album-showcase,.success-hero) h1,html:root:root :is(.collection-showcase,.album-showcase,.success-hero) h2{font-size:clamp(34px,5.2vw,62px);text-transform:none;letter-spacing:-.04em;line-height:1}
+/* ---- Album : reproduction de la maquette (onglets, clubs à gauche, cartes à droite) ---- */
+html:root:root .alb-hero{position:relative;overflow:hidden;border-radius:28px;padding:clamp(24px,4vw,44px);margin:24px 0 28px;color:#fff;background:linear-gradient(120deg,#1ccf9c,#35b8ff 55%,#5b6cff);box-shadow:var(--av-shadow)}
+html:root:root .alb-hero::before{content:"";position:absolute;right:-6%;top:-60%;width:46%;height:220%;transform:rotate(24deg);background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0));border-radius:50px;pointer-events:none}
+html:root:root .alb-hero>*{position:relative}
+html:root:root .alb-hero .eyebrow{background:none;color:rgba(255,255,255,.92);-webkit-text-fill-color:currentColor}
+html:root:root .alb-hero h1{font-size:clamp(34px,5vw,60px);line-height:1;letter-spacing:-.04em;margin:8px 0 10px;text-wrap:balance;color:#fff;text-transform:none;font-weight:800}
+html:root:root .alb-hero .lead{max-width:56ch;margin:0;color:rgba(255,255,255,.95);font-size:16px;line-height:1.5}
+html:root:root .alb-nums{display:flex;gap:28px;flex-wrap:wrap;margin-top:22px}
+html:root:root .alb-nums b{display:block;font:800 30px/1 var(--head);letter-spacing:-.03em;color:#fff}
+html:root:root .alb-nums span{font-size:13px;color:rgba(255,255,255,.92)}
+html:root:root .alb-bar{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:18px}
+html:root:root .alb-tabs{display:flex;gap:4px;padding:4px;border-radius:999px;background:var(--av-ghost);max-width:100%;overflow-x:auto}
+html:root:root .alb-tabs a{padding:8px 16px;border-radius:999px;font-size:14px;font-weight:600;color:var(--muted);white-space:nowrap;text-decoration:none}
+html:root:root .alb-tabs a.on{background:var(--panel);color:var(--text);box-shadow:var(--av-shadow)}
+html:root:root .alb-season select{border-radius:999px;background:var(--av-ghost);border:0;padding:9px 16px;font:600 14px var(--body);color:var(--text)}
+html:root:root .alb-layout{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:20px;align-items:start}
+html:root:root .alb-clubs{display:grid;gap:10px}
+html:root:root .alb-club{display:flex;gap:12px;align-items:center;padding:14px;border-radius:18px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--av-shadow);text-decoration:none;color:var(--text);transition:transform .2s}
+html:root:root .alb-club:hover{transform:translateY(-2px)}
+html:root:root .alb-club.on{border-color:#ff4f8b}
+html:root:root .alb-av{position:relative;width:34px;height:34px;border-radius:50%;flex:none;display:grid;place-items:center;overflow:hidden;background:linear-gradient(140deg,#3d5afe,#7b5cff);color:#fff;font:700 13px var(--head)}
+html:root:root .alb-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff;padding:3px}
+html:root:root .alb-club-main{flex:1;min-width:0;display:grid;gap:6px}
+html:root:root .alb-club-main b{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html:root:root .alb-bar-track{display:block;height:8px;border-radius:6px;background:var(--av-ghost);overflow:hidden}
+html:root:root .alb-bar-track em{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,#ff7a59,#ff4f8b)}
+html:root:root .alb-club-n{font:700 13px var(--body);font-variant-numeric:tabular-nums}
+html:root:root .alb-panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:var(--av-shadow);padding:20px}
+html:root:root .alb-panel-head{display:flex;gap:16px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px}
+html:root:root .alb-panel-head h2{font:700 19px/1.2 var(--head);letter-spacing:-.02em;margin:0 0 4px;text-transform:none}
+html:root:root .alb-panel-head p{margin:0;font-size:14px;color:var(--muted)}
+html:root:root .alb-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+html:root:root .alb-actions .btn-gold{background:linear-gradient(90deg,#ff7a59,#ff4f8b);color:#fff}
+html:root:root .alb-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+html:root:root .alb-tc{position:relative;display:block;aspect-ratio:2/2.9;border-radius:14px;padding:5px;min-height:0;background:var(--fr,linear-gradient(150deg,#dfe3ea,#7d8596 45%,#1c1f26));box-shadow:0 18px 22px -12px rgba(20,10,60,.55);transition:transform .25s;text-decoration:none;border:0;min-width:0}
+html:root:root .alb-tc:hover{transform:translateY(-4px) rotate(-1deg)}
+html:root:root .alb-tc.rare{--fr:linear-gradient(150deg,#b8d8ff,#2f6fd0 45%,#0a1a44)}html:root:root .alb-tc.epic{--fr:linear-gradient(150deg,#e0ccff,#7e4fd0 45%,#1d0c44)}html:root:root .alb-tc.leg{--fr:linear-gradient(150deg,#ffe9a8,#c98a14 45%,#2a1a04)}html:root:root .alb-tc.icon{--fr:linear-gradient(135deg,#9fe9ff,#f0a8ff 50%,#ffe38a)}
+html:root:root .alb-tc .in{position:relative;height:100%;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:9px;background:radial-gradient(120% 70% at 50% 8%,#2547c4,#0a1230 66%,#04060f);color:#fff}
+html:root:root .alb-tc .in::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.2) 48%,transparent 66%);pointer-events:none}
+html:root:root .alb-tc .o{position:absolute;top:6px;left:9px;font:800 clamp(22px,2.6vw,34px)/1 var(--head);letter-spacing:-.03em;color:#fff}
+html:root:root .alb-tc .p{position:absolute;top:9px;right:9px;font:700 10px var(--body);font-style:normal;border:1px solid rgba(255,255,255,.4);border-radius:5px;padding:3px 5px;color:#fff}
+html:root:root .alb-tc .c{font-size:9px;color:#b9c6e0;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html:root:root .alb-tc .n{font:800 clamp(12px,1.3vw,16px)/1 var(--head);letter-spacing:-.02em;text-transform:uppercase;margin:2px 0 0;color:#fff;overflow-wrap:anywhere}
+html:root:root .alb-tc .alb-rar{position:absolute;left:-1px;bottom:-9px;background:var(--av-btn);color:var(--av-btn-ink);font:700 10px var(--body);border-radius:999px;padding:2px 8px;box-shadow:var(--av-shadow);z-index:2}
+html:root:root .alb-tc.miss{opacity:.4;filter:grayscale(.9)}
+html:root:root .alb-tc.miss .in{background:#10172e}
+html:root:root .alb-tc.lock .in::before{content:"?";position:absolute;inset:0;display:grid;place-items:center;font:800 40px var(--head);color:rgba(255,255,255,.35)}
+@media(max-width:920px){html:root:root .alb-layout{grid-template-columns:minmax(0,1fr)}html:root:root .alb-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){html:root:root .alb-grid{grid-template-columns:repeat(2,minmax(0,1fr))}html:root:root .alb-nums{gap:18px}}
+/* Hero de l'Album (niveau compétitions) : tuiles lisibles sur dégradé */
+html:root:root .album-global-progress,html:root:root .album-showcase-trophy{background:rgba(24,16,90,.3);border:1px solid rgba(255,255,255,.25);color:#fff;box-shadow:none;border-radius:20px}
+html:root:root .album-global-progress :is(span,strong,small,b){color:#fff}
+html:root:root .album-global-track{background:rgba(255,255,255,.25)}html:root:root .album-global-track i{background:#fff}
+/* ---- Cloche de notifications : panneau aux jetons clair/sombre ---- */
+html:root:root .notif-bell{border-radius:999px;background:var(--av-ghost);border-color:var(--line)}
+html:root:root .notif-panel{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:22px;box-shadow:0 30px 60px -20px rgba(20,30,80,.45);padding:16px;top:84px}
+html:root:root .notif-panel h2{font:800 18px var(--head);letter-spacing:-.02em;text-transform:none;color:var(--text)}
+html:root:root .notif-panel header button{color:#3d5afe;font-weight:700}
+html[data-theme="dark"]:root:root .notif-panel header button{color:#9bb0ff}
+html:root:root .notif-ready{background:var(--av-ghost);border:1px solid var(--line);border-radius:16px;color:var(--text)}
+html:root:root .notif-ready b{color:#ff4f8b}
+html:root:root .notif-item a,html:root:root .notif-item div{background:var(--panel2);border:1px solid var(--line);border-radius:16px;color:var(--text)}
+html:root:root .notif-item.unread a,html:root:root .notif-item.unread div{background:var(--panel2);border-color:#7b9bff;box-shadow:inset 3px 0 0 #7b9bff}
+html:root:root .notif-item strong{color:var(--text);font-weight:700}
+html:root:root .notif-item span,html:root:root .notif-item time,html:root:root .notif-empty{color:var(--muted)}
+html:root:root .notif-banner{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:20px;box-shadow:0 30px 60px -20px rgba(20,30,80,.45)}
+html:root:root .notif-banner i{background:var(--av-grad);color:#fff;border-radius:12px}
+/* ---- Fenêtres de révélation de cartes : toujours sombres (cartes conçues pour fond sombre), en jour comme en nuit ---- */
+html:root:root .modal-box.pack-reveal-modal,html:root:root .modal-box.wk-reveal,html:root:root .modal-box[class*="reveal"]{background:radial-gradient(120% 90% at 50% 0%,#14224a,#0a1226 70%);border:1px solid rgba(255,255,255,.14);color:#f4f7ff;box-shadow:0 40px 90px -30px rgba(0,0,0,.8)}
+html:root:root .modal-box[class*="reveal"] :is(h1,h2,h3,p,small,strong,span:not(.eyebrow)){color:#f4f7ff}
+html:root:root .modal-box[class*="reveal"] .eyebrow{background:none;color:#ff8fb1;-webkit-text-fill-color:currentColor}
+html:root:root .modal-box[class*="reveal"] .btn{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.25)}
+html:root:root .modal-box[class*="reveal"] .btn-gold{background:#fff;color:#0d1b3d}
+html:root:root .modal-box[class*="reveal"] .modal-close{color:#fff}
+/* ---- Équipe type : les lignes du terrain restent transparentes, joueurs lisibles sur la pelouse ---- */
+html:root:root .team-pitch .team-row{background:none;border:0;box-shadow:none;border-radius:0}
+html:root:root .team-pitch :is(.team-slot,.team-name,.ts-ovr){color:#fff}
+html:root:root .team-pitch .team-name{text-shadow:0 1px 3px rgba(0,0,0,.7)}
