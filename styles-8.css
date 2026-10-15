@@ -101,8 +101,8 @@ html:root:root .view-hero .hero-stat strong{font-family:var(--head);font-size:30
 @media(max-width:700px){html:root:root .view-hero{flex-direction:column;align-items:flex-start}}
 html:root:root :is(.shop-hero,.view-hero,.ranking-hero,.profile-hero,.success-hero) a:not(.btn){color:#fff;text-decoration-color:rgba(255,255,255,.6)}
 /* ---- Phase 3 : pages restantes ---- */
-html:root:root :is(.collection-overview>*,.success-overview>*,.friend-row,.friend-showcase-card,.friend-activity,.friend-sets,.trade-offers>*,.trade-columns>*,.team-row,.team-stats>*,.success-player-stat,.success-toolbar,.trade-filters,.trade-with){background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--av-shadow);color:var(--text)}
-html:root:root :is(.team-row,.friend-row,.trade-columns>*,.success-toolbar,.trade-filters){box-shadow:none;background:var(--panel2);border-radius:14px}
+html:root:root :is(.collection-overview>*,.success-overview>*,.friend-row,.friend-showcase-card,.friend-activity,.friend-sets,.trade-offers>*,.trade-columns>*,.team-stats>*,.success-player-stat,.success-toolbar,.trade-filters,.trade-with){background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--av-shadow);color:var(--text)}
+html:root:root :is(.friend-row,.trade-columns>*,.success-toolbar,.trade-filters){box-shadow:none;background:var(--panel2);border-radius:14px}
 html:root:root :is(.collection-overview,.success-overview,.collection-rarity-grid){gap:12px}
 html:root:root :is(.collection-overview,.success-overview,.collection-rarity-grid)>*{border-radius:18px}
 html:root:root :is(.collection-showcase,.album-showcase,.success-hero,.season-hero) :is(.eyebrow,.fvh-eyebrow,[class*=kicker]){background:none;color:rgba(255,255,255,.92);-webkit-text-fill-color:currentColor}
@@ -163,3 +163,28 @@ html:root:root .alb-tc.lock .in::before{content:"?";position:absolute;inset:0;di
 html:root:root .album-global-progress,html:root:root .album-showcase-trophy{background:rgba(24,16,90,.3);border:1px solid rgba(255,255,255,.25);color:#fff;box-shadow:none;border-radius:20px}
 html:root:root .album-global-progress :is(span,strong,small,b){color:#fff}
 html:root:root .album-global-track{background:rgba(255,255,255,.25)}html:root:root .album-global-track i{background:#fff}
+/* ---- Cloche de notifications : panneau aux jetons clair/sombre ---- */
+html:root:root .notif-bell{border-radius:999px;background:var(--av-ghost);border-color:var(--line)}
+html:root:root .notif-panel{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:22px;box-shadow:0 30px 60px -20px rgba(20,30,80,.45);padding:16px;top:84px}
+html:root:root .notif-panel h2{font:800 18px var(--head);letter-spacing:-.02em;text-transform:none;color:var(--text)}
+html:root:root .notif-panel header button{color:#3d5afe;font-weight:700}
+html[data-theme="dark"]:root:root .notif-panel header button{color:#9bb0ff}
+html:root:root .notif-ready{background:var(--av-ghost);border:1px solid var(--line);border-radius:16px;color:var(--text)}
+html:root:root .notif-ready b{color:#ff4f8b}
+html:root:root .notif-item a,html:root:root .notif-item div{background:var(--panel2);border:1px solid var(--line);border-radius:16px;color:var(--text)}
+html:root:root .notif-item.unread a,html:root:root .notif-item.unread div{background:var(--panel2);border-color:#7b9bff;box-shadow:inset 3px 0 0 #7b9bff}
+html:root:root .notif-item strong{color:var(--text);font-weight:700}
+html:root:root .notif-item span,html:root:root .notif-item time,html:root:root .notif-empty{color:var(--muted)}
+html:root:root .notif-banner{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:20px;box-shadow:0 30px 60px -20px rgba(20,30,80,.45)}
+html:root:root .notif-banner i{background:var(--av-grad);color:#fff;border-radius:12px}
+/* ---- Fenêtres de révélation de cartes : toujours sombres (cartes conçues pour fond sombre), en jour comme en nuit ---- */
+html:root:root .modal-box.pack-reveal-modal,html:root:root .modal-box.wk-reveal,html:root:root .modal-box[class*="reveal"]{background:radial-gradient(120% 90% at 50% 0%,#14224a,#0a1226 70%);border:1px solid rgba(255,255,255,.14);color:#f4f7ff;box-shadow:0 40px 90px -30px rgba(0,0,0,.8)}
+html:root:root .modal-box[class*="reveal"] :is(h1,h2,h3,p,small,strong,span:not(.eyebrow)){color:#f4f7ff}
+html:root:root .modal-box[class*="reveal"] .eyebrow{background:none;color:#ff8fb1;-webkit-text-fill-color:currentColor}
+html:root:root .modal-box[class*="reveal"] .btn{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.25)}
+html:root:root .modal-box[class*="reveal"] .btn-gold{background:#fff;color:#0d1b3d}
+html:root:root .modal-box[class*="reveal"] .modal-close{color:#fff}
+/* ---- Équipe type : les lignes du terrain restent transparentes, joueurs lisibles sur la pelouse ---- */
+html:root:root .team-pitch .team-row{background:none;border:0;box-shadow:none;border-radius:0}
+html:root:root .team-pitch :is(.team-slot,.team-name,.ts-ovr){color:#fff}
+html:root:root .team-pitch .team-name{text-shadow:0 1px 3px rgba(0,0,0,.7)}
