@@ -100,3 +100,13 @@ html:root:root .view-hero .hero-stat{padding:14px 20px;border-radius:18px;backgr
 html:root:root .view-hero .hero-stat strong{font-family:var(--head);font-size:30px;font-weight:800;color:#fff}
 @media(max-width:700px){html:root:root .view-hero{flex-direction:column;align-items:flex-start}}
 html:root:root :is(.shop-hero,.view-hero,.ranking-hero,.profile-hero,.success-hero) a:not(.btn){color:#fff;text-decoration-color:rgba(255,255,255,.6)}
+/* ---- Phase 3 : pages restantes ---- */
+html:root:root :is(.collection-overview>*,.success-overview>*,.friend-row,.friend-showcase-card,.friend-activity,.friend-sets,.trade-offers>*,.trade-columns>*,.team-row,.team-stats>*,.success-player-stat,.success-toolbar,.trade-filters,.trade-with){background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--av-shadow);color:var(--text)}
+html:root:root :is(.team-row,.friend-row,.trade-columns>*,.success-toolbar,.trade-filters){box-shadow:none;background:var(--panel2);border-radius:14px}
+html:root:root :is(.collection-overview,.success-overview,.collection-rarity-grid){gap:12px}
+html:root:root :is(.collection-overview,.success-overview,.collection-rarity-grid)>*{border-radius:18px}
+html:root:root :is(.collection-showcase,.album-showcase,.success-hero,.season-hero) :is(.eyebrow,.fvh-eyebrow,[class*=kicker]){background:none;color:rgba(255,255,255,.92);-webkit-text-fill-color:currentColor}
+html:root:root :is(.success-tabs,.collection-view,.wk-tabs,.wk-seg) button{border-radius:999px}
+html:root:root .success-tabs{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:4px;gap:4px}
+html:root:root .success-tabs button.active,html:root:root .success-tabs button[aria-selected=true]{background:var(--av-btn);color:var(--av-btn-ink);border-radius:999px}
+html:root:root :is(.collection-showcase,.album-showcase,.success-hero) h1,html:root:root :is(.collection-showcase,.album-showcase,.success-hero) h2{font-size:clamp(34px,5.2vw,62px);text-transform:none;letter-spacing:-.04em;line-height:1}
