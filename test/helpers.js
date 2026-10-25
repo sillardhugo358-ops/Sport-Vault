@@ -41,6 +41,8 @@ function freePort() {
 async function startServer(options = {}) {
   const dbName = 'fv_test_' + crypto.randomBytes(5).toString('hex');
   const admin = new Pool({ connectionString: adminUrl(), max: 1 });
+  // Une connexion inactive coupée pendant le démontage (DROP DATABASE … FORCE) ne doit pas faire échouer un test déjà terminé.
+  admin.on('error', () => {});
   await admin.query(`CREATE DATABASE ${dbName}`);
   const databaseUrl = withDatabase(adminUrl(), dbName);
   let child = null;
@@ -66,6 +68,7 @@ async function startServer(options = {}) {
   try {
     const first = await launchWithRetry();
     const db = new Pool({ connectionString: databaseUrl, max: 2 });
+    db.on('error', () => {});
     let ipCounter = 0;
     const server = {
       base: `http://127.0.0.1:${first.port}`,
