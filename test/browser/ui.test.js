@@ -754,7 +754,7 @@ test('classement : onglet SAISON (saison à venir ou en cours), barème et pas d
       rows: document.querySelectorAll('.season-box > ul li').length,
       overflow: document.documentElement.scrollWidth > window.innerWidth + 1
     }));
-    assert.equal(r.tab, 'SAISON');
+    assert.equal(r.tab, 'Saison');
     assert.equal(r.rows, 5);
     assert.equal(r.overflow, false);
   }

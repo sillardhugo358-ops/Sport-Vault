@@ -127,7 +127,8 @@ test('flux d\'activité : événements marquants des amis seulement, sans montan
   assert.ok(labels.includes('Succès Visible'));
   for (const bad of ['Carte Commune', 'Carte Offerte', 'Carte Ancienne', 'Carte Privée', 'Succès Caché']) assert.ok(!labels.includes(bad), bad + ' ne doit pas apparaître');
   assert.equal(r.body.events.find(e => e.label === 'Carte Limitée Amie').serial, '3/10');
-  assert.ok(!/9999|coins|xp/i.test(JSON.stringify(r.body)), 'aucun montant');
+  // Le code d'échange (8 caractères aléatoires) peut contenir « xp » par hasard : on l'écarte avant de chercher un montant.
+  assert.ok(!/9999|coins|xp/i.test(JSON.stringify(r.body.events.map(e => ({ ...e, code: undefined })))), 'aucun montant');
   assert.ok(r.body.events.every(e => e.name === 'Yasmine'), 'seulement les amis visibles');
   // un joueur sans amis ne voit rien ; un inconnu ne voit pas l'activité d'un joueur dont il n'est pas ami
   assert.deepEqual((await (await newPlayer(server, 'Solo')).get('/api/friends/activity')).body.events, []);
