@@ -300,3 +300,43 @@ html:root:root .admin-table td{border-bottom:1px solid var(--line);color:var(--t
 html:root:root .admin-table tr:hover td{background:var(--av-ghost)}
 html:root:root .admin-management-hero,html:root:root .catalog-admin-hero{background:linear-gradient(120deg,#7b5cff,#b84fd8 55%,#ff4f8b)}
 html:root:root :is(.admin-search-field,.admin-management-tools) :is(input,select){border-radius:12px}
+/* ---- Profil : reproduction de la maquette ---- */
+html:root:root .profile-page .profile-hero{background:var(--panel);color:var(--text);border:1px solid var(--line);box-shadow:var(--av-shadow);border-radius:28px;padding:clamp(20px,3vw,32px)}
+html:root:root .profile-page .profile-hero::before{display:none}
+html:root:root .profile-page .profile-hero .eyebrow{background:none;color:#ff7a59;-webkit-text-fill-color:currentColor;letter-spacing:.14em}
+html:root:root .profile-page .profile-hero h1{color:var(--text);margin:4px 0 6px}
+html:root:root .profile-page .profile-hero .profile-id>span,html:root:root .profile-page .profile-hero .profile-level small{color:var(--muted)}
+html:root:root .profile-page .profile-avatar{border-radius:50%;background:var(--av-grad);color:#fff;font:800 clamp(28px,4vw,40px) var(--head);border:0;box-shadow:none}
+html:root:root .profile-page .profile-level b{color:var(--text);font:700 13px var(--body);letter-spacing:0}
+html:root:root .profile-page .profile-level .progress{background:var(--av-ghost)}
+html:root:root .profile-page .profile-level .progress i{background:linear-gradient(90deg,#ff7a59,#ff4f8b)}
+html:root:root .profile-page .profile-actions .btn{min-height:44px;padding:0 22px;font:600 15px var(--body);background:var(--av-ghost);color:var(--text);border-color:transparent}
+html:root:root .profile-page .profile-actions .btn-gold{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root .profile-page .profile-kpi{padding:18px 20px;border-radius:18px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--av-shadow)}
+html:root:root .profile-page .profile-kpi span{color:var(--muted);font:600 13px var(--body);letter-spacing:0;text-transform:none;order:2}
+html:root:root .profile-page .profile-kpi strong{font:800 32px/1 var(--head);letter-spacing:-.03em;color:var(--text)}
+html:root:root .profile-page .profile-kpi small{color:var(--muted)}
+html:root:root .profile-panel{border-radius:22px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--av-shadow)}
+html:root:root .profile-panel h2,html:root:root .profile-panel h3{font-family:var(--head);text-transform:none;letter-spacing:-.02em;color:var(--text)}
+html:root:root .profile-panel .eyebrow{color:#ff7a59;background:none;-webkit-text-fill-color:currentColor}
+html:root:root .theme-choice{background:var(--av-ghost);border:0;border-radius:999px;padding:4px}
+html:root:root .theme-choice button{border-radius:999px;border:0;background:none;color:var(--muted);font:600 14px var(--body);text-transform:none;letter-spacing:0}
+html:root:root .theme-choice button.is-on{background:var(--panel);color:var(--text);box-shadow:var(--av-shadow)}
+html:root:root .profile-list li{border-color:var(--line)}
+html:root:root .profile-list :is(strong,span){color:var(--text)}
+html:root:root .profile-list small,html:root:root .profile-list time{color:var(--muted)}
+html:root:root .profile-page .profile-hero :is(h1,h2,p,span,small,strong,b){color:var(--text);-webkit-text-fill-color:currentColor}
+html:root:root .profile-page .profile-hero :is(.profile-id>span,small){color:var(--muted)}
+html:root:root .profile-page .profile-hero .eyebrow{color:#ff7a59}
+html:root:root .profile-page .profile-hero .profile-avatar{color:#fff}
+html:root:root .profile-page .profile-hero .profile-actions .btn{background:var(--av-ghost);color:var(--text)}
+html:root:root .profile-page .profile-hero .profile-actions .btn-gold{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root .profile-page .profile-hero .progress{background:var(--av-ghost)}
+html:root:root .profile-page .profile-hero .progress i{background:linear-gradient(90deg,#ff7a59,#ff4f8b)}
+html:root:root .profile-page .profile-kpi :is(span,small){color:var(--muted)}
+html:root:root .profile-page .profile-kpi strong{color:var(--text)}
+html:root:root .profile-page .profile-panel :is(h2,h3){text-transform:none!important;font-size:20px;letter-spacing:-.02em}
+html:root:root .profile-page .profile-kpi span{text-transform:none!important;letter-spacing:0;font-size:13px}
+html:root:root .profile-page .profile-hero .profile-level b{text-transform:none!important;font-size:13px}
+html:root:root .profile-page .profile-actions .btn{text-transform:none!important;letter-spacing:0}
+html[data-theme="light"]:root:root .profile-page :is(.profile-hero,.profile-panel) .eyebrow{color:#b8400f}
