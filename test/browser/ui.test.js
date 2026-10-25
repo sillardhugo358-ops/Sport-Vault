@@ -980,19 +980,19 @@ test('amis : demande par code, acceptation, profil public, confidentialité', as
   await page.waitForSelector('[data-friend-add]');
   await page.fill('#friendCode', otherCode);
   await page.click('[data-friend-add] button[type=submit]');
-  await page.waitForFunction(() => /DEMANDES ENVOYÉES/.test(document.querySelector('#app').innerText));
+  await page.waitForFunction(() => /demandes envoyées/i.test(document.querySelector('#app').innerText));
   const incoming = (await other.get('/api/friends')).body.incoming;
   assert.equal(incoming.length, 1);
   assert.equal((await other.post('/api/friends/accept', { id: incoming[0].id })).status, 200);
   r = await visit('amis');
   await page.waitForFunction(() => /AmiTest/.test(document.querySelector('.friend-list')?.innerText || ''));
-  assert.match(await page.textContent('.friends-page'), /ACTIVITÉ DE MES AMIS/);
+  assert.match(await page.textContent('.friends-page'), /activité de mes amis/i);
   // Rivalités : épingler l'ami, voir les deux jauges, sans débordement ; zones tactiles de 44 px.
-  assert.match(await page.textContent('.friends-page'), /MES RIVAUX \(0\/3\)/);
+  assert.match(await page.textContent('.friends-page'), /mes rivaux \(0\/3\)/i);
   assert.ok((await page.locator('[data-friend-rival]').first().boundingBox()).height >= 44, 'bouton RIVAL de 44 px');
   await page.click('[data-friend-rival][data-on="1"]');
   await page.waitForSelector('.rival-card progress');
-  assert.match(await page.textContent('.friends-page'), /MES RIVAUX \(1\/3\)/);
+  assert.match(await page.textContent('.friends-page'), /mes rivaux \(1\/3\)/i);
   assert.equal(await page.locator('.rival-card progress').count(), 2, 'jauge de moi et du rival');
   assert.equal(await page.locator('[data-friend-rival][aria-pressed="true"]').count(), 1);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'pas de débordement avec un rival');

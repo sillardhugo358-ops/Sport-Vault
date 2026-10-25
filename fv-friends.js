@@ -21,14 +21,14 @@ const activityList=ev=>ev.length?'<ul class="friend-activity">'+ev.map(e=>'<li>'
 // Rivalités d'album : jauge de complétion (cartes différentes du catalogue actif) de moi face à chaque rival épinglé (3 au plus).
 const pctText=n=>Number(n).toLocaleString('fr-FR',{maximumFractionDigits:1})+' %';
 const gauge=(label,n,total,pct)=>'<div class="rival-row"><span>'+esc(label)+'</span><progress max="'+Number(total)+'" value="'+Number(n)+'" aria-label="'+esc(label)+' : '+Number(n)+' cartes sur '+Number(total)+'"></progress><b>'+pctText(pct)+'</b></div>';
-const rivalOff=(r)=>'<button class="btn btn-outline" type="button" data-friend-rival="'+esc(r.code)+'" data-on="0" aria-label="Retirer '+esc(r.name)+' de mes rivaux">RETIRER</button>';
+const rivalOff=(r)=>'<button class="btn btn-outline" type="button" data-friend-rival="'+esc(r.code)+'" data-on="0" aria-label="Retirer '+esc(r.name)+' de mes rivaux">Retirer</button>';
 function rivalCard(r){
   const head='<div class="rival-head"><a class="friend-name" href="#joueur?code='+encodeURIComponent(r.code)+'"><strong>'+esc(r.name)+'</strong></a>'+rivalOff(r)+'</div>';
   if(r.hidden)return '<li class="rival-card">'+head+'<p class="friend-empty">Profil privé : comparaison indisponible.</p></li>';
   const lead=r.gap>0?'Tu mènes de '+r.gap+' carte'+(r.gap>1?'s':''):r.gap<0?esc(r.name)+' mène de '+(-r.gap)+' carte'+(-r.gap>1?'s':''):'Égalité parfaite';
   return '<li class="rival-card'+(r.gap>0?' is-ahead':r.gap<0?' is-behind':'')+'">'+head+'<p class="rival-lead" role="status">'+lead+'</p>'+gauge('Toi',r.you.cards,r.total,r.you.pct)+gauge(r.name,r.cards,r.total,r.pct)+'</li>';
 }
-const rivalsSection=(d)=>section('RIVALITÉS','MES RIVAUX ('+d.rivals.length+'/'+d.limits.maxRivals+')',d.rivals.length?'<ul class="rival-list">'+d.rivals.map(rivalCard).join('')+'</ul>':'<p class="friend-empty">Épingle jusqu’à '+d.limits.maxRivals+' amis comme rivaux avec le bouton RIVAL de la liste « Mes amis » : tu verras toujours qui a le plus complété son album.</p>');
+const rivalsSection=(d)=>section('RIVALITÉS','Mes rivaux ('+d.rivals.length+'/'+d.limits.maxRivals+')',d.rivals.length?'<ul class="rival-list">'+d.rivals.map(rivalCard).join('')+'</ul>':'<p class="friend-empty">Épingle jusqu’à '+d.limits.maxRivals+' amis comme rivaux avec le bouton RIVAL de la liste « Mes amis » : tu verras toujours qui a le plus complété son album.</p>');
 
 async function amis(){
   let d;
@@ -36,13 +36,13 @@ async function amis(){
   try{[d,act]=await Promise.all([api('/api/friends'),api('/api/friends/activity').catch(()=>({events:[]}))])}catch(e){if(e.status===401)return FVC.pages.auth(new URLSearchParams({next:'amis'}));throw e}
   return '<div class="page friends-page">'+viewHero('AMIS','Collectionne avec tes amis.','Ajoute des joueurs avec leur code, découvre leur vitrine et échange avec eux.',String(d.friends.length),'AMI'+(d.friends.length>1?'S':''))
    +(d.friends.length?rivalsSection(d):'')
-   +(d.friends.length?section('ACTIVITÉ','ACTIVITÉ DE MES AMIS',activityList(act.events)):'')
-   +section('MON CODE','MON CODE JOUEUR','<div class="panel friend-code-box"><strong class="trade-code" id="friendMyCode">'+esc(d.code)+'</strong><button class="btn btn-outline" type="button" data-friend-copy>COPIER</button><p>C’est le même code que pour les échanges. Donne-le à un ami : il pourra te demander en ami, et tu accepteras.</p></div>')
-   +section('AJOUTER','AJOUTER UN AMI','<form class="panel friend-add" data-friend-add><label for="friendCode">Code du joueur</label><div class="friend-add-row"><input id="friendCode" name="code" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="Ex. K7M2QX9P" required><button class="btn btn-gold" type="submit">ENVOYER LA DEMANDE</button></div></form>')
-   +(d.incoming.length?section('DEMANDES','DEMANDES REÇUES ('+d.incoming.length+')',list(d.incoming.map(p=>person(p,'<button class="btn btn-gold" type="button" data-friend-act="accept" data-id="'+p.id+'">ACCEPTER</button><button class="btn btn-outline" type="button" data-friend-act="decline" data-id="'+p.id+'">REFUSER</button>')),'')):'')
-   +section('MES AMIS','MES AMIS ('+d.friends.length+')',list(d.friends.map(p=>person(p,'<a class="btn btn-outline" href="#trades?code='+encodeURIComponent(p.code)+'">ÉCHANGER</a><button class="btn btn-outline" type="button" data-friend-rival="'+esc(p.code)+'" data-on="'+(p.rival?'0':'1')+'" aria-pressed="'+(p.rival?'true':'false')+'">'+(p.rival?'RIVAL ✓':'RIVAL')+'</button><button class="btn btn-outline" type="button" data-friend-act="remove" data-id="'+p.id+'" aria-label="Retirer '+esc(p.name)+'">RETIRER</button>')),'Aucun ami pour l’instant : saisis le code d’un joueur ci-dessus.'))
-   +(d.outgoing.length?section('EN ATTENTE','DEMANDES ENVOYÉES ('+d.outgoing.length+')',list(d.outgoing.map(p=>person(p,'<button class="btn btn-outline" type="button" data-friend-act="cancel" data-id="'+p.id+'">ANNULER</button>')),'')):'')
-   +section('CONFIDENTIALITÉ','QUI VOIT MON PROFIL ?','<div class="panel friend-visibility"><label for="friendVis">Mon profil est visible par</label><select id="friendVis" data-friend-vis>'+Object.entries(VIS).map(([k,v])=>'<option value="'+k+'"'+(d.visibility===k?' selected':'')+'>'+v+'</option>').join('')+'</select><p>Un profil montre ton niveau, ton rang, tes succès, ta vitrine de 5 cartes favorites, tes sets et albums terminés. Jamais ton solde ni ton e-mail.</p></div>')
+   +(d.friends.length?section('ACTIVITÉ','Activité de mes amis',activityList(act.events)):'')
+   +section('MON CODE','Mon code joueur','<div class="panel friend-code-box"><strong class="trade-code" id="friendMyCode">'+esc(d.code)+'</strong><button class="btn btn-outline" type="button" data-friend-copy>Copier</button><p>C’est le même code que pour les échanges. Donne-le à un ami : il pourra te demander en ami, et tu accepteras.</p></div>')
+   +section('AJOUTER','Ajouter un ami','<form class="panel friend-add" data-friend-add><label for="friendCode">Code du joueur</label><div class="friend-add-row"><input id="friendCode" name="code" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="Ex. K7M2QX9P" required><button class="btn btn-gold" type="submit">Envoyer la demande</button></div></form>')
+   +(d.incoming.length?section('DEMANDES','Demandes reçues ('+d.incoming.length+')',list(d.incoming.map(p=>person(p,'<button class="btn btn-gold" type="button" data-friend-act="accept" data-id="'+p.id+'">Accepter</button><button class="btn btn-outline" type="button" data-friend-act="decline" data-id="'+p.id+'">Refuser</button>')),'')):'')
+   +section('MES AMIS','Mes amis ('+d.friends.length+')',list(d.friends.map(p=>person(p,'<a class="btn btn-outline" href="#trades?code='+encodeURIComponent(p.code)+'">Échanger</a><button class="btn btn-outline" type="button" data-friend-rival="'+esc(p.code)+'" data-on="'+(p.rival?'0':'1')+'" aria-pressed="'+(p.rival?'true':'false')+'">'+(p.rival?'RIVAL ✓':'RIVAL')+'</button><button class="btn btn-outline" type="button" data-friend-act="remove" data-id="'+p.id+'" aria-label="Retirer '+esc(p.name)+'">Retirer</button>')),'Aucun ami pour l’instant : saisis le code d’un joueur ci-dessus.'))
+   +(d.outgoing.length?section('EN ATTENTE','Demandes envoyées ('+d.outgoing.length+')',list(d.outgoing.map(p=>person(p,'<button class="btn btn-outline" type="button" data-friend-act="cancel" data-id="'+p.id+'">Annuler</button>')),'')):'')
+   +section('CONFIDENTIALITÉ','Qui voit mon profil ?','<div class="panel friend-visibility"><label for="friendVis">Mon profil est visible par</label><select id="friendVis" data-friend-vis>'+Object.entries(VIS).map(([k,v])=>'<option value="'+k+'"'+(d.visibility===k?' selected':'')+'>'+v+'</option>').join('')+'</select><p>Un profil montre ton niveau, ton rang, tes succès, ta vitrine de 5 cartes favorites, tes sets et albums terminés. Jamais ton solde ni ton e-mail.</p></div>')
    +'</div>';
 }
 
@@ -59,19 +59,19 @@ async function joueur(q){
   const stats=[['Niveau',p.level],['Rang',p.rank?'#'+p.rank:'—'],['Succès',p.achievements],['Albums',p.albums]];
   return '<div class="page friends-page">'+viewHero('FOOTVAULT / JOUEUR',esc(p.name).toUpperCase(),'Membre depuis le '+new Date(p.memberSince).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}))+relationBar(p)
    +'<section class="section"><ul class="friend-stats">'+stats.map(([k,v])=>'<li><strong>'+esc(String(v))+'</strong><span>'+k+'</span></li>').join('')+'</ul></section>'
-   +section('VITRINE','CARTES FAVORITES',d.favorites.length?'<div class="friend-showcase">'+d.favorites.map(c=>'<div class="friend-showcase-card">'+cardMarkup(c)+'</div>').join('')+'</div>':'<p class="friend-empty">Aucune carte en vitrine.</p>')
-   +(d.team?section('ÉQUIPE TYPE','ÉQUIPE TYPE · '+esc(d.team.formation)+' · NOTE '+String(d.team.rating).replace('.',','),'<ul class="friend-sets team-public">'+d.team.players.map((x,i)=>'<li>'+(x?'<strong>'+x.ovr+'</strong> '+esc(x.name)+' <small>'+esc(x.position)+'</small>':'<small>poste vide</small>')+'</li>').join('')+'</ul>'):'')
-   +((d.wishlist||[]).length?section('SOUHAITS','CARTES RECHERCHÉES',`<ul class="friend-sets">${d.wishlist.map(w=>'<li>'+esc(w.name)+'</li>').join('')}</ul>`):'')
-   +section('SETS','SETS TERMINÉS ('+p.sets.length+')',p.sets.length?'<ul class="friend-sets">'+p.sets.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>':'<p class="friend-empty">Aucun set terminé.</p>')
+   +section('VITRINE','Cartes favorites',d.favorites.length?'<div class="friend-showcase">'+d.favorites.map(c=>'<div class="friend-showcase-card">'+cardMarkup(c)+'</div>').join('')+'</div>':'<p class="friend-empty">Aucune carte en vitrine.</p>')
+   +(d.team?section('ÉQUIPE TYPE','Équipe type · '+esc(d.team.formation)+' · NOTE '+String(d.team.rating).replace('.',','),'<ul class="friend-sets team-public">'+d.team.players.map((x,i)=>'<li>'+(x?'<strong>'+x.ovr+'</strong> '+esc(x.name)+' <small>'+esc(x.position)+'</small>':'<small>poste vide</small>')+'</li>').join('')+'</ul>'):'')
+   +((d.wishlist||[]).length?section('SOUHAITS','Cartes recherchées',`<ul class="friend-sets">${d.wishlist.map(w=>'<li>'+esc(w.name)+'</li>').join('')}</ul>`):'')
+   +section('SETS','Sets terminés ('+p.sets.length+')',p.sets.length?'<ul class="friend-sets">'+p.sets.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>':'<p class="friend-empty">Aucun set terminé.</p>')
    +'</div>';
 }
 function relationBar(p){
   const code=esc(p.code);
   if(p.relation==='self')return '<p class="friend-relation">C’est ton profil. <a href="#amis">Gérer mes amis et ma confidentialité</a></p>';
-  if(p.relation==='friend')return '<p class="friend-relation">Vous êtes amis. <a class="btn btn-outline" href="#trades?code='+encodeURIComponent(p.code)+'">PROPOSER UN ÉCHANGE</a></p>';
+  if(p.relation==='friend')return '<p class="friend-relation">Vous êtes amis. <a class="btn btn-outline" href="#trades?code='+encodeURIComponent(p.code)+'">Proposer un échange</a></p>';
   if(p.relation==='pending_out')return '<p class="friend-relation">Demande envoyée, en attente de réponse.</p>';
-  if(p.relation==='pending_in')return '<p class="friend-relation">Ce joueur t’a demandé en ami. <a class="btn btn-gold" href="#amis">RÉPONDRE</a></p>';
-  return '<p class="friend-relation"><button class="btn btn-gold" type="button" data-friend-ask="'+code+'">DEMANDER EN AMI</button></p>';
+  if(p.relation==='pending_in')return '<p class="friend-relation">Ce joueur t’a demandé en ami. <a class="btn btn-gold" href="#amis">Répondre</a></p>';
+  return '<p class="friend-relation"><button class="btn btn-gold" type="button" data-friend-ask="'+code+'">Demander en ami</button></p>';
 }
 
 document.addEventListener('click',async e=>{
