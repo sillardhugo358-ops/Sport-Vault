@@ -6,7 +6,6 @@ const {$,api,apiRetry,app,closeModal,esc,initials,money,rarityOrder,rarityValue,
 const claimAlbum=(...a)=>FVC.ui.claimAlbum(...a);
 const claimChallengeUi=(...a)=>FVC.ui.claimChallengeUi(...a);
 const claimSetUi=(...a)=>FVC.ui.claimSetUi(...a);
-const claimGoalUi=(...a)=>FVC.ui.claimGoalUi(...a);
 const daily=(...a)=>FVC.ui.daily(...a);
 const logout=(...a)=>FVC.ui.logout(...a);
 const mission=(...a)=>FVC.ui.mission(...a);
@@ -135,7 +134,6 @@ document.querySelectorAll('[data-new-competition]').forEach(x=>x.onclick=()=>FVC
  document.querySelector('[data-shop-toggle]')?.addEventListener('click',e=>{const box=e.currentTarget.closest('.shop-filters');state.packShopFiltersOpen=!box.classList.contains('is-open');box.classList.toggle('is-open',state.packShopFiltersOpen);e.currentTarget.setAttribute('aria-expanded',String(state.packShopFiltersOpen));e.currentTarget.textContent=state.packShopFiltersOpen?'MASQUER ▴':'AFFICHER ▾';});document.querySelector('[data-shop-reset]')?.addEventListener('click',()=>{state.packShopType='all';state.packShopSearch='';state.packShopMax=5000;state.packShopSort='recent';render()});
  document.querySelectorAll('[data-pack]').forEach(b=>b.onclick=()=>openPack(b.dataset.pack));
  const dailyBtn=$('#daily');if(dailyBtn)dailyBtn.onclick=()=>{dailyBtn.disabled=true;daily()};
- document.querySelectorAll('[data-goal-claim]').forEach(b=>b.onclick=()=>{b.disabled=true;claimGoalUi(b.dataset.goalClaim,b.dataset.goalPct)});
  document.querySelectorAll('[data-set-claim]').forEach(b=>b.onclick=()=>{b.disabled=true;claimSetUi(b.dataset.setClaim)});
  document.querySelectorAll('[data-challenge]').forEach(b=>b.onclick=()=>{b.disabled=true;claimChallengeUi(b.dataset.challenge)});
  document.querySelectorAll('[data-mission]').forEach(b=>b.onclick=()=>{b.disabled=true;mission(b.dataset.mission)});document.querySelectorAll('[data-lb-claim]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{const r=await api('/api/leaderboard/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({week:b.dataset.lbClaim})});if(r.user)state.user=r.user;toast(`+${money(r.reward.coins)} FOOTCOINS · +${money(r.reward.xp)} XP`);render()}catch(e){toast(e.message);b.disabled=false}});document.querySelectorAll('[data-lb-claim-season]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{const r=await api('/api/leaderboard/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({season:b.dataset.lbClaimSeason})});if(r.user)state.user=r.user;toast(`+${money(r.reward.coins)} FOOTCOINS · +${money(r.reward.xp)} XP`+((r.cards||[]).length?' · '+r.cards.map(c=>c.name).join(', '):''));render()}catch(e){toast(e.message);b.disabled=false}});document.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>{b.disabled=true;task(b.dataset.taskKind,b.dataset.task)});
