@@ -479,3 +479,16 @@ html:root:root .team-page .team-toolbar select{border-radius:999px;min-height:44
 html:root:root .team-page .team-count{color:var(--muted)}
 html:root:root .team-page .team-stat :is(b,strong){font-family:var(--head);color:var(--text)}
 html:root:root .team-picker .btn{border-radius:999px;font:600 15px var(--body);text-transform:none!important;letter-spacing:0!important}
+/* ---- Atelier : reproduction de la maquette ---- */
+html:root:root .wk-page .view-hero{background:linear-gradient(120deg,#ffb84d,#ff6a4d 55%,#f0397f)}
+html:root:root .wk-page .wk-tabs{background:var(--av-ghost);border:0;border-radius:999px;padding:4px;display:inline-flex;gap:2px}
+html:root:root .wk-page .wk-tab{border-radius:999px;border:0;background:none;color:var(--muted);font:600 14px var(--body);text-transform:none!important;letter-spacing:0!important;box-shadow:none}
+html:root:root .wk-page .wk-tab.is-on{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root .wk-page .wk-seg{border-radius:999px;background:var(--av-ghost);border:1px solid transparent;color:var(--text);box-shadow:none}
+html:root:root .wk-page .wk-seg.is-on{background:var(--panel);border-color:var(--line);box-shadow:var(--av-shadow)}
+html:root:root .wk-page :is(.wk-stage,.wk-preview){background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:var(--av-shadow)}
+html:root:root .wk-page .btn{min-height:44px;border-radius:999px;font:600 15px var(--body);text-transform:none!important;letter-spacing:0!important}
+html:root:root .wk-page .btn-gold{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root .wk-page :is(.btn-outline,.btn-ghost){background:var(--av-ghost);border-color:transparent;color:var(--text)}
+html:root:root .wk-page :is(.wk-note,.wk-preview summary){color:var(--muted)}
+html:root:root .wk-page .wk-slot{border-radius:16px}
