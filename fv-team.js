@@ -56,7 +56,7 @@ async function equipe(){
     let d;try{d=await api('/api/team')}catch(e){if(e.status===401)return FVC.pages.auth(new URLSearchParams({next:'equipe'}));throw e}
     if(!st.dirty)setFromServer(d);
   }
-  return '<div class="page team-page">'+viewHero('FOOTVAULT / ÉQUIPE TYPE','TON <span>ÉQUIPE TYPE.</span>','Compose ton 11 avec tes cartes : chaque poste demande le poste exact (un latéral gauche ne joue pas à droite). La note d’équipe est la moyenne des OVR des 11 titulaires ; un poste vide compte 0. Ton équipe est visible sur ton profil.',String(rating()).replace('.',','),'NOTE D’ÉQUIPE')
+  return '<div class="page team-page">'+viewHero('ÉQUIPE TYPE','Place chaque carte à son poste.','Compose ton 11 avec tes cartes : chaque poste demande le poste exact (un latéral gauche ne joue pas à droite). La note d’équipe est la moyenne des OVR des 11 titulaires ; un poste vide compte 0. Ton équipe est visible sur ton profil.',String(rating()).replace('.',','),'NOTE D’ÉQUIPE')
    +'<section class="section team-board"><div class="team-toolbar"><label class="team-formation-field" for="teamFormation"><span>Formation</span><select id="teamFormation" data-team-formation>'+st.formations.map(f=>'<option'+(f===st.formation?' selected':'')+'>'+f+'</option>').join('')+'</select></label>'
    +'<div class="team-actions"><button class="btn btn-outline" type="button" data-team-auto>MEILLEUR 11</button><button class="btn btn-outline" type="button" data-team-clear>VIDER</button><button class="btn btn-gold" type="button" data-team-save'+(st.dirty&&!st.busy?'':' disabled')+'>ENREGISTRER</button></div>'
    +'<p class="team-count" role="status">'+filled()+' / 11 postes'+(st.dirty?' · <em>modifications non enregistrées</em>':'')+'</p></div>'

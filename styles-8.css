@@ -234,3 +234,50 @@ html:root:root .fvh-hero .fvh-chip,html:root:root .fvh-hero .fvh-chip span{color
 html:root:root .fvh-hero .fvh-chip small{color:var(--muted)}
 html:root:root .fvh-hero .fvh-chip i{color:#fff}
 html:root:root .fvh-cta .btn-gold{background:#fff;color:#0d1b3d}
+/* ---- Collection : reproduction de la maquette ---- */
+html:root:root .coll-hero{background:linear-gradient(120deg,#ff7a59,#ff4f8b 55%,#9a6cff)}
+html:root:root .coll-actions{margin-top:18px}
+html:root:root .coll-actions .btn{background:rgba(255,255,255,.22);color:#fff;border-color:transparent}
+html:root:root .coll-actions .btn-gold{background:#fff;color:#0d1b3d}
+html:root:root .collection-page .collection-toolbar{display:grid;gap:14px;padding:20px;margin:0 0 22px;border-radius:22px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--av-shadow)}
+html:root:root .collection-page .collection-tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;order:-1}
+html:root:root .collection-page .collection-search{flex:1 1 280px;min-height:44px;padding:0 16px;border-radius:12px}
+html:root:root .collection-page .filters{display:flex;gap:8px;flex-wrap:wrap}
+html:root:root .collection-page .filter{padding:7px 16px;border-radius:999px;border:0;background:var(--av-ghost);color:var(--muted);font:600 14px var(--body);text-transform:none;letter-spacing:0;cursor:pointer}
+html:root:root .collection-page .filter.active{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root .collection-page .collection-sort{border-radius:999px;background:var(--av-ghost);border:0;padding:9px 16px;font:600 14px var(--body)}
+html:root:root .collection-page .collection-view{background:var(--av-ghost);border:0;border-radius:999px;padding:3px}
+html:root:root .collection-page .collection-view-btn{border-radius:999px;border:0;background:none;color:var(--muted);font:600 13px var(--body);padding:7px 14px;text-transform:none;letter-spacing:0}
+html:root:root .collection-page .collection-view-btn.is-on{background:var(--panel);color:var(--text);box-shadow:var(--av-shadow)}
+html:root:root .collection-all .collection-card-grid{gap:18px}
+html:root:root .collection-card-item{position:relative}
+html:root:root .collection-card-item .collection-quantity{position:absolute;right:-6px;bottom:-8px;z-index:3;padding:3px 9px;border-radius:999px;background:var(--av-btn);color:var(--av-btn-ink);font:800 12px var(--head);letter-spacing:0;box-shadow:var(--av-shadow)}
+html:root:root .alb-hero .btn,html:root:root .coll-actions .btn{min-height:44px;padding:0 22px;font:600 15px var(--body)}
+html:root:root .collection-page .collection-search{font:500 15px var(--body)}
+html:root:root .collection-page .collection-sort{min-height:44px}
+/* ---- Packs : reproduction de la maquette ---- */
+html:root:root .shop-hero{background:linear-gradient(120deg,#ffb84d,#ff6a4d 55%,#f0397f)}
+html:root:root .shop-hero::before{content:"";position:absolute;right:-8%;top:-60%;width:46%;height:220%;transform:rotate(24deg);background:linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,0));border-radius:60px;pointer-events:none}
+html:root:root .shop-pack-card{overflow:hidden;border-radius:22px;padding:0;background:var(--panel);border:1px solid var(--line);box-shadow:var(--av-shadow)}
+html:root:root .shop-pack-art{border-bottom:0;background:linear-gradient(150deg,#7fa8ff,#3d5afe 55%,#1b2a9a)}
+html:root:root .shop-pack-purple .shop-pack-art{background:linear-gradient(150deg,#d8b4ff,#7b5cff 55%,#3a1a9a)}
+html:root:root .shop-pack-gold .shop-pack-art{background:linear-gradient(150deg,#ffd98a,#ff9f45 55%,#b04a14)}
+html:root:root .shop-pack-red .shop-pack-art{background:linear-gradient(150deg,#ffb08a,#ff4f8b 55%,#9a1a5a)}
+html:root:root .shop-pack-art:before{border-color:rgba(255,255,255,.28)}
+html:root:root .shop-pack-art :is(small,b,strong,span){color:#fff}
+html:root:root .shop-pack-symbol{border-radius:12px;background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.55);color:#fff;font-family:var(--head)}
+html:root:root .shop-pack-title{font-family:var(--head);text-transform:none;letter-spacing:-.02em;color:var(--text)}
+html:root:root .shop-pack-price{font:800 22px var(--head);color:var(--text)}
+/* ---- Mon Vault : reproduction de la maquette ---- */
+html:root:root .vault-hero{background:linear-gradient(120deg,#ff7a59,#ff4f8b 55%,#9a6cff)}
+html:root:root .vault-hero-actions{margin-top:18px}
+html:root:root .vault-hero-actions .btn{background:rgba(255,255,255,.22);color:#fff;border-color:transparent}
+html:root:root .vault-hero-actions .btn-gold{background:#fff;color:#0d1b3d}
+html:root:root .vault-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:0 0 24px}
+html:root:root .vault-stat{padding:18px 20px;border-radius:18px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--av-shadow)}
+html:root:root .vault-stat b{display:block;font:800 32px/1 var(--head);letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--text)}
+html:root:root .vault-stat span{font-size:13px;color:var(--muted)}
+@media(max-width:900px){html:root:root .vault-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* ---- Titres de bandeaux : phrase normale (plus de majuscules) ---- */
+html:root:root :is(.view-hero,.success-hero,.shop-hero,.ranking-hero,.profile-hero) h1{text-transform:none;font-size:clamp(34px,5vw,60px);line-height:1;letter-spacing:-.04em;font-weight:800;text-wrap:balance}
+html:root:root .shop-hero h1{margin:8px 0 10px}

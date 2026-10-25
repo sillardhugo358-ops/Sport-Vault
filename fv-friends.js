@@ -34,7 +34,7 @@ async function amis(){
   let d;
   let act={events:[]};
   try{[d,act]=await Promise.all([api('/api/friends'),api('/api/friends/activity').catch(()=>({events:[]}))])}catch(e){if(e.status===401)return FVC.pages.auth(new URLSearchParams({next:'amis'}));throw e}
-  return '<div class="page friends-page">'+viewHero('FOOTVAULT / AMIS','TES <span>AMIS.</span>','Ajoute des joueurs avec leur code, découvre leur vitrine et échange avec eux.',String(d.friends.length),'AMI'+(d.friends.length>1?'S':''))
+  return '<div class="page friends-page">'+viewHero('AMIS','Collectionne avec tes amis.','Ajoute des joueurs avec leur code, découvre leur vitrine et échange avec eux.',String(d.friends.length),'AMI'+(d.friends.length>1?'S':''))
    +(d.friends.length?rivalsSection(d):'')
    +(d.friends.length?section('ACTIVITÉ','ACTIVITÉ DE MES AMIS',activityList(act.events)):'')
    +section('MON CODE','MON CODE JOUEUR','<div class="panel friend-code-box"><strong class="trade-code" id="friendMyCode">'+esc(d.code)+'</strong><button class="btn btn-outline" type="button" data-friend-copy>COPIER</button><p>C’est le même code que pour les échanges. Donne-le à un ami : il pourra te demander en ami, et tu accepteras.</p></div>')

@@ -11,7 +11,7 @@ async function statistiques(){
   try{d=await FVC.core.api('/api/collection/stats')}catch(e){if(e.status===401)return FVC.pages.auth(new URLSearchParams({next:'statistiques'}));throw e}
   const maxR=Math.max(1,...d.rarities.map(r=>r.unique)),maxP=Math.max(1,...d.positions.map(p=>p.unique));
   const v=d.value;
-  return '<div class="page stats-page">'+viewHero('FOOTVAULT / STATISTIQUES','TA <span>COLLECTION.</span>','Où en es-tu dans chaque compétition et chaque décennie, et ce que vaut ta collection.',money(d.totals.unique),'CARTES DIFFÉRENTES')
+  return '<div class="page stats-page">'+viewHero('STATISTIQUES','Ta collection en chiffres.','Où en es-tu dans chaque compétition et chaque décennie, et ce que vaut ta collection.',money(d.totals.unique),'CARTES DIFFÉRENTES')
    +section('COMPLÉTION','PAR COMPÉTITION',d.competitions.length?'<ul class="stat-list">'+d.competitions.map(c=>bar(c.name,c.owned,c.total,c.pct)).join('')+'</ul>':'<p class="stat-empty">Aucune compétition à afficher.</p>')
    +section('COMPLÉTION','PAR DÉCENNIE',d.decades.length?'<ul class="stat-list">'+d.decades.map(c=>bar('Années '+c.decade,c.owned,c.total,c.pct)).join('')+'</ul>':'<p class="stat-empty">Aucune décennie à afficher.</p>')
    +section('RARETÉ','CARTES DIFFÉRENTES PAR RARETÉ','<ul class="stat-list">'+d.rarities.map(r=>count(RL[r.rarity],r.unique,maxR,'rarity-fill-'+r.rarity)).join('')+'</ul>')

@@ -52,7 +52,7 @@ async function atelier(){
   try{d=await api('/api/workshop')}catch(e){if(e.status===401)return FVC.pages.auth(new URLSearchParams({next:'atelier'}));throw e}
   cleanPicks(d);
   const tabs=[['fuse','FUSION'],['sell','VENTE RAPIDE']].map(([k,l])=>'<button type="button" role="tab" class="wk-tab'+(st.tab===k?' is-on':'')+'" data-wk-tab="'+k+'" aria-selected="'+(st.tab===k)+'">'+l+'</button>').join('');
-  return '<div class="page wk-page">'+viewHero('FOOTVAULT / ATELIER','TON <span>ATELIER.</span>','Fusionne des doublons que tu choisis en une carte plus rare, ou revends-les contre des FOOTCOINS.',String(d.fusion.left)+'/'+d.fusion.perDay,'FUSIONS RESTANTES AUJOURD’HUI')
+  return '<div class="page wk-page">'+viewHero('ATELIER','Fusionne tes doublons.','Fusionne des doublons que tu choisis en une carte plus rare, ou revends-les contre des FOOTCOINS.',String(d.fusion.left)+'/'+d.fusion.perDay,'FUSIONS RESTANTES AUJOURD’HUI')
    +'<section class="section"><div class="wk-tabs" role="tablist" aria-label="Atelier">'+tabs+'</div>'+(st.tab==='fuse'?fuseHtml(d):sellHtml(d))+'</section></div>';
 }
 // Révélation : les doublons se fondent, puis la nouvelle carte apparaît face cachée ; le joueur la retourne lui-même.

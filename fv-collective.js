@@ -41,7 +41,7 @@ async function collectif(){
   const adm=isAdmin()?await api('/api/admin/collective').catch(()=>null):null;
   st.adm=adm;
   const live=d.challenges.filter(c=>c.state!=='ended'),ended=d.challenges.filter(c=>c.state==='ended');
-  return '<div class="page wk-page cl-page">'+viewHero('FOOTVAULT / COMMUNAUTÉ','DÉFIS <span>COLLECTIFS.</span>','Toute la communauté fait avancer la même jauge. Chaque palier atteint se réclame une fois, à condition d’avoir contribué au défi.',String(live.length),'DÉFIS ACTIFS')
+  return '<div class="page wk-page cl-page">'+viewHero('DÉFIS COLLECTIFS','Tous ensemble, un même objectif.','Toute la communauté fait avancer la même jauge. Chaque palier atteint se réclame une fois, à condition d’avoir contribué au défi.',String(live.length),'DÉFIS ACTIFS')
    +'<section class="section">'+(live.length?'<div class="cl-grid">'+live.map(card).join('')+'</div>':'<p class="wk-note">Aucun défi collectif en cours pour le moment.</p>')+'</section>'
    +(ended.length?'<section class="section"><div class="section-head"><div><p class="eyebrow">TERMINÉS</p><h2>RÉCOMPENSES À RÉCUPÉRER</h2></div></div><div class="cl-grid">'+ended.map(card).join('')+'</div></section>':'')
    +(adm?editor(adm):'')+'</div>';
