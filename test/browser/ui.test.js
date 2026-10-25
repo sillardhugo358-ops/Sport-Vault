@@ -307,7 +307,7 @@ test('échanges : proposer une offre depuis la page, puis accepter une offre re�
   await page.check('[data-trade-pick="give"][value="' + myCard + '"]');
   await page.check('[data-trade-pick="ask"][value="' + hisCard + '"]');
   await page.click('[data-trade-send]');
-  await page.waitForFunction(() => /EN COURS \(1\)/.test(document.querySelector('.trades-page')?.innerText || ''), null, { timeout: 15000 });
+  await page.waitForFunction(() => /en cours \(1\)/i.test(document.querySelector('.trades-page')?.innerText || ''), null, { timeout: 15000 });
   assert.equal((await other.get('/api/trades')).body.received.length, 1);
   // Offre reçue : acceptation depuis la page.
   const mineCode = await page.textContent('#tradeMyCode');
@@ -319,7 +319,7 @@ test('échanges : proposer une offre depuis la page, puis accepter une offre re�
   await visit('trades');
   await page.waitForSelector('[data-trade-accept]');
   await page.click('[data-trade-accept]');
-  await page.waitForFunction(() => /ACCEPTÉE/.test(document.querySelector('.trades-page')?.innerText || ''), null, { timeout: 15000 });
+  await page.waitForFunction(() => /acceptée\b/i.test(document.querySelector('.trades-page')?.innerText || ''), null, { timeout: 15000 });
   assert.equal((await server.db.query('SELECT owner_id FROM card_instances WHERE instance_id=$1', [hisOther])).rows[0].owner_id, me);
   // Lien « Échanger » d'un profil : le code est rempli et la recherche lancée ; filtres de cartes ; historique filtrable.
   await visit('trades?code=' + otherCode);
