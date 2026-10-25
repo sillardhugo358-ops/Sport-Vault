@@ -381,3 +381,16 @@ html:root:root .auction-time{color:#ff6a4d;font-weight:700}
 html:root:root .auction-card :is(.auction-meta,.auction-price span){text-transform:none;letter-spacing:0;font:600 13px var(--body);color:var(--muted)}
 html:root:root .auction-card .btn{min-height:44px;border-radius:999px;font:600 15px var(--body);text-transform:none;letter-spacing:0}
 html:root:root .empty-rich h2,html:root:root .empty-rich h3{font-family:var(--head);text-transform:none;letter-spacing:-.02em}
+/* ---- Échanges : reproduction de la maquette ---- */
+html:root:root .trades-page .view-hero{background:linear-gradient(120deg,#1ccf9c,#35b8ff 55%,#7b8bff)}
+html:root:root .trades-page .section-head h2{font:800 clamp(22px,3vw,30px)/1.1 var(--head)!important;text-transform:none!important;letter-spacing:-.03em!important;color:var(--text)!important;-webkit-text-fill-color:currentColor}
+html:root:root .trades-page .section-head .eyebrow{color:#b8400f;background:none;-webkit-text-fill-color:currentColor;letter-spacing:.14em}
+html:root:root .trades-page .section{margin:28px 0}
+html:root:root .trades-page :is(.trade-code-box,.trade-composer,.trade-offer){background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:var(--av-shadow)}
+html:root:root .trades-page .trade-code{font:800 28px var(--head);letter-spacing:.12em;color:var(--text)}
+html:root:root .trades-page .btn{min-height:44px;border-radius:999px;font:600 15px var(--body);text-transform:none!important;letter-spacing:0!important}
+html:root:root .trades-page .btn-gold{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root .trades-page :is(.btn-outline,.btn-ghost){background:var(--av-ghost);border-color:transparent;color:var(--text)}
+html:root:root .trades-page .trade-search-row input,html:root:root .trades-page .trade-search input{border-radius:12px;font:500 15px var(--body);text-transform:none;letter-spacing:0}
+html:root:root .trades-page label{text-transform:none!important;letter-spacing:0!important;font:600 13px var(--body)!important;color:var(--muted)}
+html:root:root .trades-page :is(.trade-hcount,.trade-with) {color:var(--muted)}

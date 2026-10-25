@@ -24,13 +24,13 @@ const pickList=(side,cards,set)=>{const shown=applyF(cards);return shown.length?
 
 function composerHtml(){
   const ready=st.player&&st.give.size>=1&&st.ask.size>=1;
-  return '<div class="trade-search"><label for="tradeCode">Code d’échange du joueur</label><div class="trade-search-row"><input id="tradeCode" maxlength="8" autocomplete="off" autocapitalize="characters" value="'+esc(st.code)+'" placeholder="Ex. K7M2QX9P"><button class="btn btn-outline" type="button" data-trade-search>RECHERCHER</button></div></div>'
+  return '<div class="trade-search"><label for="tradeCode">Code d’échange du joueur</label><div class="trade-search-row"><input id="tradeCode" maxlength="8" autocomplete="off" autocapitalize="characters" value="'+esc(st.code)+'" placeholder="Ex. K7M2QX9P"><button class="btn btn-outline" type="button" data-trade-search>Rechercher</button></div></div>'
     +(st.player?'<p class="trade-with">Échange avec <strong>'+esc(st.player.name)+'</strong> · choisis 1 à '+MAX_CARDS+' cartes de chaque côté.</p>'+filterBar()+'<div class="trade-columns"><fieldset><legend>Tu donnes ('+st.give.size+'/'+MAX_CARDS+')</legend>'+pickList('give',st.mine,st.give)+'</fieldset><fieldset><legend>Tu reçois ('+st.ask.size+'/'+MAX_CARDS+')</legend>'+pickList('ask',st.theirs,st.ask)+'</fieldset></div>'
-      +'<button class="btn btn-gold" type="button" data-trade-send '+(ready&&!st.busy?'':'disabled')+'>ENVOYER L’OFFRE</button>':'');
+      +'<button class="btn btn-gold" type="button" data-trade-send '+(ready&&!st.busy?'':'disabled')+'>Envoyer l’offre</button>':'');
 }
 const offerCard=(o,kind)=>'<article class="panel trade-offer"><div class="trade-offer-head"><p class="eyebrow">'+(kind==='received'?'DE '+esc(o.fromName.toUpperCase()):kind==='sent'?'POUR '+esc(o.toName.toUpperCase()):esc(({accepted:'ACCEPTÉE',declined:'REFUSÉE',cancelled:'ANNULÉE',expired:'EXPIRÉE'})[o.status]||o.status))+'</p><small>'+(o.status==='open'?'Valable jusqu’au '+esc(fmt(o.expiresAt)):esc(fmt(o.resolvedAt||o.createdAt)))+'</small></div>'
   +'<div class="trade-columns trade-offer-cols"><div><h4>'+(kind==='received'?'Il donne':kind==='sent'?'Tu donnes':'Donné')+'</h4><ul>'+o.give.map(cardLine).join('')+'</ul></div><div><h4>'+(kind==='received'?'Tu donnes':kind==='sent'?'Tu reçois':'Demandé')+'</h4><ul>'+o.ask.map(cardLine).join('')+'</ul></div></div>'
-  +(kind==='received'?'<div class="actions"><button class="btn btn-gold" type="button" data-trade-accept="'+esc(o.id)+'">ACCEPTER</button><button class="btn btn-outline" type="button" data-trade-decline="'+esc(o.id)+'">REFUSER</button></div>':kind==='sent'?'<div class="actions"><button class="btn btn-outline" type="button" data-trade-cancel="'+esc(o.id)+'">ANNULER L’OFFRE</button></div>':'')+'</article>';
+  +(kind==='received'?'<div class="actions"><button class="btn btn-gold" type="button" data-trade-accept="'+esc(o.id)+'">Accepter</button><button class="btn btn-outline" type="button" data-trade-decline="'+esc(o.id)+'">Refuser</button></div>':kind==='sent'?'<div class="actions"><button class="btn btn-outline" type="button" data-trade-cancel="'+esc(o.id)+'">Annuler l’offre</button></div>':'')+'</article>';
 const section=(eyebrow,title,body)=>'<section class="section trade-section"><div class="section-head"><div><p class="eyebrow">'+eyebrow+'</p><h2>'+title+'</h2></div></div>'+body+'</section>';
 
 const HS={all:'Tous',accepted:'Acceptées',declined:'Refusées',cancelled:'Annulées',expired:'Expirées'};
@@ -57,11 +57,11 @@ async function trades(){
   const keep=new Set(st.mine.map(c=>c.instanceId));for(const id of [...st.give])if(!keep.has(id))st.give.delete(id);
   const L=data.limits;
   return '<div class="page trades-page">'+viewHero('ÉCHANGES','Échange avec tes amis, carte contre carte.','Échange 1 à '+L.maxCardsPerSide+' de tes cartes contre celles d’un autre joueur. Les cartes Legendary et Icon ne s’échangent pas.',String(data.remainingToday),'ÉCHANGES RESTANTS AUJOURD’HUI')
-    +section('MON CODE','MON CODE D’ÉCHANGE','<div class="panel trade-code-box"><strong class="trade-code" id="tradeMyCode">'+esc(data.code)+'</strong><button class="btn btn-outline" type="button" data-trade-copy>COPIER</button><p>Donne ce code à un ami pour qu’il t’envoie une offre. '+L.maxOpenSent+' offres ouvertes maximum ('+data.openSent+' en cours) · '+L.dailyLimit+' échanges conclus par jour · une offre expire au bout de '+L.expiresDays+' jours.</p></div>')
-    +section('REÇUES','OFFRES REÇUES ('+data.received.length+')',data.received.length?'<div class="trade-offers">'+data.received.map(o=>offerCard(o,'received')).join('')+'</div>':'<p class="trade-empty">Aucune offre en attente.</p>')
-    +section('NOUVELLE OFFRE','PROPOSER UN ÉCHANGE','<div class="panel trade-composer" id="tradeComposer">'+composerHtml()+'</div>')
-    +section('ENVOYÉES','MES OFFRES EN COURS ('+data.sent.length+')',data.sent.length?'<div class="trade-offers">'+data.sent.map(o=>offerCard(o,'sent')).join('')+'</div>':'<p class="trade-empty">Aucune offre en cours.</p>')
-    +section('HISTORIQUE','HISTORIQUE DES ÉCHANGES','<div id="tradeHistory">'+historyHtml()+'</div>')
+    +section('MON CODE','Mon code d’échange','<div class="panel trade-code-box"><strong class="trade-code" id="tradeMyCode">'+esc(data.code)+'</strong><button class="btn btn-outline" type="button" data-trade-copy>Copier</button><p>Donne ce code à un ami pour qu’il t’envoie une offre. '+L.maxOpenSent+' offres ouvertes maximum ('+data.openSent+' en cours) · '+L.dailyLimit+' échanges conclus par jour · une offre expire au bout de '+L.expiresDays+' jours.</p></div>')
+    +section('REÇUES','Offres reçues ('+data.received.length+')',data.received.length?'<div class="trade-offers">'+data.received.map(o=>offerCard(o,'received')).join('')+'</div>':'<p class="trade-empty">Aucune offre en attente.</p>')
+    +section('NOUVELLE OFFRE','Proposer un échange','<div class="panel trade-composer" id="tradeComposer">'+composerHtml()+'</div>')
+    +section('ENVOYÉES','Mes offres en cours ('+data.sent.length+')',data.sent.length?'<div class="trade-offers">'+data.sent.map(o=>offerCard(o,'sent')).join('')+'</div>':'<p class="trade-empty">Aucune offre en cours.</p>')
+    +section('HISTORIQUE','Historique des échanges','<div id="tradeHistory">'+historyHtml()+'</div>')
     +'</div>';
 }
 const redrawComposer=()=>{const el=$('#tradeComposer');if(el){const a=document.activeElement,focus=a?.id,pos=a?.selectionStart;el.innerHTML=composerHtml();if(focus==='tradeCode'||focus==='tradeFilterQ'){const n=$('#'+focus);n?.focus();if(pos!=null)try{n.setSelectionRange(pos,pos)}catch{}}}};
