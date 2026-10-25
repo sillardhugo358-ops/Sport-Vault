@@ -365,3 +365,19 @@ html:root:root .success-page .success-section-heading :is(span,small,p,em){font-
 html:root:root .success-page .success-tabs{overflow-x:auto;scrollbar-width:none}
 html:root:root .success-page .success-tabs>*{flex:1 0 auto;white-space:nowrap}
 html:root:root .success-page .success-tabs *{text-transform:none!important;letter-spacing:0!important}
+/* ---- Marché : reproduction de la maquette ---- */
+html:root:root .view-hero:has(+ .auction-summary),html:root:root .view-hero:has(~ .auction-toolbar){background:linear-gradient(120deg,#38bdf8,#4f5bff 60%,#8b7bff)}
+html:root:root .auction-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0 0 20px}
+html:root:root .auction-summary>*{padding:18px 20px;border-radius:18px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--av-shadow)}
+html:root:root .auction-summary :is(span,small,p){color:var(--muted);font:600 13px var(--body);letter-spacing:0;text-transform:none}
+html:root:root .auction-summary :is(b,strong){display:block;font:800 32px/1.1 var(--head);letter-spacing:-.03em;color:var(--text)}
+html:root:root .auction-toolbar{background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:var(--av-shadow)}
+html:root:root .auction-toolbar .filter{border-radius:999px;border:0;background:var(--av-ghost);color:var(--muted);font:600 14px var(--body);text-transform:none;letter-spacing:0;padding:8px 16px}
+html:root:root .auction-toolbar .filter.active{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root .auction-toolbar :is(.auction-search,.auction-select){border-radius:999px;background:var(--av-ghost);border:0;font:500 14px var(--body)}
+html:root:root .auction-copy h3{font-family:var(--head);text-transform:none;letter-spacing:-.02em;color:var(--text)}
+html:root:root .auction-price :is(b,strong){font:800 26px/1 var(--head);letter-spacing:-.03em;color:var(--text)}
+html:root:root .auction-time{color:#ff6a4d;font-weight:700}
+html:root:root .auction-card :is(.auction-meta,.auction-price span){text-transform:none;letter-spacing:0;font:600 13px var(--body);color:var(--muted)}
+html:root:root .auction-card .btn{min-height:44px;border-radius:999px;font:600 15px var(--body);text-transform:none;letter-spacing:0}
+html:root:root .empty-rich h2,html:root:root .empty-rich h3{font-family:var(--head);text-transform:none;letter-spacing:-.02em}
