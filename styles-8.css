@@ -419,3 +419,20 @@ html:root:root .ranking-page .ranking-table-wrap{background:var(--panel);border:
 html:root:root .ranking-page .ranking-table th{color:var(--muted);font:700 12px var(--body);letter-spacing:.08em}
 html:root:root .ranking-page .btn{border-radius:999px;font:600 15px var(--body);text-transform:none!important;letter-spacing:0!important}
 html[data-theme="light"]:root:root :is(.trades-page .section-head .eyebrow,.ranking-page .ranking-me>span,.ranking-page .ranking-rewards .eyebrow){color:#b8400f}
+/* ---- Amis : reproduction de la maquette ---- */
+html:root:root .friends-page .view-hero{background:linear-gradient(120deg,#7b5cff,#b84fd8 55%,#ff6aa0)}
+html:root:root .friends-page .section{margin:28px 0}
+html:root:root .friends-page .section-head h2{font:800 clamp(22px,3vw,30px)/1.1 var(--head)!important;text-transform:none!important;letter-spacing:-.03em!important;color:var(--text)!important;-webkit-text-fill-color:currentColor}
+html:root:root .friends-page .section-head .eyebrow{color:#ff7a59;background:none;-webkit-text-fill-color:currentColor;letter-spacing:.14em}
+html[data-theme="light"]:root:root .friends-page .section-head .eyebrow{color:#b8400f}
+html:root:root .friends-page :is(.friend-code-box,.friend-add,.friend-visibility,.rival-card,.friend-row){background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:var(--av-shadow)}
+html:root:root .friends-page .friend-row{border-radius:16px;box-shadow:none}
+html:root:root .friends-page .trade-code{font:800 28px var(--head);letter-spacing:.12em;color:var(--text)}
+html:root:root .friends-page .friend-code-box .btn{width:auto!important;align-self:flex-start!important;flex:0 0 auto!important}
+html:root:root .friends-page .btn{min-height:44px;border-radius:999px;font:600 15px var(--body);text-transform:none!important;letter-spacing:0!important}
+html:root:root .friends-page .btn-gold{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root .friends-page :is(.btn-outline,.btn-ghost){background:var(--av-ghost);border-color:transparent;color:var(--text)}
+html:root:root .friends-page label{text-transform:none!important;letter-spacing:0!important;font:600 13px var(--body)!important;color:var(--muted)}
+html:root:root .friends-page :is(input,select){border-radius:12px;font:500 15px var(--body);text-transform:none;letter-spacing:0}
+html:root:root .friends-page .friend-name{font-family:var(--head);color:var(--text)}
+html:root:root .friends-page :is(.friend-relation,.friend-activity,.friend-empty){color:var(--muted)}
