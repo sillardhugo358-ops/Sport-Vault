@@ -252,7 +252,7 @@ async function admin(){
    </div>
   </article>`;
  };
- return `<div class="page admin-console-page"><section class="view-hero"><div><p class="eyebrow">FOOTVAULT / ADMIN</p><h1>CENTRE DE <span>CONTRÔLE.</span></h1><p class="lead">Supervision de la plateforme, des comptes, de l'économie et des enchères.</p></div><div class="hero-stat"><strong>ADMIN</strong><span>ACCÈS PRIVILÉGIÉ</span></div></section>
+ return `<div class="page admin-console-page"><section class="view-hero"><div><p class="eyebrow">ADMINISTRATION</p><h1>Gérer le jeu.</h1><p class="lead">Cartes, packs, pools, succès, missions, défis et sets : chaque formulaire s’ouvre au clic et valide côté serveur.</p></div><div class="hero-stat"><strong>ADMIN</strong><span>ACCÈS PRIVILÉGIÉ</span></div></section>
  <nav class="admin-tabs" aria-label="Sections administration">
   <p class="admin-nav-label">ADMINISTRATION</p>
   <button class="admin-tab ${!adminReturn||adminReturn?.tab==="dashboard"?"active":""}" data-admin-tab="dashboard"><span>▦</span> Tableau de bord</button>
