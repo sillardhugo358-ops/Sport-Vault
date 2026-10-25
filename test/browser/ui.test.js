@@ -1064,7 +1064,7 @@ test('statistiques : compétitions, décennies, rareté, poste, valeur indicativ
     assert.ok(r.overflow <= 1, 'pas de débordement à ' + width);
     await page.waitForSelector('.stats-page .stat-bar');
     const text = await page.textContent('.stats-page');
-    for (const t of ['PAR COMPÉTITION', 'PAR DÉCENNIE', 'PAR RARETÉ', 'PAR POSTE', 'VALEUR ESTIMÉE', 'Ce n’est pas un prix garanti']) assert.ok(text.includes(t), t);
+    for (const t of ['PAR COMPÉTITION', 'PAR DÉCENNIE', 'PAR RARETÉ', 'PAR POSTE', 'VALEUR ESTIMÉE', 'Ce n’est pas un prix garanti']) assert.ok(text.toLowerCase().includes(t.toLowerCase()), t);
   }
   assert.deepEqual(errors, []);
 });

@@ -450,3 +450,17 @@ html:root:root .wish-page :is(.btn-outline,.btn-ghost){background:var(--av-ghost
 html:root:root .wish-page label{text-transform:none!important;letter-spacing:0!important;font:600 13px var(--body)!important;color:var(--muted)}
 html:root:root .wish-page input{border-radius:12px;min-height:44px;font:500 15px var(--body);text-transform:none;letter-spacing:0}
 html:root:root .wish-page :is(.wish-empty,.wish-note,.wish-meta,.wish-owned){color:var(--muted)}
+/* ---- Statistiques : reproduction de la maquette ---- */
+html:root:root .stats-page .view-hero{background:linear-gradient(120deg,#1ccf9c,#35b8ff 60%,#5bc8ff)}
+html:root:root .stats-page .section{margin:28px 0}
+html:root:root .stats-page .section-head h2{font:800 clamp(22px,3vw,30px)/1.1 var(--head)!important;text-transform:none!important;letter-spacing:-.03em!important;color:var(--text)!important;-webkit-text-fill-color:currentColor}
+html:root:root .stats-page .section-head .eyebrow{color:#ff7a59;background:none;-webkit-text-fill-color:currentColor;letter-spacing:.14em}
+html[data-theme="light"]:root:root .stats-page .section-head .eyebrow{color:#b8400f}
+html:root:root .stats-page .stat-value{background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:var(--av-shadow)}
+html:root:root .stats-page .stat-value strong{font:800 34px/1 var(--head);letter-spacing:-.03em;color:var(--text)}
+html:root:root .stats-page .stat-value h3{font-family:var(--head);text-transform:none!important;letter-spacing:-.02em;color:var(--text)}
+html:root:root .stats-page .stat-bar{background:var(--av-ghost);border-radius:999px}
+html:root:root .stats-page .stat-bar>*{border-radius:999px}
+html:root:root .stats-page :is(.stat-empty,.stat-head,.stat-row,.stat-top){color:var(--muted)}
+html:root:root .stats-page .stat-top b{color:var(--text)}
+html:root:root .stats-page .stat-bar>:not([class*="rarity-fill"]){background:linear-gradient(90deg,#ff7a59,#ff4f8b)}
