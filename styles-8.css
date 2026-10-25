@@ -188,3 +188,49 @@ html:root:root .modal-box[class*="reveal"] .modal-close{color:#fff}
 html:root:root .team-pitch .team-row{background:none;border:0;box-shadow:none;border-radius:0}
 html:root:root .team-pitch :is(.team-slot,.team-name,.ts-ovr){color:#fff}
 html:root:root .team-pitch .team-name{text-shadow:0 1px 3px rgba(0,0,0,.7)}
+/* ---- Accueil : reproduction de la maquette ---- */
+html:root:root .fvh-hero{position:relative;overflow:hidden;min-height:0;padding:clamp(28px,4.5vw,56px);margin-top:24px;gap:clamp(20px,3vw,40px);background:linear-gradient(120deg,#ff9a4d,#ff4f8b 45%,#7b8cff 78%,#46c1ff)}
+html:root:root .fvh-hero::before{content:"";position:absolute;right:-8%;top:-60%;width:48%;height:220%;transform:rotate(24deg);background:linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,0));border-radius:60px;pointer-events:none}
+html:root:root .fvh-hero>*{position:relative;z-index:1}
+html:root:root .fvh-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;border-radius:999px;background:rgba(255,255,255,.22);color:#fff;font:600 14px var(--body)}
+html:root:root .fvh-badge b{padding:3px 10px;border-radius:999px;background:#fff;color:#e24a7c;font:800 12px var(--body);letter-spacing:.04em}
+html:root:root .fvh-headline{margin:18px 0 16px;font:800 clamp(38px,5.6vw,72px)/.98 var(--head);letter-spacing:-.045em;color:#fff;text-wrap:balance;text-transform:none}
+html:root:root .fvh-hero .fvh-lead{max-width:48ch;margin:0 0 22px;color:rgba(255,255,255,.95);font-size:clamp(16px,1.5vw,19px);line-height:1.55}
+html:root:root .fvh-hero .fvh-actions{display:flex;gap:12px;flex-wrap:wrap}
+html:root:root .fvh-hero .btn-large{min-height:48px;padding:0 24px;font-size:15px}
+html:root:root .fvh-hero .btn-outline{background:rgba(255,255,255,.22);border-color:transparent;color:#fff}
+html:root:root .fvh-hero .fvh-metrics{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 0;padding:0;list-style:none}
+html:root:root .fvh-hero .fvh-metrics li{display:flex;align-items:baseline;gap:6px;padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.18);color:#fff;font-size:13px}
+html:root:root .fvh-hero .fvh-metrics li b{font:800 17px var(--head);color:#fff}
+html:root:root .fvh-hero .fvh-notice{margin:14px 0 0;color:#fff}
+html:root:root .fvh-chip{position:absolute;z-index:5;display:flex;align-items:center;gap:10px;padding:9px 16px 9px 10px;border-radius:16px;background:var(--panel);color:var(--text);box-shadow:0 18px 40px -16px rgba(20,10,80,.5);font:600 13px var(--body)}
+html:root:root .fvh-chip i{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:linear-gradient(140deg,#1ccf9c,#35b8ff);color:#fff;font:800 11px var(--head);font-style:normal}
+html:root:root .fvh-chip span{display:grid;line-height:1.25}
+html:root:root .fvh-chip small{font-weight:500;color:var(--muted);font-size:12px}
+html:root:root .fvh-chip-a{top:2%;right:2%}
+html:root:root .fvh-chip-b{left:0;bottom:6%}
+html:root:root .fvh-chip-b i{background:linear-gradient(140deg,#ffc24d,#ff7a59)}
+/* Compétitions et raretés */
+html:root:root .fvh-competitions{display:flex;flex-wrap:wrap;gap:8px 12px;margin:26px 0}
+html:root:root .fvh-rarity{margin:34px 0 10px}
+html:root:root .fvh-rarity h2{font:800 clamp(24px,3vw,34px)/1.05 var(--head);letter-spacing:-.03em;margin:0 0 16px;text-transform:none}
+html:root:root .fvh-rarity-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+html:root:root .fvh-rar{display:grid;gap:22px;align-content:space-between;min-height:120px;padding:16px 18px;border-radius:18px;color:#fff;font:700 22px var(--head);box-shadow:var(--av-shadow)}
+html:root:root .fvh-rar b{font:700 18px var(--head)}
+html:root:root .fvh-rar span{font:800 26px var(--head);letter-spacing:-.02em}
+html:root:root .fvh-rar-common{background:linear-gradient(150deg,#a9b0bb,#7d8596)}
+html:root:root .fvh-rar-rare{background:linear-gradient(150deg,#63b2ff,#3d7bff)}
+html:root:root .fvh-rar-epic{background:linear-gradient(150deg,#c39bff,#8a5cf0)}
+html:root:root .fvh-rar-legendary{background:linear-gradient(150deg,#ffcb5a,#ff9f45);color:#3a2400}
+html:root:root .fvh-rar-icon{background:linear-gradient(135deg,#ff4f8b,#a05cf0 55%,#35b8ff)}
+html:root:root .fvh-cta{position:relative;overflow:hidden;margin:34px 0;padding:clamp(26px,4vw,48px);border-radius:28px;color:#fff;background:linear-gradient(120deg,#ff7a59,#ff4f8b 55%,#9a6cff)}
+html:root:root .fvh-cta h2{font:800 clamp(34px,5vw,60px)/1 var(--head);letter-spacing:-.045em;margin:8px 0 10px;color:#fff;text-transform:none}
+html:root:root .fvh-cta p{color:rgba(255,255,255,.95);margin:0}
+html:root:root .fvh-cta .fvh-eyebrow{background:none;color:rgba(255,255,255,.92);-webkit-text-fill-color:currentColor}
+html:root:root .fvh-cta-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:20px}
+html:root:root .fvh-cta-row span{padding:10px 18px;border-radius:999px;background:rgba(255,255,255,.22);font-size:14px;font-weight:600}
+@media(max-width:900px){html:root:root .fvh-rarity-grid{grid-template-columns:repeat(2,minmax(0,1fr))}html:root:root .fvh-chip-a{right:0}html:root:root .fvh-chip-b{left:0;bottom:0}}
+html:root:root .fvh-hero .fvh-chip,html:root:root .fvh-hero .fvh-chip span{color:var(--text)}
+html:root:root .fvh-hero .fvh-chip small{color:var(--muted)}
+html:root:root .fvh-hero .fvh-chip i{color:#fff}
+html:root:root .fvh-cta .btn-gold{background:#fff;color:#0d1b3d}
