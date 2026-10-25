@@ -340,3 +340,28 @@ html:root:root .profile-page .profile-kpi span{text-transform:none!important;let
 html:root:root .profile-page .profile-hero .profile-level b{text-transform:none!important;font-size:13px}
 html:root:root .profile-page .profile-actions .btn{text-transform:none!important;letter-spacing:0}
 html[data-theme="light"]:root:root .profile-page :is(.profile-hero,.profile-panel) .eyebrow{color:#b8400f}
+/* ---- Succès : reproduction de la maquette ---- */
+html:root:root .success-page .success-hero{background:linear-gradient(120deg,#7b5cff,#b84fd8 55%,#ff4f8b)}
+html:root:root .success-page .success-hero-tags span{border-radius:999px;border:0;background:rgba(255,255,255,.22);color:#fff;font:600 13px var(--body);letter-spacing:0;text-transform:none;padding:7px 14px}
+html:root:root .success-page .success-section-heading :is(h2,h3){font-family:var(--head);font-size:clamp(22px,3vw,30px);letter-spacing:-.03em;text-transform:none!important;color:var(--text)!important;-webkit-text-fill-color:currentColor}
+html:root:root .success-page .success-section-heading :is(span,small,p){color:var(--muted);font:600 13px var(--body);letter-spacing:0;text-transform:none}
+html:root:root .success-page :is(.success-player-bar,.success-toolbar,.success-tabs){background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:var(--av-shadow)}
+html:root:root .success-page .success-player-copy :is(h2,h3,strong){font-family:var(--head);text-transform:none;letter-spacing:-.02em;color:var(--text)}
+html:root:root .success-page :is(.success-player-copy,.success-player-stat) :is(span,small,p){color:var(--muted);text-transform:none;letter-spacing:0;font:600 12px var(--body)}
+html:root:root .success-page .success-player-stat{background:var(--panel2);border:1px solid var(--line);border-radius:16px;box-shadow:none}
+html:root:root .success-page .success-player-stat :is(b,strong){color:var(--text);font-family:var(--head)}
+html:root:root .success-page .success-overview>*{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--av-shadow)}
+html:root:root .success-page .success-overview :is(span,small,p){color:var(--muted);text-transform:none;letter-spacing:0;font-size:13px}
+html:root:root .success-page .success-overview :is(b,strong){font:800 32px/1 var(--head);color:var(--text)}
+html:root:root .success-page .success-tabs{display:flex;gap:6px;padding:6px}
+html:root:root .success-page .success-tabs :is(a,button){border-radius:999px;border:0;background:none;color:var(--muted);font:600 14px var(--body);text-transform:none;letter-spacing:0;box-shadow:none}
+html:root:root .success-page .success-tabs .active{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root .success-page .success-tabs .active *{color:inherit}
+html:root:root .success-page .success-filter-btn{border-radius:999px;border:0;background:var(--av-ghost);color:var(--muted);font:600 14px var(--body);text-transform:none;letter-spacing:0;padding:8px 16px}
+html:root:root .success-page .success-filter-btn.active{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root .success-page .success-search,html:root:root .success-page .success-tools select{border-radius:999px;background:var(--av-ghost);border:0;font:500 14px var(--body)}
+html:root:root .success-page .success-section-heading *{text-transform:none!important;letter-spacing:-.01em}
+html:root:root .success-page .success-section-heading :is(span,small,p,em){font-size:13px}
+html:root:root .success-page .success-tabs{overflow-x:auto;scrollbar-width:none}
+html:root:root .success-page .success-tabs>*{flex:1 0 auto;white-space:nowrap}
+html:root:root .success-page .success-tabs *{text-transform:none!important;letter-spacing:0!important}
