@@ -25,8 +25,8 @@ function trayHtml(d,cards,left){
   const rule=d.fusion.rules[st.rarity],to=rule.to,fresh=rule.fresh,ready=total()===st.cost&&left>0&&fresh>0;
   return '<div class="wk-tray"><ul class="wk-slots" aria-label="Doublons choisis pour la fusion">'+slots+'</ul>'
    +'<div class="wk-tray-side"><p class="wk-tray-count" role="status"><b>'+total()+' / '+st.cost+'</b> doublons choisis → 1 carte '+esc(RL[to])+'</p>'
-   +'<div class="wk-actions"><button class="btn btn-outline" type="button" data-wk-auto'+(cards.length?'':' disabled')+'>CHOISIR POUR MOI</button><button class="btn btn-outline" type="button" data-wk-clear'+(total()?'':' disabled')+'>VIDER</button>'
-   +'<button class="btn '+(ready?'btn-gold':'btn-outline')+'" type="button" data-wk-fuse="'+esc(st.rarity)+'"'+(ready&&!st.busy?'':' disabled')+'>FUSIONNER</button></div>'
+   +'<div class="wk-actions"><button class="btn btn-outline" type="button" data-wk-auto'+(cards.length?'':' disabled')+'>Choisir pour moi</button><button class="btn btn-outline" type="button" data-wk-clear'+(total()?'':' disabled')+'>Vider</button>'
+   +'<button class="btn '+(ready?'btn-gold':'btn-outline')+'" type="button" data-wk-fuse="'+esc(st.rarity)+'"'+(ready&&!st.busy?'':' disabled')+'>Fusionner</button></div>'
    +(fresh>0?'<p class="wk-note">'+fresh+' carte'+(fresh>1?'s':'')+' '+esc(RL[to])+' que tu n’as pas encore peu'+(fresh>1?'ven':'')+'t sortir : la fusion ne donne jamais une carte que tu possèdes déjà.</p>':'<p class="wk-note">Tu possèdes déjà toutes les cartes '+esc(RL[to])+' que la fusion peut donner : rien de nouveau à gagner pour le moment.</p>')+(left<=0?'<p class="wk-note">Limite du jour atteinte : reviens demain.</p>':'')+'</div></div>';
 }
 // Cartes que la fusion peut donner : le serveur n'envoie la liste que lorsqu'elle est courte (ECONOMY.fusion.previewMax).
@@ -51,14 +51,14 @@ async function atelier(){
   let d;
   try{d=await api('/api/workshop')}catch(e){if(e.status===401)return FVC.pages.auth(new URLSearchParams({next:'atelier'}));throw e}
   cleanPicks(d);
-  const tabs=[['fuse','FUSION'],['sell','VENTE RAPIDE']].map(([k,l])=>'<button type="button" role="tab" class="wk-tab'+(st.tab===k?' is-on':'')+'" data-wk-tab="'+k+'" aria-selected="'+(st.tab===k)+'">'+l+'</button>').join('');
+  const tabs=[['fuse','Fusion'],['sell','Vente rapide']].map(([k,l])=>'<button type="button" role="tab" class="wk-tab'+(st.tab===k?' is-on':'')+'" data-wk-tab="'+k+'" aria-selected="'+(st.tab===k)+'">'+l+'</button>').join('');
   return '<div class="page wk-page">'+viewHero('ATELIER','Fusionne tes doublons.','Fusionne des doublons que tu choisis en une carte plus rare, ou revends-les contre des FOOTCOINS.',String(d.fusion.left)+'/'+d.fusion.perDay,'FUSIONS RESTANTES AUJOURD’HUI')
    +'<section class="section"><div class="wk-tabs" role="tablist" aria-label="Atelier">'+tabs+'</div>'+(st.tab==='fuse'?fuseHtml(d):sellHtml(d))+'</section></div>';
 }
 // Révélation : les doublons se fondent, puis la nouvelle carte apparaît face cachée ; le joueur la retourne lui-même.
 function showFusion(card){
   const chips=Array.from({length:st.cost},(_,i)=>'<i style="--i:'+i+'"></i>').join('');
-  const box=m=>'<div class="modal-box pack-reveal-modal rv-opened wk-reveal" data-best="'+esc(card.rarity)+'"><button class="modal-close" data-close aria-label="Fermer">×</button><p class="eyebrow">FUSION</p><h2 class="pack-reveal-title">'+m+'</h2>';
+  const box=m=>'<div class="modal-box pack-reveal-modal rv-opened wk-reveal" data-best="'+esc(card.rarity)+'"><button class="modal-close" data-close aria-label="Fermer">×</button><p class="eyebrow">Fusion</p><h2 class="pack-reveal-title">'+m+'</h2>';
   const stage=calm()?'':'<div class="wk-fusing" aria-hidden="true">'+chips+'<span></span></div>';
   setModal(box(calm()?'Ta nouvelle carte':'Fusion en cours…')+'<div class="wk-stage">'+stage+'</div></div>');
   const reveal=()=>{
@@ -66,7 +66,7 @@ function showFusion(card){
     document.querySelector('.wk-reveal .pack-reveal-title').textContent='Ta nouvelle carte';
     stageEl.innerHTML='<div class="reveal-grid wk-reveal-grid"><button class="reveal-card rv-'+esc(card.rarity)+'" type="button" aria-pressed="false" aria-label="Retourner la carte" data-wk-flip><span class="reveal-card-inner"><span class="reveal-face reveal-back" aria-hidden="true">FV</span><span class="reveal-face reveal-front">'+cardMarkup(card)+'</span></span></button></div>'
      +'<p class="reveal-result wk-reveal-note" role="status">Touche la carte pour la retourner.</p>'
-     +'<div class="wk-actions wk-reveal-actions" hidden><a class="btn btn-gold" href="#card?id='+encodeURIComponent(card.instanceId)+'" data-close>VOIR LA CARTE</a><button class="btn btn-outline" type="button" data-close>CONTINUER</button></div>';
+     +'<div class="wk-actions wk-reveal-actions" hidden><a class="btn btn-gold" href="#card?id='+encodeURIComponent(card.instanceId)+'" data-close>Voir la carte</a><button class="btn btn-outline" type="button" data-close>Continuer</button></div>';
     stageEl.querySelectorAll('[data-close]').forEach(x=>x.addEventListener('click',closeModal));
     const b=stageEl.querySelector('[data-wk-flip]');b.focus({preventScroll:true});
     b.addEventListener('click',()=>{if(b.classList.contains('flipped'))return;b.classList.add('flipped');b.setAttribute('aria-pressed','true');if(card.rarity!=='common')b.classList.add('rv-burst');
