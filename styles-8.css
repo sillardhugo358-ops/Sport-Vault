@@ -464,3 +464,18 @@ html:root:root .stats-page .stat-bar>*{border-radius:999px}
 html:root:root .stats-page :is(.stat-empty,.stat-head,.stat-row,.stat-top){color:var(--muted)}
 html:root:root .stats-page .stat-top b{color:var(--text)}
 html:root:root .stats-page .stat-bar>:not([class*="rarity-fill"]){background:linear-gradient(90deg,#ff7a59,#ff4f8b)}
+/* ---- Équipe type : reproduction de la maquette ---- */
+html:root:root .team-page .view-hero{background:linear-gradient(120deg,#1ccf9c,#35b8ff 60%,#5bc8ff)}
+html:root:root .team-page :is(.team-xi,.team-stat){background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:var(--av-shadow)}
+html:root:root .team-page .team-stat{border-radius:16px}
+html:root:root .team-page .team-xi-head{font-family:var(--head);text-transform:none!important;letter-spacing:-.02em;color:var(--text)}
+html:root:root .team-page .team-xi-head span{font:800 18px var(--head);text-transform:none!important;letter-spacing:-.02em;color:var(--text)}
+html:root:root .team-page .team-xi-head b{color:var(--muted)}
+html:root:root .team-page .team-toolbar .btn{min-height:44px;border-radius:999px;font:600 15px var(--body);text-transform:none!important;letter-spacing:0!important}
+html:root:root .team-page .team-toolbar .btn-gold{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root .team-page .team-toolbar :is(.btn-outline,.btn-ghost){background:var(--av-ghost);border-color:transparent;color:var(--text)}
+html:root:root .team-page .team-toolbar label{text-transform:none!important;letter-spacing:0!important;font:600 13px var(--body)!important;color:var(--muted)}
+html:root:root .team-page .team-toolbar select{border-radius:999px;min-height:44px;font:600 15px var(--body)}
+html:root:root .team-page .team-count{color:var(--muted)}
+html:root:root .team-page .team-stat :is(b,strong){font-family:var(--head);color:var(--text)}
+html:root:root .team-picker .btn{border-radius:999px;font:600 15px var(--body);text-transform:none!important;letter-spacing:0!important}
