@@ -339,3 +339,4 @@ html:root:root .profile-page .profile-panel :is(h2,h3){text-transform:none!impor
 html:root:root .profile-page .profile-kpi span{text-transform:none!important;letter-spacing:0;font-size:13px}
 html:root:root .profile-page .profile-hero .profile-level b{text-transform:none!important;font-size:13px}
 html:root:root .profile-page .profile-actions .btn{text-transform:none!important;letter-spacing:0}
+html[data-theme="light"]:root:root .profile-page :is(.profile-hero,.profile-panel) .eyebrow{color:#b8400f}
