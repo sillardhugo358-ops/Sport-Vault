@@ -12,12 +12,12 @@ async function statistiques(){
   const maxR=Math.max(1,...d.rarities.map(r=>r.unique)),maxP=Math.max(1,...d.positions.map(p=>p.unique));
   const v=d.value;
   return '<div class="page stats-page">'+viewHero('STATISTIQUES','Ta collection en chiffres.','Où en es-tu dans chaque compétition et chaque décennie, et ce que vaut ta collection.',money(d.totals.unique),'CARTES DIFFÉRENTES')
-   +section('COMPLÉTION','PAR COMPÉTITION',d.competitions.length?'<ul class="stat-list">'+d.competitions.map(c=>bar(c.name,c.owned,c.total,c.pct)).join('')+'</ul>':'<p class="stat-empty">Aucune compétition à afficher.</p>')
-   +section('COMPLÉTION','PAR DÉCENNIE',d.decades.length?'<ul class="stat-list">'+d.decades.map(c=>bar('Années '+c.decade,c.owned,c.total,c.pct)).join('')+'</ul>':'<p class="stat-empty">Aucune décennie à afficher.</p>')
-   +section('RARETÉ','CARTES DIFFÉRENTES PAR RARETÉ','<ul class="stat-list">'+d.rarities.map(r=>count(RL[r.rarity],r.unique,maxR,'rarity-fill-'+r.rarity)).join('')+'</ul>')
-   +section('POSTE','CARTES DIFFÉRENTES PAR POSTE','<ul class="stat-list">'+d.positions.map(p=>count(p.position,p.unique,maxP)).join('')+'</ul>')
-   +section('VALEUR','VALEUR ESTIMÉE (INDICATIVE)','<div class="panel stat-value"><strong>'+money(v.estimated)+' FC</strong><p>Médiane des dernières ventes aux enchères de chacune de tes cartes. '+money(v.priced)+' carte'+(v.priced>1?'s':'')+' estimée'+(v.priced>1?'s':'')+', '+money(v.unpriced)+' jamais vendue'+(v.unpriced>1?'s':'')+' aux enchères (non comptée'+(v.unpriced>1?'s':'')+'). Ce n’est pas un prix garanti.</p>'
-    +(v.top.length?'<h3>TES CARTES LES PLUS CHÈRES</h3><ul class="stat-top">'+v.top.map(c=>'<li><span>'+esc(c.name)+(c.copies>1?' ×'+c.copies:'')+'</span><b>'+money(c.price)+' FC</b></li>').join('')+'</ul>':'')+'</div>')
+   +section('COMPLÉTION','Par compétition',d.competitions.length?'<ul class="stat-list">'+d.competitions.map(c=>bar(c.name,c.owned,c.total,c.pct)).join('')+'</ul>':'<p class="stat-empty">Aucune compétition à afficher.</p>')
+   +section('COMPLÉTION','Par décennie',d.decades.length?'<ul class="stat-list">'+d.decades.map(c=>bar('Années '+c.decade,c.owned,c.total,c.pct)).join('')+'</ul>':'<p class="stat-empty">Aucune décennie à afficher.</p>')
+   +section('RARETÉ','Cartes différentes par rareté','<ul class="stat-list">'+d.rarities.map(r=>count(RL[r.rarity],r.unique,maxR,'rarity-fill-'+r.rarity)).join('')+'</ul>')
+   +section('POSTE','Cartes différentes par poste','<ul class="stat-list">'+d.positions.map(p=>count(p.position,p.unique,maxP)).join('')+'</ul>')
+   +section('VALEUR','Valeur estimée (indicative)','<div class="panel stat-value"><strong>'+money(v.estimated)+' FC</strong><p>Médiane des dernières ventes aux enchères de chacune de tes cartes. '+money(v.priced)+' carte'+(v.priced>1?'s':'')+' estimée'+(v.priced>1?'s':'')+', '+money(v.unpriced)+' jamais vendue'+(v.unpriced>1?'s':'')+' aux enchères (non comptée'+(v.unpriced>1?'s':'')+'). Ce n’est pas un prix garanti.</p>'
+    +(v.top.length?'<h3>Tes cartes les plus chères</h3><ul class="stat-top">'+v.top.map(c=>'<li><span>'+esc(c.name)+(c.copies>1?' ×'+c.copies:'')+'</span><b>'+money(c.price)+' FC</b></li>').join('')+'</ul>':'')+'</div>')
    +'</div>';
 }
 FVC.pages.statistiques=statistiques;
