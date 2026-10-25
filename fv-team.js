@@ -34,7 +34,7 @@ function slotHtml(i){
 // Liste « onze de départ » (ordre des postes : gardien d'abord) : chaque ligne ouvre le même choix de carte que le terrain.
 function listHtml(){
   const m=byId();
-  return '<div class="team-xi"><p class="team-xi-head"><span>ONZE DE DÉPART</span><b>'+filled()+'/11</b></p><ul class="team-xi-list">'
+  return '<div class="team-xi"><p class="team-xi-head"><span>Onze de départ</span><b>'+filled()+'/11</b></p><ul class="team-xi-list">'
    +st.positions.map((pos,i)=>{const c=m.get(st.slots[i]);
      return '<li><button class="team-xi-row'+(c?' rarity-'+esc(c.rarity):' is-empty')+'" type="button" data-team-edit="'+i+'" aria-label="'+(c?esc(c.name)+', '+esc(label(pos))+', note '+c.ovr+', changer':esc(label(pos))+', choisir une carte')+'"><span class="xi-pos">'+esc(pos)+'</span>'
       +(c?'<span class="xi-main"><strong>'+esc(c.name)+'</strong><small>'+esc(c.club)+' · '+esc(c.season)+'</small></span><span class="xi-ovr">'+c.ovr+'</span>':'<span class="xi-main"><strong>Choisir un joueur</strong><small>'+esc(label(pos))+'</small></span><span class="xi-ovr xi-plus" aria-hidden="true">+</span>')+'</button></li>'}).join('')+'</ul></div>';
@@ -58,7 +58,7 @@ async function equipe(){
   }
   return '<div class="page team-page">'+viewHero('ÉQUIPE TYPE','Place chaque carte à son poste.','Compose ton 11 avec tes cartes : chaque poste demande le poste exact (un latéral gauche ne joue pas à droite). La note d’équipe est la moyenne des OVR des 11 titulaires ; un poste vide compte 0. Ton équipe est visible sur ton profil.',String(rating()).replace('.',','),'NOTE D’ÉQUIPE')
    +'<section class="section team-board"><div class="team-toolbar"><label class="team-formation-field" for="teamFormation"><span>Formation</span><select id="teamFormation" data-team-formation>'+st.formations.map(f=>'<option'+(f===st.formation?' selected':'')+'>'+f+'</option>').join('')+'</select></label>'
-   +'<div class="team-actions"><button class="btn btn-outline" type="button" data-team-auto>MEILLEUR 11</button><button class="btn btn-outline" type="button" data-team-clear>VIDER</button><button class="btn btn-gold" type="button" data-team-save'+(st.dirty&&!st.busy?'':' disabled')+'>ENREGISTRER</button></div>'
+   +'<div class="team-actions"><button class="btn btn-outline" type="button" data-team-auto>Meilleur 11</button><button class="btn btn-outline" type="button" data-team-clear>Vider</button><button class="btn btn-gold" type="button" data-team-save'+(st.dirty&&!st.busy?'':' disabled')+'>Enregistrer</button></div>'
    +'<p class="team-count" role="status">'+filled()+' / 11 postes'+(st.dirty?' · <em>modifications non enregistrées</em>':'')+'</p></div>'
    +statsHtml()+'<div class="team-layout">'+pitchHtml()+listHtml()+'</div></section></div>';
 }
@@ -67,7 +67,7 @@ function openPicker(i){
   const pos=st.positions[i],used=new Set(st.slots.filter((id,j)=>id&&j!==i));
   const list=st.cards.filter(c=>c.position===pos&&!used.has(c.cardId));
   setModal('<div class="modal-box team-picker"><button class="modal-close" type="button" data-close aria-label="Fermer">×</button><h2>CHOISIR : '+esc(label(pos).toUpperCase())+'</h2>'
-   +(st.slots[i]?'<button class="btn btn-outline" type="button" data-team-remove>RETIRER CE JOUEUR</button>':'')
+   +(st.slots[i]?'<button class="btn btn-outline" type="button" data-team-remove>Retirer ce joueur</button>':'')
    +(list.length?'<ul class="team-picker-list">'+list.slice(0,200).map(c=>'<li><button type="button" data-team-choose="'+esc(c.cardId)+'" class="rarity-'+esc(c.rarity)+'"><b>'+c.ovr+'</b><span>'+esc(c.name)+'</span><small>'+esc(c.club)+' · '+esc(c.season)+'</small></button></li>').join('')+'</ul>':'<p class="team-empty">Tu n’as aucune carte pour ce poste ('+esc(label(pos).toLowerCase())+').</p>')+'</div>');
 }
 document.addEventListener('click',async e=>{
