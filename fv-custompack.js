@@ -34,7 +34,7 @@ async function surmesure(){
   const sizes=Array.from({length:o.max-o.min+1},(_,i)=>o.min+i).map(n=>'<option value="'+n+'"'+(n===st.cards?' selected':'')+'>'+n+' cartes</option>').join('');
   const sec=(t,b)=>'<fieldset class="cp-group"><legend>'+t+'</legend>'+b+'</fieldset>';
   const chips=f.clubs.map(c=>'<button class="cp-chip" type="button" data-cp-club-del="'+esc(c)+'" aria-label="Retirer '+esc(c)+'">'+esc(c)+' ×</button>').join('');
-  return '<div class="page wk-page cp-page">'+viewHero('FOOTVAULT / SUR MESURE','PACK <span>SUR MESURE.</span>','Compose ton pack : nombre de cartes, compétitions, saisons, clubs, postes et rareté minimale. Le prix est calculé par le serveur et affiché avant l’achat.','FC','PRIX SELON TES CHOIX')
+  return '<div class="page wk-page cp-page">'+viewHero('PACK SUR MESURE','Compose ton pack.','Compose ton pack : nombre de cartes, compétitions, saisons, clubs, postes et rareté minimale. Le prix est calculé par le serveur et affiché avant l’achat.','FC','PRIX SELON TES CHOIX')
    +'<section class="section"><div class="cp-grid"><form class="panel cp-form" onsubmit="return false">'
    +sec('Nombre de cartes','<label class="cp-field"><span class="sr-only">Nombre de cartes</span><select data-cp-size>'+sizes+'</select></label>')
    +sec('Rareté minimale garantie (toutes les cartes)','<div class="cp-radios">'+rar+'</div><p class="wk-note">Chaque carte est tirée aux probabilités habituelles puis relevée à cette rareté. Les raretés supérieures restent possibles.</p>')

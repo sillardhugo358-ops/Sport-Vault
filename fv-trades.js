@@ -56,7 +56,7 @@ async function trades(){
   }
   const keep=new Set(st.mine.map(c=>c.instanceId));for(const id of [...st.give])if(!keep.has(id))st.give.delete(id);
   const L=data.limits;
-  return '<div class="page trades-page">'+viewHero('FOOTVAULT / ÉCHANGES','ÉCHANGE <span>DE CARTES.</span>','Échange 1 à '+L.maxCardsPerSide+' de tes cartes contre celles d’un autre joueur. Les cartes Legendary et Icon ne s’échangent pas.',String(data.remainingToday),'ÉCHANGES RESTANTS AUJOURD’HUI')
+  return '<div class="page trades-page">'+viewHero('ÉCHANGES','Échange avec tes amis, carte contre carte.','Échange 1 à '+L.maxCardsPerSide+' de tes cartes contre celles d’un autre joueur. Les cartes Legendary et Icon ne s’échangent pas.',String(data.remainingToday),'ÉCHANGES RESTANTS AUJOURD’HUI')
     +section('MON CODE','MON CODE D’ÉCHANGE','<div class="panel trade-code-box"><strong class="trade-code" id="tradeMyCode">'+esc(data.code)+'</strong><button class="btn btn-outline" type="button" data-trade-copy>COPIER</button><p>Donne ce code à un ami pour qu’il t’envoie une offre. '+L.maxOpenSent+' offres ouvertes maximum ('+data.openSent+' en cours) · '+L.dailyLimit+' échanges conclus par jour · une offre expire au bout de '+L.expiresDays+' jours.</p></div>')
     +section('REÇUES','OFFRES REÇUES ('+data.received.length+')',data.received.length?'<div class="trade-offers">'+data.received.map(o=>offerCard(o,'received')).join('')+'</div>':'<p class="trade-empty">Aucune offre en attente.</p>')
     +section('NOUVELLE OFFRE','PROPOSER UN ÉCHANGE','<div class="panel trade-composer" id="tradeComposer">'+composerHtml()+'</div>')
