@@ -436,3 +436,17 @@ html:root:root .friends-page label{text-transform:none!important;letter-spacing:
 html:root:root .friends-page :is(input,select){border-radius:12px;font:500 15px var(--body);text-transform:none;letter-spacing:0}
 html:root:root .friends-page .friend-name{font-family:var(--head);color:var(--text)}
 html:root:root .friends-page :is(.friend-relation,.friend-activity,.friend-empty){color:var(--muted)}
+/* ---- Souhaits : reproduction de la maquette ---- */
+html:root:root .wish-page .view-hero{background:linear-gradient(120deg,#38bdf8,#4f5bff 60%,#8b7bff)}
+html:root:root .wish-page .section{margin:28px 0}
+html:root:root .wish-page .section-head h2{font:800 clamp(22px,3vw,30px)/1.1 var(--head)!important;text-transform:none!important;letter-spacing:-.03em!important;color:var(--text)!important;-webkit-text-fill-color:currentColor}
+html:root:root .wish-page .section-head .eyebrow{color:#ff7a59;background:none;-webkit-text-fill-color:currentColor;letter-spacing:.14em}
+html[data-theme="light"]:root:root .wish-page .section-head .eyebrow{color:#b8400f}
+html:root:root .wish-page :is(.wish-search,.wish-row){background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:var(--av-shadow)}
+html:root:root .wish-page .wish-row{border-radius:18px}
+html:root:root .wish-page .btn{min-height:44px;border-radius:999px;font:600 15px var(--body);text-transform:none!important;letter-spacing:0!important}
+html:root:root .wish-page .btn-gold{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root .wish-page :is(.btn-outline,.btn-ghost){background:var(--av-ghost);border-color:transparent;color:var(--text)}
+html:root:root .wish-page label{text-transform:none!important;letter-spacing:0!important;font:600 13px var(--body)!important;color:var(--muted)}
+html:root:root .wish-page input{border-radius:12px;min-height:44px;font:500 15px var(--body);text-transform:none;letter-spacing:0}
+html:root:root .wish-page :is(.wish-empty,.wish-note,.wish-meta,.wish-owned){color:var(--muted)}

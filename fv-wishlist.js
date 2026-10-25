@@ -10,7 +10,7 @@ const line=(c,btn)=>'<li class="wish-row rarity-'+esc(c.rarity)+'"><div class="w
 function resultsHtml(){
   if(st.q.trim().length<2)return '<p class="wish-empty">Tape au moins 2 lettres (nom du joueur ou du club).</p>';
   if(!st.results.length)return '<p class="wish-empty">Aucune carte trouvée.</p>';
-  return '<ul class="wish-list">'+st.results.map(c=>line(c,c.wished?'<span class="wish-done">✔ Dans tes souhaits</span>':'<button class="btn btn-outline" type="button" data-wish-add="'+esc(c.id)+'">AJOUTER</button>')).join('')+'</ul>';
+  return '<ul class="wish-list">'+st.results.map(c=>line(c,c.wished?'<span class="wish-done">✔ Dans tes souhaits</span>':'<button class="btn btn-outline" type="button" data-wish-add="'+esc(c.id)+'">Ajouter</button>')).join('')+'</ul>';
 }
 async function souhaits(){
   let d;
@@ -21,9 +21,9 @@ async function souhaits(){
   const selling=d.cards.filter(c=>c.selling).length;
   const summary=d.cards.length?'<p class="wish-summary"><b>'+selling+'</b> en vente · <b>'+d.cards.filter(c=>c.owned).length+'</b> déjà possédée'+(d.cards.filter(c=>c.owned).length>1?'s':'')+'</p>':'';
   return '<div class="page wish-page">'+viewHero('SOUHAITS','Les cartes que tu veux.','Garde les cartes que tu cherches : tu es prévenu dès que l’une d’elles est mise aux enchères.',String(d.cards.length)+'/'+d.max,'CARTES')
-   +'<section class="section"><div class="section-head"><div><p class="eyebrow">MA LISTE</p><h2>CARTES RECHERCHÉES ('+d.cards.length+')</h2></div></div>'+summary
-   +(rows.length?'<ul class="wish-list">'+rows.map(c=>line(c,own(c)+sell(c)+'<button class="btn btn-outline" type="button" data-wish-remove="'+esc(c.id)+'" aria-label="Retirer '+esc(c.name)+'">RETIRER</button>')).join('')+'</ul>':'<p class="wish-empty">Ta liste est vide : cherche une carte ci-dessous.</p>')+'</section>'
-   +'<section class="section"><div class="section-head"><div><p class="eyebrow">AJOUTER</p><h2>CHERCHER UNE CARTE</h2></div></div><div class="panel wish-search"><label for="wishQuery">Nom du joueur ou du club</label><input id="wishQuery" type="search" autocomplete="off" maxlength="40" value="'+esc(st.q)+'" placeholder="Ex. Mbappé, Marseille"><div id="wishResults" role="status" aria-live="polite">'+resultsHtml()+'</div></div></section></div>';
+   +'<section class="section"><div class="section-head"><div><p class="eyebrow">MA LISTE</p><h2>Cartes recherchées ('+d.cards.length+')</h2></div></div>'+summary
+   +(rows.length?'<ul class="wish-list">'+rows.map(c=>line(c,own(c)+sell(c)+'<button class="btn btn-outline" type="button" data-wish-remove="'+esc(c.id)+'" aria-label="Retirer '+esc(c.name)+'">Retirer</button>')).join('')+'</ul>':'<p class="wish-empty">Ta liste est vide : cherche une carte ci-dessous.</p>')+'</section>'
+   +'<section class="section"><div class="section-head"><div><p class="eyebrow">AJOUTER</p><h2>Chercher une carte</h2></div></div><div class="panel wish-search"><label for="wishQuery">Nom du joueur ou du club</label><input id="wishQuery" type="search" autocomplete="off" maxlength="40" value="'+esc(st.q)+'" placeholder="Ex. Mbappé, Marseille"><div id="wishResults" role="status" aria-live="polite">'+resultsHtml()+'</div></div></section></div>';
 }
 document.addEventListener('input',e=>{
   if(e.target.id!=='wishQuery')return;
