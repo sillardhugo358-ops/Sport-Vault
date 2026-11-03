@@ -25,15 +25,15 @@
     if(!cardId){panel.hidden=true;return;}
     let m;
     try{m=await api('/api/market/card?cardId='+encodeURIComponent(cardId));}
-    catch(e){panel.innerHTML='<span class="eyebrow">MARCHÉ</span><p class="card-market-empty">Prix de marché indisponible : '+esc(e.message)+'</p>';return;}
+    catch(e){panel.innerHTML='<span class="eyebrow">Marché</span><p class="card-market-empty">Prix de marché indisponible : '+esc(e.message)+'</p>';return;}
     const ref=m.reference;
     const sales=m.sales.length?'<ul class="card-market-sales">'+m.sales.map(s=>'<li><span>'+esc(day(s.soldAt))+(s.serial?' · #'+esc(s.serial):'')+'</span><strong>'+money(s.price)+' FC</strong></li>').join('')+'</ul>':'<p class="card-market-empty">Aucune vente de cette carte pour l’instant : la référence apparaîtra après la première vente.</p>';
-    const alert=loggedIn?(m.alert?'<div class="card-market-alert"><span>🔔 Alerte active : <strong>'+money(m.alert.maxPrice)+' FC</strong> maximum</span><div><button class="btn btn-outline" type="button" data-market-alert-edit>MODIFIER</button><button class="btn btn-ghost" type="button" data-market-alert-delete>SUPPRIMER</button></div></div>':'<button class="btn btn-gold" type="button" data-market-alert-edit>🔔 CRÉER UNE ALERTE DE PRIX</button>'):'';
-    panel.innerHTML='<span class="eyebrow">MARCHÉ</span>'
-      +'<div class="card-market-figures"><div><span>RÉFÉRENCE</span><strong>'+(ref?money(ref.median)+' FC':'—')+'</strong><small>'+(ref?'médiane de '+(ref.sales>20?'20 dernières ventes':ref.sales+' vente'+(ref.sales>1?'s':'')):'pas encore de vente')+'</small></div>'
-      +'<div><span>FOURCHETTE</span><strong>'+(ref?money(ref.low)+' – '+money(ref.high):'—')+'</strong><small>FC, toutes ventes</small></div>'
-      +'<div><span>EN VENTE</span><strong>'+m.active+'</strong><small>'+(m.active?'dès '+money(m.lowestActive)+' FC · <a href="#market">voir</a>':'aucune enchère en cours')+'</small></div></div>'
-      +'<p class="card-market-sub">DERNIÈRES VENTES</p>'+sales+alert;
+    const alert=loggedIn?(m.alert?'<div class="card-market-alert"><span>🔔 Alerte active : <strong>'+money(m.alert.maxPrice)+' FC</strong> maximum</span><div><button class="btn btn-outline" type="button" data-market-alert-edit>Modifier</button><button class="btn btn-ghost" type="button" data-market-alert-delete>Supprimer</button></div></div>':'<button class="btn btn-gold" type="button" data-market-alert-edit>🔔 Créer une alerte de prix</button>'):'';
+    panel.innerHTML='<span class="eyebrow">Marché</span>'
+      +'<div class="card-market-figures"><div><span>Référence</span><strong>'+(ref?money(ref.median)+' FC':'—')+'</strong><small>'+(ref?'médiane de '+(ref.sales>20?'20 dernières ventes':ref.sales+' vente'+(ref.sales>1?'s':'')):'pas encore de vente')+'</small></div>'
+      +'<div><span>Fourchette</span><strong>'+(ref?money(ref.low)+' – '+money(ref.high):'—')+'</strong><small>FC, toutes ventes</small></div>'
+      +'<div><span>En vente</span><strong>'+m.active+'</strong><small>'+(m.active?'dès '+money(m.lowestActive)+' FC · <a href="#market">voir</a>':'aucune enchère en cours')+'</small></div></div>'
+      +'<p class="card-market-sub">Dernières ventes</p>'+sales+alert;
     const edit=panel.querySelector('[data-market-alert-edit]');
     if(edit)edit.onclick=async()=>{if(await editAlert(cardId,name,m.alert?.maxPrice,ref?.median))loadCardPanel(panel);};
     const del=panel.querySelector('[data-market-alert-delete]');
@@ -43,7 +43,7 @@
   async function loadSales(section){
     try{
       const {sales}=await api('/api/market/sales');
-      section.innerHTML=sales.length?'<div class="market-table" role="table">'+'<div class="market-row market-head" role="row"><span>CARTE</span><span>VENDUE</span><span>PRIX</span><span>RÉFÉRENCE</span></div>'
+      section.innerHTML=sales.length?'<div class="market-table" role="table">'+'<div class="market-row market-head" role="row"><span>CARTE</span><span>VENDUE</span><span>PRIX</span><span>Référence</span></div>'
         +sales.map(s=>{const c=s.card||{},diff=s.referencePrice?Math.round((s.price-s.referencePrice)/s.referencePrice*100):null;
           return '<div class="market-row" role="row"><span><a href="#card?id='+encodeURIComponent(c.cardId||'')+'"><strong>'+esc(c.name)+'</strong></a><small>'+esc(c.rarityLabel||c.rarity||'')+' · '+esc(c.club)+' · '+esc(c.season)+'</small></span><span>'+esc(day(s.soldAt))+'</span><span><strong>'+money(s.price)+' FC</strong></span><span>'+(s.referencePrice?money(s.referencePrice)+' FC'+(diff?'<small class="'+(diff>0?'is-above':'is-below')+'">'+(diff>0?'+':'')+diff+' %</small>':''):'—')+'</span></div>';}).join('')+'</div>'
         :'<div class="empty">AUCUNE VENTE POUR L’INSTANT.</div>';
@@ -55,7 +55,7 @@
     try{
       const {alerts}=await api('/api/market/alerts');
       section.innerHTML='<p class="market-insights-note">Crée une alerte depuis une enchère ou la fiche d’une carte : la cloche te prévient dès qu’une enchère s’ouvre à ton prix maximum ou moins.</p>'
-        +(alerts.length?'<div class="market-table" role="table"><div class="market-row market-head" role="row"><span>CARTE</span><span>PRIX MAX</span><span>RÉFÉRENCE</span><span></span></div>'
+        +(alerts.length?'<div class="market-table" role="table"><div class="market-row market-head" role="row"><span>CARTE</span><span>PRIX MAX</span><span>Référence</span><span></span></div>'
         +alerts.map(a=>'<div class="market-row" role="row"><span><a href="#card?id='+encodeURIComponent(a.cardId)+'"><strong>'+esc(a.name)+'</strong></a><small>'+esc(a.club)+' · '+esc(a.season)+(a.lowestActive!=null?' · en vente dès '+money(a.lowestActive)+' FC':'')+'</small></span><span><strong>'+money(a.maxPrice)+' FC</strong></span><span>'+(a.referencePrice?money(a.referencePrice)+' FC':'—')+'</span><span class="market-row-actions"><button class="auction-link" type="button" data-alert-edit="'+esc(a.cardId)+'">MODIFIER</button><button class="auction-link" type="button" data-alert-delete="'+esc(a.cardId)+'">SUPPRIMER</button></span></div>').join('')+'</div>'
         :'<div class="empty">AUCUNE ALERTE DE PRIX.</div>');
       const byId=new Map(alerts.map(a=>[a.cardId,a]));

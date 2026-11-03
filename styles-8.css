@@ -561,3 +561,54 @@ html:root:root .loan-page .btn-outline{background:var(--av-ghost);border-color:t
 html:root:root .loan-page :is(#loanSearch,#loanFriend){width:100%;min-height:44px;background:var(--panel);border:1px solid var(--line);border-radius:14px;color:var(--text)}
 html:root:root .loan-page .wk-row small{display:block;color:var(--muted)}
 html:root:root .loan-page .cp-field{display:grid;gap:6px;margin-bottom:10px}
+
+/* Connexion : carte à deux panneaux comme la maquette */
+html:root:root .auth{max-width:1040px;margin:0 auto;padding:clamp(16px,4vw,48px) 16px}
+html:root:root .auth .auth-split{display:grid;grid-template-columns:1fr 1fr;padding:0;max-width:none;width:100%;overflow:hidden;background:var(--panel);border:1px solid var(--line);border-radius:28px;box-shadow:var(--av-shadow)}
+html:root:root .auth .auth-art{display:flex;flex-direction:column;justify-content:center;gap:12px;padding:clamp(28px,5vw,56px);min-height:340px;color:#fff;background:linear-gradient(135deg,#ff7a59,#ff5c93 55%,#8b5cf6)}
+html:root:root .auth .auth-art .eyebrow{color:#fff!important;text-transform:none!important;letter-spacing:0!important;font:700 14px var(--body)!important;margin:0;opacity:1}
+html:root:root .auth .auth-art h1{margin:0;color:#fff;font:800 clamp(30px,4.6vw,46px)/1.05 var(--head)!important;text-transform:none!important;letter-spacing:-.02em;overflow-wrap:anywhere}
+html:root:root .auth .auth-art .lead{margin:0;color:rgba(255,255,255,.92);font:400 16px/1.5 var(--body)!important}
+html:root:root .auth .auth-pane{display:grid;align-content:center;gap:16px;padding:clamp(24px,4vw,48px)}
+html:root:root .auth .auth-tabs{display:inline-flex;gap:2px;padding:4px;border-radius:999px;background:var(--av-ghost);justify-self:start}
+html:root:root .auth .auth-tab{display:inline-flex;align-items:center;min-height:40px;padding:0 16px;border-radius:999px;color:var(--muted);font:600 14px var(--body);text-decoration:none}
+html:root:root .auth .auth-tab.is-on{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root .auth .field label{display:grid;gap:6px;color:var(--text);font:600 14px var(--body)!important;text-transform:none!important;letter-spacing:0!important}
+html:root:root .auth .field input{min-height:48px;background:var(--panel);border:1px solid var(--line);border-radius:14px;color:var(--text);padding:0 14px;font:400 16px var(--body)}
+html:root:root .auth #authForm{display:grid;gap:14px}
+html:root:root .auth #authForm .btn{width:100%;min-height:48px;border-radius:999px;background:var(--av-btn);color:var(--av-btn-ink);font:600 16px var(--body);text-transform:none!important;letter-spacing:0!important}
+html:root:root .auth .auth-switch{color:var(--muted);font:400 14px var(--body)}
+@media (max-width:760px){html:root:root .auth .auth-split{grid-template-columns:1fr}html:root:root .auth .auth-art{min-height:0}}
+
+/* Profil d'un joueur : carte claire avec avatar, comme la maquette */
+html:root:root .player-page .player-hero{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:clamp(18px,3vw,28px);background:var(--panel);border:1px solid var(--line);border-radius:24px;box-shadow:var(--av-shadow);margin:0 0 20px}
+html:root:root .player-page .player-avatar{display:grid;place-items:center;flex:0 0 auto;width:72px;height:72px;border-radius:50%;background:var(--av-grad);color:#fff;font:800 26px var(--head)}
+html:root:root .player-page .player-id{flex:1 1 220px;min-width:0}
+html:root:root .player-page .player-id .eyebrow{margin:0 0 2px;text-transform:none!important;letter-spacing:0!important;font:700 13px var(--body)}
+html:root:root .player-page .player-id h1{margin:0;color:var(--text);font:800 clamp(28px,4vw,40px)/1.05 var(--head)!important;text-transform:none!important;letter-spacing:-.01em;overflow-wrap:anywhere}
+html:root:root .player-page .player-sub{margin:4px 0 0;color:var(--muted);font:400 15px var(--body)}
+html:root:root .player-page .player-actions .friend-relation{margin:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:var(--muted)}
+html:root:root .player-page .btn{min-height:44px;border-radius:999px;font:600 15px var(--body);text-transform:none!important;letter-spacing:0!important}
+html:root:root .player-page .btn-gold{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root .player-page .btn-outline{background:var(--av-ghost);border-color:transparent;color:var(--text)}
+html:root:root .player-page .friend-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;padding:0;list-style:none}
+html:root:root .player-page .friend-stats li{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--av-shadow);padding:16px;text-align:left}
+html:root:root .player-page .friend-stats strong{display:block;color:var(--text);font:800 clamp(24px,3vw,32px)/1.1 var(--head)}
+html:root:root .player-page .friend-stats span{color:var(--muted);font:400 14px var(--body);text-transform:none!important;letter-spacing:0!important}
+
+/* Fiche d'une carte : panneaux, attributs et boutons comme la maquette */
+html:root:root .card-detail-page .view-hero{background:linear-gradient(120deg,#ff7a59,#ff5c93 55%,#8b5cf6)}
+html:root:root .card-detail-page .view-hero h1{text-transform:none!important}
+html:root:root .card-detail-page :is(.eyebrow,.fact span,.value span,.card-market-sub,.card-market-figures span){text-transform:none!important;letter-spacing:0!important;font:600 13px var(--body)!important;color:var(--muted)}
+html:root:root .card-detail-page .eyebrow{color:#ff7a59}
+html:root:root[data-theme="light"] .card-detail-page .detail-copy .eyebrow{color:#b8400f}
+html:root:root .card-detail-page :is(.panel,.fact,.value,.card-market-figures>div,.card-market-alert){background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:none}
+html:root:root .card-detail-page .panel{box-shadow:var(--av-shadow)}
+html:root:root .card-detail-page .fact strong,html:root:root .card-detail-page .value strong{color:var(--text);font:700 16px var(--body)}
+html:root:root .card-detail-page .value strong{font:800 clamp(26px,3vw,34px)/1.1 var(--head)}
+html:root:root .card-detail-page .stat-track{background:var(--av-ghost);border-radius:999px}
+html:root:root .card-detail-page .stat-track i{background:var(--av-grad);border-radius:999px}
+html:root:root .card-detail-page .btn{min-height:44px;border-radius:999px;font:600 15px var(--body);text-transform:none!important;letter-spacing:0!important}
+html:root:root .card-detail-page .btn-gold{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root .card-detail-page :is(.btn-outline,.btn-ghost){background:var(--av-ghost);border-color:transparent;color:var(--text)}
+html:root:root .card-detail-page .view-hero .eyebrow,html:root:root .card-detail-page .view-hero p:first-child{color:#fff!important;font:700 14px var(--body)!important;text-transform:none!important;letter-spacing:0!important}

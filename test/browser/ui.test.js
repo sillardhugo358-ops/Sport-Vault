@@ -999,7 +999,7 @@ test('amis : demande par code, acceptation, profil public, confidentialité', as
   assert.ok((await page.locator('.rival-card [data-friend-rival]').boundingBox()).height >= 44, 'bouton RETIRER de 44 px');
   await page.click('.friend-name');
   await page.waitForFunction(() => location.hash.startsWith('#joueur'));
-  await page.waitForFunction(() => /AMITEST/.test(document.querySelector('#app h1')?.textContent || ''));
+  await page.waitForFunction(() => /amitest/i.test(document.querySelector('#app h1')?.textContent || ''));
   assert.match(await page.textContent('.friend-relation'), /Vous êtes amis/);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1), false);
   await other.post('/api/profile/visibility', { visibility: 'private' });
