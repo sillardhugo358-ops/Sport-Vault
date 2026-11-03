@@ -15,7 +15,7 @@ const VIEWPORTS = [
   { name: 'tablette', width: 900, height: 1000 },
   { name: 'mobile', width: 390, height: 844 }
 ];
-const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'amis', 'souhaits', 'statistiques', 'equipe', 'atelier', 'surmesure', 'club', 'mur', 'primes', 'collectif', 'admin'];
+const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'amis', 'souhaits', 'statistiques', 'equipe', 'atelier', 'surmesure', 'club', 'mur', 'primes', 'prets', 'collectif', 'admin'];
 
 let server, browser, context, page;
 const errors = [];
@@ -727,7 +727,7 @@ test('espace de noms FVC : une fonction par page, aides partagées, page rempla�
     ui: Object.keys(window.FVC?.ui || {}).sort(),
     allFunctions: Object.values(window.FVC?.pages || {}).every(f => typeof f === 'function')
   }));
-  assert.deepEqual(ns.pages, ['admin', 'album', 'amis', 'atelier', 'auth', 'card', 'classement', 'club', 'collectif', 'collection', 'equipe', 'home', 'joueur', 'market', 'mur', 'packs', 'primes', 'profil', 'souhaits', 'statistiques', 'successes', 'surmesure', 'trades', 'vault']);
+  assert.deepEqual(ns.pages, ['admin', 'album', 'amis', 'atelier', 'auth', 'card', 'classement', 'club', 'collectif', 'collection', 'equipe', 'home', 'joueur', 'market', 'mur', 'packs', 'prets', 'primes', 'profil', 'souhaits', 'statistiques', 'successes', 'surmesure', 'trades', 'vault']);
   for (const k of ['$', 'api', 'apiRetry', 'app', 'bind', 'cardLink', 'cardMarkup', 'cardStatDefinitions', 'closeModal', 'esc', 'initials', 'money', 'rarityOrder', 'render', 'setModal', 'state', 'toast', 'viewHero']) assert.ok(ns.core.includes(k), 'FVC.core.' + k);
   for (const k of ['claimAlbum', 'claimChallengeUi', 'claimSetUi', 'daily', 'logout', 'mission', 'openPack', 'openPool', 'submitAuth', 'task', 'toggleFavorite']) assert.ok(ns.ui.includes(k), 'FVC.ui.' + k);
   assert.equal(ns.allFunctions, true);
@@ -1132,6 +1132,34 @@ test('primes : poster (FC bloqués), annuler, remplir celle d\u2019un autre avec
   await page.waitForFunction(() => !document.querySelector('[data-bty-fulfil]'));
   assert.match(asked, /Prime UI Donnee/);
   assert.equal(Number((await server.db.query('SELECT coins FROM users WHERE id=$1', [uid])).rows[0].coins), before + 950);
+  assert.deepEqual(errors, []);
+});
+
+test('prêts : prêter une carte à un ami avec confirmation, la reprendre, sans débordement', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
+  const friend = await newPlayer(server, 'AmiPretUI');
+  await friend.get('/api/trades'); // génère son code d'échange (comme tout joueur qui a ajouté ou reçu un ami par code)
+  const [lo, hi] = uid < friend.user.id ? [uid, friend.user.id] : [friend.user.id, uid];
+  await server.db.query("INSERT INTO friendships(user_low,user_high,requester,status) VALUES($1,$2,$3,'accepted')", [lo, hi, uid]);
+  await server.db.query("INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr) VALUES('loanui','2026-2027','Carte Pret UI','CM','FC Pret UI','France','common',75) ON CONFLICT DO NOTHING");
+  await server.db.query("INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,ovr,source) VALUES('00000000-0000-4000-8000-0000000000c1','loanui',$1,'2026-2027','Carte Pret UI','CM','FC Pret UI','France','common',75,'pack:test')", [uid]);
+  const r = await visit('prets');
+  assert.ok(r.overflow <= 1, 'pas de débordement');
+  await page.waitForSelector('#loanSearch');
+  await page.fill('#loanSearch', 'Carte Pret UI');
+  await page.waitForSelector('[data-loan-lend]');
+  let asked = '';
+  page.once('dialog', async d => { asked = d.message(); await d.accept(); });
+  await page.click('[data-loan-lend]');
+  await page.waitForSelector('[data-loan-return]');
+  assert.match(asked, /Carte Pret UI.*AmiPretUI/);
+  assert.equal((await server.db.query("SELECT status FROM card_instances WHERE instance_id='00000000-0000-4000-8000-0000000000c1'")).rows[0].status, 'loaned');
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'pas de débordement avec un prêt');
+  assert.ok((await page.locator('[data-loan-return]').first().boundingBox()).height >= 44, 'bouton de 44 px');
+  await page.click('[data-loan-return]');
+  await page.waitForFunction(() => !document.querySelector('[data-loan-return]'));
+  assert.equal((await server.db.query("SELECT status FROM card_instances WHERE instance_id='00000000-0000-4000-8000-0000000000c1'")).rows[0].status, 'owned');
   assert.deepEqual(errors, []);
 });
 
