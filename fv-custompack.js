@@ -15,7 +15,7 @@ function quoteHtml(){
   return '<div class="cp-price"><span class="fc-coin" aria-hidden="true">FC</span> <strong>'+money(q.price)+'</strong><small>'+q.cards+' cartes · '+esc(RL[q.minRarity])+' minimum</small></div>'
    +'<p class="wk-note" role="status">'+(q.ok?money(q.poolSize)+' cartes correspondent à ta sélection ('+money(q.eligible)+' en '+esc(RL[q.minRarity])+' ou mieux).':'Sélection impossible : '+money(q.poolSize)+' cartes correspondent à tes filtres, dont '+money(q.eligible)+' en '+esc(RL[q.minRarity])+' ou mieux. Il en faut au moins '+q.minPool+' (et '+q.cards+' de la rareté demandée).')+'</p>'
    +(poor?'<p class="wk-note" role="alert">FOOTCOINS disponibles insuffisants.</p>':'')
-   +'<button class="btn btn-gold" type="button" data-cp-open '+(q.ok&&!poor&&!st.busy?'':'disabled')+'>OUVRIR MON PACK</button>';
+   +'<button class="btn btn-gold" type="button" data-cp-open '+(q.ok&&!poor&&!st.busy?'':'disabled')+'>Ouvrir mon pack</button>';
 }
 function refreshQuote(){
   st.quote=null;const box=document.getElementById('cpQuote');if(box)box.innerHTML=quoteHtml();
@@ -34,15 +34,15 @@ async function surmesure(){
   const sizes=Array.from({length:o.max-o.min+1},(_,i)=>o.min+i).map(n=>'<option value="'+n+'"'+(n===st.cards?' selected':'')+'>'+n+' cartes</option>').join('');
   const sec=(t,b)=>'<fieldset class="cp-group"><legend>'+t+'</legend>'+b+'</fieldset>';
   const chips=f.clubs.map(c=>'<button class="cp-chip" type="button" data-cp-club-del="'+esc(c)+'" aria-label="Retirer '+esc(c)+'">'+esc(c)+' ×</button>').join('');
-  return '<div class="page wk-page cp-page">'+viewHero('PACK SUR MESURE','Compose ton pack.','Compose ton pack : nombre de cartes, compétitions, saisons, clubs, postes et rareté minimale. Le prix est calculé par le serveur et affiché avant l’achat.','FC','PRIX SELON TES CHOIX')
+  return '<div class="page wk-page cp-page">'+viewHero('Pack sur mesure','Compose ton pack.','Compose ton pack : nombre de cartes, compétitions, saisons, clubs, postes et rareté minimale. Le prix est calculé par le serveur et affiché avant l’achat.','FC','Prix selon tes choix')
    +'<section class="section"><div class="cp-grid"><form class="panel cp-form" onsubmit="return false">'
    +sec('Nombre de cartes','<label class="cp-field"><span class="sr-only">Nombre de cartes</span><select data-cp-size>'+sizes+'</select></label>')
    +sec('Rareté minimale garantie (toutes les cartes)','<div class="cp-radios">'+rar+'</div><p class="wk-note">Chaque carte est tirée aux probabilités habituelles puis relevée à cette rareté. Les raretés supérieures restent possibles.</p>')
    +sec('Compétitions','<div class="cp-checks">'+o.competitions.map(c=>chk('competitions',c.id,c.name,f.competitions.includes(c.id))).join('')+'</div>')
    +sec('Saisons','<div class="cp-checks">'+o.seasons.map(s=>chk('seasons',s,s,f.seasons.includes(s))).join('')+'</div>')
    +sec('Postes','<div class="cp-checks">'+o.positions.map(p=>chk('positions',p,p,f.positions.includes(p))).join('')+'</div>')
-   +sec('Clubs','<div class="cp-clubadd"><input id="cpClub" list="cpClubs" placeholder="Rechercher un club" autocomplete="off" aria-label="Club à ajouter"><datalist id="cpClubs">'+o.clubs.map(c=>'<option value="'+esc(c)+'"></option>').join('')+'</datalist><button class="btn btn-outline" type="button" data-cp-club-add>AJOUTER</button></div><div class="cp-chips">'+chips+'</div>')
-   +'</form><aside class="panel cp-summary"><p class="eyebrow">TON PACK</p><div id="cpQuote">'+quoteHtml()+'</div><p class="wk-note">+'+o.filterBonusPct+' % du prix par catégorie de filtre utilisée (compétition, saison, poste, club).</p></aside></div></section></div>';
+   +sec('Clubs','<div class="cp-clubadd"><input id="cpClub" list="cpClubs" placeholder="Rechercher un club" autocomplete="off" aria-label="Club à ajouter"><datalist id="cpClubs">'+o.clubs.map(c=>'<option value="'+esc(c)+'"></option>').join('')+'</datalist><button class="btn btn-outline" type="button" data-cp-club-add>Ajouter</button></div><div class="cp-chips">'+chips+'</div>')
+   +'</form><aside class="panel cp-summary"><p class="eyebrow">Ton pack</p><div id="cpQuote">'+quoteHtml()+'</div><p class="wk-note">+'+o.filterBonusPct+' % du prix par catégorie de filtre utilisée (compétition, saison, poste, club).</p></aside></div></section></div>';
 }
 document.addEventListener('change',e=>{
   const t=e.target;if(!t.closest?.('.cp-page'))return;

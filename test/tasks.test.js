@@ -35,7 +35,8 @@ test('missions du document : 40 / 45 / 15, les 8 tâches d’origine désactivé
   const b = (await (await newPlayer(server, 'Autre')).get('/api/progression')).body;
   assert.deepEqual([a.dailyTasks.length, a.weeklyTasks.length, a.monthlyTasks.length], [3, 5, 5]);
   for (const k of ['dailyTasks', 'weeklyTasks', 'monthlyTasks']) assert.deepEqual(a[k].map(t => t.id), b[k].map(t => t.id));
-  assert.ok(a.dailyTasks.every(t => t.reward.coins >= 100 && !t.completed));
+  // « PRÉSENT ! » est validée dès la connexion : seule mission du jour qui peut être déjà terminée (selon la date du tirage).
+  assert.ok(a.dailyTasks.every(t => t.reward.coins >= 100 && (!t.completed || t.id === 'd01-present')));
   assert.ok(new Date(a.periodEnds.monthly) > new Date(a.periodEnds.weekly) || new Date(a.periodEnds.monthly) > new Date(a.periodEnds.daily));
 });
 
