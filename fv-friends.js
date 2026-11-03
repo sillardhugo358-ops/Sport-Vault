@@ -30,17 +30,27 @@ function rivalCard(r){
 }
 const rivalsSection=(d)=>section('RIVALITÉS','Mes rivaux ('+d.rivals.length+'/'+d.limits.maxRivals+')',d.rivals.length?'<ul class="rival-list">'+d.rivals.map(rivalCard).join('')+'</ul>':'<p class="friend-empty">Épingle jusqu’à '+d.limits.maxRivals+' amis comme rivaux avec le bouton RIVAL de la liste « Mes amis » : tu verras toujours qui a le plus complété son album.</p>');
 
+// Duel quotidien d'équipe type : un duel par jour (défieur ou défié), le serveur compare les deux équipes de 11 et paie le vainqueur.
+const RES={win:'Victoire',loss:'Défaite',draw:'Égalité'};
+const duelLine=x=>'<li><strong>'+RES[x.result]+'</strong> contre '+esc(x.opponent.name)+' · '+Number(x.me.score)+' à '+Number(x.opponent.score)+'<time datetime="'+esc(String(x.createdAt))+'">il y a '+when(x.createdAt)+'</time></li>';
+function duelSection(du){
+  const head=du.usedToday?'<p class="friend-empty" role="status">Duel du jour terminé : '+RES[du.today.result].toLowerCase()+' '+Number(du.today.me.score)+' à '+Number(du.today.opponent.score)+' contre '+esc(du.today.opponent.name)+'. Reviens demain.</p>'
+    :'<p class="friend-empty" role="status">Un duel par jour : défie un ami ci-dessous, les équipes types de 11 sont comparées (somme des notes). Le vainqueur gagne '+Number(du.reward.coins)+' FC et '+Number(du.reward.xp)+' XP. <a href="#equipe">Composer mon équipe</a></p>';
+  return section('DUEL','Duel du jour',head+(du.history.length?'<ul class="friend-activity">'+du.history.map(duelLine).join('')+'</ul>':''));
+}
+
 async function amis(){
   let d;
-  let act={events:[]};
-  try{[d,act]=await Promise.all([api('/api/friends'),api('/api/friends/activity').catch(()=>({events:[]}))])}catch(e){if(e.status===401)return FVC.pages.auth(new URLSearchParams({next:'amis'}));throw e}
+  let act={events:[]},du=null;
+  try{[d,act,du]=await Promise.all([api('/api/friends'),api('/api/friends/activity').catch(()=>({events:[]})),api('/api/team-duels').catch(()=>null)])}catch(e){if(e.status===401)return FVC.pages.auth(new URLSearchParams({next:'amis'}));throw e}
   return '<div class="page friends-page">'+viewHero('AMIS','Collectionne avec tes amis.','Ajoute des joueurs avec leur code, découvre leur vitrine et échange avec eux.',String(d.friends.length),'AMI'+(d.friends.length>1?'S':''))
    +(d.friends.length?rivalsSection(d):'')
+   +(d.friends.length&&du?duelSection(du):'')
    +(d.friends.length?section('ACTIVITÉ','Activité de mes amis',activityList(act.events)):'')
    +section('MON CODE','Mon code joueur','<div class="panel friend-code-box"><strong class="trade-code" id="friendMyCode">'+esc(d.code)+'</strong><button class="btn btn-outline" type="button" data-friend-copy>Copier</button><p>C’est le même code que pour les échanges. Donne-le à un ami : il pourra te demander en ami, et tu accepteras.</p></div>')
    +section('AJOUTER','Ajouter un ami','<form class="panel friend-add" data-friend-add><label for="friendCode">Code du joueur</label><div class="friend-add-row"><input id="friendCode" name="code" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="Ex. K7M2QX9P" required><button class="btn btn-gold" type="submit">Envoyer la demande</button></div></form>')
    +(d.incoming.length?section('DEMANDES','Demandes reçues ('+d.incoming.length+')',list(d.incoming.map(p=>person(p,'<button class="btn btn-gold" type="button" data-friend-act="accept" data-id="'+p.id+'">Accepter</button><button class="btn btn-outline" type="button" data-friend-act="decline" data-id="'+p.id+'">Refuser</button>')),'')):'')
-   +section('MES AMIS','Mes amis ('+d.friends.length+')',list(d.friends.map(p=>person(p,'<a class="btn btn-outline" href="#trades?code='+encodeURIComponent(p.code)+'">Échanger</a><button class="btn btn-outline" type="button" data-friend-rival="'+esc(p.code)+'" data-on="'+(p.rival?'0':'1')+'" aria-pressed="'+(p.rival?'true':'false')+'">'+(p.rival?'RIVAL ✓':'RIVAL')+'</button><button class="btn btn-outline" type="button" data-friend-act="remove" data-id="'+p.id+'" aria-label="Retirer '+esc(p.name)+'">Retirer</button>')),'Aucun ami pour l’instant : saisis le code d’un joueur ci-dessus.'))
+   +section('MES AMIS','Mes amis ('+d.friends.length+')',list(d.friends.map(p=>person(p,'<a class="btn btn-outline" href="#trades?code='+encodeURIComponent(p.code)+'">Échanger</a>'+(du&&!du.usedToday?'<button class="btn btn-outline" type="button" data-friend-duel="'+esc(p.code)+'" aria-label="Défier '+esc(p.name)+' en duel d’équipe">Défier</button>':'')+'<button class="btn btn-outline" type="button" data-friend-rival="'+esc(p.code)+'" data-on="'+(p.rival?'0':'1')+'" aria-pressed="'+(p.rival?'true':'false')+'">'+(p.rival?'RIVAL ✓':'RIVAL')+'</button><button class="btn btn-outline" type="button" data-friend-act="remove" data-id="'+p.id+'" aria-label="Retirer '+esc(p.name)+'">Retirer</button>')),'Aucun ami pour l’instant : saisis le code d’un joueur ci-dessus.'))
    +(d.outgoing.length?section('EN ATTENTE','Demandes envoyées ('+d.outgoing.length+')',list(d.outgoing.map(p=>person(p,'<button class="btn btn-outline" type="button" data-friend-act="cancel" data-id="'+p.id+'">Annuler</button>')),'')):'')
    +section('CONFIDENTIALITÉ','Qui voit mon profil ?','<div class="panel friend-visibility"><label for="friendVis">Mon profil est visible par</label><select id="friendVis" data-friend-vis>'+Object.entries(VIS).map(([k,v])=>'<option value="'+k+'"'+(d.visibility===k?' selected':'')+'>'+v+'</option>').join('')+'</select><p>Un profil montre ton niveau, ton rang, tes succès, ta vitrine de 5 cartes favorites, tes sets et albums terminés. Jamais ton solde ni ton e-mail.</p></div>')
    +'</div>';
@@ -75,11 +85,12 @@ function relationBar(p){
 }
 
 document.addEventListener('click',async e=>{
-  const t=e.target.closest('[data-friend-copy],[data-friend-act],[data-friend-ask],[data-friend-rival]');if(!t)return;
+  const t=e.target.closest('[data-friend-copy],[data-friend-act],[data-friend-ask],[data-friend-rival],[data-friend-duel]');if(!t)return;
   if(t.matches('[data-friend-copy]')){try{await navigator.clipboard.writeText($('#friendMyCode').textContent);toast('Code copié.')}catch{toast('Copie impossible : sélectionne le code à la main.')}return}
   t.disabled=true;
   try{
-    if(t.dataset.friendRival){const on=t.dataset.on==='1';await post('/api/friends/rival',{code:t.dataset.friendRival,on});toast(on?'Rival ajouté.':'Rival retiré.')}
+    if(t.dataset.friendDuel){const r=await post('/api/team-duels/challenge',{code:t.dataset.friendDuel});const x=r.duel;if(r.user)FVC.core.state.user=r.user;toast(RES[x.result]+' '+x.me.score+' à '+x.opponent.score+(r.reward?' : +'+r.reward.coins+' FC, +'+r.reward.xp+' XP':''))}
+    else if(t.dataset.friendRival){const on=t.dataset.on==='1';await post('/api/friends/rival',{code:t.dataset.friendRival,on});toast(on?'Rival ajouté.':'Rival retiré.')}
     else if(t.dataset.friendAsk){await post('/api/friends/request',{code:t.dataset.friendAsk});toast('Demande envoyée.')}
     else{const a=t.dataset.friendAct;await post('/api/friends/'+a,{id:t.dataset.id});toast({accept:'Ami ajouté.',decline:'Demande refusée.',cancel:'Demande annulée.',remove:'Ami retiré.'}[a]||'Fait.')}
     render();

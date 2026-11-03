@@ -45,6 +45,7 @@ const collective = require('./lib/collective').createCollective({ getPool: () =>
 const wishlist = require('./lib/wishlist').createWishlist({ getPool: () => pool });
 const heartClub = require('./lib/heart-club').createHeartClub({ getPool: () => pool });
 const team = require('./lib/team').createTeam({ getPool: () => pool });
+const teamDuel = require('./lib/team-duel').createTeamDuel({ getPool: () => pool, team, applyReward: (...args) => applyReward(...args), securityEvent: (...args) => securityEvent(...args) });
 const friends = require('./lib/friends').createFriends({ getPool: () => pool, ensureCode: tradeEnsureCode, listFavorites, levelProgressFromXp: (...args) => levelProgressFromXp(...args), rankOf, publicTeam: team.publicTeam });
 const { cardMarket, recentSales, listAlerts, setAlert, deleteAlert } = require('./lib/market').createMarket({ getPool: () => pool, publicCard, settleExpiredAuctions });
 const { adminLog, adminSetAccountStatus, adminSetRole, adminAdjustResources, adminTransferCard, adminRemoveCard, adminGrantCard, adminLogs, adminOverview, adminCollections, adminSetCollection, adminPacks, adminSetPack, adminCompetitions, adminSetCompetition, adminCards, adminCardsPage, adminCardsSummary, adminCreateCatalogCard, adminDeleteCatalogCard, adminUpdateCatalogCard, adminUsers, adminUserDetail, adminAuctions } = require('./lib/admin').createAdmin({ getPool: () => pool, catalog: () => CARD_CATALOG, getUserById, canManage, safeUser, securityEvent, buildInstance, createCardInstance, publicCard, configuredPackCards });
@@ -59,6 +60,7 @@ const apiRoutes = [
  require('./lib/routes/admin').createAdminRoutes({ adminSeasonPrizes, adminSetSeasonPrize, adminChallenges, adminSaveChallenge, adminSets, adminSaveSet, adminCardsPage, adminCardsSummary, adminTasks, adminSaveTask, adminStats, adminAchievements, adminSaveAchievement, adminMissions, adminSaveMission, adminAdjustResources, adminAuctions, adminCards, adminCollections, adminCompetitions, adminCreateCatalogCard, adminDeleteCatalogCard, adminGrantCard, adminLog, adminLogs, adminOverview, adminPacks, adminRemoveCard, adminSetAccountStatus, adminSetCollection, adminSetCompetition, adminSetPack, adminSetRole, adminTransferCard, adminUpdateCatalogCard, adminUserDetail, adminUsers, getPool: () => pool, requireAdmin, safeUser }),
  require('./lib/routes/trades').createTradesRoutes({ currentUser, tradeInfo, tradeLookupPlayer, tradeMyCards, tradeCreateOffer, tradeListOffers, tradeListHistory, tradeCancelOffer, tradeDeclineOffer, tradeAcceptOffer }),
  require('./lib/routes/friends').createFriendsRoutes({ currentUser, friends }),
+ require('./lib/routes/team-duel').createTeamDuelRoutes({ currentUser, teamDuel }),
  require('./lib/routes/collection-stats').createCollectionStatsRoutes({ currentUser, collectionStats }),
  require('./lib/routes/team').createTeamRoutes({ currentUser, team }),
  require('./lib/routes/economy').createEconomyRoutes({ currentUser, economy }),

@@ -1042,6 +1042,39 @@ test('complétion : tampon « COMPLÉTÉ » une seule fois, point de départ sil
   assert.deepEqual(errors, []);
 });
 
+test('duel d\u2019équipe : défier un ami, vainqueur payé une fois, plus de bouton après, sans débordement', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
+  const foe = await newPlayer(server, 'DuelAmi');
+  const foeCode = (await foe.get('/api/trades')).body.code;
+  const positions = ['GK', 'LB', 'CB', 'CB', 'RB', 'CM', 'DM', 'CM', 'LW', 'ST', 'RW'];
+  const lineup = async (owner, ovr, tag) => {
+    const ids = [];
+    for (let i = 0; i < 11; i++) {
+      const id = 'duelui-' + tag + i; ids.push(id);
+      await server.db.query("INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr) VALUES($1,'2026-2027',$2,$3,'FC Duel UI','France','common',$4) ON CONFLICT DO NOTHING", [id, 'Duel UI ' + tag + i, positions[i], ovr]);
+      await server.db.query("INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,ovr,source) VALUES(gen_random_uuid(),$1,$2,'2026-2027',$3,$4,'FC Duel UI','France','common',$5,'pack:test')", [id, owner, 'Duel UI ' + tag + i, positions[i], ovr]);
+    }
+    await server.db.query("INSERT INTO team_lineups(user_id,formation,slots) VALUES($1,'4-3-3',$2::jsonb) ON CONFLICT (user_id) DO UPDATE SET formation='4-3-3',slots=$2::jsonb", [owner, JSON.stringify(ids)]);
+  };
+  await lineup(uid, 85, 'm'); await lineup(foe.user.id, 70, 'f');
+  const [lo, hi] = uid < foe.user.id ? [uid, foe.user.id] : [foe.user.id, uid];
+  await server.db.query("INSERT INTO friendships(user_low,user_high,requester,status) VALUES($1,$2,$3,'accepted')", [lo, hi, uid]);
+  const before = Number((await server.db.query('SELECT coins FROM users WHERE id=$1', [uid])).rows[0].coins);
+  const r = await visit('amis');
+  assert.ok(r.overflow <= 1, 'pas de débordement');
+  const duelBtn = `[data-friend-duel="${foeCode}"]`; // d'autres amis (profil privé…) peuvent déjà figurer dans la liste
+  await page.waitForSelector(duelBtn);
+  assert.match(await page.textContent('.friends-page'), /duel du jour/i);
+  assert.ok((await page.locator(duelBtn).boundingBox()).height >= 44, 'bouton DÉFIER de 44 px');
+  await page.click(duelBtn);
+  await page.waitForFunction(() => /duel du jour terminé : victoire/i.test(document.querySelector('.friends-page')?.innerText || ''));
+  assert.equal(await page.locator('[data-friend-duel]').count(), 0, 'un seul duel par jour');
+  assert.equal(Number((await server.db.query('SELECT coins FROM users WHERE id=$1', [uid])).rows[0].coins), before + 50);
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'pas de débordement après le duel');
+  assert.deepEqual(errors, []);
+});
+
 test('souhaits : recherche, ajout, retrait, sans débordement', async () => {
   await page.setViewportSize({ width: 390, height: 844 });
   await server.db.query("INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr) VALUES('wish-ui','2026-2027','Joueur Souhaité UI','ST','FC Souhait','France','epic',88) ON CONFLICT DO NOTHING");
