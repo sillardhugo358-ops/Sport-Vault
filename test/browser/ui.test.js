@@ -1072,6 +1072,7 @@ test('duel d\u2019équipe : défier un ami, vainqueur payé une fois, plus de bo
   assert.equal(await page.locator('[data-friend-duel]').count(), 0, 'un seul duel par jour');
   assert.equal(Number((await server.db.query('SELECT coins FROM users WHERE id=$1', [uid])).rows[0].coins), before + 50);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'pas de débordement après le duel');
+  await server.db.query('DELETE FROM team_lineups WHERE user_id=$1', [uid]); // ne pas laisser d'équipe enregistrée aux tests suivants
   assert.deepEqual(errors, []);
 });
 
@@ -1202,10 +1203,11 @@ test('équipe type : formation, meilleur 11, choix d\'un joueur, enregistrement,
   await page.click('[data-team-save]');
   await page.waitForFunction(() => /Équipe enregistrée|0 \/ 11|\/ 11 postes/.test(document.body.innerText) && !document.querySelector('[data-team-save]:not([disabled])'));
   // L'enregistrement est asynchrone : on attend la ligne en base (au lieu de la lire dès que le texte de la page change).
+  // (une équipe enregistrée par un test précédent peut déjà exister : on attend la formation attendue, pas la simple présence d'une ligne.)
   let saved;
-  for (let i = 0; i < 50 && !saved; i++) {
+  for (let i = 0; i < 50 && saved?.formation !== '4-4-2'; i++) {
     saved = (await server.db.query('SELECT formation FROM team_lineups WHERE user_id=$1', [uid])).rows[0];
-    if (!saved) await new Promise(r => setTimeout(r, 100));
+    if (saved?.formation !== '4-4-2') await new Promise(r => setTimeout(r, 100));
   }
   assert.equal(saved.formation, '4-4-2');
   assert.deepEqual(errors, []);
