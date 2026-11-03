@@ -15,7 +15,7 @@ const VIEWPORTS = [
   { name: 'tablette', width: 900, height: 1000 },
   { name: 'mobile', width: 390, height: 844 }
 ];
-const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'amis', 'souhaits', 'statistiques', 'equipe', 'atelier', 'surmesure', 'collectif', 'admin'];
+const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'amis', 'souhaits', 'statistiques', 'equipe', 'atelier', 'surmesure', 'club', 'collectif', 'admin'];
 
 let server, browser, context, page;
 const errors = [];
@@ -727,7 +727,7 @@ test('espace de noms FVC : une fonction par page, aides partagées, page rempla�
     ui: Object.keys(window.FVC?.ui || {}).sort(),
     allFunctions: Object.values(window.FVC?.pages || {}).every(f => typeof f === 'function')
   }));
-  assert.deepEqual(ns.pages, ['admin', 'album', 'amis', 'atelier', 'auth', 'card', 'classement', 'collectif', 'collection', 'equipe', 'home', 'joueur', 'market', 'packs', 'profil', 'souhaits', 'statistiques', 'successes', 'surmesure', 'trades', 'vault']);
+  assert.deepEqual(ns.pages, ['admin', 'album', 'amis', 'atelier', 'auth', 'card', 'classement', 'club', 'collectif', 'collection', 'equipe', 'home', 'joueur', 'market', 'packs', 'profil', 'souhaits', 'statistiques', 'successes', 'surmesure', 'trades', 'vault']);
   for (const k of ['$', 'api', 'apiRetry', 'app', 'bind', 'cardLink', 'cardMarkup', 'cardStatDefinitions', 'closeModal', 'esc', 'initials', 'money', 'rarityOrder', 'render', 'setModal', 'state', 'toast', 'viewHero']) assert.ok(ns.core.includes(k), 'FVC.core.' + k);
   for (const k of ['claimAlbum', 'claimChallengeUi', 'claimSetUi', 'daily', 'logout', 'mission', 'openPack', 'openPool', 'submitAuth', 'task', 'toggleFavorite']) assert.ok(ns.ui.includes(k), 'FVC.ui.' + k);
   assert.equal(ns.allFunctions, true);
@@ -1054,6 +1054,22 @@ test('souhaits : recherche, ajout, retrait, sans débordement', async () => {
   assert.match(await page.textContent('.wish-page'), /Pas en vente/);
   await page.click('[data-wish-remove="wish-ui"]');
   await page.waitForFunction(() => !document.querySelector('[data-wish-remove="wish-ui"]'));
+  assert.deepEqual(errors, []);
+});
+
+test('club de cœur : recherche, choix gratuit, classement, sans débordement', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (let i = 0; i < 12; i++) await server.db.query("INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr) VALUES($1,'2026-2027',$2,'ST','FC Cœur UI','France','common',70) ON CONFLICT DO NOTHING", ['hcui' + i, 'Cœur UI ' + i]);
+  const r = await visit('club');
+  assert.ok(r.overflow <= 1, 'pas de débordement');
+  const search = page.waitForResponse(x => /heart-club\/search/.test(x.url()));
+  await page.fill('#hcSearch', 'Cœur UI');
+  const found = await (await search).json();
+  assert.ok(found.clubs?.length, 'club trouvé : ' + JSON.stringify(found));
+  await page.waitForSelector('[data-hc-choose]');
+  await page.click('[data-hc-choose]');
+  await page.waitForFunction(() => /ton club de cœur/i.test(document.querySelector('.hc-page')?.textContent || '') && !!document.querySelector('.hc-page .is-mine'));
+  assert.match(await page.textContent('.hc-page'), /FC Cœur UI/);
   assert.deepEqual(errors, []);
 });
 
