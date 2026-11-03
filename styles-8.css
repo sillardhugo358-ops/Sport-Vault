@@ -525,3 +525,15 @@ html:root:root .hc-page .eyebrow{text-transform:none!important;letter-spacing:0!
 html:root:root .hc-page .btn{min-height:44px;border-radius:999px;font:600 15px var(--body);text-transform:none!important;letter-spacing:0!important}
 html:root:root .hc-page .btn-gold{background:var(--av-btn);color:var(--av-btn-ink)}
 html:root:root .hc-page #hcSearch{width:100%;min-height:44px;background:var(--panel);border:1px solid var(--line);border-radius:14px;color:var(--text)}
+
+/* Mur des transferts */
+html:root:root .wk-page.wall-page .view-hero{background:linear-gradient(120deg,#38bdf8,#6366f1 55%,#a855f7)}
+html:root:root .wall-page :is(.panel,.wk-row){background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--av-shadow)}
+html:root:root .wall-page .wall-optin{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+html:root:root .wall-page .wall-optin p{margin:0;flex:1 1 280px}
+html:root:root .wall-page .section-head h2{font:800 clamp(22px,3vw,30px)/1.1 var(--head)!important;text-transform:none!important;letter-spacing:0!important}
+html:root:root .wall-page .eyebrow{text-transform:none!important;letter-spacing:0!important;font:700 13px var(--body)}
+html:root:root .wall-page .btn{min-height:44px;border-radius:999px;font:600 15px var(--body);text-transform:none!important;letter-spacing:0!important}
+html:root:root .wall-page .btn-gold{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root .wall-page .btn-outline{background:var(--av-ghost);border-color:transparent;color:var(--text)}
+html:root:root .wall-page .wall-row small{display:block;color:var(--muted)}

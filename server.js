@@ -45,6 +45,7 @@ const collective = require('./lib/collective').createCollective({ getPool: () =>
 const wishlist = require('./lib/wishlist').createWishlist({ getPool: () => pool });
 const heartClub = require('./lib/heart-club').createHeartClub({ getPool: () => pool });
 const team = require('./lib/team').createTeam({ getPool: () => pool });
+const transferWall = require('./lib/transfer-wall').createTransferWall({ getPool: () => pool });
 const teamDuel = require('./lib/team-duel').createTeamDuel({ getPool: () => pool, team, applyReward: (...args) => applyReward(...args), securityEvent: (...args) => securityEvent(...args) });
 const friends = require('./lib/friends').createFriends({ getPool: () => pool, ensureCode: tradeEnsureCode, listFavorites, levelProgressFromXp: (...args) => levelProgressFromXp(...args), rankOf, publicTeam: team.publicTeam });
 const { cardMarket, recentSales, listAlerts, setAlert, deleteAlert } = require('./lib/market').createMarket({ getPool: () => pool, publicCard, settleExpiredAuctions });
@@ -60,6 +61,7 @@ const apiRoutes = [
  require('./lib/routes/admin').createAdminRoutes({ adminSeasonPrizes, adminSetSeasonPrize, adminChallenges, adminSaveChallenge, adminSets, adminSaveSet, adminCardsPage, adminCardsSummary, adminTasks, adminSaveTask, adminStats, adminAchievements, adminSaveAchievement, adminMissions, adminSaveMission, adminAdjustResources, adminAuctions, adminCards, adminCollections, adminCompetitions, adminCreateCatalogCard, adminDeleteCatalogCard, adminGrantCard, adminLog, adminLogs, adminOverview, adminPacks, adminRemoveCard, adminSetAccountStatus, adminSetCollection, adminSetCompetition, adminSetPack, adminSetRole, adminTransferCard, adminUpdateCatalogCard, adminUserDetail, adminUsers, getPool: () => pool, requireAdmin, safeUser }),
  require('./lib/routes/trades').createTradesRoutes({ currentUser, tradeInfo, tradeLookupPlayer, tradeMyCards, tradeCreateOffer, tradeListOffers, tradeListHistory, tradeCancelOffer, tradeDeclineOffer, tradeAcceptOffer }),
  require('./lib/routes/friends').createFriendsRoutes({ currentUser, friends }),
+ require('./lib/routes/transfer-wall').createTransferWallRoutes({ currentUser, transferWall }),
  require('./lib/routes/team-duel').createTeamDuelRoutes({ currentUser, teamDuel }),
  require('./lib/routes/collection-stats').createCollectionStatsRoutes({ currentUser, collectionStats }),
  require('./lib/routes/team').createTeamRoutes({ currentUser, team }),
@@ -98,7 +100,7 @@ async function securityEvent(userId,ip,event,details={},client=null){const db=cl
 
 // Fichiers publics : uniquement à la racine du dépôt, pages, styles et images, plus les
 // scripts de l'interface listés ci-dessous. Jamais le code serveur, lib/, data/, .git/ ni la configuration.
-const PUBLIC_SCRIPTS=new Set(['theme.js','fv-core.js','fv-cards.js','fv-holo.js','fv-fx.js','fv-celebrate.js','app.js','fv-pages.js','fv-admin.js','fv-market.js','fv-trades.js','market-insights.js','challenge-admin-editor.js','set-admin-editor.js','notifications-bell.js','fv-push.js','fv-friends.js','fv-wishlist.js','fv-heart.js','fv-stats.js','fv-team.js','fv-workshop.js','fv-custompack.js','fv-collective.js','sw.js','admin-stats.js','task-admin-editor.js','achievement-admin-editor.js','mission-admin-editor.js','manifest.json']);
+const PUBLIC_SCRIPTS=new Set(['theme.js','fv-core.js','fv-cards.js','fv-holo.js','fv-fx.js','fv-celebrate.js','app.js','fv-pages.js','fv-admin.js','fv-market.js','fv-trades.js','market-insights.js','challenge-admin-editor.js','set-admin-editor.js','notifications-bell.js','fv-push.js','fv-friends.js','fv-wishlist.js','fv-heart.js','fv-wall.js','fv-stats.js','fv-team.js','fv-workshop.js','fv-custompack.js','fv-collective.js','sw.js','admin-stats.js','task-admin-editor.js','achievement-admin-editor.js','mission-admin-editor.js','manifest.json']);
 const PUBLIC_EXTENSIONS=new Set(['.html','.css','.svg','.png','.ico','.webp']);
 // etat.html n'est jamais servi comme fichier public : route réservée aux administrateurs (voir plus bas).
 function isPublicFile(name){return name!=='etat.html'&&!name.startsWith('.')&&(PUBLIC_SCRIPTS.has(name)||PUBLIC_EXTENSIONS.has(path.extname(name)));}

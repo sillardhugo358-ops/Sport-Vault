@@ -15,7 +15,7 @@ const VIEWPORTS = [
   { name: 'tablette', width: 900, height: 1000 },
   { name: 'mobile', width: 390, height: 844 }
 ];
-const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'amis', 'souhaits', 'statistiques', 'equipe', 'atelier', 'surmesure', 'club', 'collectif', 'admin'];
+const ROUTES = ['home', 'collection', 'album', 'packs', 'vault', 'profil', 'successes', 'market', 'trades', 'classement', 'amis', 'souhaits', 'statistiques', 'equipe', 'atelier', 'surmesure', 'club', 'mur', 'collectif', 'admin'];
 
 let server, browser, context, page;
 const errors = [];
@@ -727,7 +727,7 @@ test('espace de noms FVC : une fonction par page, aides partagées, page rempla�
     ui: Object.keys(window.FVC?.ui || {}).sort(),
     allFunctions: Object.values(window.FVC?.pages || {}).every(f => typeof f === 'function')
   }));
-  assert.deepEqual(ns.pages, ['admin', 'album', 'amis', 'atelier', 'auth', 'card', 'classement', 'club', 'collectif', 'collection', 'equipe', 'home', 'joueur', 'market', 'packs', 'profil', 'souhaits', 'statistiques', 'successes', 'surmesure', 'trades', 'vault']);
+  assert.deepEqual(ns.pages, ['admin', 'album', 'amis', 'atelier', 'auth', 'card', 'classement', 'club', 'collectif', 'collection', 'equipe', 'home', 'joueur', 'market', 'mur', 'packs', 'profil', 'souhaits', 'statistiques', 'successes', 'surmesure', 'trades', 'vault']);
   for (const k of ['$', 'api', 'apiRetry', 'app', 'bind', 'cardLink', 'cardMarkup', 'cardStatDefinitions', 'closeModal', 'esc', 'initials', 'money', 'rarityOrder', 'render', 'setModal', 'state', 'toast', 'viewHero']) assert.ok(ns.core.includes(k), 'FVC.core.' + k);
   for (const k of ['claimAlbum', 'claimChallengeUi', 'claimSetUi', 'daily', 'logout', 'mission', 'openPack', 'openPool', 'submitAuth', 'task', 'toggleFavorite']) assert.ok(ns.ui.includes(k), 'FVC.ui.' + k);
   assert.equal(ns.allFunctions, true);
@@ -1072,6 +1072,29 @@ test('duel d\u2019équipe : défier un ami, vainqueur payé une fois, plus de bo
   assert.equal(await page.locator('[data-friend-duel]').count(), 0, 'un seul duel par jour');
   assert.equal(Number((await server.db.query('SELECT coins FROM users WHERE id=$1', [uid])).rows[0].coins), before + 50);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'pas de débordement après le duel');
+  assert.deepEqual(errors, []);
+});
+
+test('mur des transferts : désactivé par défaut, activation, vente visible, sans débordement', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
+  const seller = await newPlayer(server, 'VendeurMur');
+  await server.db.query("INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr) VALUES('wallui','2026-2027','Carte Mur UI','ST','FC Mur UI','France','epic',86) ON CONFLICT DO NOTHING");
+  await server.db.query("INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,ovr,source) VALUES('00000000-0000-4000-8000-0000000000a1','wallui',$1,'2026-2027','Carte Mur UI','ST','FC Mur UI','France','epic',86,'pack:test')", [uid]);
+  await server.db.query("INSERT INTO auctions(id,card_instance_id,seller_id,starting_bid,current_bid,current_bidder_id,ends_at,status,completed_at) VALUES('00000000-0000-4000-8000-0000000000b1','00000000-0000-4000-8000-0000000000a1',$1,500,1234,$2,now() - interval '1 hour','completed',now() - interval '30 minutes')", [seller.user.id, uid]);
+  await server.db.query("UPDATE users SET wall_visible=false WHERE id=$1", [uid]);
+  const r = await visit('mur');
+  assert.ok(r.overflow <= 1, 'pas de débordement');
+  await page.waitForSelector('[data-wall-toggle="1"]');
+  assert.equal(await page.locator('.wall-row').count(), 0, 'désactivé : aucune vente visible');
+  await page.click('[data-wall-toggle="1"]');
+  await page.waitForSelector('.wall-row');
+  assert.match(await page.textContent('.wall-page'), /Carte Mur UI/);
+  assert.match(await page.textContent('.wall-page'), /Navigateur/, 'mon pseudo apparaît (acheteur ayant activé)');
+  assert.match(await page.textContent('.wall-page'), /Un collectionneur/, 'vendeur n’ayant pas activé : anonyme');
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'pas de débordement avec une vente');
+  await page.click('[data-wall-toggle="0"]');
+  await page.waitForFunction(() => !document.querySelector('.wall-row'));
   assert.deepEqual(errors, []);
 });
 
