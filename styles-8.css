@@ -537,3 +537,15 @@ html:root:root .wall-page .btn{min-height:44px;border-radius:999px;font:600 15px
 html:root:root .wall-page .btn-gold{background:var(--av-btn);color:var(--av-btn-ink)}
 html:root:root .wall-page .btn-outline{background:var(--av-ghost);border-color:transparent;color:var(--text)}
 html:root:root .wall-page .wall-row small{display:block;color:var(--muted)}
+
+/* Primes */
+html:root:root .wk-page.bty-page .view-hero{background:linear-gradient(120deg,#fbbf24,#f97316 55%,#ef4444)}
+html:root:root .bty-page :is(.panel,.wk-row){background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--av-shadow)}
+html:root:root .bty-page .section-head h2{font:800 clamp(22px,3vw,30px)/1.1 var(--head)!important;text-transform:none!important;letter-spacing:0!important}
+html:root:root .bty-page .eyebrow{text-transform:none!important;letter-spacing:0!important;font:700 13px var(--body)}
+html:root:root .bty-page .btn{min-height:44px;border-radius:999px;font:600 15px var(--body);text-transform:none!important;letter-spacing:0!important}
+html:root:root .bty-page .btn-gold{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root .bty-page .btn-outline{background:var(--av-ghost);border-color:transparent;color:var(--text)}
+html:root:root .bty-page :is(#btySearch,#btyReward){width:100%;min-height:44px;background:var(--panel);border:1px solid var(--line);border-radius:14px;color:var(--text)}
+html:root:root .bty-page .wk-row small{display:block;color:var(--muted)}
+html:root:root .bty-page .bty-pick{margin-top:12px;display:grid;gap:10px}
