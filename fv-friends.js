@@ -66,13 +66,14 @@ async function joueur(q){
     return '<div class="page friends-page">'+viewHero('FOOTVAULT / JOUEUR','JOUEUR <span>INTROUVABLE.</span>',e.message||'')+'</div>'
   }
   const p=d.player;
-  const stats=[['Niveau',p.level],['Rang',p.rank?'#'+p.rank:'—'],['Succès',p.achievements],['Albums',p.albums]];
-  return '<div class="page friends-page">'+viewHero('FOOTVAULT / JOUEUR',esc(p.name).toUpperCase(),'Membre depuis le '+new Date(p.memberSince).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}))+relationBar(p)
+  const stats=[['Rang au classement',p.rank?'#'+p.rank:'—'],['Succès',p.achievements],['Albums',p.albums],['Sets terminés',p.sets.length]];
+  // En-tête comme la maquette : carte claire avec avatar (initiales), nom tel quel, niveau et ancienneté, actions de la relation.
+  return '<div class="page friends-page player-page"><section class="player-hero"><span class="player-avatar" aria-hidden="true">'+esc(FVC.core.initials(p.name))+'</span><div class="player-id"><p class="eyebrow">Profil du joueur</p><h1>'+esc(p.name)+'</h1><p class="player-sub">Niveau '+Number(p.level)+' · membre depuis le '+new Date(p.memberSince).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})+'</p></div><div class="player-actions">'+relationBar(p)+'</div></section>'
    +'<section class="section"><ul class="friend-stats">'+stats.map(([k,v])=>'<li><strong>'+esc(String(v))+'</strong><span>'+k+'</span></li>').join('')+'</ul></section>'
-   +section('VITRINE','Cartes favorites',d.favorites.length?'<div class="friend-showcase">'+d.favorites.map(c=>'<div class="friend-showcase-card">'+cardMarkup(c)+'</div>').join('')+'</div>':'<p class="friend-empty">Aucune carte en vitrine.</p>')
-   +(d.team?section('ÉQUIPE TYPE','Équipe type · '+esc(d.team.formation)+' · NOTE '+String(d.team.rating).replace('.',','),'<ul class="friend-sets team-public">'+d.team.players.map((x,i)=>'<li>'+(x?'<strong>'+x.ovr+'</strong> '+esc(x.name)+' <small>'+esc(x.position)+'</small>':'<small>poste vide</small>')+'</li>').join('')+'</ul>'):'')
-   +((d.wishlist||[]).length?section('SOUHAITS','Cartes recherchées',`<ul class="friend-sets">${d.wishlist.map(w=>'<li>'+esc(w.name)+'</li>').join('')}</ul>`):'')
-   +section('SETS','Sets terminés ('+p.sets.length+')',p.sets.length?'<ul class="friend-sets">'+p.sets.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>':'<p class="friend-empty">Aucun set terminé.</p>')
+   +section('Vitrine','Cartes favorites',d.favorites.length?'<div class="friend-showcase">'+d.favorites.map(c=>'<div class="friend-showcase-card">'+cardMarkup(c)+'</div>').join('')+'</div>':'<p class="friend-empty">Aucune carte en vitrine.</p>')
+   +(d.team?section('Équipe type','Équipe type · '+esc(d.team.formation)+' · note '+String(d.team.rating).replace('.',','),'<ul class="friend-sets team-public">'+d.team.players.map((x,i)=>'<li>'+(x?'<strong>'+x.ovr+'</strong> '+esc(x.name)+' <small>'+esc(x.position)+'</small>':'<small>poste vide</small>')+'</li>').join('')+'</ul>'):'')
+   +((d.wishlist||[]).length?section('Souhaits','Cartes recherchées',`<ul class="friend-sets">${d.wishlist.map(w=>'<li>'+esc(w.name)+'</li>').join('')}</ul>`):'')
+   +section('Sets','Sets terminés ('+p.sets.length+')',p.sets.length?'<ul class="friend-sets">'+p.sets.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>':'<p class="friend-empty">Aucun set terminé.</p>')
    +'</div>';
 }
 function relationBar(p){
