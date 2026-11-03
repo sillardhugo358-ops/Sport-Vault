@@ -1171,6 +1171,10 @@ test('pack sur mesure : prix calculé par le serveur, aperçu qui suit les choix
   await page.fill('#cpClub', 'FC Sur Mesure');
   await page.click('[data-cp-club-add]');
   await page.waitForFunction(() => /5 cartes/.test(document.querySelector('#cpQuote .cp-price small')?.textContent || '') && /825/.test(document.querySelector('#cpQuote .cp-price strong')?.textContent.replace(/\s/g, '') || ''));
+  await page.check('[data-cp-new]');
+  await page.waitForFunction(() => /1050/.test(document.querySelector('#cpQuote .cp-price strong')?.textContent.replace(/\s/g, '') || ''));
+  await page.uncheck('[data-cp-new]');
+  await page.waitForFunction(() => /825/.test(document.querySelector('#cpQuote .cp-price strong')?.textContent.replace(/\s/g, '') || ''));
   const before = Number((await server.db.query('SELECT coins FROM users WHERE id=$1', [uid])).rows[0].coins);
   await page.click('[data-cp-open]');
   await page.waitForSelector('[data-reveal-card]', { state: 'attached' });

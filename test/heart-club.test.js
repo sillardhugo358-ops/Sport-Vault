@@ -46,6 +46,8 @@ test('droits, recherche, club inconnu, choix gratuit', async () => {
 });
 
 test('classement : cartes distinctes du club, possédées, par supporters', async () => {
+  // Les cartes de bienvenue sont tirées au hasard dans tout le catalogue (mes cartes de test comprises) : on part de zéro.
+  await q("UPDATE card_instances SET status='archived' WHERE owner_id = ANY($1::uuid[])", [[a, b, c].map(p => p.user.id)]);
   await b.post('/api/heart-club/choose', { club: A });
   await c.post('/api/heart-club/choose', { club: B });
   await give(a, ids('hca', 3));
