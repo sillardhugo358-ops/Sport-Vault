@@ -515,3 +515,13 @@ html:root:root .cl-page .cl-tier{background:var(--panel2);border-radius:16px}
 html:root:root .cl-page .cl-tier.is-reached{border-color:#22d3a5}
 html:root:root .cl-page .cl-done{color:#0f9d75;font-weight:700}
 html:root:root .cp-page .cp-radio b{color:inherit}
+
+/* Club de cœur */
+html:root:root .wk-page.hc-page .view-hero{background:linear-gradient(120deg,#f472b6,#fb7185 55%,#f59e0b)}
+html:root:root .hc-page .panel,html:root:root .hc-page .wk-row{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--av-shadow)}
+html:root:root .hc-page .wk-row.is-mine{border-color:#f472b6;box-shadow:0 0 0 2px rgba(244,114,182,.35)}
+html:root:root .hc-page .section-head h2{font:800 clamp(22px,3vw,30px)/1.1 var(--head)!important;text-transform:none!important;letter-spacing:0!important}
+html:root:root .hc-page .eyebrow{text-transform:none!important;letter-spacing:0!important;font:700 13px var(--body)}
+html:root:root .hc-page .btn{min-height:44px;border-radius:999px;font:600 15px var(--body);text-transform:none!important;letter-spacing:0!important}
+html:root:root .hc-page .btn-gold{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root .hc-page #hcSearch{width:100%;min-height:44px;background:var(--panel);border:1px solid var(--line);border-radius:14px;color:var(--text)}
