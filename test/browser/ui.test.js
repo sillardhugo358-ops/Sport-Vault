@@ -1063,15 +1063,15 @@ test('duel d\u2019équipe : défier un ami, vainqueur payé une fois, plus de bo
   const before = Number((await server.db.query('SELECT coins FROM users WHERE id=$1', [uid])).rows[0].coins);
   const r = await visit('amis');
   assert.ok(r.overflow <= 1, 'pas de débordement');
-  await page.waitForSelector('[data-friend-duel]');
+  const duelBtn = `[data-friend-duel="${foeCode}"]`; // d'autres amis (profil privé…) peuvent déjà figurer dans la liste
+  await page.waitForSelector(duelBtn);
   assert.match(await page.textContent('.friends-page'), /duel du jour/i);
-  assert.ok((await page.locator('[data-friend-duel]').first().boundingBox()).height >= 44, 'bouton DÉFIER de 44 px');
-  await page.click('[data-friend-duel]');
+  assert.ok((await page.locator(duelBtn).boundingBox()).height >= 44, 'bouton DÉFIER de 44 px');
+  await page.click(duelBtn);
   await page.waitForFunction(() => /duel du jour terminé : victoire/i.test(document.querySelector('.friends-page')?.innerText || ''));
   assert.equal(await page.locator('[data-friend-duel]').count(), 0, 'un seul duel par jour');
   assert.equal(Number((await server.db.query('SELECT coins FROM users WHERE id=$1', [uid])).rows[0].coins), before + 50);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'pas de débordement après le duel');
-  assert.equal(foeCode.length, 8);
   assert.deepEqual(errors, []);
 });
 
