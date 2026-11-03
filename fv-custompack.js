@@ -4,8 +4,8 @@
 const {api,esc,money,render,toast,viewHero}=FVC.core;
 const post=(url,body)=>api(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 const RL={common:'Common',rare:'Rare',epic:'Epic',legendary:'Legendary',icon:'Icon'};
-const st={cards:5,minRarity:'common',filters:{competitions:[],seasons:[],clubs:[],positions:[]},busy:false,quote:null,opts:null,timer:0,seq:0};
-const body=()=>({cards:st.cards,minRarity:st.minRarity,filters:st.filters});
+const st={cards:5,minRarity:'common',newOnly:false,filters:{competitions:[],seasons:[],clubs:[],positions:[]},busy:false,quote:null,opts:null,timer:0,seq:0};
+const body=()=>({cards:st.cards,minRarity:st.minRarity,filters:st.filters,newOnly:st.newOnly});
 const chk=(name,value,label,on)=>'<label class="cp-check"><input type="checkbox" data-cp-multi="'+name+'" value="'+esc(value)+'"'+(on?' checked':'')+'><span>'+esc(label)+'</span></label>';
 function quoteHtml(){
   const q=st.quote,me=FVC.core.state.user;
@@ -13,7 +13,7 @@ function quoteHtml(){
   if(q.error)return '<p class="wk-note" role="alert">'+esc(q.error)+'</p>';
   const poor=me&&Number(me.coins)-Number(me.reservedCoins||0)<q.price;
   return '<div class="cp-price"><span class="fc-coin" aria-hidden="true">FC</span> <strong>'+money(q.price)+'</strong><small>'+q.cards+' cartes · '+esc(RL[q.minRarity])+' minimum</small></div>'
-   +'<p class="wk-note" role="status">'+(q.ok?money(q.poolSize)+' cartes correspondent à ta sélection ('+money(q.eligible)+' en '+esc(RL[q.minRarity])+' ou mieux).':'Sélection impossible : '+money(q.poolSize)+' cartes correspondent à tes filtres, dont '+money(q.eligible)+' en '+esc(RL[q.minRarity])+' ou mieux. Il en faut au moins '+q.minPool+' (et '+q.cards+' de la rareté demandée).')+'</p>'
+   +'<p class="wk-note" role="status">'+(q.ok?money(q.poolSize)+' cartes correspondent à ta sélection ('+money(q.eligible)+' en '+esc(RL[q.minRarity])+' ou mieux)'+(q.newOnly?', hors '+money(q.alreadyOwned)+' déjà dans ta collection':'')+'.':'Sélection impossible : '+money(q.poolSize)+' cartes correspondent à tes filtres, dont '+money(q.eligible)+' en '+esc(RL[q.minRarity])+' ou mieux. Il en faut au moins '+q.minPool+' (et '+q.cards+' de la rareté demandée).')+'</p>'
    +(poor?'<p class="wk-note" role="alert">FOOTCOINS disponibles insuffisants.</p>':'')
    +'<button class="btn btn-gold" type="button" data-cp-open '+(q.ok&&!poor&&!st.busy?'':'disabled')+'>Ouvrir mon pack</button>';
 }
@@ -38,6 +38,7 @@ async function surmesure(){
    +'<section class="section"><div class="cp-grid"><form class="panel cp-form" onsubmit="return false">'
    +sec('Nombre de cartes','<label class="cp-field"><span class="sr-only">Nombre de cartes</span><select data-cp-size>'+sizes+'</select></label>')
    +sec('Rareté minimale garantie (toutes les cartes)','<div class="cp-radios">'+rar+'</div><p class="wk-note">Chaque carte est tirée aux probabilités habituelles puis relevée à cette rareté. Les raretés supérieures restent possibles.</p>')
+   +sec('Nouveautés','<label class="cp-check"><input type="checkbox" data-cp-new'+(st.newOnly?' checked':'')+'><span><b>Nouvelles cartes uniquement</b><small>+'+o.newOnlyBonusPct+' % du prix · aucune carte que tu possèdes déjà</small></span></label>')
    +sec('Compétitions','<div class="cp-checks">'+o.competitions.map(c=>chk('competitions',c.id,c.name,f.competitions.includes(c.id))).join('')+'</div>')
    +sec('Saisons','<div class="cp-checks">'+o.seasons.map(s=>chk('seasons',s,s,f.seasons.includes(s))).join('')+'</div>')
    +sec('Postes','<div class="cp-checks">'+o.positions.map(p=>chk('positions',p,p,f.positions.includes(p))).join('')+'</div>')
@@ -48,6 +49,7 @@ document.addEventListener('change',e=>{
   const t=e.target;if(!t.closest?.('.cp-page'))return;
   if(t.matches('[data-cp-size]'))st.cards=Number(t.value);
   else if(t.matches('[data-cp-rarity]'))st.minRarity=t.value;
+  else if(t.matches('[data-cp-new]'))st.newOnly=t.checked;
   else if(t.matches('[data-cp-multi]')){const l=st.filters[t.dataset.cpMulti],i=l.indexOf(t.value);if(t.checked&&i<0)l.push(t.value);if(!t.checked&&i>=0)l.splice(i,1)}
   else return;
   refreshQuote();

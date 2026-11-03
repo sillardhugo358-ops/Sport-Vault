@@ -84,3 +84,44 @@ test('rareté minimale Icon : toutes les cartes sont des Icon, prix ≈ 6 000 FC
   assert.deepEqual(r.body.cards.map(c => c.rarity), ['icon', 'icon', 'icon']);
   assert.equal(before - await coins(), 19800, '3 × 6 000 FC + 10 %');
 });
+
+test('nouvelles cartes uniquement : +30 %, cartes possédées exclues, refus sans débit si presque tout est possédé', async () => {
+  const n = await newPlayer(server, 'Neuf');
+  await q('UPDATE users SET coins=100000 WHERE id=$1', [n.user.id]);
+  await q("UPDATE card_instances SET status='archived' WHERE owner_id=$1", [n.user.id]); // cartes de bienvenue aléatoires : partir de zéro
+  const give = async (ids, status = 'owned') => q(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,source,status)
+    SELECT gen_random_uuid(),c.id,$1,c.season,c.name,c.position,c.club,c.nation,c.rarity,'pack:test',$3 FROM catalog_cards c WHERE c.id = ANY($2::text[])`, [n.user.id, ids, status]);
+  const commons = Array.from({ length: 25 }, (_, i) => 'cp-common' + i);
+  const bal = async () => Number((await userRow(server, n.user.id)).coins);
+
+  assert.equal((await n.post('/api/custom-pack/quote', spec({ newOnly: 'oui' }))).status, 400, 'option strictement booléenne');
+  assert.equal((await n.post('/api/custom-pack/quote', spec())).body.price, 825, 'sans option : prix inchangé');
+  const quote = (await n.post('/api/custom-pack/quote', spec({ newOnly: true }))).body;
+  assert.equal(quote.price, 1050, '5 × 150 FC + 10 % (filtre) + 30 % (nouvelles cartes)');
+  assert.equal(quote.alreadyOwned, 0);
+
+  // Possède 5 communes (plus une carte archivée, qui ne compte pas) : le pack n'en contient aucune.
+  await give(commons.slice(0, 5));
+  await give(['cp-common20'], 'archived');
+  const owned = new Set(commons.slice(0, 5));
+  const before = await bal();
+  const r = await n.post('/api/custom-pack/open', spec({ newOnly: true }));
+  assert.equal(r.status, 200);
+  assert.equal(r.body.cards.length, 5);
+  assert.ok(r.body.cards.every(c => !owned.has(c.cardId || c.card_id || c.id)), 'aucune carte déjà possédée');
+  assert.equal(before - await bal(), 1050);
+  assert.equal(new Set(r.body.cards.map(c => c.cardId || c.card_id || c.id)).size, 5, 'cartes distinctes');
+
+  // Presque tout possédé : 25 communes + les 5 reçues ci-dessus → il reste moins de 20 cartes nouvelles → refus, rien débité.
+  await give(commons.slice(5));
+  const stuck = await bal();
+  const refused = await n.post('/api/custom-pack/open', spec({ newOnly: true }));
+  assert.equal(refused.status, 409);
+  assert.match(refused.body.error, /déjà presque toutes les cartes/);
+  assert.equal(await bal(), stuck, 'rien débité');
+  const qt = (await n.post('/api/custom-pack/quote', spec({ newOnly: true }))).body;
+  assert.equal(qt.ok, false);
+  assert.ok(qt.alreadyOwned >= 25);
+  // Sans l'option, le même pack reste possible.
+  assert.equal((await n.post('/api/custom-pack/open', spec())).status, 200);
+});
