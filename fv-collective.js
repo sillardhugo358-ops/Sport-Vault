@@ -7,10 +7,10 @@ const st={busy:false,edit:null,errors:{}};
 const isAdmin=()=>['admin','creator'].includes(FVC.core.state.user?.role);
 const fmt=d=>new Date(d).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
 const local=d=>{const x=new Date(d),p=n=>String(n).padStart(2,'0');return x.getFullYear()+'-'+p(x.getMonth()+1)+'-'+p(x.getDate())+'T'+p(x.getHours())+':'+p(x.getMinutes())};
-const STATE={live:'EN COURS',upcoming:'À VENIR',ended:'TERMINÉ'};
+const STATE={live:'En cours',upcoming:'À venir',ended:'Terminé'};
 const tier=(c,t)=>{
   const label=money(t.coins)+' FC'+(t.xp?' + '+money(t.xp)+' XP':'');
-  const btn=t.claimed?'<span class="cl-done">✓ Récupéré</span>':t.claimable?'<button class="btn btn-gold" type="button" data-cl-claim="'+esc(c.id)+'" data-tier="'+t.index+'" '+(st.busy?'disabled':'')+'>RÉCLAMER</button>':t.reached?'<small>Contribue au défi pour réclamer</small>':'<small>'+money(t.at)+' à atteindre</small>';
+  const btn=t.claimed?'<span class="cl-done">✓ Récupéré</span>':t.claimable?'<button class="btn btn-gold" type="button" data-cl-claim="'+esc(c.id)+'" data-tier="'+t.index+'" '+(st.busy?'disabled':'')+'>Réclamer</button>':t.reached?'<small>Contribue au défi pour réclamer</small>':'<small>'+money(t.at)+' à atteindre</small>';
   return '<li class="cl-tier'+(t.reached?' is-reached':'')+'"><div><strong>'+money(t.at)+'</strong><small>'+label+'</small></div>'+btn+'</li>';
 };
 const card=c=>{
@@ -25,15 +25,15 @@ const tierRow=(t,i)=>'<div class="cl-trow"><label>Objectif<input type="number" m
 function editor(adm){
   const e=st.edit,err=st.errors;
   const fe=k=>err[k]?'<small class="cl-err" role="alert">'+esc(err[k])+'</small>':'';
-  if(!e)return '<section class="section"><div class="section-head"><div><p class="eyebrow">ADMINISTRATION</p><h2>GÉRER LES DÉFIS COLLECTIFS</h2></div><button class="btn btn-gold" type="button" data-cl-new>CRÉER UN DÉFI</button></div>'
-   +'<ul class="wk-list">'+adm.challenges.map(c=>'<li class="wk-row"><div class="wk-main"><strong>'+esc(c.title)+'</strong> <small>'+STATE[c.state]+(c.active?'':' · désactivé')+'</small><small>'+money(c.total)+' / '+money(c.target)+' · '+c.claims+' récompense(s) réclamée(s)</small></div><div class="wk-actions"><button class="btn btn-outline" type="button" data-cl-edit="'+esc(c.id)+'">MODIFIER</button><button class="btn btn-outline" type="button" data-cl-toggle="'+esc(c.id)+'" data-active="'+(c.active?'0':'1')+'">'+(c.active?'DÉSACTIVER':'ACTIVER')+'</button></div></li>').join('')+'</ul></section>';
-  return '<section class="section"><form class="panel cl-form" onsubmit="return false"><h2>'+(e.id?'MODIFIER LE DÉFI':'NOUVEAU DÉFI COLLECTIF')+'</h2>'
+  if(!e)return '<section class="section"><div class="section-head"><div><p class="eyebrow">Administration</p><h2>Gérer les défis collectifs</h2></div><button class="btn btn-gold" type="button" data-cl-new>Créer un défi</button></div>'
+   +'<ul class="wk-list">'+adm.challenges.map(c=>'<li class="wk-row"><div class="wk-main"><strong>'+esc(c.title)+'</strong> <small>'+STATE[c.state]+(c.active?'':' · désactivé')+'</small><small>'+money(c.total)+' / '+money(c.target)+' · '+c.claims+' récompense(s) réclamée(s)</small></div><div class="wk-actions"><button class="btn btn-outline" type="button" data-cl-edit="'+esc(c.id)+'">Modifier</button><button class="btn btn-outline" type="button" data-cl-toggle="'+esc(c.id)+'" data-active="'+(c.active?'0':'1')+'">'+(c.active?'Désactiver':'Activer')+'</button></div></li>').join('')+'</ul></section>';
+  return '<section class="section"><form class="panel cl-form" onsubmit="return false"><h2>'+(e.id?'Modifier le défi':'Nouveau défi collectif')+'</h2>'
    +'<label>Titre<input data-cl-f="title" maxlength="100" value="'+esc(e.title)+'">'+fe('title')+'</label>'
    +'<label>Description<input data-cl-f="description" maxlength="300" value="'+esc(e.description)+'">'+fe('description')+'</label>'
    +'<fieldset class="cp-group"><legend>Actions qui font avancer la jauge</legend><div class="cp-checks">'+Object.entries(adm.metrics).map(([k,l])=>'<label class="cp-check"><input type="checkbox" data-cl-metric value="'+k+'"'+(e.metrics.includes(k)?' checked':'')+'><span>'+esc(l)+'</span></label>').join('')+'</div>'+fe('metrics')+'</fieldset>'
    +'<div class="cl-dates"><label>Début<input type="datetime-local" data-cl-f="startsAt" value="'+esc(e.startsAt)+'">'+fe('startsAt')+'</label><label>Fin<input type="datetime-local" data-cl-f="endsAt" value="'+esc(e.endsAt)+'">'+fe('endsAt')+'</label></div>'
-   +'<fieldset class="cp-group"><legend>Paliers (objectif croissant, récompense FC + XP)</legend>'+e.tiers.map(tierRow).join('')+fe('tiers')+(e.tiers.length<adm.limits.maxTiers?'<button class="btn btn-outline" type="button" data-cl-tier-add>AJOUTER UN PALIER</button>':'')+'</fieldset>'
-   +'<div class="wk-actions"><button class="btn btn-gold" type="button" data-cl-save '+(st.busy?'disabled':'')+'>ENREGISTRER</button><button class="btn btn-outline" type="button" data-cl-cancel>ANNULER</button></div></form></section>';
+   +'<fieldset class="cp-group"><legend>Paliers (objectif croissant, récompense FC + XP)</legend>'+e.tiers.map(tierRow).join('')+fe('tiers')+(e.tiers.length<adm.limits.maxTiers?'<button class="btn btn-outline" type="button" data-cl-tier-add>Ajouter un palier</button>':'')+'</fieldset>'
+   +'<div class="wk-actions"><button class="btn btn-gold" type="button" data-cl-save '+(st.busy?'disabled':'')+'>Enregistrer</button><button class="btn btn-outline" type="button" data-cl-cancel>Annuler</button></div></form></section>';
 }
 async function collectif(){
   let d;
@@ -41,9 +41,9 @@ async function collectif(){
   const adm=isAdmin()?await api('/api/admin/collective').catch(()=>null):null;
   st.adm=adm;
   const live=d.challenges.filter(c=>c.state!=='ended'),ended=d.challenges.filter(c=>c.state==='ended');
-  return '<div class="page wk-page cl-page">'+viewHero('DÉFIS COLLECTIFS','Tous ensemble, un même objectif.','Toute la communauté fait avancer la même jauge. Chaque palier atteint se réclame une fois, à condition d’avoir contribué au défi.',String(live.length),'DÉFIS ACTIFS')
+  return '<div class="page wk-page cl-page">'+viewHero('Défis collectifs','Tous ensemble, un même objectif.','Toute la communauté fait avancer la même jauge. Chaque palier atteint se réclame une fois, à condition d’avoir contribué au défi.',String(live.length),'Défis actifs')
    +'<section class="section">'+(live.length?'<div class="cl-grid">'+live.map(card).join('')+'</div>':'<p class="wk-note">Aucun défi collectif en cours pour le moment.</p>')+'</section>'
-   +(ended.length?'<section class="section"><div class="section-head"><div><p class="eyebrow">TERMINÉS</p><h2>RÉCOMPENSES À RÉCUPÉRER</h2></div></div><div class="cl-grid">'+ended.map(card).join('')+'</div></section>':'')
+   +(ended.length?'<section class="section"><div class="section-head"><div><p class="eyebrow">Terminés</p><h2>Récompenses à récupérer</h2></div></div><div class="cl-grid">'+ended.map(card).join('')+'</div></section>':'')
    +(adm?editor(adm):'')+'</div>';
 }
 const blank=()=>({id:null,title:'',description:'',metrics:['packs'],startsAt:local(Date.now()),endsAt:local(Date.now()+7*86400000),tiers:[{at:1000,coins:200,xp:20},{at:5000,coins:500,xp:50}]});

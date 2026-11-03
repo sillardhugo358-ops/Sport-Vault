@@ -492,3 +492,26 @@ html:root:root .wk-page .btn-gold{background:var(--av-btn);color:var(--av-btn-in
 html:root:root .wk-page :is(.btn-outline,.btn-ghost){background:var(--av-ghost);border-color:transparent;color:var(--text)}
 html:root:root .wk-page :is(.wk-note,.wk-preview summary){color:var(--muted)}
 html:root:root .wk-page .wk-slot{border-radius:16px}
+
+/* Pack sur mesure et Défis collectifs : comme la maquette */
+html:root:root .cp-page :is(.cp-form,.cp-summary),html:root:root .cl-page :is(.cl-card,.cl-form){background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:var(--av-shadow)}
+html:root:root .cp-page .cp-group{background:none;border:1px solid var(--line);border-radius:16px}
+html:root:root .cp-page .cp-group legend{font:700 14px var(--body);color:var(--text);text-transform:none!important}
+html:root:root .cp-page :is(.cp-radio,.cp-check){background:var(--panel2);border:1px solid var(--line);border-radius:999px;color:var(--text)}
+html:root:root .cp-page :is(.cp-radio,.cp-check):has(input:checked){background:var(--av-btn);color:var(--av-btn-ink);border-color:transparent}
+html:root:root .cp-page :is(.cp-radio,.cp-check):has(input:checked) small{color:inherit;opacity:.8}
+html:root:root .cp-page .cp-chip{background:var(--av-ghost);border-color:transparent;border-radius:999px;color:var(--text)}
+html:root:root .cp-page :is(.cp-field select,.cp-clubadd input){background:var(--panel);border:1px solid var(--line);border-radius:14px;color:var(--text)}
+html:root:root .cp-page .cp-price strong{font:800 clamp(30px,4vw,40px)/1 var(--head)}
+html:root:root .cp-page .eyebrow,html:root:root .cl-page .eyebrow{text-transform:none!important;letter-spacing:0!important;font:700 13px var(--body)}
+html:root:root .cp-page .btn,html:root:root .cl-page .btn{min-height:44px;border-radius:999px;font:600 15px var(--body);text-transform:none!important;letter-spacing:0!important}
+html:root:root .cp-page .btn-gold,html:root:root .cl-page .btn-gold{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root :is(.cp-page,.cl-page) :is(.btn-outline,.btn-ghost){background:var(--av-ghost);border-color:transparent;color:var(--text)}
+html:root:root .wk-page.cl-page .view-hero{background:linear-gradient(120deg,#22d3a5,#38bdf8 55%,#818cf8)}
+html:root:root .cl-page .cl-bar{height:12px;background:var(--av-ghost)}
+html:root:root .cl-page .cl-bar span{background:linear-gradient(90deg,#22d3a5,#38bdf8)}
+html:root:root .cl-page .cl-card h3,html:root:root .cl-page .section-head h2,html:root:root .cl-page .cl-form h2{font:800 clamp(20px,2.6vw,26px)/1.15 var(--head)!important;text-transform:none!important;letter-spacing:0!important}
+html:root:root .cl-page .cl-tier{background:var(--panel2);border-radius:16px}
+html:root:root .cl-page .cl-tier.is-reached{border-color:#22d3a5}
+html:root:root .cl-page .cl-done{color:#0f9d75;font-weight:700}
+html:root:root .cp-page .cp-radio b{color:inherit}
