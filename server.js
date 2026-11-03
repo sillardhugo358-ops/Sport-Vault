@@ -45,6 +45,7 @@ const collective = require('./lib/collective').createCollective({ getPool: () =>
 const wishlist = require('./lib/wishlist').createWishlist({ getPool: () => pool });
 const heartClub = require('./lib/heart-club').createHeartClub({ getPool: () => pool });
 const team = require('./lib/team').createTeam({ getPool: () => pool });
+const bounties = require('./lib/bounties').createBounties({ getPool: () => pool, securityEvent: (...args) => securityEvent(...args) });
 const transferWall = require('./lib/transfer-wall').createTransferWall({ getPool: () => pool });
 const teamDuel = require('./lib/team-duel').createTeamDuel({ getPool: () => pool, team, applyReward: (...args) => applyReward(...args), securityEvent: (...args) => securityEvent(...args) });
 const friends = require('./lib/friends').createFriends({ getPool: () => pool, ensureCode: tradeEnsureCode, listFavorites, levelProgressFromXp: (...args) => levelProgressFromXp(...args), rankOf, publicTeam: team.publicTeam });
@@ -61,6 +62,7 @@ const apiRoutes = [
  require('./lib/routes/admin').createAdminRoutes({ adminSeasonPrizes, adminSetSeasonPrize, adminChallenges, adminSaveChallenge, adminSets, adminSaveSet, adminCardsPage, adminCardsSummary, adminTasks, adminSaveTask, adminStats, adminAchievements, adminSaveAchievement, adminMissions, adminSaveMission, adminAdjustResources, adminAuctions, adminCards, adminCollections, adminCompetitions, adminCreateCatalogCard, adminDeleteCatalogCard, adminGrantCard, adminLog, adminLogs, adminOverview, adminPacks, adminRemoveCard, adminSetAccountStatus, adminSetCollection, adminSetCompetition, adminSetPack, adminSetRole, adminTransferCard, adminUpdateCatalogCard, adminUserDetail, adminUsers, getPool: () => pool, requireAdmin, safeUser }),
  require('./lib/routes/trades').createTradesRoutes({ currentUser, tradeInfo, tradeLookupPlayer, tradeMyCards, tradeCreateOffer, tradeListOffers, tradeListHistory, tradeCancelOffer, tradeDeclineOffer, tradeAcceptOffer }),
  require('./lib/routes/friends').createFriendsRoutes({ currentUser, friends }),
+ require('./lib/routes/bounties').createBountiesRoutes({ currentUser, bounties, safeUser }),
  require('./lib/routes/transfer-wall').createTransferWallRoutes({ currentUser, transferWall }),
  require('./lib/routes/team-duel').createTeamDuelRoutes({ currentUser, teamDuel }),
  require('./lib/routes/collection-stats').createCollectionStatsRoutes({ currentUser, collectionStats }),
@@ -100,7 +102,7 @@ async function securityEvent(userId,ip,event,details={},client=null){const db=cl
 
 // Fichiers publics : uniquement à la racine du dépôt, pages, styles et images, plus les
 // scripts de l'interface listés ci-dessous. Jamais le code serveur, lib/, data/, .git/ ni la configuration.
-const PUBLIC_SCRIPTS=new Set(['theme.js','fv-core.js','fv-cards.js','fv-holo.js','fv-fx.js','fv-celebrate.js','app.js','fv-pages.js','fv-admin.js','fv-market.js','fv-trades.js','market-insights.js','challenge-admin-editor.js','set-admin-editor.js','notifications-bell.js','fv-push.js','fv-friends.js','fv-wishlist.js','fv-heart.js','fv-wall.js','fv-stats.js','fv-team.js','fv-workshop.js','fv-custompack.js','fv-collective.js','sw.js','admin-stats.js','task-admin-editor.js','achievement-admin-editor.js','mission-admin-editor.js','manifest.json']);
+const PUBLIC_SCRIPTS=new Set(['theme.js','fv-core.js','fv-cards.js','fv-holo.js','fv-fx.js','fv-celebrate.js','app.js','fv-pages.js','fv-admin.js','fv-market.js','fv-trades.js','market-insights.js','challenge-admin-editor.js','set-admin-editor.js','notifications-bell.js','fv-push.js','fv-friends.js','fv-wishlist.js','fv-heart.js','fv-wall.js','fv-bounty.js','fv-stats.js','fv-team.js','fv-workshop.js','fv-custompack.js','fv-collective.js','sw.js','admin-stats.js','task-admin-editor.js','achievement-admin-editor.js','mission-admin-editor.js','manifest.json']);
 const PUBLIC_EXTENSIONS=new Set(['.html','.css','.svg','.png','.ico','.webp']);
 // etat.html n'est jamais servi comme fichier public : route réservée aux administrateurs (voir plus bas).
 function isPublicFile(name){return name!=='etat.html'&&!name.startsWith('.')&&(PUBLIC_SCRIPTS.has(name)||PUBLIC_EXTENSIONS.has(path.extname(name)));}
@@ -127,7 +129,7 @@ async function probeDatabase(){if(!pool)return null;if(Date.now()-dbProbe.at<300
 async function adminRequest(req){if(!dbReady||!pool)return false;try{return Boolean(await requireAdmin(req));}catch{return false;}}
 async function healthDetailsAllowed(req){const token=process.env.HEALTH_TOKEN,auth=String(req.headers.authorization||'');if(token&&auth.startsWith('Bearer ')&&require('./lib/same-token').sameToken(auth.slice(7),token))return true;return adminRequest(req);}
 // Démarrage de la base avec nouvelles tentatives (lib/db-retry.js) : le serveur répond déjà (503 « base en cours de démarrage », /api/health) pendant ce temps.
-async function startDatabase(){const db=await initDb({activeCatalogCards,getCatalog:()=>CARD_CATALOG,setCatalog:c=>{CARD_CATALOG=c},setPool:p=>{pool=p},grantWelcomeCards,hashPassword,loadFootMercatoCatalog});dbMode=db.mode;dbReady=true;dbStartError=null;console.log(`SPORT VAULT startup: storage=${db.mode}`);if(db.mode!=='memory')warmCatalog().then(()=>console.log('SPORT VAULT catalogue préchargé'),e=>console.error('SPORT VAULT préchargement du catalogue :',e.message));if(pool){setInterval(settleExpiredAuctions,30_000);setInterval(cleanupSessions,5*60_000);push.start();}return db;}
+async function startDatabase(){const db=await initDb({activeCatalogCards,getCatalog:()=>CARD_CATALOG,setCatalog:c=>{CARD_CATALOG=c},setPool:p=>{pool=p},grantWelcomeCards,hashPassword,loadFootMercatoCatalog});dbMode=db.mode;dbReady=true;dbStartError=null;console.log(`SPORT VAULT startup: storage=${db.mode}`);if(db.mode!=='memory')warmCatalog().then(()=>console.log('SPORT VAULT catalogue préchargé'),e=>console.error('SPORT VAULT préchargement du catalogue :',e.message));if(pool){setInterval(settleExpiredAuctions,30_000);setInterval(()=>bounties.expireAll().catch(e=>console.error('FOOTVAULT primes :',e.message)),60_000);setInterval(cleanupSessions,5*60_000);push.start();}return db;}
 const dbRetry=require('./lib/db-retry').createDbRetry({attempt:startDatabase,baseMs:Number(process.env.DB_RETRY_BASE_MS)||5000,
   shouldRetry:()=>Boolean(process.env.DATABASE_URL),   // sans adresse de base, retenter ne servirait à rien
   onFail:(e,n,delayMs)=>{console.error('SPORT VAULT startup database error:',e.message,delayMs?`(tentative ${n}, nouvel essai dans ${Math.round(delayMs/1000)} s)`:'(aucune nouvelle tentative)');dbMode='unavailable';dbStartError=String((e&&e.code)||(e&&e.name)||'UNKNOWN').slice(0,60);},
