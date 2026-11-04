@@ -66,7 +66,7 @@ function openPicker(i){
   st.pick=i;
   const pos=st.positions[i],used=new Set(st.slots.filter((id,j)=>id&&j!==i));
   const list=st.cards.filter(c=>c.position===pos&&!used.has(c.cardId));
-  setModal('<div class="modal-box team-picker"><button class="modal-close" type="button" data-close aria-label="Fermer">×</button><h2>CHOISIR : '+esc(label(pos).toUpperCase())+'</h2>'
+  setModal('<div class="modal-box team-picker"><button class="modal-close" type="button" data-close aria-label="Fermer">×</button><h2>Choisir : '+esc(label(pos).toLowerCase())+'</h2>'
    +(st.slots[i]?'<button class="btn btn-outline" type="button" data-team-remove>Retirer ce joueur</button>':'')
    +(list.length?'<ul class="team-picker-list">'+list.slice(0,200).map(c=>'<li><button type="button" data-team-choose="'+esc(c.cardId)+'" class="rarity-'+esc(c.rarity)+'"><b>'+c.ovr+'</b><span>'+esc(c.name)+'</span><small>'+esc(c.club)+' · '+esc(c.season)+'</small></button></li>').join('')+'</ul>':'<p class="team-empty">Tu n’as aucune carte pour ce poste ('+esc(label(pos).toLowerCase())+').</p>')+'</div>');
 }

@@ -164,7 +164,7 @@ test('ouverture de pack : pack scellé, cartes distribuées sans retournement au
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth) <= 1, vp.name + ' : débordement');
     // « Ouvrir un autre pack » : caché tant que les cartes ne sont pas toutes révélées, puis relance le même pack.
     assert.equal(await page.locator('[data-reveal-again]').isVisible(), true, vp.name + ' : bouton « ouvrir un autre pack » une fois tout révélé');
-    assert.match(await page.textContent('[data-reveal-again]'), /OUVRIR UN AUTRE PACK · \d+ FC/);
+    assert.match(await page.textContent('[data-reveal-again]'), /ouvrir un autre pack · \d+ fc/i);
     if (vp === VIEWPORTS[0]) {
       await page.click('[data-reveal-again]');
       await page.waitForSelector('[data-open-pack]');

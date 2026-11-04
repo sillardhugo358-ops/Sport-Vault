@@ -612,3 +612,29 @@ html:root:root .card-detail-page .btn{min-height:44px;border-radius:999px;font:6
 html:root:root .card-detail-page .btn-gold{background:var(--av-btn);color:var(--av-btn-ink)}
 html:root:root .card-detail-page :is(.btn-outline,.btn-ghost){background:var(--av-ghost);border-color:transparent;color:var(--text)}
 html:root:root .card-detail-page .view-hero .eyebrow,html:root:root .card-detail-page .view-hero p:first-child{color:#fff!important;font:700 14px var(--body)!important;text-transform:none!important;letter-spacing:0!important}
+
+/* Fenêtres de détail (hors révélations, qui gardent leur fond sombre) : carte, titres, champs et boutons comme la maquette */
+html:root:root .modal-box:not([class*="reveal"]){background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:24px;box-shadow:0 30px 80px rgba(8,16,40,.35)}
+html:root:root .modal-box:not([class*="reveal"]) :is(h1,h2,h3):not(.pack-reveal-title){color:var(--text);font:800 clamp(22px,3.4vw,30px)/1.1 var(--head)!important;text-transform:none!important;letter-spacing:-.01em;margin:0}
+html:root:root .modal-box:not([class*="reveal"]) .eyebrow{color:#ff7a59;text-transform:none!important;letter-spacing:0!important;font:700 13px var(--body)!important;margin:0 0 6px}
+html:root:root[data-theme="light"] .modal-box:not([class*="reveal"]) .eyebrow{color:#b8400f}
+html:root:root .modal-box:not([class*="reveal"]) .modal-close{display:grid;place-items:center;width:40px;height:40px;border:0;border-radius:50%;background:var(--av-ghost);color:var(--text);font-size:24px}
+html:root:root .auction-modal-box{padding:clamp(22px,4vw,32px)}
+html:root:root .auction-modal-box .auction-dialog-subtitle{color:var(--muted);font:400 15px/1.5 var(--body);margin:10px 0 0;max-width:none}
+html:root:root .auction-modal-box .auction-field>span{color:var(--text);font:600 14px var(--body);text-transform:none!important;letter-spacing:0!important;margin-bottom:8px}
+html:root:root .auction-modal-box .auction-field :is(input,select){height:52px;background:var(--panel);border:1px solid var(--line);border-radius:14px;color:var(--text);font:600 16px var(--body)}
+html:root:root .auction-modal-box .auction-field :is(input,select):focus{border-color:#ff7a59;outline:0;box-shadow:0 0 0 3px rgba(255,122,89,.25)}
+html:root:root .modal-box:not([class*="reveal"]) :is(.btn,.auction-dialog-actions button){min-height:46px;border-radius:999px;font:600 15px var(--body);text-transform:none!important;letter-spacing:0!important}
+html:root:root .modal-box:not([class*="reveal"]) .btn-gold{background:var(--av-btn);color:var(--av-btn-ink)}
+html:root:root .modal-box:not([class*="reveal"]) :is(.btn-outline,.btn-ghost){background:var(--av-ghost);border-color:transparent;color:var(--text)}
+html:root:root .team-picker .team-picker-list button{background:var(--panel2);border:1px solid var(--line);border-left-width:4px;border-radius:14px;color:var(--text)}
+html:root:root .team-picker .team-picker-list b{color:var(--text);font:800 22px var(--head)}
+html:root:root .team-picker .team-picker-list span{font:600 15px var(--body);text-transform:none!important}
+html:root:root .team-picker .team-picker-list small,html:root:root .team-picker .team-empty{color:var(--muted);text-transform:none!important}
+html:root:root .wheel-box .wheel-result,html:root:root .wheel-box p{color:var(--muted)}
+/* Révélations : titres et libellés en phrase normale (le nom du pack vient des données, souvent en capitales) */
+html:root:root .modal-box[class*="reveal"] .eyebrow{text-transform:none!important;letter-spacing:0!important;font:700 14px var(--body)!important}
+html:root:root .modal-box[class*="reveal"] .pack-reveal-title{text-transform:lowercase!important;letter-spacing:-.01em}
+html:root:root .modal-box[class*="reveal"] .pack-reveal-title::first-letter{text-transform:uppercase}
+html:root:root .modal-box[class*="reveal"] .reveal-pack-cta{text-transform:none!important;letter-spacing:0!important}
+html:root:root .modal-box[class*="reveal"] .btn{min-height:46px;border-radius:999px;font:600 15px var(--body);text-transform:none!important;letter-spacing:0!important}
