@@ -1163,6 +1163,21 @@ test('prêts : prêter une carte à un ami avec confirmation, la reprendre, sans
   assert.deepEqual(errors, []);
 });
 
+test('album : logo d\u2019un club absent ou cassé en base remplacé par le fichier du dossier club-logos', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const club = (id, name, logoUrl) => ({ id, name, tag: id.toUpperCase(), country: 'France', logoUrl, cards: [], owned: 1, total: 30, complete: false });
+  const album = { overallTotal: 60, overallOwned: 2, competitions: [{ id: 'c1', name: 'Ligue 1', completion: { complete: false }, seasons: [{ id: 's1', label: 'Saison test', season: '2026-2027', completion: { complete: false }, clubs: [
+    club('asse', 'AS Saint-Étienne', ''), club('sochaux', 'FC Sochaux-Montbéliard', 'club-logos/introuvable-du-tout.png'), club('inconnu', 'Club Sans Logo Du Tout', '')] }] }] };
+  await page.route('**/api/album?seasonId=*', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ album, rewards: { amounts: {}, clubs: [], seasons: [], competitions: [], claimedClubs: [], claimedSeasons: [], claimedCompetitions: [] } }) }));
+  await visit('album?competition=c1&season=s1');
+  await page.waitForSelector('.alb-club', { timeout: 8000 }).catch(async e => { throw new Error('page album : ' + (await page.textContent('#app')).slice(0, 300)); });
+  // Le deuxième logo (adresse cassée) bascule sur le fichier du dossier après l'erreur de chargement.
+  await page.waitForFunction(() => { const i = [...document.querySelectorAll('.alb-club')].map(a => a.querySelector('.alb-av img')); return i[0] && /club-logos\/as-saint-etienne\.png$/.test(i[0].getAttribute('src')) && i[1] && /club-logos\/fc-sochaux-montbeliard\.png$/.test(i[1].getAttribute('src')) && i[1].complete && i[1].naturalWidth > 0; });
+  assert.equal(await page.locator('.alb-club').nth(2).locator('.alb-av img').count(), 0, 'sans logo : initiales seulement');
+  assert.deepEqual(errors.filter(e => !/introuvable-du-tout|404/.test(e)), []);
+  await page.unroute('**/api/album?seasonId=*');
+});
+
 test('souhaits : recherche, ajout, retrait, sans débordement', async () => {
   await page.setViewportSize({ width: 390, height: 844 });
   await server.db.query("INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr) VALUES('wish-ui','2026-2027','Joueur Souhaité UI','ST','FC Souhait','France','epic',88) ON CONFLICT DO NOTHING");
