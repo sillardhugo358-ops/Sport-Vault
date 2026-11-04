@@ -125,3 +125,26 @@ test('nouvelles cartes uniquement : +30 %, cartes possédées exclues, refus san
   // Sans l'option, le même pack reste possible.
   assert.equal((await n.post('/api/custom-pack/open', spec())).status, 200);
 });
+
+test('révélation : chaque carte dit si elle est nouvelle ou un doublon (collection avant le tirage, statuts comptés, archivée ignorée)', async () => {
+  const n = await newPlayer(server, 'Doublons');
+  await q('UPDATE users SET coins=100000 WHERE id=$1', [n.user.id]);
+  await q("UPDATE card_instances SET status='archived' WHERE owner_id=$1", [n.user.id]); // cartes de bienvenue aléatoires : partir de zéro
+  const ids = Array.from({ length: 22 }, (_, i) => 'cpn-' + i);
+  for (const id of ids) await q("INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr) VALUES($1,'2026-2027',$2,'ST','FC Nouveau','France','common',70)", [id, 'Nouveau ' + id]);
+  // Possède 20 des 22 cartes : 17 en main, 1 en vente, 1 prêtée, 1 archivée (ne compte pas) ; cpn-20 et cpn-21 ne sont pas possédées.
+  const statusOf = i => (i === 17 ? 'auction' : i === 18 ? 'loaned' : i === 19 ? 'archived' : 'owned');
+  for (let i = 0; i < 20; i++) await q(`INSERT INTO card_instances(instance_id,card_id,owner_id,season,name,position,club,nation,rarity,ovr,source,status)
+    SELECT gen_random_uuid(),c.id,$1,c.season,c.name,c.position,c.club,c.nation,c.rarity,c.ovr,'pack:test',$3 FROM catalog_cards c WHERE c.id=$2`, [n.user.id, ids[i], statusOf(i)]);
+  const had = new Set(ids.slice(0, 19));        // possédées avant le premier tirage (cpn-19 archivée : non)
+  const open = () => n.post('/api/custom-pack/open', { cards: 10, minRarity: 'common', filters: { clubs: ['FC Nouveau'] } });
+  const first = await open();
+  assert.equal(first.status, 200, JSON.stringify(first.body));
+  for (const c of first.body.cards) assert.equal(c.isNew, !had.has(c.cardId), c.cardId + ' : nouvelle seulement si absente de la collection avant le tirage');
+  assert.ok(first.body.cards.some(c => c.isNew === false), 'au moins un doublon (20 cartes sur 22 déjà possédées)');
+  const after = new Set([...had, ...first.body.cards.map(c => c.cardId)]);
+  const second = await open();
+  assert.equal(second.status, 200);
+  for (const c of second.body.cards) assert.equal(c.isNew, !after.has(c.cardId), 'les cartes du premier tirage sont désormais des doublons');
+  assert.ok(second.body.cards.every(c => typeof c.isNew === 'boolean'));
+});

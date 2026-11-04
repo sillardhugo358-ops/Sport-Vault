@@ -638,3 +638,11 @@ html:root:root .modal-box[class*="reveal"] .pack-reveal-title{text-transform:low
 html:root:root .modal-box[class*="reveal"] .pack-reveal-title::first-letter{text-transform:uppercase}
 html:root:root .modal-box[class*="reveal"] .reveal-pack-cta{text-transform:none!important;letter-spacing:0!important}
 html:root:root .modal-box[class*="reveal"] .btn{min-height:46px;border-radius:999px;font:600 15px var(--body);text-transform:none!important;letter-spacing:0!important}
+
+/* Révélation d'un pack : « Nouvelle » ou « Doublon » sous la carte, une fois retournée */
+html:root:root .pack-reveal-modal .reveal-card{position:relative}
+html:root:root .pack-reveal-modal .reveal-tag{position:absolute;left:50%;bottom:-2px;transform:translate(-50%,6px);opacity:0;pointer-events:none;padding:4px 12px;border-radius:999px;font:700 12px/1 var(--body);letter-spacing:0;text-transform:none;white-space:nowrap;transition:opacity .35s .35s,transform .35s .35s;z-index:3}
+html:root:root .pack-reveal-modal .reveal-card.flipped .reveal-tag,html:root:root .pack-reveal-modal.rv-opened .reveal-card.flipped .reveal-tag{opacity:1;transform:translate(-50%,0)}
+html:root:root .pack-reveal-modal .reveal-new{background:#34d399;color:#04291c;box-shadow:0 4px 14px rgba(52,211,153,.45)}
+html:root:root .pack-reveal-modal .reveal-dup{background:rgba(255,255,255,.16);color:#f4f7ff;border:1px solid rgba(255,255,255,.28)}
+@media (prefers-reduced-motion:reduce){html:root:root .pack-reveal-modal .reveal-tag{transition:none}}

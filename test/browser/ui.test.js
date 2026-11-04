@@ -159,6 +159,12 @@ test('ouverture de pack : pack scellé, cartes distribuées sans retournement au
     await page.click('[data-skip-reveal]');
     await page.waitForFunction(() => document.querySelectorAll('.reveal-card.flipped').length === 5);
     await page.waitForTimeout(1500);
+    // Chaque carte dit si elle est nouvelle ou un doublon ; le résumé compte les deux.
+    assert.equal(await page.locator('.reveal-card.flipped .reveal-tag').count(), 5, vp.name + ' : une étiquette par carte');
+    const nNew = await page.locator('.reveal-card .reveal-new').count(), nDup = await page.locator('.reveal-card .reveal-dup').count();
+    assert.equal(nNew + nDup, 5);
+    assert.match(await page.textContent('.reveal-result'), new RegExp(`5 cartes ajoutées · ${nNew} nouvelles? · ${nDup} doublons?`));
+    assert.equal(await page.locator('.reveal-card.flipped .reveal-tag').first().evaluate(e => getComputedStyle(e).opacity), '1', vp.name + ' : étiquette visible une fois la carte retournée');
     // Retournement 3D intact (pas de carte vue à l'envers : aucun filtre ni animation sur l'élément qui tourne).
     assert.equal(await page.evaluate(() => [...document.querySelectorAll('.reveal-card.flipped .reveal-card-inner')].every(i => { const s = getComputedStyle(i); return s.transform.startsWith('matrix3d(-1') && s.filter === 'none' && s.animationName === 'none'; })), true, vp.name + ' : cartes retournées à l\'endroit (pas de filtre ni d\'animation sur l\'élément 3D)');
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth) <= 1, vp.name + ' : débordement');
