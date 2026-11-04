@@ -646,3 +646,14 @@ html:root:root .pack-reveal-modal .reveal-card.flipped .reveal-tag,html:root:roo
 html:root:root .pack-reveal-modal .reveal-new{background:#34d399;color:#04291c;box-shadow:0 4px 14px rgba(52,211,153,.45)}
 html:root:root .pack-reveal-modal .reveal-dup{background:rgba(255,255,255,.16);color:#f4f7ff;border:1px solid rgba(255,255,255,.28)}
 @media (prefers-reduced-motion:reduce){html:root:root .pack-reveal-modal .reveal-tag{transition:none}}
+
+/* Vault : historique des missions périodiques terminées */
+html:root:root .vault-history{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+html:root:root .vault-history li{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 16px;background:var(--panel);border:1px solid var(--line);border-radius:16px}
+html:root:root .vault-history li>div{flex:1 1 200px;min-width:0}
+html:root:root .vault-history strong{display:block;color:var(--text);font:700 15px var(--body);text-transform:none!important;overflow-wrap:anywhere}
+html:root:root .vault-history small{color:var(--muted);font:400 13px var(--body)}
+html:root:root .vault-history b{color:var(--text);font:700 15px var(--body);white-space:nowrap}
+html:root:root .vault-history-kind{padding:4px 12px;border-radius:999px;background:var(--av-ghost);color:var(--text);font:600 12px var(--body);text-transform:none!important;letter-spacing:0!important}
+html:root:root .vault-history-daily{background:rgba(52,211,153,.18)}html:root:root .vault-history-weekly{background:rgba(96,165,250,.2)}html:root:root .vault-history-monthly{background:rgba(244,114,182,.2)}
+html:root:root #vaultMissions:focus{outline:0}

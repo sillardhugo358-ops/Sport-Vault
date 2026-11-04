@@ -1184,6 +1184,28 @@ test('album : logo d\u2019un club absent ou cassé en base remplacé par le fich
   await page.unroute('**/api/album?seasonId=*');
 });
 
+test('vault : niveau maximum, historique des missions terminées, raccourci « Missions & récompenses »', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const uid = (await server.db.query("SELECT id FROM users WHERE email='navigateur@test.fr'")).rows[0].id;
+  const before = (await server.db.query('SELECT xp FROM users WHERE id=$1', [uid])).rows[0].xp;
+  const task = (await server.db.query("SELECT id FROM period_tasks WHERE kind='daily' ORDER BY sort_order LIMIT 1")).rows[0].id;
+  await server.db.query("INSERT INTO reward_claims(user_id,claim_id,claimed_at) VALUES($1,$2,now()),($1,$3,now() - interval '1 day') ON CONFLICT DO NOTHING", [uid, `daily:2026-11-02:${task}`, 'daily:2026-11-01:tache-retiree']);
+  await server.db.query('UPDATE users SET xp=300000 WHERE id=$1', [uid]);
+  try {
+    const r = await visit('vault');
+    assert.ok(r.overflow <= 1, 'pas de débordement');
+    await page.waitForSelector('.vault-history li');
+    assert.equal(await page.locator('.vault-history li').count(), 2);
+    assert.match(await page.textContent('.vault-history-section'), /Mission retirée/);
+    assert.match(await page.textContent('.vault-hero'), /Niveau maximum/);
+    assert.match(await page.textContent('.vault-hero'), /Niv\. 100/);
+    await page.click('[data-vault-scroll="vaultMissions"]');
+    await page.waitForFunction(() => document.activeElement && document.activeElement.id === 'vaultMissions');
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'pas de débordement après le raccourci');
+    assert.deepEqual(errors, []);
+  } finally { await server.db.query('UPDATE users SET xp=$2 WHERE id=$1', [uid, before]); }
+});
+
 test('souhaits : recherche, ajout, retrait, sans débordement', async () => {
   await page.setViewportSize({ width: 390, height: 844 });
   await server.db.query("INSERT INTO catalog_cards(id,season,name,position,club,nation,rarity,ovr) VALUES('wish-ui','2026-2027','Joueur Souhaité UI','ST','FC Souhait','France','epic',88) ON CONFLICT DO NOTHING");
