@@ -45,18 +45,20 @@ function auctionSearchFilter(){
  const q=input.value.trim().toLowerCase();
  document.querySelectorAll('.auction-card').forEach(card=>card.style.display=!q||card.textContent.toLowerCase().includes(q)?'':'none');
 }
-function siteConfirmDialog({title,subtitle='',confirm='CONFIRMER'}){
+// Les appelants (enchères, administration) passent des textes en capitales : on les affiche en phrase normale (« SE RETIRER DE L’ENCHÈRE ? » → « Se retirer de l’enchère ? »).
+const sc=t=>{t=String(t??'');return t&&t===t.toUpperCase()&&/[A-ZÀ-Ý]/.test(t)?t.charAt(0)+t.slice(1).toLowerCase():t};
+function siteConfirmDialog({title,subtitle='',confirm='Confirmer'}){
  return new Promise(resolve=>{
-  const safeTitle=esc(title).replace(/ \?/g,'&nbsp;?');setModal(`<div class="modal-box auction-modal-box"><button class="modal-close" aria-label="Fermer" data-close>×</button><p class="eyebrow">FOOTVAULT / CONFIRMATION</p><h2>${safeTitle}</h2>${subtitle?`<p class="auction-dialog-subtitle">${esc(subtitle)}</p>`:''}<div class="auction-dialog-actions"><button class="btn btn-ghost" id="siteConfirmCancel">ANNULER</button><button class="btn btn-gold" id="siteConfirmOk">${esc(confirm)}</button></div></div>`);
+  const safeTitle=esc(sc(title)).replace(/ \?/g,'&nbsp;?');setModal(`<div class="modal-box auction-modal-box"><button class="modal-close" aria-label="Fermer" data-close>×</button><p class="eyebrow">Confirmation</p><h2>${safeTitle}</h2>${subtitle?`<p class="auction-dialog-subtitle">${esc(subtitle)}</p>`:''}<div class="auction-dialog-actions"><button class="btn btn-ghost" id="siteConfirmCancel">Annuler</button><button class="btn btn-gold" id="siteConfirmOk">${esc(sc(confirm))}</button></div></div>`);
   const finish=v=>{closeModal();resolve(v)};
   $('#siteConfirmCancel').onclick=()=>finish(null);
   $('#siteConfirmOk').onclick=()=>finish(true);
  });
 }
-function auctionDialog({title,subtitle='',label='Valeur',value='',type='number',options=null,confirm='CONFIRMER'}){
+function auctionDialog({title,subtitle='',label='Valeur',value='',type='number',options=null,confirm='Confirmer'}){
  return new Promise(resolve=>{
   const isConfirm=type==='confirm';
-  setModal(`<div class="modal-box auction-modal-box"><button class="modal-close" aria-label="Fermer" data-close>×</button><p class="eyebrow">FOOTVAULT / ENCHÈRES</p><h2>${esc(title)}</h2>${subtitle?`<p class="auction-dialog-subtitle">${esc(subtitle)}</p>`:''}${isConfirm?'':`<div class="auction-dialog-form">${options?`<label class="auction-field"><span>${esc(label)}</span><select id="auctionDialogValue">${options.map(o=>`<option value="${esc(o.value)}" ${String(o.value)===String(value)?'selected':''}>${esc(o.label)}</option>`).join('')}</select></label>`:`<label class="auction-field"><span>${esc(label)}</span><input id="auctionDialogValue" type="${type}" value="${esc(value)}" min="1" inputmode="numeric" autocomplete="off"></label>`}</div>`}<div class="auction-dialog-actions"><button class="btn btn-ghost" id="auctionDialogCancel">ANNULER</button><button class="btn btn-gold" id="auctionDialogConfirm">${esc(confirm)}</button></div></div>`);
+  setModal(`<div class="modal-box auction-modal-box"><button class="modal-close" aria-label="Fermer" data-close>×</button><p class="eyebrow">Enchères</p><h2>${esc(sc(title))}</h2>${subtitle?`<p class="auction-dialog-subtitle">${esc(subtitle)}</p>`:''}${isConfirm?'':`<div class="auction-dialog-form">${options?`<label class="auction-field"><span>${esc(sc(label))}</span><select id="auctionDialogValue">${options.map(o=>`<option value="${esc(o.value)}" ${String(o.value)===String(value)?'selected':''}>${esc(o.label)}</option>`).join('')}</select></label>`:`<label class="auction-field"><span>${esc(sc(label))}</span><input id="auctionDialogValue" type="${type}" value="${esc(value)}" min="1" inputmode="numeric" autocomplete="off"></label>`}</div>`}<div class="auction-dialog-actions"><button class="btn btn-ghost" id="auctionDialogCancel">Annuler</button><button class="btn btn-gold" id="auctionDialogConfirm">${esc(sc(confirm))}</button></div></div>`);
   const input=$('#auctionDialogValue');const finish=(v)=>{closeModal();resolve(v)};
   $('#auctionDialogCancel').onclick=()=>finish(null);
   $('#auctionDialogConfirm').onclick=()=>{if(!isConfirm&&!options&&(!input.value||Number(input.value)<1)){input.focus();return}finish(isConfirm?true:input.value)};
