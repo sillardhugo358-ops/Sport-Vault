@@ -41,6 +41,14 @@ test('niveau : paliers de 150 XP, +40 XP par niveau, valeurs invalides ramenées
   assert.equal(lvl(12.9).currentXp, 12, 'les XP décimaux sont arrondis à l’entier inférieur');
 });
 
+test('niveau : plafonné à 100 (208 890 XP), au-delà l’XP s’accumule sans changer le niveau', () => {
+  const { levelProgressFromXp: lvl } = setup().rewards;
+  assert.deepEqual(lvl(208889), { level: 99, currentXp: 4069, xpToNext: 4070 });
+  assert.deepEqual(lvl(208890), { level: 100, currentXp: 0, xpToNext: 0, max: true });
+  assert.deepEqual(lvl(1e9), { level: 100, currentXp: 0, xpToNext: 0, max: true });
+  assert.equal(lvl(5000).max, undefined, 'pas de drapeau « max » avant le plafond');
+});
+
 test('progression de mission : un barème par type, type inconnu = 0', () => {
   const { missionProgress: prog } = setup().rewards;
   const cards = [{ rarity: 'common', club: 'A' }, { rarity: 'rare', club: 'A' }, { rarity: 'epic', club: 'B' }, { rarity: 'common' }];
