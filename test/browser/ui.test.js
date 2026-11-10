@@ -664,6 +664,31 @@ test('état du site : réservé aux administrateurs (page, lien du pied de page)
   assert.deepEqual(errs, []);
 });
 
+test('serveur qui démarre : écran explicatif sur un 503, rechargement tout seul quand /api/health répond', async () => {
+  const ctx = await browser.newContext({ extraHTTPHeaders: { 'X-Forwarded-For': server.newIp() }, viewport: { width: 390, height: 844 } });
+  const p = await ctx.newPage();
+  const errs = [];
+  p.on('pageerror', e => errs.push(e.message));
+  await p.addInitScript(() => { window.FVC = { core: { startingPollMs: 150 } }; });
+  let ready = false;
+  await p.route('**/api/me', r => ready ? r.continue() : r.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Base de données en cours de démarrage.' }) }));
+  await p.route('**/api/health', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(ready ? { ok: true, ready: true, database: { ok: true, latencyMs: 5 } } : { ok: false, ready: false, database: null }) }));
+  await p.goto(server.base + '/#home');
+  await p.waitForSelector('#fvStarting', { timeout: 8000 });
+  assert.match(await p.textContent('#fvStarting h2'), /Le serveur démarre/);
+  assert.equal(await p.getAttribute('#fvStarting', 'role'), 'status');
+  assert.equal(await p.evaluate(() => document.getElementById('app').inert), true, 'le contenu derrière est inerte');
+  assert.equal(await p.evaluate(() => document.querySelectorAll('#fvStarting').length), 1, 'un seul écran, même après plusieurs 503');
+  assert.equal(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'pas de défilement horizontal sur mobile');
+  await p.waitForFunction(() => /Démarrage en cours depuis \d+ s/.test(document.querySelector('#fvStarting .fv-starting-time')?.textContent || ''), null, { timeout: 5000 });
+  ready = true;
+  await p.waitForSelector('#fvStarting', { state: 'detached', timeout: 8000 });
+  assert.equal(await p.evaluate(() => document.getElementById('app').inert), false, 'le contenu redevient utilisable');
+  assert.ok((await p.textContent('#app')).length > 50, 'la page s\'affiche après le démarrage');
+  await ctx.close();
+  assert.deepEqual(errs, []);
+});
+
 test('clavier : lien d\'évitement au premier Tab, titre par page, focus sur le contenu au changement de page', async () => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await visit('home');
