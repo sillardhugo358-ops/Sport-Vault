@@ -108,7 +108,7 @@ Procédure pour réussir **sans panne** :
 2. **Valeur de la variable** : le fichier **entier**, de la ligne `-----BEGIN CERTIFICATE-----` à la ligne `-----END CERTIFICATE-----` incluses, sans guillemets. Ouvrir `ca.pem` dans un éditeur de texte, tout sélectionner, copier.
 3. Appliquer, puis **surveiller `/api/health` 2 minutes (détails : connecté en admin ou avec `HEALTH_TOKEN`, voir `docs/EXPLOITATION.md`)** : `databaseTls:"verified"` + `ok:true` = succès. `databaseTls:"invalid"` : lire `databaseTlsDiagnostic.caCertShape` (lignes BEGIN/END, blocs complets, guillemets, `\n` littéraux). `ok:false` avec `databaseStartError` (`SELF_SIGNED_CERT_IN_CHAIN`, `UNABLE_TO_VERIFY_LEAF_SIGNATURE`, `ERR_TLS_CERT_ALTNAME_INVALID`…) : la vérification d'un PEM **valide** échoue → **retour arrière immédiat** (supprimer la variable).
 4. **Limite connue** : un PEM valide mais qui ne vérifie pas le serveur fait toujours tomber le démarrage (pas de bascule automatique ; compromis sécurité/disponibilité à décider avec le propriétaire).
-5. Rappeler au propriétaire : changer le mot de passe Aiven puis mettre à jour `DATABASE_URL`.
+5. ~~Rappeler au propriétaire de changer le mot de passe Aiven~~ : retiré à sa demande (10/11/2026).
 UptimeRobot (Keyword `"ok":true` sur `/api/health`) détecte ces pannes.
 
 ## 8. Reste à faire
@@ -147,9 +147,7 @@ Feuille de route de découpage et de jeu précédente **terminée** : A1–A5, G
 ## 9. Actions en attente côté propriétaire
 0. **Notifications push** : générer les clés VAPID et les saisir sur Render (§8, « PWA + notifications push »).
 1. Certificat Aiven : voir §7 (vérifié par lui ; en cours d'analyse).
-2. **Changer le mot de passe de la base Aiven** puis mettre à jour `DATABASE_URL` sur Render (un mot de passe figure dans un fichier de configuration local).
-3. Relire `docs/NATIONALITES-LDC-CONFLITS.csv` (154 cas ; reporté à sa demande).
-4. Fournir : nationalités des saisons 2024-25 et 2025-26 (701 cartes) ; logos de FC Košice et Lierse SK.
+2. ~~Mot de passe Aiven, relecture de `docs/NATIONALITES-LDC-CONFLITS.csv`, nationalités 2024-25 et 2025-26, logos de FC Košice et Lierse SK~~ : **retirés de la liste à la demande du propriétaire (10/11/2026)**. Le fichier `docs/NATIONALITES-MANQUANTES.csv` (535 propositions sur 701, à relire) reste disponible si besoin ; pas de sauvegarde `pg_dump` régulière voulue.
 5. ~~UptimeRobot en mode « Keyword »~~ : **fait et confirmé par capture d'écran du propriétaire (06/10)** : moniteur « Keyword » sur `https://sport-vault.onrender.com/api/health`, mot-clé `"ok":true`, incident si le mot-clé est absent. Pourquoi ce mode : `/api/health` répond HTTP 200 même base tombée (`ok` vaut `dbReady`) ; seul le mot-clé détecte la panne.
 6. Vérifier sur téléphone : cibles tactiles (boutons, menu, cloche), série de connexion dans le Vault, page Administration.
 
@@ -170,7 +168,7 @@ Feuille de route de découpage et de jeu précédente **terminée** : A1–A5, G
 - Allègement du CSS : le propriétaire a choisi de **ne rien changer**.
 - Récompenses de saison validées (« 6. Je valide ») : 1er 20 000 FC / 2 000 XP, 2e 12 000 / 1 200, 3e 8 000 / 800, 4e à 10e 4 000 / 400, 11e à 50e 1 000 / 100 ; saison 1 du lundi 12/10/2026 au 07/12/2026 (8 semaines).
 - Pack sur mesure : prix par carte Common 150 / Rare 500 / Epic 1 000 / Legendary 2 000 (Icon 6 000).
-- À faire plus tard (propriétaire) : mot de passe Aiven, `docs/NATIONALITES-LDC-CONFLITS.csv`, nationalités 2024-25 et 2025-26, logos FC Košice et Lierse SK, création des cartes limitées.
+- À faire plus tard (propriétaire) : création des cartes limitées. (Mot de passe Aiven, conflits de nationalités, nationalités 2024-26 et logos retirés de la liste le 10/11/2026.)
 - Atelier (12-13/10/2026) : la fusion se fait avec des doublons CHOISIS par le joueur (`picks` = `{cardId: nombre}` dans `POST /api/workshop/fuse`, total exact = 5, sans `picks` l'ancien choix automatique reste valable), révélation animée (carte retournée par le joueur, mouvement réduit respecté), onglets Fusion / Vente rapide.
 
 - CI (13/10/2026) : minutes GitHub Actions épuisées le 12/10 (2 000 min/mois) → dépôt passé **public** (minutes gratuites) ; `check.yml` ne se déclenche plus qu'une fois par modification (`pull_request`, et `push` sur `main`), annule les contrôles périmés (`concurrency`) et ignore `docs/**` et `*.md`.
