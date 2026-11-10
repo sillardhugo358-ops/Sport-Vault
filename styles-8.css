@@ -657,3 +657,13 @@ html:root:root .vault-history b{color:var(--text);font:700 15px var(--body);whit
 html:root:root .vault-history-kind{padding:4px 12px;border-radius:999px;background:var(--av-ghost);color:var(--text);font:600 12px var(--body);text-transform:none!important;letter-spacing:0!important}
 html:root:root .vault-history-daily{background:rgba(52,211,153,.18)}html:root:root .vault-history-weekly{background:rgba(96,165,250,.2)}html:root:root .vault-history-monthly{background:rgba(244,114,182,.2)}
 html:root:root #vaultMissions:focus{outline:0}
+/* Écran « Le serveur démarre » (fv-core.js, showStarting) : affiché sur un 503 « base en cours de démarrage », retiré quand /api/health répond. */
+html:root:root .fv-starting{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:16px;background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(6px)}
+html:root:root .fv-starting-card{width:min(440px,100%);padding:32px 24px;border:1px solid var(--line);border-radius:20px;background:var(--panel);color:var(--text);text-align:center;box-shadow:0 24px 60px -28px rgba(0,0,0,.6)}
+html:root:root .fv-starting-card h2{margin:16px 0 8px;font:800 24px var(--display,var(--body))}
+html:root:root .fv-starting-card p{margin:0 0 8px;color:var(--muted);font:400 15px/1.5 var(--body)}
+html:root:root .fv-starting-time{font-weight:600!important;color:var(--text)!important}
+html:root:root .fv-starting-retry{margin-top:12px}
+html:root:root .fv-starting-spin{display:inline-block;width:40px;height:40px;border-radius:50%;border:4px solid var(--av-ghost);border-top-color:#ff4f8b;animation:fv-starting-spin 1s linear infinite}
+@keyframes fv-starting-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){html:root:root .fv-starting-spin{animation:none;border-top-color:#ff4f8b;border-right-color:#ff4f8b}}
