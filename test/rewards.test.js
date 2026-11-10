@@ -68,6 +68,19 @@ test('série de connexion : bonus plafonné à +100 FC, palier de 7 jours à +50
   assert.equal((await thirty.post('/api/rewards/daily')).body.reward.coins, 150 + 100 + 2000);
 });
 
+test('série de connexion : paliers de 3 (+100), 14 (+1 000) et 100 jours (+5 000 FC), aucun palier les autres jours', async () => {
+  const cases = [[2, 150 + 20 + 100, 100], [13, 150 + 100 + 1000, 1000], [99, 150 + 100 + 5000, 5000], [3, 150 + 30, 0], [14, 150 + 100, 0]];
+  for (const [before, coins, milestone] of cases) {
+    const p = await newPlayer(server, 'SeriePalier' + before);
+    await setStreak(p, 1, before);
+    const r = await p.post('/api/rewards/daily');
+    assert.equal(r.status, 200);
+    assert.equal(r.body.streak, before + 1);
+    assert.equal(r.body.reward.coins, coins, 'jour ' + (before + 1));
+    assert.equal(r.body.reward.milestone, milestone, 'jour ' + (before + 1));
+  }
+});
+
 test('série de connexion : remise à zéro après un jour manqué, record conservé', async () => {
   const p = await newPlayer(server, 'SerieCoupee');
   await setStreak(p, 2, 5);
